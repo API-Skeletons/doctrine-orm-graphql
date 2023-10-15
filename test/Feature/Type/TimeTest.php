@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Feature\Type;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletons\Doctrine\GraphQL\Type\Time;
-use ApiSkeletonsTest\Doctrine\GraphQL\AbstractTest;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\TypeTest;
-use DateTime as PHPDateTime;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Time;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
+use DateTime;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -22,7 +22,7 @@ class TimeTest extends AbstractTest
     public function testParseValue(): void
     {
         $dateTimeType = new Time();
-        $control      = PHPDateTime::createFromFormat('Y-m-d\TH:i:s.uP', '2020-03-01T20:12:15.123456+00:00');
+        $control      = DateTime::createFromFormat('Y-m-d\TH:i:s.uP', '2020-03-01T20:12:15.123456+00:00');
         $result       = $dateTimeType->parseValue('20:12:15.123456');
 
         $this->assertEquals($control->format('H:i:s.u'), $result->format('H:i:s.u'));

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Feature;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletons\Doctrine\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
-use ApiSkeletonsTest\Doctrine\GraphQL\AbstractTest;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\Artist;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\Performance;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\Recording;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\User;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ArrayObject;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;

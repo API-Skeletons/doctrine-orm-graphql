@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Entity;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
-use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL;
-use ApiSkeletons\Doctrine\GraphQL\Hydrator\Filter\Password;
-use ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy\AssociationDefault;
-use ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy\ToBoolean;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Filter\Password;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToBoolean;
 use ApiSkeletonsTest\Doctrine\GraphQL\Hydrator\NamingStrategy\CustomNamingStrategy;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

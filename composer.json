@@ -20,12 +20,12 @@
     },
     "autoload": {
         "psr-4": {
-            "ApiSkeletons\\Doctrine\\GraphQL\\": "src/"
+            "ApiSkeletons\\Doctrine\\ORM\\GraphQL\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ApiSkeletonsTest\\Doctrine\\GraphQL\\": "test/"
+            "ApiSkeletonsTest\\Doctrine\\ORM\\GraphQL\\": "test/"
         }
     },
     "require-dev": {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Feature\Event;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletons\Doctrine\GraphQL\Event\BuildMetadata;
-use ApiSkeletonsTest\Doctrine\GraphQL\AbstractTest;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\BuildMetadata;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ArrayObject;
 use League\Event\EventDispatcher;
 
