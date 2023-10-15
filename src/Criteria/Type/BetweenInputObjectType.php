@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Criteria\Type;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Type;
 
-use ApiSkeletons\Doctrine\GraphQL\Criteria\Filters as FiltersDef;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ListOfType;
@@ -31,7 +31,7 @@ class BetweenInputObjectType extends InputObjectType
             'name' => $typeName
                 . '_' . $fieldName
                 . '_filters_'
-                . FiltersDef::BETWEEN
+                . Filters::BETWEEN
                 . '_fields',
             'description' => 'Between `from` and `to`',
             'fields'      => static fn () => $fields,

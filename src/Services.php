@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
-use ApiSkeletons\Doctrine\GraphQL\Metadata\GlobalEnable;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\GlobalEnable;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use League\Event\EventDispatcher;

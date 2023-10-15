@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
 use Closure;
 use GraphQL\Error\Error;

@@ -30,16 +30,16 @@ class BuildMetadataTest extends AbstractTest
 
                 $test->assertEquals('metadata.build', $event->eventName());
                 $test->assertInstanceOf(ArrayObject::class, $event->getMetadata());
-                $test->assertEquals(0, $metadata['ApiSkeletonsTest\Doctrine\GraphQL\Entity\Performance']['limit']);
+                $test->assertEquals(0, $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit']);
 
-                $metadata['ApiSkeletonsTest\Doctrine\GraphQL\Entity\Performance']['limit'] = 100;
+                $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit'] = 100;
             },
         );
 
         $metadata = $driver->get('metadata');
 
         $this->assertInstanceOf(ArrayObject::class, $metadata);
-        $test->assertEquals(100, $metadata['ApiSkeletonsTest\Doctrine\GraphQL\Entity\Performance']['limit']);
+        $test->assertEquals(100, $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit']);
     }
 
     public function testEventWithGlobalEnable(): void
@@ -55,15 +55,15 @@ class BuildMetadataTest extends AbstractTest
 
                 $test->assertEquals('metadata.build', $event->eventName());
                 $test->assertInstanceOf(ArrayObject::class, $event->getMetadata());
-                $test->assertEquals(0, $metadata['ApiSkeletonsTest\Doctrine\GraphQL\Entity\Performance']['limit']);
+                $test->assertEquals(0, $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit']);
 
-                $metadata['ApiSkeletonsTest\Doctrine\GraphQL\Entity\Performance']['limit'] = 100;
+                $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit'] = 100;
             },
         );
 
         $metadata = $driver->get('metadata');
 
         $this->assertInstanceOf(ArrayObject::class, $metadata);
-        $test->assertEquals(100, $metadata['ApiSkeletonsTest\Doctrine\GraphQL\Entity\Performance']['limit']);
+        $test->assertEquals(100, $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit']);
     }
 }

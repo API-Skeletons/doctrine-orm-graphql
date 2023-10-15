@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Metadata;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
-use ApiSkeletons\Doctrine\GraphQL\Attribute;
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Event\BuildMetadata;
-use ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\BuildMetadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;

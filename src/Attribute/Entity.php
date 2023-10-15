@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Attribute;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 
 use Attribute;
 

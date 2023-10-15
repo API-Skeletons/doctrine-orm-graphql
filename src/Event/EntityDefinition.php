@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Event;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
 use ArrayObject;
 use League\Event\HasEventName;

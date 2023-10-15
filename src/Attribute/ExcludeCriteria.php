@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Attribute;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 
-use ApiSkeletons\Doctrine\GraphQL\Criteria\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
 use Exception;
 
 use function array_diff;

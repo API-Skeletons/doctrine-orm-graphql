@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Metadata;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
 use function str_replace;
 use function strlen;

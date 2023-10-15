@@ -22,8 +22,8 @@ class TimeImmutableTest extends AbstractTest
     public function testParseValue(): void
     {
         $timeImmutable = new TimeImmutable();
-        $control      = DateTime::createFromFormat('Y-m-d\TH:i:s.uP', '2020-03-01T20:12:15.123456+00:00');
-        $result       = $timeImmutable->parseValue('20:12:15.123456');
+        $control       = DateTime::createFromFormat('Y-m-d\TH:i:s.uP', '2020-03-01T20:12:15.123456+00:00');
+        $result        = $timeImmutable->parseValue('20:12:15.123456');
 
         $this->assertEquals($control->format('H:i:s.u'), $result->format('H:i:s.u'));
     }
@@ -33,7 +33,7 @@ class TimeImmutableTest extends AbstractTest
         $this->expectException(Error::class);
 
         $timeImmutable = new TimeImmutable();
-        $result   = $timeImmutable->parseValue(true);
+        $result        = $timeImmutable->parseValue(true);
     }
 
     public function testBetween(): void

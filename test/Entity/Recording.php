@@ -35,14 +35,14 @@ class Recording
 
     #[GraphQL\Association(description: 'Performance entity')]
     #[GraphQL\Association(description: 'Entity Test Performance', group: 'entityTest')]
-    #[ORM\ManyToOne(targetEntity: 'ApiSkeletonsTest\Doctrine\GraphQL\Entity\Performance', inversedBy: 'recordings')]
+    #[ORM\ManyToOne(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance', inversedBy: 'recordings')]
     #[ORM\JoinColumn(name: 'performance_id', referencedColumnName: 'id', nullable: false)]
     private Performance $performance;
 
     /** @var Collection<id, User> */
     #[GraphQL\Association(description: 'Users')]
     #[GraphQL\Association(description: 'Entity Test Users', group: 'entityTest')]
-    #[ORM\ManyToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\GraphQL\Entity\User', mappedBy: 'recordings')]
+    #[ORM\ManyToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User', mappedBy: 'recordings')]
     private Collection $users;
 
     /**

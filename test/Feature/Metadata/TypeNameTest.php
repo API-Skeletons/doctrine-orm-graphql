@@ -19,7 +19,7 @@ class TypeNameTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager(), new Config([
             'groupSuffix' => 'unittest',
-            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\GraphQL\\Entity\\',
+            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\ORM\\GraphQL\\Entity\\',
             'globalEnable' => true,
         ]));
 
@@ -47,7 +47,7 @@ class TypeNameTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager(), new Config([
             'groupSuffix' => '',
-            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\GraphQL\\Entity\\',
+            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\ORM\\GraphQL\\Entity\\',
             'globalEnable' => true,
         ]));
 
@@ -77,7 +77,7 @@ class TypeNameTest extends AbstractTest
         $driver = new Driver($this->getEntityManager(), new Config([
             'groupSuffix' => '',
             'group' => 'TypeNameTest',
-            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\GraphQL\\Entity\\',
+            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\ORM\\GraphQL\\Entity\\',
         ]));
 
         $schema = new Schema([
@@ -104,7 +104,7 @@ class TypeNameTest extends AbstractTest
     public function testEntityPrefix(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config([
-            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\GraphQL\\Entity\\',
+            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\ORM\\GraphQL\\Entity\\',
             'globalEnable' => true,
         ]));
 

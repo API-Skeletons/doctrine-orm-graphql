@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Hydrator;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
-use ApiSkeletons\Doctrine\GraphQL\AbstractContainer;
-use ApiSkeletons\Doctrine\GraphQL\Hydrator\Filter\Password;
-use ApiSkeletons\Doctrine\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Filter\Password;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\Laminas\Hydrator\DoctrineObject;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;

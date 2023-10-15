@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Criteria\Type;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Type;
 
-use ApiSkeletons\Doctrine\GraphQL\Criteria\Filters as FiltersDef;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters as FiltersDef;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;

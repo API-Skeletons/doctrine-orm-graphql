@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
 /**
  * Types that can be built must implement this interface
