@@ -75,6 +75,12 @@ A hard limit for all queries throughout the entities.  Use this
 to prevent abuse of GraphQL.  Default is 1000.
 
 
+excludeCriteria
+---------------
+
+An array of filters to exclude from all available filters for all fields and associations for all entities.
+
+
 sortFields
 ----------
 

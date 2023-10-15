@@ -124,6 +124,8 @@ associated with.  Associations of the to many variety will be filterable.
 * ``group`` - You can have multiple GraphQL configurations organzied by
   ``group``.  Only one ``Association`` attribute per group is allowed.
 * ``description`` - A description of the ``Association``.
+* ``limit`` - A limit for subqueries.  This value overrides the Entity configured 
+  limit.
 * ``filterCriteriaEventName`` - An event to fire when resolving this collection.
   Additional filters can be added to the criteria.  An example of this use is for
   associations with soft deletes.

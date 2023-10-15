@@ -28,6 +28,7 @@ The metadata is an array with a key for each enabled entity.
                   'strategy' => 'ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy\AssociationDefault',
                   'excludeCriteria' => ['eq'],
                   'documentation' => '',
+                  'limit' => 10,
               ],
           ],
 
