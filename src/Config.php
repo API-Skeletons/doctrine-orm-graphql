@@ -67,6 +67,13 @@ class Config
      */
     protected bool|null $sortFields = null;
 
+    /**
+     * @var string[] An array of filters to exclude from
+     *               available filters for all fields and
+     *               associations in every entity
+     */
+    protected array $excludeCriteria = [];
+
     /** @param mixed[] $config */
     public function __construct(array $config = [])
     {
@@ -188,5 +195,19 @@ class Config
     public function getSortFields(): bool|null
     {
         return $this->sortFields;
+    }
+
+    /** @param string[] $excludeCriteria */
+    public function setExcludeCriteria(array $excludeCriteria): self
+    {
+        $this->excludeCriteria = $excludeCriteria;
+
+        return $this;
+    }
+
+    /** @return string[] */
+    public function getExcludeCriteria(): array
+    {
+        return $this->excludeCriteria;
     }
 }

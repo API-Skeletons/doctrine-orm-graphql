@@ -22,7 +22,13 @@ class Association
         protected array $excludeCriteria = [],
         protected array $includeCriteria = [],
         protected string|null $filterCriteriaEventName = null,
+        protected int|null $limit = null,
     ) {
+    }
+
+    public function getLimit(): int|null
+    {
+        return $this->limit;
     }
 
     public function getGroup(): string

@@ -61,21 +61,22 @@ class ResolveCollectionFactory
             $fieldResolver = $this->fieldResolver;
             $collection    = $fieldResolver($source, $args, $context, $info);
 
-            $entityClass = ClassUtils::getRealClass($source::class);
+            $entityClassName = ClassUtils::getRealClass($source::class);
 
             $targetClassName = (string) $this->entityManager->getMetadataFactory()
-                ->getMetadataFor($entityClass)
+                ->getMetadataFor($entityClassName)
                 ->getAssociationTargetClass($info->fieldName);
 
             $collectionMetadata = $this->entityManager->getMetadataFactory()
                 ->getMetadataFor($targetClassName);
 
             return $this->buildPagination(
+                $entityClassName,
                 $targetClassName,
                 $args['pagination'] ?? [],
                 $collection,
                 $this->buildCriteria($args['filter'] ?? [], $collectionMetadata),
-                $this->metadata[$entityClass]['fields'][$info->fieldName]['filterCriteriaEventName'],
+                $this->metadata[$entityClassName]['fields'][$info->fieldName]['filterCriteriaEventName'],
                 $source,
                 $args,
                 $context,
@@ -131,6 +132,7 @@ class ResolveCollectionFactory
      * @return mixed[]
      */
     private function buildPagination(
+        string $entityClassName,
         string $targetClassName,
         array $pagination,
         PersistentCollection $collection,
@@ -163,7 +165,7 @@ class ResolveCollectionFactory
 
         $itemCount = count($collection->matching($criteria));
 
-        $offsetAndLimit = $this->calculateOffsetAndLimit($targetClassName, $paginationFields, $itemCount);
+        $offsetAndLimit = $this->calculateOffsetAndLimit($resolve[3]->fieldName, $entityClassName, $targetClassName, $paginationFields, $itemCount);
         if ($offsetAndLimit['offset']) {
             $criteria->setFirstResult($offsetAndLimit['offset']);
         }
@@ -246,11 +248,16 @@ class ResolveCollectionFactory
      *
      * @return array<string, int>
      */
-    protected function calculateOffsetAndLimit(string $targetClassName, array $paginationFields, int $itemCount): array
+    protected function calculateOffsetAndLimit(string $associationName, string $entityClassName, string $targetClassName, array $paginationFields, int $itemCount): array
     {
         $offset = 0;
 
-        $limit = $this->metadata[$targetClassName]['limit'];
+        $limit            = $this->metadata[$targetClassName]['limit'];
+        $associationLimit = $this->metadata[$entityClassName]['fields'][$associationName]['limit'] ?? null;
+
+        if ($associationLimit) {
+            $limit = $associationLimit;
+        }
 
         if (! $limit) {
             $limit = $this->config->getLimit();

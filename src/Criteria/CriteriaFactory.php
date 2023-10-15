@@ -14,10 +14,15 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use League\Event\EventDispatcher;
 
+use function array_diff;
 use function array_filter;
 use function array_keys;
+use function array_merge;
+use function array_unique;
 use function count;
 use function in_array;
+
+use const SORT_REGULAR;
 
 class CriteriaFactory
 {
@@ -44,17 +49,18 @@ class CriteriaFactory
             return $this->typeManager->get($typeName);
         }
 
-        $fields         = [];
-        $entityMetadata = $targetEntity->getMetadata();
-        $allowedFilters = Filters::toArray();
+        $fields          = [];
+        $entityMetadata  = $targetEntity->getMetadata();
+        $excludedFilters = array_unique(
+            array_merge(
+                $entityMetadata['excludeCriteria'],
+                $this->config->getExcludeCriteria(),
+            ),
+            SORT_REGULAR,
+        );
 
-        // Limit entity filters
-        if ($entityMetadata['excludeCriteria']) {
-            $excludeCriteria = $entityMetadata['excludeCriteria'];
-            $allowedFilters  = array_filter($allowedFilters, static function ($value) use ($excludeCriteria) {
-                return ! in_array($value, $excludeCriteria);
-            });
-        }
+        // Limit filters
+        $allowedFilters = array_diff(Filters::toArray(), $excludedFilters);
 
         // Limit association filters
         if ($associationName) {

@@ -181,6 +181,8 @@ class MetadataFactory extends AbstractMetadataFactory
                 );
                 $associationInstance = $instance;
 
+                $this->metadata[$reflectionClass->getName()]['fields'][$associationName]['limit']                   =
+                    $instance->getLimit();
                 $this->metadata[$reflectionClass->getName()]['fields'][$associationName]['description']             =
                     $instance->getDescription();
                 $this->metadata[$reflectionClass->getName()]['fields'][$associationName]['excludeCriteria']         =

@@ -32,6 +32,7 @@ use Doctrine\ORM\Mapping as ORM;
 )]
 #[GraphQL\Entity(group: 'FilterCriteriaEvent')]
 #[GraphQL\Entity(group: 'LimitTest')]
+#[GraphQL\Entity(group: 'AttributeLimit')]
 #[ORM\Entity]
 class Performance
 {
@@ -39,6 +40,7 @@ class Performance
     #[GraphQL\Field(description: 'Venue name', group: 'ExcludeCriteriaTest')]
     #[GraphQL\Field(group: 'IncludeCriteriaTest')]
     #[GraphQL\Field(group: 'FilterCriteriaEvent')]
+    #[GraphQL\Field(group: 'AttributeLimit')]
     #[ORM\Column(type: 'string', nullable: true)]
     private string|null $venue = null;
 
@@ -48,6 +50,7 @@ class Performance
         Filters::EQ,
         Filters::NEQ,
     ])]
+    #[GraphQL\Field(group: 'AttributeLimit')]
     #[ORM\Column(type: 'string', nullable: true)]
     private string|null $city = null;
 
@@ -68,6 +71,7 @@ class Performance
     #[GraphQL\Field(group: 'ExcludeCriteriaTest')]
     #[GraphQL\Field(group: 'IncludeCriteriaTest')]
     #[GraphQL\Field(group: 'LimitTest')]
+    #[GraphQL\Field(group: 'AttributeLimit')]
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
