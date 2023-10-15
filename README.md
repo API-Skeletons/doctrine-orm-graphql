@@ -1,21 +1,22 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/API-Skeletons/doctrine-graphql/master/banner.png" width="450px">
+    <img src="https://raw.githubusercontent.com/API-Skeletons/doctrine-orm-graphql/master/banner.png" width="450px">
 </p>
 
 GraphQL Type Driver for Doctrine ORM
 ====================================
 
-[![Build Status](https://github.com/API-Skeletons/doctrine-graphql/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/API-Skeletons/doctrine-graphql/actions/workflows/continuous-integration.yml?query=branch%3Amain)
-[![Code Coverage](https://codecov.io/gh/API-Skeletons/doctrine-graphql/branch/main/graphs/badge.svg)](https://codecov.io/gh/API-Skeletons/doctrine-graphql/branch/main)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-graphql/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-graphql/?branch=main)
+[![Build Status](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml?query=branch%3Amain)
+[![Code Coverage](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main/graphs/badge.svg)](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/?branch=main)
 [![PHP Version](https://img.shields.io/badge/PHP-8.0%2b-blue)](https://img.shields.io/badge/PHP-8.0%2b-blue)
-[![Total Downloads](https://poser.pugx.org/api-skeletons/doctrine-graphql/downloads)](//packagist.org/packages/api-skeletons/doctrine-graphql)
-[![License](https://poser.pugx.org/api-skeletons/doctrine-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-graphql)
+[![Total Downloads](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/downloads)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
+[![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
 
-This library provides a framework agnostic GraphQL driver for Doctrine ORM for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).  Configuration is available from zero to verbose.  Multiple configurations for multiple drivers are supported.
+This library provides a framework agnostic GraphQL driver for Doctrine ORM for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).  
+Configuration is available from zero to verbose.  Multiple configurations for multiple drivers are supported.
 
-[Detailed documentation](https://apiskeletons-doctrine-graphql.readthedocs.io/en/latest/) is available.
+[Detailed documentation](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/) is available.
 
 For an example application post to `https://graphql.lcdb.org/`
 
@@ -23,12 +24,12 @@ For an example application post to `https://graphql.lcdb.org/`
 Library Highlights
 ------------------
 
-* Uses [PHP 8 Attributes](https://apiskeletons-doctrine-graphql.readthedocs.io/en/latest/attributes.html)
-* [Multiple independent configurations](https://apiskeletons-doctrine-graphql.readthedocs.io/en/latest/config.html)
+* Uses [PHP 8 Attributes](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/attributes.html)
+* [Multiple independent configurations](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/config.html)
 * Support for all default [Doctrine Types](https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/types.html) & custom types
 * Support for the [GraphQL Complete Connection Model](https://graphql.org/learn/pagination/#complete-connection-model)
-* Supports [filtering of sub-collections](https://apiskeletons-doctrine-graphql.readthedocs.io/en/latest/queries.html)
-* [Events](https://github.com/API-Skeletons/doctrine-graphql#events) for modifying queries and entity types
+* Supports [filtering of sub-collections](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/queries.html)
+* [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries and entity types
 * Uses the [Doctrine Laminas Hydrator](https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.1/index.html) for extraction
 * Conforms to the [Doctrine Coding Standard](https://www.doctrine-project.org/projects/doctrine-coding-standard/en/9.0/index.html)
 
@@ -38,15 +39,16 @@ Installation
 Run the following to install this library using [Composer](https://getcomposer.org/):
 
 ```bash
-composer require api-skeletons/doctrine-graphql
+composer require api-skeletons/doctrine-orm-graphql
 ```
 
 Entity Relationship Diagram
 ---------------------------
 
-[This Entity Relationship Diagram](https://raw.githubusercontent.com/API-Skeletons/doctrine-graphql/master/test/doctrine-graphql.skipper), created with [Skipper](https://skipper18.com), is used for the query examples below and testing this library.
+[This Entity Relationship Diagram](https://raw.githubusercontent.com/API-Skeletons/doctrine-orm-graphql/master/test/doctrine-orm-graphql.skipper), 
+created with [Skipper](https://skipper18.com), is used for the query examples below and testing this library.
 
-![Entity Relationship Diagram](https://raw.githubusercontent.com/API-Skeletons/doctrine-graphql/master/test/doctrine-graphql.png)
+![Entity Relationship Diagram](https://raw.githubusercontent.com/API-Skeletons/doctrine-orm-graphql/master/test/doctrine-orm-graphql.png)
 
 
 Quick Start
@@ -55,7 +57,7 @@ Quick Start
 Add attributes to your Doctrine entities
 
 ```php
-use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 
 #[GraphQL\Entity]
 class Artist 
@@ -90,7 +92,7 @@ class Performance
 Create the driver and GraphQL schema
 
 ```php
-use ApiSkeletons\Doctrine\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -236,6 +238,8 @@ Each field has their own set of filters.  Most fields have the following:
 * endswith - A like query with a wildcard on the left side of the value.
 * contains - A like query.
 
+You may exclude any filter from any entity, association, or globally.
+
 
 Events
 ------
@@ -247,7 +251,7 @@ Each connection may have a unique event name.  `Entity::class . '.filterQueryBui
 Pass as the second parameter to `$driver->resolve()`.
 
 ```php
-use ApiSkeletons\Doctrine\GraphQL\Event\FilterQueryBuilder;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
 use App\ORM\Entity\Artist;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
@@ -286,8 +290,8 @@ You may modify the criteria object used to filter associations.  For instance, i
 deletes then you would want to filter out deleted rows from an association.
 
 ```php
-use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL;
-use ApiSkeletons\Doctrine\GraphQL\Event\FilterCriteria;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterCriteria;
 use App\ORM\Entity\Artist;
 use League\Event\EventDispatcher;
 
@@ -319,11 +323,11 @@ $driver->get(EventDispatcher::class)->subscribeTo(
 ### Entity ObjectType Definition
 
 You may modify the array used to define an entity type before it is created. This can be used for generated data and the like. 
-You must attach to events before defining your GraphQL schema.  See the [detailed documentation](https://apiskeletons-doctrine-graphql.readthedocs.io/en/latest/events.html#modify-an-entity-definition) for details.
+You must attach to events before defining your GraphQL schema.  See the [detailed documentation](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/events.html#modify-an-entity-definition) for details.
 
 ```php
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletons\Doctrine\GraphQL\Event\EntityDefinition;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use App\ORM\Entity\Artist;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -357,5 +361,5 @@ $driver->get(EventDispatcher::class)->subscribeTo(
 Further Reading
 ---------------
 
-[Detailed documentation](https://apiskeletons-doctrine-graphql.readthedocs.io/en/latest/)
+[Detailed documentation](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/)
 is available.

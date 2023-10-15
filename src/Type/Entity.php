@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Type;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
-use ApiSkeletons\Doctrine\GraphQL\AbstractContainer;
-use ApiSkeletons\Doctrine\GraphQL\Buildable;
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Criteria\CriteriaFactory;
-use ApiSkeletons\Doctrine\GraphQL\Event\EntityDefinition;
-use ApiSkeletons\Doctrine\GraphQL\Hydrator\HydratorFactory;
-use ApiSkeletons\Doctrine\GraphQL\Resolve\FieldResolver;
-use ApiSkeletons\Doctrine\GraphQL\Resolve\ResolveCollectionFactory;
+use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Buildable;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\CriteriaFactory;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ArrayObject;
 use Closure;
 use Doctrine\ORM\EntityManager;

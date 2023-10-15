@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Criteria;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Criteria;
 
 final class Filters
 {

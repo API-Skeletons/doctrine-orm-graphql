@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Type;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;

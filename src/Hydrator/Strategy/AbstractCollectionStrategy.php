@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

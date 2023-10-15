@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Feature\Type;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletons\Doctrine\GraphQL\Type\Json;
-use ApiSkeletonsTest\Doctrine\GraphQL\AbstractTest;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\TypeTest;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Json;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Language\AST\StringValueNode;

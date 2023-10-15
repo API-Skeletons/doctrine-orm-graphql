@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Resolve;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\Common\Util\ClassUtils;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Entity;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
-use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL;
-use ApiSkeletons\Doctrine\GraphQL\Criteria\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -80,11 +80,11 @@ class Performance
     /** @var Collection<id, Recording> */
     #[GraphQL\Association(description: 'Recordings by artist')]
     #[GraphQL\Association(group: 'IncludeCriteriaTest', includeCriteria: [Filters::CONTAINS])]
-    #[ORM\OneToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\GraphQL\Entity\Recording', mappedBy: 'performance')]
+    #[ORM\OneToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording', mappedBy: 'performance')]
     private Collection $recordings;
 
     #[GraphQL\Association(description: 'Artist entity')]
-    #[ORM\ManyToOne(targetEntity: 'ApiSkeletonsTest\Doctrine\GraphQL\Entity\Artist', inversedBy: 'performances')]
+    #[ORM\ManyToOne(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist', inversedBy: 'performances')]
     #[ORM\JoinColumn(name: 'artist_id', referencedColumnName: 'id', nullable: false)]
     private Artist $artist;
 

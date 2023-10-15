@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL;
 
 use DateTime;
 use DateTimeImmutable;

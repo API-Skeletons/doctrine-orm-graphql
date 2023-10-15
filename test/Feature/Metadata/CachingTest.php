@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Feature\Metadata;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletons\Doctrine\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
-use ApiSkeletonsTest\Doctrine\GraphQL\AbstractTest;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\Artist;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\User;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use GraphQL\Error\Error;
 
 class CachingTest extends AbstractTest
@@ -29,28 +29,28 @@ class CachingTest extends AbstractTest
     public function testStaticMetadata(): void
     {
         $metadata = [
-            'ApiSkeletonsTest\Doctrine\GraphQL\Entity\User' => [
-                'entityClass' => 'ApiSkeletonsTest\Doctrine\GraphQL\Entity\User',
+            'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User' => [
+                'entityClass' => 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User',
                 'documentation' => '',
                 'byValue' => 1,
                 'namingStrategy' => null,
                 'fields' => [
                     'name' => [
-                        'strategy' => 'ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy\FieldDefault',
+                        'strategy' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault',
                         'documentation' => '',
                     ],
                     'recordings' => [
-                        'strategy' => 'ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy\AssociationDefault',
+                        'strategy' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault',
                         'excludeCriteria' => ['eq'],
                         'documentation' => '',
                     ],
                 ],
 
                 'strategies' => [
-                    'name' => 'ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy\FieldDefault',
-                    'email' => 'ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy\FieldDefault',
-                    'id' => 'ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy\ToInteger',
-                    'recordings' => 'ApiSkeletons\Doctrine\GraphQL\Hydrator\Strategy\AssociationDefault',
+                    'name' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault',
+                    'email' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault',
+                    'id' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToInteger',
+                    'recordings' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault',
                 ],
                 'filters' => [],
                 'typeName' => 'User',

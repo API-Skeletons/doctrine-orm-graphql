@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Hydrator\Filter;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Filter;
 
 use Laminas\Hydrator\Filter\FilterInterface;
 

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Input;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Input;
 
-use ApiSkeletons\Doctrine\GraphQL\AbstractContainer;
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\ORM\EntityManager;
 use Exception;
 use GraphQL\Error\Error;

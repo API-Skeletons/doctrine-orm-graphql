@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
-use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectType;

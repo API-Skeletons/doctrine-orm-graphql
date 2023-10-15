@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Feature\Hydrator;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Hydrator;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletons\Doctrine\GraphQL\Hydrator\HydratorFactory;
-use ApiSkeletonsTest\Doctrine\GraphQL\AbstractTest;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\User;
-use ApiSkeletonsTest\Doctrine\GraphQL\Hydrator\NamingStrategy\CustomNamingStrategy;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\NamingStrategy\CustomNamingStrategy;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Entity;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
-use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 

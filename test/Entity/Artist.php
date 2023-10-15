@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Entity;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
-use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL;
-use ApiSkeletons\Doctrine\GraphQL\Criteria\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -62,7 +62,7 @@ class Artist
     #[GraphQL\Association(group: 'LimitTest')]
     #[GraphQL\Association(group: 'AttributeLimit', limit: 3)]
 
-    #[ORM\OneToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\GraphQL\Entity\Performance', mappedBy: 'artist')]
+    #[ORM\OneToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance', mappedBy: 'artist')]
     private Collection $performances;
 
     /**

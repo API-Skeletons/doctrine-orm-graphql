@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Event;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
 use Doctrine\ORM\QueryBuilder;
 use GraphQL\Type\Definition\ResolveInfo;

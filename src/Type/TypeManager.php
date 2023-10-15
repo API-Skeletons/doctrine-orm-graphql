@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Type;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
-use ApiSkeletons\Doctrine\GraphQL\AbstractContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use GraphQL\Type\Definition\Type;
 
 class TypeManager extends AbstractContainer

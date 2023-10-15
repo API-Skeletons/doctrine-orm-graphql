@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Feature\Resolve;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Resolve;
 
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletonsTest\Doctrine\GraphQL\AbstractTest;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\Artist;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;

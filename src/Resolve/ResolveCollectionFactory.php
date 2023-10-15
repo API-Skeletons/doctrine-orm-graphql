@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\GraphQL\Resolve;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Criteria\Filters as FiltersDef;
-use ApiSkeletons\Doctrine\GraphQL\Event\FilterCriteria;
-use ApiSkeletons\Doctrine\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters as FiltersDef;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterCriteria;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use ArrayObject;
 use Closure;
 use Doctrine\Common\Collections\Collection;

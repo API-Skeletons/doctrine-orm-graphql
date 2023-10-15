@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Feature\Metadata;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletonsTest\Doctrine\GraphQL\AbstractTest;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\Artist;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
@@ -69,7 +69,7 @@ class GlobalEnableTest extends AbstractTest
         $result = GraphQL::executeQuery($schema, $query);
 
         $this->assertEquals(
-            'Cannot query field "name" on type "ApiSkeletonsTest_Doctrine_GraphQL_Entity_Artist_globalEnable".',
+            'Cannot query field "name" on type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Artist_globalEnable".',
             $result->toArray()['errors'][0]['message'],
         );
     }
@@ -101,7 +101,7 @@ class GlobalEnableTest extends AbstractTest
         $result = GraphQL::executeQuery($schema, $query);
 
         $this->assertEquals(
-            'Cannot query field "performances" on type "ApiSkeletonsTest_Doctrine_GraphQL_Entity_Artist_globalEnable".',
+            'Cannot query field "performances" on type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Artist_globalEnable".',
             $result->toArray()['errors'][0]['message'],
         );
     }

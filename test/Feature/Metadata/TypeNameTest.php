@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\GraphQL\Feature\Metadata;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 
-use ApiSkeletons\Doctrine\GraphQL\Config;
-use ApiSkeletons\Doctrine\GraphQL\Driver;
-use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
-use ApiSkeletonsTest\Doctrine\GraphQL\AbstractTest;
-use ApiSkeletonsTest\Doctrine\GraphQL\Entity\Artist;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
@@ -19,7 +19,7 @@ class TypeNameTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager(), new Config([
             'groupSuffix' => 'unittest',
-            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\GraphQL\\Entity\\',
+            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\ORM\\GraphQL\\Entity\\',
             'globalEnable' => true,
         ]));
 
@@ -47,7 +47,7 @@ class TypeNameTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager(), new Config([
             'groupSuffix' => '',
-            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\GraphQL\\Entity\\',
+            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\ORM\\GraphQL\\Entity\\',
             'globalEnable' => true,
         ]));
 
@@ -77,7 +77,7 @@ class TypeNameTest extends AbstractTest
         $driver = new Driver($this->getEntityManager(), new Config([
             'groupSuffix' => '',
             'group' => 'TypeNameTest',
-            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\GraphQL\\Entity\\',
+            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\ORM\\GraphQL\\Entity\\',
         ]));
 
         $schema = new Schema([
@@ -104,7 +104,7 @@ class TypeNameTest extends AbstractTest
     public function testEntityPrefix(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config([
-            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\GraphQL\\Entity\\',
+            'entityPrefix' => 'ApiSkeletonsTest\\Doctrine\\ORM\\GraphQL\\Entity\\',
             'globalEnable' => true,
         ]));
 
