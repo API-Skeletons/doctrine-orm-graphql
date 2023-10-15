@@ -1,9 +1,9 @@
 .DS_Store
-/phpcs.xml.dist
-/phpunit.xml.dist
+/phpcs.xml
+/phpunit.xml
 /composer.lock
 /vendor/
 /coverage/
 /.idea/
-.phpcs-cache
-.phpunit.result.cache
+/.phpcs-cache
+/.phpunit.result.cache
