@@ -16,6 +16,7 @@ you'll see, there's a lot of customizable power built in too.
     :caption: Table of Contents
 
     install
+    upgrade
     justthebasics
     queries
     mutations
