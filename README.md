@@ -16,7 +16,7 @@ GraphQL Type Driver for Doctrine ORM
 This library provides a framework agnostic GraphQL driver for Doctrine ORM for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).  
 Configuration is available from zero to verbose.  Multiple configurations for multiple drivers are supported.
 
-[Detailed documentation](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/) is available.
+[Detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/) is available.
 
 For an example application post to `https://graphql.lcdb.org/`
 
@@ -24,11 +24,11 @@ For an example application post to `https://graphql.lcdb.org/`
 Library Highlights
 ------------------
 
-* Uses [PHP 8 Attributes](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/attributes.html)
-* [Multiple independent configurations](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/config.html)
+* Uses [PHP 8 Attributes](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html)
+* [Multiple independent configurations](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html)
 * Support for all default [Doctrine Types](https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/types.html) & custom types
 * Support for the [GraphQL Complete Connection Model](https://graphql.org/learn/pagination/#complete-connection-model)
-* Supports [filtering of sub-collections](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/queries.html)
+* Supports [filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
 * [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries and entity types
 * Uses the [Doctrine Laminas Hydrator](https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.1/index.html) for extraction
 * Conforms to the [Doctrine Coding Standard](https://www.doctrine-project.org/projects/doctrine-coding-standard/en/9.0/index.html)
@@ -323,7 +323,7 @@ $driver->get(EventDispatcher::class)->subscribeTo(
 ### Entity ObjectType Definition
 
 You may modify the array used to define an entity type before it is created. This can be used for generated data and the like. 
-You must attach to events before defining your GraphQL schema.  See the [detailed documentation](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/events.html#modify-an-entity-definition) for details.
+You must attach to events before defining your GraphQL schema.  See the [detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/events.html#modify-an-entity-definition) for details.
 
 ```php
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
@@ -361,5 +361,5 @@ $driver->get(EventDispatcher::class)->subscribeTo(
 Further Reading
 ---------------
 
-[Detailed documentation](https://apiskeletons-doctrine-orm-graphql.readthedocs.io/en/latest/)
+[Detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/)
 is available.
