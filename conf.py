@@ -7,4 +7,4 @@ commit = True
 last_updated = True
 pygments_style = 'sphinx'
 html_theme = 'sizzle'
-html_favicon - 'favicon.ico'
+html_favicon = 'favicon.ico'
