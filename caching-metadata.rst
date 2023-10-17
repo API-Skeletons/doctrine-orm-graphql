@@ -11,8 +11,8 @@ rebuilding it with each request.
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Driver;
-  use ApiSkeletons\Doctrine\GraphQL\Metadata;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
   $metadata = $cache->get('GraphQLMetadata');
 

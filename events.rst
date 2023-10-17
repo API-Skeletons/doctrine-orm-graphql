@@ -1,16 +1,18 @@
 Events
 ======
 
-A PSR-14 event dispatcher is included for listening to events.
+A PSR-14 event dispatcher is included for handling events.
+
 
 Filtering Query Builders
 ------------------------
 
 Each top level connection uses a QueryBuilder object.  This QueryBuilder
-object may be modified to filter the data for the logged in user.  This can be
-used as a security layer and can be used to make customizations to QueryBuilder
-objects.  QueryBuilders are built then triggered through an event.
-Listen to this event and modify the passed QueryBuilder to apply your security.
+object may be modified to filter the data for the logged in user and such.
+For instance, this can be used as a security layer and can be used to make 
+customizations to QueryBuilder objects.  QueryBuilders are built then 
+triggered through an event.  Listen to this event and modify the passed 
+QueryBuilder to apply your security.
 
 Event names are passed as a second parameter to a ``$driver->resolve()``.  The
 default event name is 'filter.querybuilder'.
@@ -25,7 +27,7 @@ In the code below the custom event ``Artist::class . '.filterQueryBuilder'`` wil
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Driver;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use App\ORM\Entity\Artist;
   use GraphQL\Type\Definition\ObjectType;
   use GraphQL\Type\Schema;
@@ -52,7 +54,7 @@ user, create at least one listener.  You may add multiple listeners.
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Event\FilterQueryBuilder;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
   use League\Event\EventDispatcher;
 
   $driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.filterQueryBuilder',
@@ -86,8 +88,8 @@ the association if you assigned an event name in the attributes.
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL;
-  use ApiSkeletons\Doctrine\GraphQL\Event\FilterCriteria;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterCriteria;
   use App\ORM\Entity\Artist;
   use League\Event\EventDispatcher;
 
@@ -135,8 +137,8 @@ name cannot be modified.
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Driver;
-  use ApiSkeletons\Doctrine\GraphQL\Event\EntityDefinition;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
   use App\ORM\Entity\Artist;
   use GraphQL\Type\Definition\ResolveInfo;
   use League\Event\EventDispatcher;
@@ -174,6 +176,7 @@ The ``EntityDefinition`` event has one function:
 A clever use of this event is to add a new field for related data and specify
 a custom FilterQueryBuilder event in the ``$driver->resolve()`` function.
 
+
 Manually change the Metadata
 ----------------------------
 
@@ -186,8 +189,8 @@ This event is named ``'metadata.build'``.
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Driver;
-  use ApiSkeletons\Doctrine\GraphQL\Event\BuildMetadata;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\BuildMetadata;
   use App\ORM\Entity\Performance;
   use League\Event\EventDispatcher;
 

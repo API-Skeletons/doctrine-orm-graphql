@@ -25,8 +25,8 @@ need to add your custom type to the container.
 
     <?php
 
-    use ApiSkeletons\Doctrine\GraphQL\Driver;
-    use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
     use GraphQL\Type\Definition\Type;
 
     $driver = new Driver($this->getEntityManager());
@@ -60,8 +60,8 @@ filter classes, naming strategy classes, and all the generated hydrators.
 
     <?php
 
-    use ApiSkeletons\Doctrine\GraphQL\Driver;
-    use ApiSkeletons\Doctrine\GraphQL\Hydrator\HydratorFactory;
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;
 
     $driver = new Driver($this->getEntityManager());
     $driver->get(HydratorFactory::class)

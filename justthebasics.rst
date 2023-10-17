@@ -6,9 +6,9 @@ as easily as possible.
 
 You will need a Doctrine object manager with entities configured with
 appropriate associations throughout.  Support for ad-hoc joins between
-entities is not supported but you can use the EntityDefinition event
+entities is not supported (but you can use the EntityDefinition event
 in combination with the FilterQueryBuilder event to add a new field to
-a Type with such ad-hoc support.  Your Doctrine metadata must contain all the
+a Type with such ad-hoc support).  Your Doctrine metadata must contain all the
 associations.  This requriement relates to the very basics of working in
 Doctrine.
 
@@ -17,7 +17,7 @@ There are some `config options <config.html>`_ available but they are all option
 The first step is to add attributes to your entities.  Attributes are a
 feature of PHP 8.0 which act like annotations but are built into the language.
 Attributes are stored in the namespace
-``ApiSkeletons\Doctrine\GraphQL\Attribute`` and there are attributes for
+``ApiSkeletons\Doctrine\ORM\GraphQL\Attribute`` and there are attributes for
 ``Entity``, ``Field``, and ``Association``.  Use the appropriate attribute on
 each element you want to be queryable from GraphQL.
 
@@ -26,7 +26,7 @@ each element you want to be queryable from GraphQL.
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 
   #[GraphQL\Entity]
   class Artist
@@ -46,7 +46,7 @@ entity manager
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Driver;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 
   $driver = new Driver($entityManager);
 
@@ -100,7 +100,7 @@ Performance and we want to make deeper queries from Artist to Performance.
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 
   #[GraphQL\Entity]
   class Artist

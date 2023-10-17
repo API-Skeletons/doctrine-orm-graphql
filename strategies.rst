@@ -4,34 +4,34 @@ Hydrator Strategies
 Some hydrator strategies are supplied with this library.  You may also add your own hydrator
 strategies if you desire.
 
-All strategies are in the namespace ApiSkeletons\\Doctrine\\GraphQL\\Hydrator\\Strategy
+All strategies are in the namespace ``ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy``
 
 FieldDefault
-------------------------------------------------------------
+------------
 
 This strategy is applied to most field values.  It will return the exact value of the field.
 
 
 ToInteger
----------------------------------------------------------
+---------
 
 This strategy will convert the field value to an integer to be handled as an integer internal to PHP.
 
 
 ToFloat
--------------------------------------------------------
+-------
 
 Similar to ``ToInteger``, this will convert the field value to a float to be handled as a float internal to PHP.
 
 
 ToBoolean
----------------------------------------------------------
+---------
 
 Similar to ``ToInteger``, this will convert the field value to a boolean to be handled as a boolean internal to PHP.
 
 
 NullifyOwningAssociation
-------------------------------------------------------------------------
+------------------------
 
 Nullify an association.
 
@@ -52,8 +52,8 @@ created the artist.
 This hydrator strategy is used to prevent the reverse lookup by nullifying
 the response when queried from the owning side of a many to many relationship
 
-Ideally the developer will add the owning relation to a filter so the
-field is not queryable at all.
+Ideally the developer will not add the owning relationship at all or 
+add the owning relation to a filter so the field is not queryable at all.
 
 .. role:: raw-html(raw)
    :format: html

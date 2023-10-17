@@ -1,8 +1,8 @@
-Doctrine and GraphQL
-====================
+GraphQL Type Driver for Doctrine ORM
+====================================
 
 This is the documentation for
-`API-Skeletons/doctrine-graphql <https://github.com/API-Skeletons/doctrine-graphql>`_
+`API-Skeletons/doctrine-orm-graphql <https://github.com/API-Skeletons/doctrine-orm-graphql>`_
 
 This project builds GraphQL types for Doctrine entities.  To select which
 entities, fields, and associations are available for querying via GraphQL,

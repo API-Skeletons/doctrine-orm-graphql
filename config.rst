@@ -2,7 +2,7 @@ Driver Config
 =============
 
 The ``Driver`` takes a second, optional, argument of type
-``ApiSkeletons\Doctrine\GraphQL\Config``.  The constructor of ``Config`` takes
+``ApiSkeletons\Doctrine\ORM\GraphQL\Config``.  The constructor of ``Config`` takes
 an array parameter.
 
 The parameter options are:
@@ -17,6 +17,13 @@ the ``entityPrefix`` such as, 'App\\ORM\\Entity\\', will be stripped from driver
 becomes
 ``Artist_groupName``
 See also ``groupSuffix``
+
+
+excludeCriteria
+---------------
+
+An array of filters to exclude from all available filters for all fields 
+and associations for all entities.
 
 
 group
@@ -75,12 +82,6 @@ A hard limit for all queries throughout the entities.  Use this
 to prevent abuse of GraphQL.  Default is 1000.
 
 
-excludeCriteria
----------------
-
-An array of filters to exclude from all available filters for all fields and associations for all entities.
-
-
 sortFields
 ----------
 
@@ -103,8 +104,8 @@ Creating a ``Driver`` with all config options:
 
   <?php
 
-  use ApiSkeletons\Doctrine\GraphQL\Config;
-  use ApiSkeletons\Doctrine\GraphQL\Driver;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 
   $driver = new Driver($entityManager, new Config[
       'entityPrefix' => 'App\\ORM\\Entity\\',

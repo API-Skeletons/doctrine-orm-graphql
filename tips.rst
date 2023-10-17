@@ -18,7 +18,7 @@ To work around this you must use a shared type manager:
    
    <?php
    
-   use ApiSkeletons\Doctrine\GraphQL\Type\TypeManager;
+   use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
    
    
    $driver1 = new Driver($entityManager, new Config(['group' => 'group1']));

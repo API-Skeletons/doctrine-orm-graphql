@@ -1,11 +1,11 @@
 Running Queries
 ===============
 
-This section is intended for the developer who needs to write queries against
-an implementation of this repository.
+This section is intended for the developer who needs to write queries
+against an implementation of this repository.
 
-Queries are not special to this repository.  The format of queries are exactly
-what GraphQL is spec'd out to be.
+Queries are not special to this repository.  The format of queries are
+exactly what GraphQL is spec'd out to be.
 
 Pagination of collections supports
 `GraphQL's Complete Connection Model <https://graphql.org/learn/pagination/#complete-connection-model>`_.
@@ -134,6 +134,7 @@ collections you must include the pagination argument yourself just as you do
 for filters.
 
 .. code-block:: php
+  <?php
 
   $this->schema = new Schema([
       'query' => new ObjectType([
