@@ -21,8 +21,8 @@ Documentation
 -------------
 
 With the new repository the documentation was reviewed in whole and corrected
-where necessary.  There is a new theme for the documentation, leaving the old ReadTheDocs default behind.  And, though the documentation is still hosted by [https://readthedocs.org](https://readthedocs.org) it has been moved to a new
-domain: [https://doctrine-orm-graphql.apiskeletons.dev](https://doctrine-orm-graphql.apiskeletons.dev)
+where necessary.  There is a new theme for the documentation, leaving the old ReadTheDocs default behind.  And, though the documentation is still hosted by https://readthedocs.org it has been moved to a new
+domain: https://doctrine-orm-graphql.apiskeletons.dev
 
 
 What to do?
