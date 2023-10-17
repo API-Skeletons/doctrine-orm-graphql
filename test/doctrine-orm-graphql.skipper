@@ -81,7 +81,7 @@
     <entity uuid="d1836028-90d0-4d9e-b281-d792cd95d906" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="377" position-y="-44" size-x="0" size-x2="226" size-y="0" size-y2="297"/>
     <entity uuid="e5603f71-6798-480b-bcf8-0d185a08e653" bg-color="#FFFFFF" hdr-color="#D2D2D2" position-x="77" position-y="256" size-x="0" size-x2="109" size-y="0" size-y2="60"/>
     <many-to-many-association uuid="e4936d0d-1d1f-4fb8-af31-fa1d0665ccf7" color="#969696"/>
-    <module uuid="d5f257f8-d854-4bae-a05d-1ed8673c7eb5" bg-color="#FFD6FF" position-x="43" position-y="84" size-x="43" size-x2="637" size-y="84" size-y2="416"/>
+    <module uuid="d5f257f8-d854-4bae-a05d-1ed8673c7eb5" bg-color="#006ABA" position-x="43" position-y="84" size-x="43" size-x2="637" size-y="84" size-y2="416"/>
     <project uuid="25d2b513-c6b7-4071-9ada-7c48f127f426" size-x="50" size-x2="730" size-y="50" size-y2="550"/>
   </visual-data>
 </skipper>
