@@ -1,4 +1,5 @@
 <p align="center">
+    <img src="https://placehold.co/10x10/337ab7/337ab7.png" width="100%" height="15px">
     <img src="https://raw.githubusercontent.com/API-Skeletons/doctrine-orm-graphql/master/banner.png" width="450px">
 </p>
 
