@@ -47,7 +47,7 @@ In the code below the custom event ``Artist::class . '.filterQueryBuilder'`` wil
     ]),
   ]);
 
-To listen for this event and add filtering, such as filtering for the current
+To listen for this event and add filtering, such as filtering for the context 
 user, create at least one listener.  You may add multiple listeners.
 
 .. code-block:: php
@@ -62,7 +62,7 @@ user, create at least one listener.  You may add multiple listeners.
           $event->getQueryBuilder()
               ->innerJoin('entity.user', 'user') // The default entity alias is always `entity`
               ->andWhere($event->getQueryBuilder()->expr()->eq('user.id', ':userId'))
-              ->setParameter('userId', currentUser()->getId())
+              ->setParameter('userId', $event->getContext()['user']->getId())
               ;
       }
   );
