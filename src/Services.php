@@ -16,11 +16,7 @@ use League\Event\EventDispatcher;
  */
 trait Services
 {
-    /**
-     * @param string  $entityManagerAlias required
-     * @param Config  $config             required
-     * @param mixed[] $metadata           optional so cached metadata can be loaded
-     */
+    /** @param mixed[] $metadata */
     public function __construct(
         EntityManager $entityManager,
         Config|null $config = null,
@@ -29,7 +25,6 @@ trait Services
         $metadata = new ArrayObject($metadata);
 
         $this
-            // Plain classes
             ->set(EntityManager::class, $entityManager)
             ->set(
                 Config::class,
