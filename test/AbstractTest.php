@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL;
 
 use DateTime;
 use DateTimeImmutable;
+use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
@@ -13,12 +14,14 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
 use function date;
+use function print_r;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 abstract class AbstractTest extends TestCase
 {
     protected EntityManager $entityManager;
+    protected DebugStack|null $logger = null;
 
     public function setUp(): void
     {
@@ -38,6 +41,24 @@ abstract class AbstractTest extends TestCase
         $res                 = $tool->createSchema($this->entityManager->getMetadataFactory()->getAllMetadata());
 
         $this->populateData();
+    }
+
+    public function startLogger(): void
+    {
+        $this->logger = new DebugStack();
+
+        $this->getEntityManager()->getConnection()
+            ->getConfiguration()
+            ->setSQLLogger($this->logger);
+    }
+
+    public function tearDown(): void
+    {
+        if ($this->logger) {
+            print_r($this->logger->queries);
+        }
+
+        parent::tearDown();
     }
 
     protected function getEntityManager(): EntityManager
