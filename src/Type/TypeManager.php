@@ -36,7 +36,8 @@ class TypeManager extends AbstractContainer
             ->set('time_immutable', static fn () => new TimeImmutable())
             ->set('pageinfo', static fn () => new PageInfo())
             ->set('pagination', static fn () => new Pagination())
-            ->set('uuid', static fn () => new Uuid());
+            ->set('uuid', static fn () => new Uuid())
+            ->set('blob', static fn () => new Blob());
     }
 
     public function getContainer(): AbstractContainer

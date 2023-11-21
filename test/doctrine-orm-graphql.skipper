@@ -64,6 +64,7 @@
       <field name="testTime" type="time" required="true" uuid="896263ba-5b4b-4e2f-b14d-29d4ae9aea26"/>
       <field name="testTimeImmutable" type="time_immutable" required="true" uuid="669be252-2f24-4b79-a6c8-f0f99ceafd8d"/>
       <field name="testUuid" type="uuid" required="true" uuid="110b84cf-8291-4a08-a470-db240e123d6b"/>
+      <field name="testBlob" type="blob" required="true" uuid="fa94834b-903c-40bf-b112-bb28f4fa5bbd"/>
     </entity>
     <comment caption="Author" description="Tom H Anderson&#10;API Skeletons&#10;&lt;contact@apiskeletons.com&gt;" uuid="0e4ff410-5025-42fd-89ae-0d05319ab49b"/>
     <orm-attributes>

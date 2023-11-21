@@ -128,6 +128,10 @@ class TypeTest
     #[ORM\Column(type: 'uuid', nullable: false)]
     private UuidInterface $testUuid;
 
+    #[GraphQL\Field(group: 'DataTypesTest')]
+    #[ORM\Column(type: 'blob', nullable: false)]
+    private mixed $testBlob;
+
     public function getTestBigint(): mixed
     {
         return $this->testBigint;
@@ -410,6 +414,18 @@ class TypeTest
     public function setTestUuid(UuidInterface $uuid): self
     {
         $this->testUuid = $uuid;
+
+        return $this;
+    }
+
+    public function getTestBlob(): mixed
+    {
+        return $this->testBlob;
+    }
+
+    public function setTestBlob(mixed $blob): self
+    {
+        $this->testBlob = $blob;
 
         return $this;
     }

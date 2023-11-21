@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
 use function date;
+use function file_get_contents;
 use function print_r;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -207,7 +208,8 @@ abstract class AbstractTest extends TestCase
             ->setTestTime(new DateTime('2022-08-07T20:10:15.123456'))
             ->setTestTimeImmutable($immutableDateTime)
             ->setTestGuid(Uuid::uuid4()->toString())
-            ->setTestUuid(Uuid::uuid4());
+            ->setTestUuid(Uuid::uuid4())
+            ->setTestBlob(file_get_contents(__DIR__ . '/../banner.png'));
         $this->entityManager->persist($typeTest);
 
         $this->entityManager->flush();

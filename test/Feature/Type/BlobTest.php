@@ -6,7 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Uuid;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Blob;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use GraphQL\Error\Error;
@@ -14,44 +14,57 @@ use GraphQL\GraphQL;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
-use Ramsey\Uuid\Uuid as RamseyUuid;
-use Ramsey\Uuid\UuidInterface;
 
+use function base64_decode;
+use function base64_encode;
 use function count;
+use function file_get_contents;
 
-class UuidTest extends AbstractTest
+class BlobTest extends AbstractTest
 {
     public function testParseValue(): void
     {
-        $uuid = RamseyUuid::uuid4()->toString();
+        $blobType = new Blob();
 
-        $uuidType = new Uuid();
+        $file = file_get_contents(__DIR__ . '/../../../banner.png');
 
-        $uuidObject = $uuidType->parseValue($uuid);
+        $encoded = base64_encode($file);
+        $result  = $blobType->parseValue($encoded);
 
-        $this->assertInstanceOf(UuidInterface::class, $uuidObject);
-        $this->assertEquals($uuid, $uuidObject->toString());
+        $this->assertEquals($file, $result);
     }
 
     public function testParseValueInvalid(): void
     {
         $this->expectException(Error::class);
 
-        $uuidType = new Uuid();
-        $result   = $uuidType->parseValue(true);
+        $jsonType = new Blob();
+        $result   = $jsonType->parseValue(true);
     }
 
     public function testParseLiteral(): void
     {
-        $uuidType    = new Uuid();
+        $this->expectException(Error::class);
+
+        $jsonType    = new Blob();
         $node        = new StringValueNode([]);
         $node->value = 'search string';
-        $result      = $uuidType->parseLiteral($node);
-
-        $this->assertEquals($node->value, $result);
+        $result      = $jsonType->parseLiteral($node);
     }
 
-    public function testContains(): void
+    public function testSerialize(): void
+    {
+        $blobType = new Blob();
+
+        $file = file_get_contents(__DIR__ . '/../../../banner.png');
+
+        $encoded = base64_encode($file);
+        $result  = $blobType->serialize($file);
+
+        $this->assertEquals($encoded, $result);
+    }
+
+    public function testBlobQuery(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));
         $schema = new Schema([
@@ -69,10 +82,15 @@ class UuidTest extends AbstractTest
             ]),
         ]);
 
-        $query  = '{ typetest ( filter: { testUuid: { sort: "ASC" } } ) { edges { node { id testUuid } } } }';
+        $query  = '{ typetest { edges { node { id testBlob } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
+
+        $file    = base64_decode($data['typetest']['edges'][0]['node']['testBlob']);
+        $control = file_get_contents(__DIR__ . '/../../../banner.png');
+
+        $this->assertEquals($file, $control);
 
         $this->assertEquals(1, count($data['typetest']['edges']));
         $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
