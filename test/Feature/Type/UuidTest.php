@@ -6,13 +6,16 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Uuid;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
+use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Schema;
 use Ramsey\Uuid\Uuid as RamseyUuid;
 use Ramsey\Uuid\UuidInterface;
@@ -69,7 +72,7 @@ class UuidTest extends AbstractTest
         $this->assertEquals($node->value, $result);
     }
 
-    public function testContains(): void
+    public function testQuery(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));
         $schema = new Schema([
@@ -94,5 +97,48 @@ class UuidTest extends AbstractTest
 
         $this->assertEquals(1, count($data['typetest']['edges']));
         $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
+    }
+
+    public function testMutation(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));
+        $schema = new Schema([
+            'mutation' => new ObjectType([
+                'name' => 'mutation',
+                'fields' => [
+                    'typetest' => [
+                        'type' => $driver->type(TypeTest::class),
+                        'args' => [
+                            'uuid' => $driver->get(TypeManager::class)->get('uuid'),
+                        ],
+                        'resolve' => function ($root, array $args, $context, ResolveInfo $info) use ($driver) {
+                            // This tests the Uuid type for changing a string into a UuidInterface
+                            $this->assertInstanceOf(UuidInterface::class, $args['uuid']);
+
+                            return $driver->get(EntityManager::class)->getRepository(TypeTest::class)->find(1);
+                        },
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query  = '
+            mutation TestUuid ($uuid: Uuid) {
+                typetest (uuid: $uuid) {
+                    id
+                    testUuid
+                }
+            }
+        ';
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['uuid' => RamseyUuid::uuid4()->toString()],
+            operationName: 'TestUuid',
+        );
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(1, $data['typetest']['id']);
     }
 }
