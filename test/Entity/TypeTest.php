@@ -7,6 +7,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * TypeTest
@@ -122,6 +123,10 @@ class TypeTest
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[ORM\Column(type: 'smallint', nullable: false)]
     private int $testSmallInt;
+
+    #[GraphQL\Field(group: 'DataTypesTest')]
+    #[ORM\Column(type: 'uuid', nullable: false)]
+    private UuidInterface $testUuid;
 
     public function getTestBigint(): mixed
     {
@@ -395,5 +400,17 @@ class TypeTest
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getTestUuid(): UuidInterface
+    {
+        return $this->testUuid;
+    }
+
+    public function setTestUuid(UuidInterface $uuid): self
+    {
+        $this->testUuid = $uuid;
+
+        return $this;
     }
 }

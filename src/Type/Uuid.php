@@ -6,12 +6,12 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
+use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
-use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Uuid as RamseyUuid;
+use Ramsey\Uuid\UuidInterface;
 
 use function is_string;
-use function json_decode;
-use function json_encode;
 
 class Uuid extends ScalarType
 {
@@ -20,29 +20,35 @@ class Uuid extends ScalarType
 
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
-        throw new Error('JSON fields are not searchable', $valueNode);
+        // @codeCoverageIgnoreStart
+        if (! $valueNode instanceof StringValueNode) {
+            throw new Error('Query error: Uuid can only parse strings got: ' . $valueNode->kind, $valueNode);
+        }
+
+        // @codeCoverageIgnoreEnd
+
+        return $valueNode->value;
     }
 
-    /**
-     * @return mixed[]|null
-     *
-     * @throws Error
-     */
-    public function parseValue(mixed $value): array|null
+    public function parseValue(mixed $value): UuidInterface|null
     {
+        if ($value instanceof UuidInterface) {
+            return $value;
+        }
+
         if (is_string($value)) {
-            return Uuid
+            return RamseyUuid::fromString($value);
         }
 
-        if (! is_string($value)) {
-            throw new Error('Json is not a string: ' . $value);
-        }
-
-        return json_decode($value, true);
+        throw new Error('Uuid value is invalid: ' . $value);
     }
 
     public function serialize(mixed $value): string|null
     {
-        return json_encode($value);
+        if ($value instanceof UuidInterface) {
+            return $value->toString();
+        }
+
+        return $value;
     }
 }
