@@ -33,6 +33,24 @@ class UuidTest extends AbstractTest
         $this->assertEquals($uuid, $uuidObject->toString());
     }
 
+    public function testParseValueUuidInterface(): void
+    {
+        $uuid = RamseyUuid::uuid4();
+
+        $uuidType = new Uuid();
+
+        $this->assertEquals($uuid, $uuidType->parseValue($uuid));
+    }
+
+    public function testSerializeWithString(): void
+    {
+        $uuid = RamseyUuid::uuid4()->toString();
+
+        $uuidType = new Uuid();
+
+        $this->assertEquals($uuid, $uuidType->serialize($uuid));
+    }
+
     public function testParseValueInvalid(): void
     {
         $this->expectException(Error::class);
