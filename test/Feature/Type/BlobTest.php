@@ -7,12 +7,15 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Blob;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
+use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Schema;
 
 use function base64_decode;
@@ -94,5 +97,49 @@ class BlobTest extends AbstractTest
 
         $this->assertEquals(1, count($data['typetest']['edges']));
         $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
+    }
+
+    public function testMutation(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));
+        $schema = new Schema([
+            'mutation' => new ObjectType([
+                'name' => 'mutation',
+                'fields' => [
+                    'typetest' => [
+                        'type' => $driver->type(TypeTest::class),
+                        'args' => [
+                            'blob' => $driver->get(TypeManager::class)->get('blob'),
+                        ],
+                        'resolve' => function ($root, array $args, $context, ResolveInfo $info) use ($driver) {
+                            $control = file_get_contents(__DIR__ . '/../../../banner.png');
+
+                            $this->assertEquals($control, $args['blob']);
+
+                            return $driver->get(EntityManager::class)->getRepository(TypeTest::class)->find(1);
+                        },
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query  = '
+            mutation TestBlob ($blob: Blob) {
+                typetest (blob: $blob) {
+                    id
+                    testBlob
+                }
+            }
+        ';
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['blob' => base64_encode(file_get_contents(__DIR__ . '/../../../banner.png'))],
+            operationName: 'TestBlob',
+        );
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(1, $data['typetest']['id']);
     }
 }
