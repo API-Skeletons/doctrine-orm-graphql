@@ -7,6 +7,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\DBAL\Logging\DebugStack;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
@@ -14,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
 use function date;
+use function file_get_contents;
 use function print_r;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -34,6 +36,10 @@ abstract class AbstractTest extends TestCase
             'driver' => 'pdo_sqlite',
             'memory' => true,
         ];
+
+        if (! Type::hasType('uuid')) {
+            Type::addType('uuid', 'Ramsey\Uuid\Doctrine\UuidType');
+        }
 
         // obtaining the entity manager
         $this->entityManager = EntityManager::create($conn, $config);
@@ -201,7 +207,9 @@ abstract class AbstractTest extends TestCase
             ->setTestSmallInt(123)
             ->setTestTime(new DateTime('2022-08-07T20:10:15.123456'))
             ->setTestTimeImmutable($immutableDateTime)
-            ->setTestGuid(Uuid::uuid4()->toString());
+            ->setTestGuid(Uuid::uuid4()->toString())
+            ->setTestUuid(Uuid::uuid4())
+            ->setTestBlob(file_get_contents(__DIR__ . '/../banner.png'));
         $this->entityManager->persist($typeTest);
 
         $this->entityManager->flush();
