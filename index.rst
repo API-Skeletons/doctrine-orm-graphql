@@ -20,6 +20,7 @@ you'll see, there's a lot of customizable power built in too.
     justthebasics
     queries
     mutations
+    types
     config
     attributes
     events
