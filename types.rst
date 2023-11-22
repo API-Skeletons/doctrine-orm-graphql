@@ -39,7 +39,7 @@ To use a type you must fetch it from the TypeManager.
                          * $args['file'] will be sent base64 encoded then
                          * unencoded in the PHP type so by the time it gets
                          * here it is already an uploaded file
-                         */`
+                         */
                         
                         // ...save to doctrine blob column
                     },
