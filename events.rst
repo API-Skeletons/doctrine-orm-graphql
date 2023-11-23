@@ -9,9 +9,9 @@ Filtering Query Builders
 
 Each top level connection uses a QueryBuilder object.  This QueryBuilder
 object may be modified to filter the data for the logged in user and such.
-For instance, this can be used as a security layer and can be used to make 
-customizations to QueryBuilder objects.  QueryBuilders are built then 
-triggered through an event.  Listen to this event and modify the passed 
+For instance, this can be used as a security layer and can be used to make
+customizations to QueryBuilder objects.  QueryBuilders are built then
+triggered through an event.  Listen to this event and modify the passed
 QueryBuilder to apply your security.
 
 Event names are passed as a second parameter to a ``$driver->resolve()``.  The
@@ -47,7 +47,7 @@ In the code below the custom event ``Artist::class . '.filterQueryBuilder'`` wil
     ]),
   ]);
 
-To listen for this event and add filtering, such as filtering for the context 
+To listen for this event and add filtering, such as filtering for the context
 user, create at least one listener.  You may add multiple listeners.
 
 .. code-block:: php
@@ -150,7 +150,7 @@ name cannot be modified.
       static function (EntityDefinition $event): void {
           $definition = $event->getDefinition();
 
-          // In order to modify the fields you must resovle the closure
+          // In order to modify the fields you must resolve the closure
           $fields = $definition['fields']();
 
           // Add a custom field to show the name without a prefix of 'The'
