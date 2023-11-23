@@ -121,6 +121,7 @@ class Entity implements Buildable
         $this->addFields($fields);
         $this->addAssociations($fields);
 
+        /** @var ArrayObject<'description'|'fields'|'name'|'resolveField', mixed> $arrayObject */
         $arrayObject = new ArrayObject([
             'name' => $this->getTypeName(),
             'description' => $this->getDescription(),

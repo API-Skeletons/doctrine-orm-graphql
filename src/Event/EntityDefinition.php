@@ -10,6 +10,7 @@ use League\Event\HasEventName;
 class EntityDefinition implements
     HasEventName
 {
+    /** @param ArrayObject $definition<'description'|'fields'|'name'|'resolveField', mixed> */
     public function __construct(
         protected ArrayObject $definition,
         protected string $eventName,
