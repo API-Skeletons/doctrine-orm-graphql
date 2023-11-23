@@ -17,9 +17,10 @@ you'll see, there's a lot of customizable power built in too.
 
     install
     upgrade
-    justthebasics
+    just-the-basics
     queries
     mutations
+    computed-fields
     types
     config
     attributes
