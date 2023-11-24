@@ -1,8 +1,8 @@
-GraphQL Data Types
-==================
+Data Types
+==========
 
 `webonyx/graphql-php <https://github.com/webonyx/graphql-php>`_
-includes the basic GraphQL types.  These include
+includes the basic GraphQL types.
 
   * boolean
   * float
@@ -48,7 +48,8 @@ To use a type you must fetch it from the TypeManager.
         ]),
     ]);
 
-Data type mappings
+
+Data Type Mappings
 ------------------
 
 .. list-table:: Data Type Mappings
@@ -72,10 +73,10 @@ Data type mappings
      - boolean
    * - date
      - DateTime
-     - string a Y-m-d
+     - string as Y-m-d
    * - date_immutable
      - DateTimeImmutable
-     - string a Y-m-d
+     - string as Y-m-d
    * - datetime
      - DateTime
      - ISO 8601 date string
@@ -122,10 +123,10 @@ Data type mappings
      - DateTimeImmutable
      - string as H:i:s.u
    * - uuid
-     - \Ramsey\Uuid\UuidInterface
+     - \\Ramsey\\Uuid\\UuidInterface
      - string
 
-See also `Doctrine Basic Mapping <https://www.doctrine-project.org/projects/doctrine-orm/en/2.16/reference/basic-mapping.html>`_.
+See also `Doctrine Mapping Types <https://www.doctrine-project.org/projects/doctrine-orm/en/2.16/reference/basic-mapping.html#doctrine-mapping-types>`_.
 
 
 .. role:: raw-html(raw)
