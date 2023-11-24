@@ -16,7 +16,6 @@ you'll see, there's a lot of customizable power built in too.
     :caption: Table of Contents
 
     install
-    upgrade
     just-the-basics
     queries
     mutations
@@ -30,6 +29,7 @@ you'll see, there's a lot of customizable power built in too.
     strategies
     metadata
     tips
+    upgrade
     about
 
 

@@ -48,32 +48,85 @@ To use a type you must fetch it from the TypeManager.
         ]),
     ]);
 
-Data types
+Data type mappings
 ----------
 
-  * array
-  * bigint
-  * blob
-  * boolean
-  * date
-  * date_immutable
-  * datetime
-  * datetime_immutable
-  * datetimetz
-  * datetimetz_immutable
-  * decimal
-  * float
-  * guid
-  * int
-  * integer
-  * json
-  * simple_array
-  * smallint
-  * string
-  * text
-  * time
-  * time_immutable
-  * uuid
+.. list-table:: Data Type Mappings
+   :widths: 25 25 50
+   :header-rows: 1
+
+  * - GraphQL and Doctrine
+    - PHP
+    - Javascript
+
+  * - array
+    - array of strings
+    - array of strings
+  * - bigint
+    - string
+    - integer or string
+  * - blob
+    - string (binary)
+    - Base64 encoded string
+  * - boolean
+    - boolean
+    - boolean
+  * - date
+    - DateTime
+    - ISO 8601 date string
+  * - date_immutable
+    - DateTimeImmutable
+    - ISO 8601 date string
+  * - datetime
+    - DateTime
+    - ISO 8601 date string
+  * - datetime_immutable
+    - DateTimeImmutable
+    - ISO 8601 date string
+  * - datetimetz
+    - DateTime
+    - ISO 8601 date string
+  * - datetimetz_immutable
+    - DateTimeImmutable
+    - ISO 8601 date string
+  * - decimal
+    - string
+    - float
+  * - float
+    - float
+    - float
+  * - guid
+    - string
+    - string
+  * - int & integer
+    - integer
+    - integer
+  * - json
+    - string
+    - string of json
+  * - simple_array
+    - array of strings
+    - array of strings
+  * - smallint
+    - integer
+    - integer
+  * - string
+    - string
+    - string
+  * - text
+    - string
+    - string
+  * - time
+    - DateTime
+    - string as H:i:s.u
+  * - time_immutable
+    - DateTimeImmutable
+    - string as H:i:s.u
+  * - uuid
+    - \Ramsey\Uuid\UuidInterface
+    - string
+
+See also `Doctrine Basic Mapping <https://www.doctrine-project.org/projects/doctrine-orm/en/2.16/reference/basic-mapping.html>`_.
 
 
 .. role:: raw-html(raw)
