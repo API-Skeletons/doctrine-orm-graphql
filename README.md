@@ -17,6 +17,8 @@ GraphQL Type Driver for Doctrine ORM
 This library provides a framework agnostic GraphQL driver for Doctrine ORM for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).  
 Configuration is available from zero to verbose.  Multiple configurations for multiple drivers are supported.
 
+This library does not try to redefine how the excellent library [webonyx/graphql-php](https://github.com/webonyx/graphql-php) operates.  Instead, it provides types to be used within the framework that library provides.
+
 [Detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/) is available.
 
 For an example application post to `https://graphql.lcdb.org/`
