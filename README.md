@@ -30,7 +30,7 @@ Library Highlights
 * Uses [PHP 8 Attributes](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html)
 * [Multiple independent configurations](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html)
 * Support for all default [Doctrine Types](https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/types.html) & custom types
-* Support for the [GraphQL Complete Connection Model](https://graphql.org/learn/pagination/#complete-connection-model)
+* Support for the [GraphQL Complete Connection Model](https://graphql.org/learn/pagination/#complete-connection-model) (pagination)
 * Supports [filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
 * [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries and entity types
 * Uses the [Doctrine Laminas Hydrator](https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.1/index.html) for extraction
