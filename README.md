@@ -51,7 +51,7 @@ composer require api-skeletons/doctrine-orm-graphql
 Quick Start
 -----------
 
-Add attributes to your Doctrine entities or see [globalEnable](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html#globalenable) for all entities entities in your schema without attribute configuration.
+Add attributes to your Doctrine entities or see [globalEnable](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html#globalenable) for all entities in your schema without attribute configuration.
 
 ```php
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
