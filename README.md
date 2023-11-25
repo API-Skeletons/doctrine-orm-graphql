@@ -17,9 +17,9 @@ GraphQL Type Driver for Doctrine ORM
 This library provides a framework agnostic GraphQL driver for Doctrine ORM for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).  
 Configuration is available from zero to verbose.  Multiple configurations for multiple drivers are supported.
 
-This library does not try to redefine how the excellent library [webonyx/graphql-php](https://github.com/webonyx/graphql-php) operates.  Instead, it provides types to be used within the framework that library provides.
+This library does not try to redefine how the excellent library [webonyx/graphql-php](https://github.com/webonyx/graphql-php) operates.  Instead, it creates types to be used within the framework that library provides.
 
-[Detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/) is available.
+Please read the [detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/).
 
 For an example application post to `https://graphql.lcdb.org/`
 
@@ -27,13 +27,13 @@ For an example application post to `https://graphql.lcdb.org/`
 Library Highlights
 ------------------
 
-* Uses [PHP 8 Attributes](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html)
-* [Multiple independent configurations](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html)
-* Support for all default [Doctrine Types](https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/types.html) & custom types
-* Support for the [GraphQL Complete Connection Model](https://graphql.org/learn/pagination/#complete-connection-model) (pagination)
+* [PHP 8 Attributes](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html) for configuration
+* [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html)
+* Supports all [Doctrine Types](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/types.html#data-type-mappings) and allows custom types
+* Pagination with the [GraphQL Complete Connection Model](https://graphql.org/learn/pagination/#complete-connection-model)
 * Supports [filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
-* [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries and entity types
-* Uses the [Doctrine Laminas Hydrator](https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.1/index.html) for extraction
+* [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries, entity types and more
+* Uses the [Doctrine Laminas Hydrator](https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.1/index.html) for extraction by value or by reference
 * Conforms to the [Doctrine Coding Standard](https://www.doctrine-project.org/projects/doctrine-coding-standard/en/9.0/index.html)
 
 Installation
@@ -45,19 +45,11 @@ Run the following to install this library using [Composer](https://getcomposer.o
 composer require api-skeletons/doctrine-orm-graphql
 ```
 
-Entity Relationship Diagram
----------------------------
-
-[This Entity Relationship Diagram](https://raw.githubusercontent.com/API-Skeletons/doctrine-orm-graphql/master/test/doctrine-orm-graphql.skipper), 
-created with [Skipper](https://skipper18.com), is used for the query examples below and testing this library.
-
-![Entity Relationship Diagram](https://raw.githubusercontent.com/API-Skeletons/doctrine-orm-graphql/master/test/doctrine-orm-graphql.png)
-
 
 Quick Start
 -----------
 
-Add attributes to your Doctrine entities
+Add attributes to your Doctrine entities or see [globalEnable](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html#globalenable) for all entities entities in your schema without attribute configuration.
 
 ```php
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
@@ -180,12 +172,14 @@ Run GraphQL mutations
 ```php
 use GraphQL\GraphQL;
 
-$query = 'mutation ArtistUpdateName($id: Int!, $name: String!) {
+$query = '
+  mutation ArtistUpdateName($id: Int!, $name: String!) {
     artistUpdateName(id: $id, input: { name: $name }) {
-        id
-        name
+      id
+      name
     }
-}';
+  }
+';
 
 $result = GraphQL::executeQuery(
     schema: $schema,
@@ -200,8 +194,7 @@ $output = $result->toArray();
 Filtering
 ---------
 
-For every attributed field and every attributed association, filters are available in your
-GraphQL query.
+For every enabled field and association, filters are available for querying.
 
 Example
 
@@ -235,13 +228,13 @@ Each field has their own set of filters.  Most fields have the following:
 * gte - Greater than or equal to.
 * isnull - Is null.  If value is true, the field must be null.  If value is false, the field must not be null.
 * between - Between.  Identical to using gte & lte on the same field.  Give values as `low, high`.
-* in - Exists within a list of comma-delimited values.
-* notin - Does not exist within a list of comma-delimited values.
+* in - Exists within an array.
+* notin - Does not exist within an array.
 * startwith - A like query with a wildcard on the right side of the value.
 * endswith - A like query with a wildcard on the left side of the value.
 * contains - A like query.
 
-You may exclude any filter from any entity, association, or globally.
+You may [exclude any filter (excludeCriteria)](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html#entity) from any entity, association, or globally.
 
 
 Events
@@ -364,5 +357,4 @@ $driver->get(EventDispatcher::class)->subscribeTo(
 Further Reading
 ---------------
 
-[Detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/)
-is available.
+Please read the [detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/).
