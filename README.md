@@ -23,7 +23,7 @@ Please read the [detailed documentation](https://doctrine-orm-graphql.apiskeleto
 
 For an example implementation post to `https://graphql.lcdb.org/`
 
-For an example application see (https://github.com/lcdborg/graphql.lcdb.org)[https://github.com/lcdborg/graphql.lcdb.org]
+For an example application see [https://github.com/lcdborg/graphql.lcdb.org](https://github.com/lcdborg/graphql.lcdb.org)
 
 
 Library Highlights
