@@ -11,12 +11,13 @@ use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
 use function is_string;
+use function preg_match;
 
 class Time extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `Time` scalar type represents time data.'
-    . 'The format is e.g. 24 hour:minutes:seconds';
+    . 'The format is e.g. 24 hour:minutes:seconds.microseconds';
 
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
@@ -30,10 +31,22 @@ class Time extends ScalarType
         return $valueNode->value;
     }
 
+    /**
+     * Parse H:i:s.u and H:i:s
+     */
     public function parseValue(mixed $value): PHPDateTime
     {
         if (! is_string($value)) {
             throw new Error('Time is not a string: ' . $value);
+        }
+
+        if (! preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])(\.\d{1,6})?$/', $value)) {
+            throw new Error('Time ' . $value . ' format does not match H:i:s.u e.g. 13:34:40.867530');
+        }
+
+        // If time does not have milliseconds, parse without
+        if (preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])$/', $value)) {
+            return PHPDateTime::createFromFormat('H:i:s', $value);
         }
 
         return PHPDateTime::createFromFormat('H:i:s.u', $value);

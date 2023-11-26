@@ -59,7 +59,7 @@ class UuidTest extends AbstractTest
         $this->expectException(Error::class);
 
         $uuidType = new Uuid();
-        $result   = $uuidType->parseValue(true);
+        $result   = $uuidType->parseValue('invalid uuid');
     }
 
     public function testParseLiteral(): void

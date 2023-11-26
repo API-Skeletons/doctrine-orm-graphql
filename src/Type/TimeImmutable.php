@@ -11,6 +11,7 @@ use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
 use function is_string;
+use function preg_match;
 
 class TimeImmutable extends ScalarType
 {
@@ -34,6 +35,15 @@ class TimeImmutable extends ScalarType
     {
         if (! is_string($value)) {
             throw new Error('Time is not a string: ' . $value);
+        }
+
+        if (! preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])(\.\d{1,6})?$/', $value)) {
+            throw new Error('Time ' . $value . ' format does not match H:i:s.u e.g. 13:34:40.867530');
+        }
+
+        // If time does not have milliseconds, parse without
+        if (preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])$/', $value)) {
+            return PHPDateTime::createFromFormat('H:i:s', $value);
         }
 
         return PHPDateTime::createFromFormat('H:i:s.u', $value);

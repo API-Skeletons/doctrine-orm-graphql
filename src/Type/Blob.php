@@ -16,7 +16,6 @@ use function stream_get_contents;
 
 class Blob extends ScalarType
 {
-    // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'A binary file base64 encoded.';
 
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
@@ -27,14 +26,24 @@ class Blob extends ScalarType
     public function parseValue(mixed $value): mixed
     {
         if (! is_string($value)) {
-            throw new Error('Blob as base64 is not a string: ' . $value);
+            throw new Error('Blob field as base64 is not a string: ' . $value);
         }
 
-        return base64_decode($value, true);
+        $data = base64_decode($value, true);
+
+        if ($data === false) {
+            throw new Error('Blob field contains non-base64 encoded characters');
+        }
+
+        return $data;
     }
 
     public function serialize(mixed $value): mixed
     {
+        if (! $value) {
+            return $value;
+        }
+
         if (is_resource($value)) {
             $value = stream_get_contents($value);
         }

@@ -19,13 +19,30 @@ use function count;
 
 class TimeTest extends AbstractTest
 {
+    public function testParseValueFormat(): void
+    {
+        $timeType = new Time();
+
+        $dateTime = $timeType->parseValue('20:12:15');
+
+        $this->assertInstanceOf(DateTime::class, $dateTime);
+    }
+
     public function testParseValue(): void
     {
-        $dateTimeType = new Time();
-        $control      = DateTime::createFromFormat('Y-m-d\TH:i:s.uP', '2020-03-01T20:12:15.123456+00:00');
-        $result       = $dateTimeType->parseValue('20:12:15.123456');
+        $timeType = new Time();
+        $control  = DateTime::createFromFormat('Y-m-d\TH:i:s.uP', '2020-03-01T20:12:15.123456+00:00');
+        $result   = $timeType->parseValue('20:12:15.123456');
 
         $this->assertEquals($control->format('H:i:s.u'), $result->format('H:i:s.u'));
+    }
+
+    public function testParseValuNull(): void
+    {
+        $this->expectException(Error::class);
+
+        $dateType = new Time();
+        $result   = $dateType->parseValue(null);
     }
 
     public function testParseValueInvalid(): void
@@ -33,7 +50,7 @@ class TimeTest extends AbstractTest
         $this->expectException(Error::class);
 
         $dateType = new Time();
-        $result   = $dateType->parseValue(true);
+        $result   = $dateType->parseValue('25:56:33.222222');
     }
 
     public function testBetween(): void

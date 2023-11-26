@@ -28,12 +28,20 @@ class DateTimeImmutableTest extends AbstractTest
         $this->assertEquals($control, $result);
     }
 
+    public function testParseValueNull(): void
+    {
+        $this->expectException(Error::class);
+
+        $dateType = new DateTimeImmutable();
+        $result   = $dateType->parseValue(null);
+    }
+
     public function testParseValueInvalid(): void
     {
         $this->expectException(Error::class);
 
         $dateType = new DateTimeImmutable();
-        $result   = $dateType->parseValue(true);
+        $result   = $dateType->parseValue('2023-11-26');
     }
 
     public function testBetween(): void
