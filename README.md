@@ -13,18 +13,16 @@ GraphQL Type Driver for Doctrine ORM
 [![Total Downloads](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/downloads)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
+This library provides a GraphQL driver for Doctrine ORM for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).
+Configuration is available from simple to verbose.  Multiple configurations for multiple drivers are supported.
 
-This library provides a framework agnostic GraphQL driver for Doctrine ORM for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).  
-Configuration is available from zero to verbose.  Multiple configurations for multiple drivers are supported.
-
-This library does not try to redefine how the excellent library [webonyx/graphql-php](https://github.com/webonyx/graphql-php) operates.  Instead, it creates types to be used within the framework that library provides.
+This library **does not** try to redefine how the excellent library [webonyx/graphql-php](https://github.com/webonyx/graphql-php) operates.  Instead, it creates types to be used within the framework that library provides.
 
 Please read the [detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/).
 
 For an example implementation post to `https://graphql.lcdb.org/`
 
 For an example application see [https://github.com/lcdborg/graphql.lcdb.org](https://github.com/lcdborg/graphql.lcdb.org)
-
 
 Library Highlights
 ------------------
@@ -47,7 +45,6 @@ Run the following to install this library using [Composer](https://getcomposer.o
 composer require api-skeletons/doctrine-orm-graphql
 ```
 
-
 Quick Start
 -----------
 
@@ -57,14 +54,14 @@ Add attributes to your Doctrine entities or see [globalEnable](https://doctrine-
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 
 #[GraphQL\Entity]
-class Artist 
+class Artist
 {
     #[GraphQL\Field]
     public $id;
-    
+
     #[GraphQL\Field]
     public $name;
-    
+
     #[GraphQL\Association]
     public $performances;
 }
@@ -74,10 +71,10 @@ class Performance
 {
     #[GraphQL\Field]
     public $id;
-    
+
     #[GraphQL\Field]
     public $venue;
-    
+
     /**
      * Not all fields need attributes.
      * Only add attribues to fields you want available in GraphQL
@@ -141,22 +138,22 @@ Run GraphQL queries
 ```php
 use GraphQL\GraphQL;
 
-$query = '{ 
-    artists { 
-        edges { 
-            node { 
-                id 
-                name 
-                performances { 
-                    edges { 
-                        node { 
-                            venue 
-                        } 
-                    } 
-                } 
-            } 
-        } 
+$query = '{
+  artists {
+    edges {
+      node {
+        id
+        name
+        performances {
+          edges {
+            node {
+              venue
+            }
+          }
+        }
+      }
     }
+  }
 }';
 
 $result = GraphQL::executeQuery(
@@ -186,7 +183,10 @@ $query = '
 $result = GraphQL::executeQuery(
     schema: $schema,
     source: $query,
-    variableValues: ['id' => 1, 'name' => 'newName'],
+    variableValues: [
+        'id' => 1,
+        'name' => 'newName',
+    ],
     operationName: 'ArtistUpdateName'
 );
 
@@ -208,7 +208,7 @@ Example
         id
         name
         performances ( filter: { venue: { eq: "The Fillmore" } } ) {
-          edges { 
+          edges {
             node {
               venue
             }
@@ -238,7 +238,6 @@ Each field has their own set of filters.  Most fields have the following:
 
 You may [exclude any filter (excludeCriteria)](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html#entity) from any entity, association, or globally.
 
-
 Events
 ------
 
@@ -256,18 +255,18 @@ use GraphQL\Type\Schema;
 use League\Event\EventDispatcher;
 
 $schema = new Schema([
-  'query' => new ObjectType([
-      'name' => 'query',
-      'fields' => [
-          'artists' => [
-              'type' => $driver->connection($driver->type(Artist::class)),
-              'args' => [
-                  'filter' => $driver->filter(Artist::class),
-                  'pagination' => $driver->pagination(),
-              ],
-              'resolve' => $driver->resolve(Artist::class, Artist::class . '.filterQueryBuilder'),
-          ],
-      ],
+    'query' => new ObjectType([
+        'name' => 'query',
+        'fields' => [
+            'artists' => [
+                'type' => $driver->connection($driver->type(Artist::class)),
+                'args' => [
+                    'filter' => $driver->filter(Artist::class),
+                    'pagination' => $driver->pagination(),
+                ],
+                'resolve' => $driver->resolve(Artist::class, Artist::class . '.filterQueryBuilder'),
+            ],
+        ],
   ]),
 ]);
 
@@ -284,7 +283,7 @@ $driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.filterQueryB
 
 ### Filter Association Criteria
 
-You may modify the criteria object used to filter associations.  For instance, if you use soft 
+You may modify the criteria object used to filter associations.  For instance, if you use soft
 deletes then you would want to filter out deleted rows from an association.
 
 ```php
@@ -294,14 +293,14 @@ use App\ORM\Entity\Artist;
 use League\Event\EventDispatcher;
 
 #[GraphQL\Entity]
-class Artist 
+class Artist
 {
     #[GraphQL\Field]
     public $id;
-    
+
     #[GraphQL\Field]
     public $name;
-    
+
     #[GraphQL\Association(filterCriteriaEventName: self::class . '.performances.filterCriteria')]
     public $performances;
 }
@@ -317,10 +316,9 @@ $driver->get(EventDispatcher::class)->subscribeTo(
 );
 ```
 
-
 ### Entity ObjectType Definition
 
-You may modify the array used to define an entity type before it is created. This can be used for generated data and the like. 
+You may modify the array used to define an entity type before it is created. This can be used for generated data and the like.
 You must attach to events before defining your GraphQL schema.  See the [detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/events.html#modify-an-entity-definition) for details.
 
 ```php
@@ -354,7 +352,6 @@ $driver->get(EventDispatcher::class)->subscribeTo(
     }
 );
 ```
-
 
 Further Reading
 ---------------
