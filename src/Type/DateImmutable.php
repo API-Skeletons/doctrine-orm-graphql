@@ -30,7 +30,7 @@ class DateImmutable extends ScalarType
         return $valueNode->value;
     }
 
-    public function parseValue(mixed $value): DateTimeImmutable
+    public function parseValue(mixed $value): DateTimeImmutable|false
     {
         if (! is_string($value)) {
             throw new Error('Date is not a string: ' . $value);
@@ -40,9 +40,7 @@ class DateImmutable extends ScalarType
             throw new Error('Date format does not match Y-m-d e.g. 2004-02-12.');
         }
 
-        $data = DateTimeImmutable::createFromFormat('Y-m-d', $value);
-
-        return $data;
+        return DateTimeImmutable::createFromFormat('Y-m-d', $value);
     }
 
     public function serialize(mixed $value): string|null

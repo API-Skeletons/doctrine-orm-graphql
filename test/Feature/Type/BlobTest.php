@@ -43,7 +43,7 @@ class BlobTest extends AbstractTest
 
         $blobType = new Blob();
 
-        $result  = $blobType->parseValue('invalid base64');
+        $result = $blobType->parseValue('invalid base64');
     }
 
     public function testParseValueInvalid(): void
@@ -80,7 +80,7 @@ class BlobTest extends AbstractTest
     {
         $blobType = new Blob();
 
-        $result  = $blobType->serialize(null);
+        $result = $blobType->serialize(null);
 
         $this->assertNull($result);
     }

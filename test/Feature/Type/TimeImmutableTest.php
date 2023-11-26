@@ -51,7 +51,7 @@ class TimeImmutableTest extends AbstractTest
         $this->expectException(Error::class);
 
         $timeImmutable = new TimeImmutable();
-        $result        = $timeImmutable->parseValue("45:33:22");
+        $result        = $timeImmutable->parseValue('45:33:22');
     }
 
     public function testBetween(): void

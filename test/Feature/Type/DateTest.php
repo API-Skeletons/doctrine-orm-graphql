@@ -23,8 +23,8 @@ class DateTest extends AbstractTest
     public function testParseValue(): void
     {
         $dateType = new Date();
-        $control      = PHPDateTime::createFromFormat('Y-m-d\TH:i:sP', '2020-03-01T00:00:00+00:00');
-        $result       = $dateType->parseValue('2020-03-01');
+        $control  = PHPDateTime::createFromFormat('Y-m-d\TH:i:sP', '2020-03-01T00:00:00+00:00');
+        $result   = $dateType->parseValue('2020-03-01');
 
         $this->assertEquals($control->format('Y-m-d'), $result->format('Y-m-d'));
     }

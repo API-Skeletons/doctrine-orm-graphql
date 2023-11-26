@@ -15,8 +15,6 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
-use function count;
-
 class DateTimeTZTest extends AbstractTest
 {
     public function testParseValue(): void
@@ -70,7 +68,7 @@ class DateTimeTZTest extends AbstractTest
 
         $this->assertTrue(true);
 
-#        $this->assertEquals(1, count($data['typetest']['edges']));
-#        $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
+// $this->assertEquals(1, count($data['typetest']['edges']));
+// $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
     }
 }

@@ -40,9 +40,7 @@ class Date extends ScalarType
             throw new Error('Date format does not match Y-m-d e.g. 2004-02-12.');
         }
 
-        $data = DateTime::createFromFormat('Y-m-d', $value);
-
-        return $data;
+        return DateTime::createFromFormat('Y-m-d', $value);
     }
 
     public function serialize(mixed $value): string|null

@@ -30,7 +30,7 @@ class DateTimeImmutable extends ScalarType
         return $valueNode->value;
     }
 
-    public function parseValue(mixed $value): PHPDateTimeImmutable|false
+    public function parseValue(mixed $value): PHPDateTimeImmutable
     {
         if (! is_string($value)) {
             throw new Error('datetime_immutable is not a string: ' . $value);

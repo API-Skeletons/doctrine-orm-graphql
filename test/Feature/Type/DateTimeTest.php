@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Date;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateTime as DateTimeType;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use DateTime;

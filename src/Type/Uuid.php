@@ -11,7 +11,6 @@ use GraphQL\Type\Definition\ScalarType;
 use Ramsey\Uuid\Uuid as RamseyUuid;
 use Ramsey\Uuid\UuidInterface;
 
-use function is_string;
 use function preg_match;
 
 class Uuid extends ScalarType
