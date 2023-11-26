@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Date;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateTime as DateTimeType;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use DateTime;
@@ -20,11 +21,19 @@ class DateTimeTest extends AbstractTest
         $this->assertEquals($control, $result);
     }
 
-    public function testParseValueInvalid(): void
+    public function testParseValueNull(): void
     {
         $this->expectException(Error::class);
 
         $dateTimeType = new DateTimeType();
-        $result       = $dateTimeType->parseValue(true);
+        $result       = $dateTimeType->parseValue(null);
+    }
+
+    public function testParseValueInvalid(): void
+    {
+        $this->expectException(Error::class);
+
+        $dateType = new DateTimeType();
+        $result   = $dateType->parseValue('03/01/2020');
     }
 }

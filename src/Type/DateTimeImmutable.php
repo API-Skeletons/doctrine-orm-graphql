@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
-use DateTimeImmutable as PHPDateTime;
+use DateTimeImmutable as PHPDateTimeImmutable;
 use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
@@ -30,19 +30,25 @@ class DateTimeImmutable extends ScalarType
         return $valueNode->value;
     }
 
-    public function parseValue(mixed $value): PHPDateTime|false
+    public function parseValue(mixed $value): PHPDateTimeImmutable|false
     {
         if (! is_string($value)) {
-            throw new Error('Date is not a string: ' . $value);
+            throw new Error('datetime_immutable is not a string: ' . $value);
         }
 
-        return PHPDateTime::createFromFormat('Y-m-d\TH:i:sP', $value);
+        $data = PHPDateTimeImmutable::createFromFormat(PHPDateTimeImmutable::ATOM, $value);
+
+        if ($data === false) {
+            throw new Error('datetime_immutable format does not match ISO 8601.');
+        }
+
+        return $data;
     }
 
     public function serialize(mixed $value): string|null
     {
-        if ($value instanceof PHPDateTime) {
-            $value = $value->format('c');
+        if ($value instanceof PHPDateTimeImmutable) {
+            $value = $value->format(PHPDateTimeImmutable::ATOM);
         }
 
         return $value;

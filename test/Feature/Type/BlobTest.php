@@ -37,6 +37,15 @@ class BlobTest extends AbstractTest
         $this->assertEquals($file, $result);
     }
 
+    public function testParseValueInvalidBase64(): void
+    {
+        $this->expectException(Error::class);
+
+        $blobType = new Blob();
+
+        $result  = $blobType->parseValue('invalid base64');
+    }
+
     public function testParseValueInvalid(): void
     {
         $this->expectException(Error::class);
@@ -65,6 +74,15 @@ class BlobTest extends AbstractTest
         $result  = $blobType->serialize($file);
 
         $this->assertEquals($encoded, $result);
+    }
+
+    public function testSerializeNull(): void
+    {
+        $blobType = new Blob();
+
+        $result  = $blobType->serialize(null);
+
+        $this->assertNull($result);
     }
 
     public function testBlobQuery(): void

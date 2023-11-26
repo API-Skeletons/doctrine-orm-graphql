@@ -12,6 +12,7 @@ use Ramsey\Uuid\Uuid as RamseyUuid;
 use Ramsey\Uuid\UuidInterface;
 
 use function is_string;
+use function preg_match;
 
 class Uuid extends ScalarType
 {
@@ -36,11 +37,11 @@ class Uuid extends ScalarType
             return $value;
         }
 
-        if (is_string($value)) {
-            return RamseyUuid::fromString($value);
+        if (! preg_match('/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/', $value)) {
+            throw new Error('Uuid is invalid.');
         }
 
-        throw new Error('Uuid value is invalid: ' . $value);
+        return RamseyUuid::fromString($value);
     }
 
     public function serialize(mixed $value): string|null

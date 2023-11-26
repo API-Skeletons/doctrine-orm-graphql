@@ -15,7 +15,7 @@ use function json_encode;
 class Json extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
-    public string|null $description = 'The `JSON` scalar type represents json data.';
+    public string|null $description = 'The `json` scalar type represents json data.';
 
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
@@ -30,10 +30,16 @@ class Json extends ScalarType
     public function parseValue(mixed $value): array|null
     {
         if (! is_string($value)) {
-            throw new Error('Json is not a string: ' . $value);
+            throw new Error('JSON is not a string: ' . $value);
         }
 
-        return json_decode($value, true);
+        $data = json_decode($value, true);
+
+        if (! $data) {
+            throw new Error('Could not parse JSON data');
+        }
+
+        return $data;
     }
 
     public function serialize(mixed $value): string|null
