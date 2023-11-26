@@ -19,8 +19,8 @@ you'll see, there's a lot of customizable power built in too.
     just-the-basics
     queries
     mutations
-    computed-fields
     types
+    computed-fields
     config
     attributes
     events

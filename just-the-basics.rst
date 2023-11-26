@@ -87,7 +87,18 @@ Now, using the schema, you can start making GraphqL queries
 
   use GraphQL\GraphQL;
 
-  $query = '{ artist { edges { node { id name } } } }';
+  $query = '
+    {
+      artist {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  ';
 
   $result = GraphQL::executeQuery($schema, $query);
 
@@ -135,7 +146,26 @@ attributes, a query of performances is now possible:
 
   use GraphQL\GraphQL;
 
-  $query = '{ artist { edges { node { id name performances { edges { node { id venue } } } } } } }';
+  $query = '
+    {
+      artist {
+        edges {
+          node {
+            id
+            name
+            performances {
+              edges {
+                node {
+                  id
+                  venue
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ';
 
   $result = GraphQL::executeQuery($schema, $query);
 
