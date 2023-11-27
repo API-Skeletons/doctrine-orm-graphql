@@ -24,7 +24,6 @@ you'll see, there's a lot of customizable power built in too.
     config
     attributes
     events
-    caching-metadata
     containers
     strategies
     metadata
