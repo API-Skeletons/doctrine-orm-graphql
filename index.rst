@@ -25,8 +25,8 @@ you'll see, there's a lot of customizable power built in too.
     attributes
     events
     containers
-    strategies
     metadata
+    strategies
     tips
     upgrade
     about
