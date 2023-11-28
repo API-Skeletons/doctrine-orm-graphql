@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Criteria;
 
+use function implode;
+
 final class Filters
 {
     public const EQ         = 'eq';
@@ -64,5 +66,50 @@ final class Filters
                 . 'be handled as though it were null.',
             self::SORT       => 'Sort the result.  Either "asc" or "desc".',
         ];
+    }
+
+    /**
+     * Build an array suitable for QueryBuilder Applicator
+     *
+     * @param mixed[] $filterTypes
+     *
+     * @return mixed[]
+     */
+    public function buildQueryArray(array $filterTypes): array
+    {
+        $filterArray = [];
+
+        foreach ($filterTypes as $field => $filters) {
+            foreach ($filters as $filter => $value) {
+                switch ($filter) {
+                    case self::CONTAINS:
+                        $filterArray[$field . '|like'] = $value;
+                        break;
+                    case self::STARTSWITH:
+                        $filterArray[$field . '|startswith'] = $value;
+                        break;
+                    case self::ENDSWITH:
+                        $filterArray[$field . '|endswith'] = $value;
+                        break;
+                    case self::ISNULL:
+                        $filterArray[$field . '|isnull'] = 'true';
+                        break;
+                    case self::BETWEEN:
+                        $filterArray[$field . '|between'] = $value['from'] . ',' . $value['to'];
+                        break;
+                    case self::IN:
+                        $filterArray[$field . '|in'] = implode(',', $value);
+                        break;
+                    case self::NOTIN:
+                        $filterArray[$field . '|notin'] = implode(',', $value);
+                        break;
+                    default:
+                        $filterArray[$field . '|' . $filter] = (string) $value;
+                        break;
+                }
+            }
+        }
+
+        return $filterArray;
     }
 }
