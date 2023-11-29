@@ -8,7 +8,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\QueryBuilder\Filter\Applicator;
 use ArrayObject;
 use Closure;
 use Doctrine\ORM\EntityManager;
@@ -36,15 +35,17 @@ class ResolveEntityFactory
             $entityClass = $entity->getEntityClass();
             $filters     = new Filters();
 
-            $queryBuilderFilter = (new Applicator($this->entityManager, $entityClass))
-                ->setEntityAlias('entity');
-            $queryBuilder       = $queryBuilderFilter($filters->buildQueryArray($args['filter'] ?? []))
-                ->select('entity');
+            $queryBuilder = $this->entityManager->createQueryBuilder();
+            $queryBuilder->select('entity')
+                ->from($entityClass, 'entity');
+
+            if (isset($args['filter'])) {
+                $filters->filterQueryBuilder($args['filter'], $queryBuilder);
+            }
 
             return $this->buildPagination(
                 entity: $entity,
                 queryBuilder: $queryBuilder,
-                aliasMap: $queryBuilderFilter->getEntityAliasMap(),
                 eventName: $eventName,
                 objectValue: $objectValue,
                 args: $args,
@@ -54,15 +55,10 @@ class ResolveEntityFactory
         };
     }
 
-    /**
-     * @param mixed[] $aliasMap
-     *
-     * @return mixed[]
-     */
+    /** @return mixed[] */
     public function buildPagination(
         Entity $entity,
         QueryBuilder $queryBuilder,
-        array $aliasMap,
         string $eventName,
         mixed ...$resolve,
     ): array {
@@ -106,7 +102,6 @@ class ResolveEntityFactory
         $this->eventDispatcher->dispatch(
             new FilterQueryBuilder(
                 $queryBuilder,
-                $aliasMap,
                 $eventName,
                 ...$resolve,
             ),
