@@ -67,14 +67,11 @@ user, create at least one listener.  You may add multiple listeners.
       }
   );
 
-The ``FilterQueryBuilder`` event has two functions in addition to getters for
+The ``FilterQueryBuilder`` event has one function in addition to getters for
 all resolve parameters:
 
 * ``getQueryBuilder`` - Will return a query builder with the user specified
   filters already applied.
-* ``getEntityAliasMap`` - Returns an array of entities used in the QueryBuilder
-  and the aliases used for each.  Use this to help you apply more filters to
-  the QueryBuider.
 
 
 Filtering Criteria
