@@ -6,7 +6,6 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Criteria;
 
 use Doctrine\ORM\QueryBuilder;
 
-use function implode;
 use function uniqid;
 
 final class Filters
