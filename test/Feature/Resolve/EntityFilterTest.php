@@ -132,6 +132,18 @@ class EntityFilterTest extends AbstractTest
     }
 
     /** @dataProvider schemaProvider */
+    public function testisnotnull(Schema $schema): void
+    {
+        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { isnull: false } } ) { edges { node { id } } } }';
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(4, count($data['performance']['edges']));
+        $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
+    }
+
+    /** @dataProvider schemaProvider */
     public function testbetween(Schema $schema): void
     {
         $query  = '
