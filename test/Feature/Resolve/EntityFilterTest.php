@@ -132,10 +132,52 @@ class EntityFilterTest extends AbstractTest
     }
 
     /** @dataProvider schemaProvider */
+    public function testisnotnull(Schema $schema): void
+    {
+        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { isnull: false } } ) { edges { node { id } } } }';
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(4, count($data['performance']['edges']));
+        $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
+    }
+
+    /** @dataProvider schemaProvider */
     public function testbetween(Schema $schema): void
     {
-        $query  = '{ performance ( filter: {artist: { eq: 1 } performanceDate: { between: { from: "1995-02-21T00:00:00+00:00" to: "1995-07-09T00:00:00+00:00" } } } ) { edges { node { id performanceDate } } } }';
-        $result = GraphQL::executeQuery($schema, $query);
+        $query  = '
+          query DateTimeBetweenTest ($from: DateTime!, $to: DateTime!)
+          {
+            performance (
+              filter: {
+                artist: { eq: 1 }
+                performanceDate: {
+                  between: {
+                    from: $from
+                    to: $to
+                  }
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                  performanceDate
+                }
+              }
+            }
+          }
+        ';
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: [
+                'from' => '1995-02-21T00:00:00+00:00',
+                'to' => '1995-07-09T00:00:00+00:00',
+            ],
+            operationName: 'DateTimeBetweenTest',
+        );
 
         $data = $result->toArray()['data'];
 

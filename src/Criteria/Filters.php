@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Criteria;
 
-use function implode;
+use Doctrine\ORM\QueryBuilder;
+
+use function uniqid;
 
 final class Filters
 {
@@ -68,48 +70,136 @@ final class Filters
         ];
     }
 
-    /**
-     * Build an array suitable for QueryBuilder Applicator
-     *
-     * @param mixed[] $filterTypes
-     *
-     * @return mixed[]
-     */
-    public function buildQueryArray(array $filterTypes): array
+    /** @param mixed[] $filterTypes */
+    public function filterQueryBuilder(array $filterTypes, QueryBuilder $queryBuilder): void
     {
-        $filterArray = [];
-
         foreach ($filterTypes as $field => $filters) {
+            $entityField = 'entity.' . $field;
+
             foreach ($filters as $filter => $value) {
                 switch ($filter) {
-                    case self::CONTAINS:
-                        $filterArray[$field . '|like'] = $value;
+                    case self::EQ:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->eq($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value);
                         break;
-                    case self::STARTSWITH:
-                        $filterArray[$field . '|startswith'] = $value;
+
+                    case self::NEQ:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->neq($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value);
                         break;
-                    case self::ENDSWITH:
-                        $filterArray[$field . '|endswith'] = $value;
+
+                    case self::LT:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->lt($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value);
                         break;
-                    case self::ISNULL:
-                        $filterArray[$field . '|isnull'] = 'true';
+
+                    case self::LTE:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->lte($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value);
                         break;
+
+                    case self::GT:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->gt($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value);
+                        break;
+
+                    case self::GTE:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->gte($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value);
+                        break;
+
                     case self::BETWEEN:
-                        $filterArray[$field . '|between'] = $value['from'] . ',' . $value['to'];
+                        $from = 'p' . uniqid();
+                        $to   = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->between(
+                                $entityField,
+                                ':' . $from,
+                                ':' . $to,
+                            ),
+                        )
+                            ->setParameter($from, $value['from'])
+                            ->setParameter($to, $value['to']);
                         break;
+
+                    case self::CONTAINS:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->like($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, '%' . $value . '%');
+                        break;
+
+                    case self::STARTSWITH:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->like($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value . '%');
+                        break;
+
+                    case self::ENDSWITH:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->like($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, '%' . $value);
+                        break;
+
                     case self::IN:
-                        $filterArray[$field . '|in'] = implode(',', $value);
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->in($entityField, ':' . $parameter),
+                        )
+                        ->setParameter($parameter, $value);
                         break;
+
                     case self::NOTIN:
-                        $filterArray[$field . '|notin'] = implode(',', $value);
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->notIn($entityField, ':' . $parameter),
+                        )
+                        ->setParameter($parameter, $value);
                         break;
-                    default:
-                        $filterArray[$field . '|' . $filter] = (string) $value;
+
+                    case self::ISNULL:
+                        if ($value === true) {
+                            $queryBuilder->andWhere(
+                                $queryBuilder->expr()->isNull($entityField),
+                            );
+                        }
+
+                        if ($value === false) {
+                            $queryBuilder->andWhere(
+                                $queryBuilder->expr()->isNotNull($entityField),
+                            );
+                        }
+
+                        break;
+
+                    case self::SORT:
+                        $queryBuilder->addOrderBy($entityField, $value);
                         break;
                 }
             }
         }
-
-        return $filterArray;
     }
 }

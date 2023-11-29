@@ -17,7 +17,6 @@ class FilterQueryBuilder implements
      */
     public function __construct(
         protected QueryBuilder $queryBuilder,
-        protected array $entityAliasMap,
         protected string $eventName,
         protected mixed $objectValue,
         protected array $args,
@@ -34,12 +33,6 @@ class FilterQueryBuilder implements
     public function getQueryBuilder(): QueryBuilder
     {
         return $this->queryBuilder;
-    }
-
-    /** @return string[] */
-    public function getEntityAliasMap(): array
-    {
-        return $this->entityAliasMap;
     }
 
     public function getObjectValue(): mixed
