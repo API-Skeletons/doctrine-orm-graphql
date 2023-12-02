@@ -33,7 +33,7 @@ of a field you can construct your query like this:
                ->select('AVG(entity.fieldName)')
                ->from(Entity::class, 'entity');
 
-           $filters->filterQueryBuilder($args['filter'], $queryBuilder);
+           $filters->applyToQueryBuilder($args['filter'], $queryBuilder);
 
            return $queryBuilder->getQuery()->getScalarResult();
        }
