@@ -76,7 +76,7 @@ final class Filters
      *
      * @param mixed[] $filterTypes
      */
-    public function applyFiltersToQueryBuilder(array $filterTypes, QueryBuilder $queryBuilder): void
+    public function applyToQueryBuilder(array $filterTypes, QueryBuilder $queryBuilder): void
     {
         foreach ($filterTypes as $field => $filters) {
             $entityField = 'entity.' . $field;
