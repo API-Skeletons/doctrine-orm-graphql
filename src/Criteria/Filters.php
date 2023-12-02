@@ -70,62 +70,19 @@ final class Filters
         ];
     }
 
-    /** @param mixed[] $filterTypes */
-    public function filterQueryBuilder(array $filterTypes, QueryBuilder $queryBuilder): void
+    /**
+     * Add where clauses to a queryBuidler based on the FilterType of the entity
+     * The alias for the entity must be named `entity`
+     *
+     * @param mixed[] $filterTypes
+     */
+    public function applyFiltersToQueryBuilder(array $filterTypes, QueryBuilder $queryBuilder): void
     {
         foreach ($filterTypes as $field => $filters) {
             $entityField = 'entity.' . $field;
 
             foreach ($filters as $filter => $value) {
                 switch ($filter) {
-                    case self::EQ:
-                        $parameter = 'p' . uniqid();
-                        $queryBuilder->andWhere(
-                            $queryBuilder->expr()->eq($entityField, ':' . $parameter),
-                        )
-                            ->setParameter($parameter, $value);
-                        break;
-
-                    case self::NEQ:
-                        $parameter = 'p' . uniqid();
-                        $queryBuilder->andWhere(
-                            $queryBuilder->expr()->neq($entityField, ':' . $parameter),
-                        )
-                            ->setParameter($parameter, $value);
-                        break;
-
-                    case self::LT:
-                        $parameter = 'p' . uniqid();
-                        $queryBuilder->andWhere(
-                            $queryBuilder->expr()->lt($entityField, ':' . $parameter),
-                        )
-                            ->setParameter($parameter, $value);
-                        break;
-
-                    case self::LTE:
-                        $parameter = 'p' . uniqid();
-                        $queryBuilder->andWhere(
-                            $queryBuilder->expr()->lte($entityField, ':' . $parameter),
-                        )
-                            ->setParameter($parameter, $value);
-                        break;
-
-                    case self::GT:
-                        $parameter = 'p' . uniqid();
-                        $queryBuilder->andWhere(
-                            $queryBuilder->expr()->gt($entityField, ':' . $parameter),
-                        )
-                            ->setParameter($parameter, $value);
-                        break;
-
-                    case self::GTE:
-                        $parameter = 'p' . uniqid();
-                        $queryBuilder->andWhere(
-                            $queryBuilder->expr()->gte($entityField, ':' . $parameter),
-                        )
-                            ->setParameter($parameter, $value);
-                        break;
-
                     case self::BETWEEN:
                         $from = 'p' . uniqid();
                         $to   = 'p' . uniqid();
@@ -164,22 +121,6 @@ final class Filters
                             ->setParameter($parameter, '%' . $value);
                         break;
 
-                    case self::IN:
-                        $parameter = 'p' . uniqid();
-                        $queryBuilder->andWhere(
-                            $queryBuilder->expr()->in($entityField, ':' . $parameter),
-                        )
-                        ->setParameter($parameter, $value);
-                        break;
-
-                    case self::NOTIN:
-                        $parameter = 'p' . uniqid();
-                        $queryBuilder->andWhere(
-                            $queryBuilder->expr()->notIn($entityField, ':' . $parameter),
-                        )
-                        ->setParameter($parameter, $value);
-                        break;
-
                     case self::ISNULL:
                         if ($value === true) {
                             $queryBuilder->andWhere(
@@ -197,6 +138,14 @@ final class Filters
 
                     case self::SORT:
                         $queryBuilder->addOrderBy($entityField, $value);
+                        break;
+
+                    default:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->$filter($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value);
                         break;
                 }
             }
