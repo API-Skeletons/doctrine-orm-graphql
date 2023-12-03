@@ -47,7 +47,7 @@ If you have more than one driver and it uses a different group and you use both 
 you will have type collisions with the Pagination and PageInfo types.  The reason a collision occurs is because the
 GraphQL specification defines PageInfo as a `Reserved Type <https://relay.dev/graphql/connections.htm#sec-Reserved-Types>`_.
 
-The problem is each driver will have its own definition for these types and they arne't identical (at runtime in PHP).
+The problem is each driver will have its own definition for these types and they are not identical (in runtime in PHP).
 To work around this you must use a shared type manager:
 
 .. code-block:: php
