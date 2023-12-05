@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Criteria;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Type\FiltersInputObjectType;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
-use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
 use GraphQL\Type\Definition\Type;
 use League\Event\EventDispatcher;
-
 use function array_diff;
 use function array_filter;
 use function array_keys;
@@ -21,7 +21,6 @@ use function array_merge;
 use function array_unique;
 use function count;
 use function in_array;
-
 use const SORT_REGULAR;
 
 class CriteriaFactory
@@ -40,7 +39,7 @@ class CriteriaFactory
         Entity|null $owningEntity = null,
         string|null $associationName = null,
         array|null $associationMetadata = null,
-    ): InputObjectType {
+    ): GraphQLInputObjectType {
         $typeName = $owningEntity ?
             $owningEntity->getTypeName() . '_' . $associationName . '_filter'
             : $targetEntity->getTypeName() . '_filter';
@@ -59,8 +58,12 @@ class CriteriaFactory
             SORT_REGULAR,
         );
 
+        // Convert the enum Filters to an array
+
+
+
         // Limit filters
-        $allowedFilters = array_diff(Filters::toArray(), $excludedFilters);
+        $allowedFilters = array_diff(Filters::valueArray(), $excludedFilters);
 
         // Limit association filters
         if ($associationName) {
@@ -73,7 +76,7 @@ class CriteriaFactory
         $this->addFields($targetEntity, $typeName, $allowedFilters, $fields);
         $this->addAssociations($targetEntity, $typeName, $allowedFilters, $fields);
 
-        $inputObject = new InputObjectType([
+        $inputObject = new GraphQLInputObjectType([
             'name' => $typeName,
             'fields' => static fn () => $fields,
         ]);
@@ -84,8 +87,8 @@ class CriteriaFactory
     }
 
     /**
-     * @param string[]                           $allowedFilters
-     * @param array<int, FiltersInputObjectType> $fields
+     * @param Filters[]                          $allowedFilters
+     * @param array<int, GraphQLInputObjectType> $fields
      */
     protected function addFields(Entity $targetEntity, string $typeName, array $allowedFilters, array &$fields): void
     {
@@ -121,7 +124,7 @@ class CriteriaFactory
 
             $fields[$fieldName] = [
                 'name'        => $fieldName,
-                'type'        => new FiltersInputObjectType($typeName, $fieldName, $graphQLType, $allowedFilters),
+                'type'        => new InputObjectType($typeName, $fieldName, $graphQLType, $allowedFilters),
                 'description' => 'Filters for ' . $fieldName,
             ];
         }
@@ -129,7 +132,7 @@ class CriteriaFactory
 
     /**
      * @param string[]                           $allowedFilters
-     * @param array<int, FiltersInputObjectType> $fields
+     * @param array<int, GraphQLInputObjectType> $fields
      */
     protected function addAssociations(Entity $targetEntity, string $typeName, array $allowedFilters, array &$fields): void
     {
@@ -153,7 +156,7 @@ class CriteriaFactory
                     if (in_array(Filters::EQ, $allowedFilters)) {
                         $fields[$associationName] = [
                             'name' => $associationName,
-                            'type' => new FiltersInputObjectType($typeName, $associationName, $graphQLType, ['eq']),
+                            'type' => new InputObjectType($typeName, $associationName, $graphQLType, ['eq']),
                             'description' => 'Filters for ' . $associationName,
                         ];
                     }
