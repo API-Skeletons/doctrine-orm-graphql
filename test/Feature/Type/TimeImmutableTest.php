@@ -10,6 +10,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TimeImmutable;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use DateTime;
+use DateTimeImmutable;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -19,6 +20,15 @@ use function count;
 
 class TimeImmutableTest extends AbstractTest
 {
+    public function testParseValueFormat(): void
+    {
+        $timeImmutable = new TimeImmutable();
+
+        $timeImmutable = $timeImmutable->parseValue('20:12:15');
+
+        $this->assertInstanceOf(DateTimeImmutable::class, $timeImmutable);
+    }
+
     public function testParseValue(): void
     {
         $timeImmutable = new TimeImmutable();
@@ -28,12 +38,20 @@ class TimeImmutableTest extends AbstractTest
         $this->assertEquals($control->format('H:i:s.u'), $result->format('H:i:s.u'));
     }
 
+    public function testParseValueNull(): void
+    {
+        $this->expectException(Error::class);
+
+        $timeImmutable = new TimeImmutable();
+        $result        = $timeImmutable->parseValue(null);
+    }
+
     public function testParseValueInvalid(): void
     {
         $this->expectException(Error::class);
 
         $timeImmutable = new TimeImmutable();
-        $result        = $timeImmutable->parseValue(true);
+        $result        = $timeImmutable->parseValue('45:33:22');
     }
 
     public function testBetween(): void

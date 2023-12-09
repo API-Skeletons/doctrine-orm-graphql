@@ -32,8 +32,32 @@ class DateImmutableTest extends AbstractTest
     {
         $this->expectException(Error::class);
 
+        $dateImmutableType = new DateImmutable();
+        $result            = $dateImmutableType->parseValue('03/01/2020');
+    }
+
+    public function testParseValueNull(): void
+    {
+        $this->expectException(Error::class);
+
         $dateType = new DateImmutable();
-        $result   = $dateType->parseValue(true);
+        $result   = $dateType->parseValue(null);
+    }
+
+    public function testSerializeString(): void
+    {
+        $this->expectException(Error::class);
+        $dateImmutableType = new DateImmutable();
+
+        $dateImmutableType->serialize('invalid string');
+    }
+
+    public function testSerializeNonDateTimeObject(): void
+    {
+        $this->expectException(Error::class);
+        $dateImmutableType = new DateImmutable();
+
+        $dateImmutableType->serialize(new PHPDateTime());
     }
 
     public function testBetween(): void

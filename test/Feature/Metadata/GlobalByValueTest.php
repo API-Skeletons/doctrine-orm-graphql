@@ -37,7 +37,21 @@ class GlobalByValueTest extends AbstractTest
             ]),
         ]);
 
-        $query  = '{ artist { edges { node { performances ( filter: {venue: { neq: "test" } } ) { edges { node { venue } } } } } } }';
+        $query  = '{
+          artist {
+            edges {
+              node {
+                performances ( filter: {venue: { neq: "test" } } ) {
+                  edges {
+                    node {
+                      venue
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $this->assertFalse($driver->get(Config::class)->getGlobalByValue());

@@ -7,6 +7,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Date;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateTimeImmutable;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use DateTime as PHPDateTime;
@@ -21,9 +22,9 @@ class DateTest extends AbstractTest
 {
     public function testParseValue(): void
     {
-        $dateTimeType = new Date();
-        $control      = PHPDateTime::createFromFormat('Y-m-d\TH:i:sP', '2020-03-01T00:00:00+00:00');
-        $result       = $dateTimeType->parseValue('2020-03-01');
+        $dateType = new Date();
+        $control  = PHPDateTime::createFromFormat('Y-m-d\TH:i:sP', '2020-03-01T00:00:00+00:00');
+        $result   = $dateType->parseValue('2020-03-01');
 
         $this->assertEquals($control->format('Y-m-d'), $result->format('Y-m-d'));
     }
@@ -33,7 +34,31 @@ class DateTest extends AbstractTest
         $this->expectException(Error::class);
 
         $dateType = new Date();
-        $result   = $dateType->parseValue(true);
+        $result   = $dateType->parseValue('03/01/2020');
+    }
+
+    public function testParseValueNull(): void
+    {
+        $this->expectException(Error::class);
+
+        $dateType = new Date();
+        $result   = $dateType->parseValue(null);
+    }
+
+    public function testSerializeString(): void
+    {
+        $this->expectException(Error::class);
+        $dateType = new Date();
+
+        $dateType->serialize('invalid string');
+    }
+
+    public function testSerializeNonDateTimeObject(): void
+    {
+        $this->expectException(Error::class);
+        $dateType = new Date();
+
+        $dateType->serialize(new DateTimeImmutable());
     }
 
     public function testBetween(): void

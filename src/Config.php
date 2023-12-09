@@ -43,7 +43,7 @@ class Config
      */
     protected bool $globalEnable = false;
 
-    /** @var string[] An array if field names to ignore when using globalEnable. */
+    /** @var string[] An array of field names to ignore when using globalEnable. */
     protected array $globalIgnore = [];
 
     /**

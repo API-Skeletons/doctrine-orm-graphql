@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Criteria;
 
+use Doctrine\ORM\QueryBuilder;
+
+use function uniqid;
+
 final class Filters
 {
     public const EQ         = 'eq';
@@ -64,5 +68,87 @@ final class Filters
                 . 'be handled as though it were null.',
             self::SORT       => 'Sort the result.  Either "asc" or "desc".',
         ];
+    }
+
+    /**
+     * Add where clauses to a queryBuidler based on the FilterType of the entity
+     * The alias for the entity must be named `entity`
+     *
+     * @param mixed[] $filterTypes
+     */
+    public function applyToQueryBuilder(array $filterTypes, QueryBuilder $queryBuilder): void
+    {
+        foreach ($filterTypes as $field => $filters) {
+            $entityField = 'entity.' . $field;
+
+            foreach ($filters as $filter => $value) {
+                switch ($filter) {
+                    case self::BETWEEN:
+                        $from = 'p' . uniqid();
+                        $to   = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->between(
+                                $entityField,
+                                ':' . $from,
+                                ':' . $to,
+                            ),
+                        )
+                            ->setParameter($from, $value['from'])
+                            ->setParameter($to, $value['to']);
+                        break;
+
+                    case self::CONTAINS:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->like($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, '%' . $value . '%');
+                        break;
+
+                    case self::STARTSWITH:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->like($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value . '%');
+                        break;
+
+                    case self::ENDSWITH:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->like($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, '%' . $value);
+                        break;
+
+                    case self::ISNULL:
+                        if ($value === true) {
+                            $queryBuilder->andWhere(
+                                $queryBuilder->expr()->isNull($entityField),
+                            );
+                        }
+
+                        if ($value === false) {
+                            $queryBuilder->andWhere(
+                                $queryBuilder->expr()->isNotNull($entityField),
+                            );
+                        }
+
+                        break;
+
+                    case self::SORT:
+                        $queryBuilder->addOrderBy($entityField, $value);
+                        break;
+
+                    default:
+                        $parameter = 'p' . uniqid();
+                        $queryBuilder->andWhere(
+                            $queryBuilder->expr()->$filter($entityField, ':' . $parameter),
+                        )
+                            ->setParameter($parameter, $value);
+                        break;
+                }
+            }
+        }
     }
 }

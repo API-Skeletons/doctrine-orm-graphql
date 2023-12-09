@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters as FiltersDef;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\QueryBuilder\Filter\Applicator;
 use ArrayObject;
 use Closure;
 use Doctrine\ORM\EntityManager;
@@ -19,7 +18,6 @@ use League\Event\EventDispatcher;
 
 use function base64_decode;
 use function base64_encode;
-use function implode;
 
 class ResolveEntityFactory
 {
@@ -35,16 +33,19 @@ class ResolveEntityFactory
     {
         return function ($objectValue, array $args, $context, ResolveInfo $info) use ($entity, $eventName) {
             $entityClass = $entity->getEntityClass();
+            $filters     = new Filters();
 
-            $queryBuilderFilter = (new Applicator($this->entityManager, $entityClass))
-                ->setEntityAlias('entity');
-            $queryBuilder       = $queryBuilderFilter($this->buildFilterArray($args['filter'] ?? []))
-                ->select('entity');
+            $queryBuilder = $this->entityManager->createQueryBuilder();
+            $queryBuilder->select('entity')
+                ->from($entityClass, 'entity');
+
+            if (isset($args['filter'])) {
+                $filters->applyToQueryBuilder($args['filter'], $queryBuilder);
+            }
 
             return $this->buildPagination(
                 entity: $entity,
                 queryBuilder: $queryBuilder,
-                aliasMap: $queryBuilderFilter->getEntityAliasMap(),
                 eventName: $eventName,
                 objectValue: $objectValue,
                 args: $args,
@@ -54,58 +55,10 @@ class ResolveEntityFactory
         };
     }
 
-    /**
-     * @param mixed[] $filterTypes
-     *
-     * @return mixed[]
-     */
-    private function buildFilterArray(array $filterTypes): array
-    {
-        $filterArray = [];
-
-        foreach ($filterTypes as $field => $filters) {
-            foreach ($filters as $filter => $value) {
-                switch ($filter) {
-                    case FiltersDef::CONTAINS:
-                        $filterArray[$field . '|like'] = $value;
-                        break;
-                    case FiltersDef::STARTSWITH:
-                        $filterArray[$field . '|startswith'] = $value;
-                        break;
-                    case FiltersDef::ENDSWITH:
-                        $filterArray[$field . '|endswith'] = $value;
-                        break;
-                    case FiltersDef::ISNULL:
-                        $filterArray[$field . '|isnull'] = 'true';
-                        break;
-                    case FiltersDef::BETWEEN:
-                        $filterArray[$field . '|between'] = $value['from'] . ',' . $value['to'];
-                        break;
-                    case FiltersDef::IN:
-                        $filterArray[$field . '|in'] = implode(',', $value);
-                        break;
-                    case FiltersDef::NOTIN:
-                        $filterArray[$field . '|notin'] = implode(',', $value);
-                        break;
-                    default:
-                        $filterArray[$field . '|' . $filter] = (string) $value;
-                        break;
-                }
-            }
-        }
-
-        return $filterArray;
-    }
-
-    /**
-     * @param mixed[] $aliasMap
-     *
-     * @return mixed[]
-     */
+    /** @return mixed[] */
     public function buildPagination(
         Entity $entity,
         QueryBuilder $queryBuilder,
-        array $aliasMap,
         string $eventName,
         mixed ...$resolve,
     ): array {
@@ -149,7 +102,6 @@ class ResolveEntityFactory
         $this->eventDispatcher->dispatch(
             new FilterQueryBuilder(
                 $queryBuilder,
-                $aliasMap,
                 $eventName,
                 ...$resolve,
             ),
