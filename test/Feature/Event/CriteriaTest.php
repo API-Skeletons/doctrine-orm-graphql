@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use Doctrine\Common\Collections\Criteria;
@@ -24,8 +25,8 @@ class CriteriaTest extends AbstractTest
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'CriteriaEvent']));
 
         $driver->get(EventDispatcher::class)->subscribeTo(
-            Artist::class . '.performances.filterCriteria',
-            function (Criteria $event): void {
+            Artist::class . '.performances.criteria',
+            function (CriteriaEvent $event): void {
                 $this->assertInstanceOf(Criteria::class, $event->getCriteria());
 
                 $event->getCriteria()->andWhere(
@@ -77,7 +78,7 @@ class CriteriaTest extends AbstractTest
             schema: $schema,
             source: $query,
             variableValues: ['id' => '1'],
-            contextValue:  'contextTest'
+            contextValue:  'contextTest',
         );
         $data   = $result->toArray()['data'];
 

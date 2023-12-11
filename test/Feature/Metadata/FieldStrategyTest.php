@@ -44,33 +44,4 @@ class FieldStrategyTest extends AbstractTest
             $this->assertEquals(1, $edge['node']['name']);
         }
     }
-
-    public function testNullifyOwningAssociation(): void
-    {
-        $driver = new Driver($this->getEntityManager());
-
-        $schema = new Schema([
-            'query' => new ObjectType([
-                'name' => 'query',
-                'fields' => [
-                    'user' => [
-                        'type' => $driver->connection($driver->type(User::class)),
-                        'args' => [
-                            'filter' => $driver->filter(User::class),
-                        ],
-                        'resolve' => $driver->resolve(User::class),
-                    ],
-                ],
-            ]),
-        ]);
-
-        $query = '{ user { edges { node { name recordings { edges { node { source } } } } } } }';
-
-        $result = GraphQL::executeQuery($schema, $query);
-
-        foreach ($result->errors as $error) {
-            $this->assertInstanceOf(Error::class, $error);
-            $this->assertEquals('Query is barred by Nullify Owning Association', $error->getMessage());
-        }
-    }
 }

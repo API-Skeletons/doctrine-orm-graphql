@@ -33,7 +33,6 @@ class HydratorFactory extends AbstractContainer
         $this
             ->set(Strategy\AssociationDefault::class, new Strategy\AssociationDefault())
             ->set(Strategy\FieldDefault::class, new Strategy\FieldDefault())
-            ->set(Strategy\NullifyOwningAssociation::class, new Strategy\NullifyOwningAssociation())
             ->set(Strategy\ToBoolean::class, new Strategy\ToBoolean())
             ->set(Strategy\ToFloat::class, new Strategy\ToFloat())
             ->set(Strategy\ToInteger::class, new Strategy\ToInteger())

@@ -63,12 +63,71 @@ class DateTimeImmutableTest extends AbstractTest
         ]);
 
         $now    = (new PHPDateTime())->format('c');
-        $query  = '{ typetest ( filter: { testDateTimeImmutable: { between: { from: "2022-08-06T00:00:00+00:00" to: "' . $now . '" } } } ) { edges { node { id testDateTimeImmutable } } } }';
-        $result = GraphQL::executeQuery($schema, $query);
+        $query  = '
+          query ($from: DateTimeImmutable, $to: DateTimeImmutable) {
+            typetest (
+              filter: {
+                testDateTimeImmutable: {
+                  between: {
+                    from: $from to: $to
+                  }
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                  testDateTimeImmutable
+                }
+              }
+            }
+          }
+        ';
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: [
+                'from' => '2022-08-06T00:00:00+00:00',
+                'to' => $now,
+            ],
+        );
 
         $data = $result->toArray()['data'];
 
         $this->assertEquals(1, count($data['typetest']['edges']));
         $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
+
+        // Test parseLiteral
+        $now    = (new PHPDateTime())->format('c');
+        $query  = '
+          {
+            typetest (
+              filter: {
+                testDateTimeImmutable: {
+                  between: {
+                    from: "2022-08-06T00:00:00+00:00" to: "' . $now . '"
+                  }
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                  testDateTimeImmutable
+                }
+              }
+            }
+          }
+        ';
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+        );
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(1, count($data['typetest']['edges']));
+        $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
+
     }
 }
