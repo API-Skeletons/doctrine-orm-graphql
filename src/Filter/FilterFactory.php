@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\InputObjectType;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Association;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\ORM\EntityManager;
@@ -136,7 +137,7 @@ class FilterFactory
 
             $fields[$fieldName] = [
                 'name'        => $fieldName,
-                'type'        => new InputObjectType($typeName, $fieldName, $graphQLType, $allowedFilters),
+                'type'        => new Field($typeName, $fieldName, $graphQLType, $allowedFilters),
                 'description' => 'Filters for ' . $fieldName,
             ];
         }
@@ -176,7 +177,7 @@ class FilterFactory
                     if (in_array(Filters::EQ, $allowedFilters)) {
                         $fields[$associationName] = [
                             'name' => $associationName,
-                            'type' => new InputObjectType($typeName, $associationName, $graphQLType, [Filters::EQ]),
+                            'type' => new Association($typeName, $associationName, $graphQLType, [Filters::EQ]),
                             'description' => 'Filters for ' . $associationName,
                         ];
                     }
