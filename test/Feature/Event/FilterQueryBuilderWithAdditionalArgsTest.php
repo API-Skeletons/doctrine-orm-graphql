@@ -24,7 +24,7 @@ class FilterQueryBuilderWithAdditionalArgsTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager());
         $driver->get(EventDispatcher::class)->subscribeTo(
-            'filter.querybuilder',
+            'artist.querybuilder',
             function (QueryBuilder $event): void {
                 $event->getQueryBuilder()
                     ->andWhere($event->getQueryBuilder()->expr()->eq('entity.id', $event->getArgs()['id']));
@@ -45,21 +45,58 @@ class FilterQueryBuilderWithAdditionalArgsTest extends AbstractTest
                     'artists' => [
                         'type' => $driver->connection($driver->type(Artist::class)),
                         'args' => [
-                            'id' => Type::int(),
+                            'id' => Type::String(),
                             'filter' => $driver->filter(Artist::class),
                         ],
-                        'resolve' => $driver->resolve(Artist::class),
+                        'resolve' => $driver->resolve(Artist::class, 'artist.querybuilder'),
                     ],
                 ],
             ]),
         ]);
 
-        $query = '{
-            artists (filter: { name: { contains: "dead"} } id: 1)
-                { edges { node { id name performances { edges { node { venue recordings { edges { node { source } } } } } } } } }
-        }';
+        $query = '
+          query ($id: String!, $contains: String!) {
+            artists (
+              filter: {
+                name: {
+                  contains: $contains
+                }
+              }
+              id: $id
+            ) {
+              edges {
+                node {
+                  id
+                  name
+                  performances {
+                    edges {
+                      node {
+                        venue
+                        recordings {
+                          edges {
+                            node {
+                              source
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ';
 
-        $result = GraphQL::executeQuery($schema, $query, null, 'contextTest');
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            contextValue: 'contextTest',
+            variableValues: [
+                'id' => '1',
+                'contains' => 'dead',
+            ],
+        );
 
         $data = $result->toArray()['data'];
 

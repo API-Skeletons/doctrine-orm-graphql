@@ -89,11 +89,18 @@ class EntityFilterTest extends AbstractTest
             ]),
         ]);
 
-        $query = '{
-            artists ( moreFilters: { performanceCount_gte: 3 } ) {
+        $query = '
+          {
+            artists (
+              moreFilters: {
+                performanceCount_gte: 3
+              }
+            ) {
               edges {
                 node {
-                  id name performanceCount
+                  id
+                  name
+                  performanceCount
                 }
               }
             }

@@ -32,7 +32,7 @@ class ResolveEntityFactory
     ) {
     }
 
-    public function get(Entity $entity, string $eventName): Closure
+    public function get(Entity $entity, string|null $eventName): Closure
     {
         return function ($objectValue, array $args, $context, ResolveInfo $info) use ($entity, $eventName) {
             $entityClass        = $entity->getEntityClass();
@@ -62,7 +62,7 @@ class ResolveEntityFactory
     public function buildPagination(
         Entity $entity,
         QueryBuilder $queryBuilder,
-        string $eventName,
+        string|null $eventName,
         mixed ...$resolve,
     ): array {
         $paginationFields = [
@@ -102,13 +102,15 @@ class ResolveEntityFactory
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
          */
-        $this->eventDispatcher->dispatch(
-            new QueryBuilderEvent(
-                $queryBuilder,
-                $eventName,
-                ...$resolve,
-            ),
-        );
+        if ($eventName) {
+            $this->eventDispatcher->dispatch(
+                new QueryBuilderEvent(
+                    $queryBuilder,
+                    $eventName,
+                    ...$resolve,
+                ),
+            );
+        }
 
         $edgesAndCursors = $this->buildEdgesAndCursors($queryBuilder, $offsetAndLimit, $paginationFields);
 

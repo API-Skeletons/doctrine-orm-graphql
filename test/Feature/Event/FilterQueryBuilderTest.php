@@ -23,7 +23,7 @@ class FilterQueryBuilderTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager());
         $driver->get(EventDispatcher::class)->subscribeTo(
-            'filter.querybuilder',
+            'artist.querybuilder',
             function (QueryBuilderEvent $event): void {
                 $this->assertInstanceOf(QueryBuilder::class, $event->getQueryBuilder());
 
@@ -44,16 +44,44 @@ class FilterQueryBuilderTest extends AbstractTest
                         'args' => [
                             'filter' => $driver->filter(Artist::class),
                         ],
-                        'resolve' => $driver->resolve(Artist::class),
+                        'resolve' => $driver->resolve(Artist::class, 'artist.querybuilder'),
                     ],
                 ],
             ]),
         ]);
 
-        $query = '{
-            artist (filter: { name: { contains: "dead" } } )
-                { edges { node { id name performances { edges { node { venue recordings { edges { node { source } } } } } } } } }
-        }';
+        $query = '
+          {
+            artist (
+              filter: {
+                name: {
+                  contains: "dead"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                  name
+                  performances {
+                    edges {
+                      node {
+                        venue
+                        recordings {
+                          edges {
+                            node {
+                              source
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ';
 
         GraphQL::executeQuery($schema, $query);
     }
