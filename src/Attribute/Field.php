@@ -21,7 +21,7 @@ class Field
      */
     public function __construct(
         protected string $group = 'default',
-        protected string|null $strategy = null,
+        protected string|null $hydratorStrategy = null,
         protected string|null $description = null,
         protected string|null $type = null,
         private array $excludeFilters = [],
@@ -34,9 +34,9 @@ class Field
         return $this->group;
     }
 
-    public function getStrategy(): string|null
+    public function getHydratorStrategy(): string|null
     {
-        return $this->strategy;
+        return $this->hydratorStrategy;
     }
 
     public function getDescription(): string|null

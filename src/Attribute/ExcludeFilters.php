@@ -20,7 +20,7 @@ trait ExcludeFilters
     public function getExcludeFilters(): array
     {
         if ($this->includeFilters && $this->excludeFilters) {
-            throw new Exception('includeCriteria and excludeCriteria are mutually exclusive.');
+            throw new Exception('includeFilters and excludeFilters are mutually exclusive.');
         }
 
         if ($this->includeFilters) {

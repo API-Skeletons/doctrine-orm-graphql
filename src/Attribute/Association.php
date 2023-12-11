@@ -21,11 +21,11 @@ class Association
      */
     public function __construct(
         protected string $group = 'default',
-        protected string|null $strategy = null,
+        protected string|null $hydratorStrategy = null,
         protected string|null $description = null,
         protected array $excludeFilters = [],
         protected array $includeFilters = [],
-        protected string|null $filterCriteriaEventName = null,
+        protected string|null $criteriaEventName = null,
         protected int|null $limit = null,
     ) {
     }
@@ -40,9 +40,9 @@ class Association
         return $this->group;
     }
 
-    public function getStrategy(): string|null
+    public function getHydratorStrategy(): string|null
     {
-        return $this->strategy;
+        return $this->hydratorStrategy;
     }
 
     public function getDescription(): string|null
@@ -50,8 +50,8 @@ class Association
         return $this->description;
     }
 
-    public function getFilterCriteriaEventName(): string|null
+    public function getCriteriaEventName(): string|null
     {
-        return $this->filterCriteriaEventName;
+        return $this->criteriaEventName;
     }
 }

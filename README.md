@@ -288,7 +288,7 @@ deletes then you would want to filter out deleted rows from an association.
 
 ```php
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterCriteria;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria;
 use App\ORM\Entity\Artist;
 use League\Event\EventDispatcher;
 
@@ -308,7 +308,7 @@ class Artist
 // Add a listener to your driver
 $driver->get(EventDispatcher::class)->subscribeTo(
     Artist::class . '.performances.filterCriteria',
-    function (FilterCriteria $event): void {
+    function (Criteria $event): void {
         $event->getCriteria()->andWhere(
             $event->getCriteria()->expr()->eq('isDeleted', false)
         );

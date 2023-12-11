@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
-use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Criteria as DoctrineCriteria;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\HasEventName;
 
-class FilterCriteria implements
+/**
+ * This event is dispatched when a Doctrine Criteria is created.
+ * Define an event using the Association::$criteriaEventName
+ */
+class Criteria implements
     HasEventName
 {
     /** @param mixed[] $args */
     public function __construct(
-        protected Criteria $criteria,
+        protected DoctrineCriteria $criteria,
         protected string $eventName,
         protected mixed $objectValue,
         protected array $args,
@@ -27,7 +31,7 @@ class FilterCriteria implements
         return $this->eventName;
     }
 
-    public function getCriteria(): Criteria
+    public function getCriteria(): DoctrineCriteria
     {
         return $this->criteria;
     }

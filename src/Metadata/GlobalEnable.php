@@ -37,10 +37,10 @@ final class GlobalEnable extends AbstractMetadataFactory
                 'entityClass' => $entityClass,
                 'byValue' => $byValue,
                 'limit' => 0,
-                'namingStrategy' => null,
+                'hydratorNamingStrategy' => null,
                 'fields' => [],
                 'filters' => [],
-                'excludeCriteria' => [],
+                'excludeFilters' => [],
                 'description' => $entityClass,
                 'typeName' => $this->getTypeName($entityClass),
             ];
@@ -69,7 +69,7 @@ final class GlobalEnable extends AbstractMetadataFactory
                 'description' => $fieldName,
                 'type' => $entityClassMetadata->getTypeOfField($fieldName),
                 'strategy' => $this->getDefaultStrategy($entityClassMetadata->getTypeOfField($fieldName)),
-                'excludeCriteria' => [],
+                'excludeFilters' => [],
             ];
         }
     }
@@ -84,9 +84,9 @@ final class GlobalEnable extends AbstractMetadataFactory
             }
 
             $this->metadata[$entityClass]['fields'][$associationName] = [
-                'excludeCriteria' => [],
+                'excludeFilters' => [],
                 'description' => $associationName,
-                'filterCriteriaEventName' => null,
+                'criteriaEventName' => null,
                 'strategy' => Strategy\AssociationDefault::class,
             ];
         }

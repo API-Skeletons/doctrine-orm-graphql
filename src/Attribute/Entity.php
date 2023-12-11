@@ -52,7 +52,7 @@ final class Entity
         string|null $description = null,
         private string|null $typeName = null,
         array $hydratorFilters = [],
-        private string|null $namingStrategy = null,
+        private string|null $hydratorNamingStrategy = null,
         private array $excludeFilters = [],
         private array $includeFilters = [],
     ) {
@@ -94,8 +94,8 @@ final class Entity
         return $this->hydratorFilters;
     }
 
-    public function getNamingStrategy(): string|null
+    public function getHydratorNamingStrategy(): string|null
     {
-        return $this->namingStrategy;
+        return $this->hydratorNamingStrategy;
     }
 }
