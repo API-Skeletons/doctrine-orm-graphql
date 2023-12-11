@@ -45,7 +45,7 @@ class Driver extends AbstractContainer
      */
     public function filter(string $entityClass): object
     {
-        return $this->get(Criteria\CriteriaFactory::class)->get(
+        return $this->get(Filter\FilterFactory::class)->get(
             $this->get(Type\TypeManager::class)
                 ->build(Type\Entity::class, $entityClass),
         );

@@ -18,8 +18,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[GraphQL\Entity(description: 'User', typeName: 'user')]
 #[GraphQL\Entity(description: 'User', typeName: 'user', group: 'testNonDefaultGroup')]
-#[GraphQL\Entity(description: 'User', typeName: 'user', group: 'testPasswordFilter', filters: ['password' => ['filter' => Password::class]])]
-#[GraphQL\Entity(group: 'NamingStrategyTest', namingStrategy: CustomNamingStrategy::class)]
+#[GraphQL\Entity(description: 'User', typeName: 'user', group: 'testPasswordFilter', hydratorFilters: ['password' => ['filter' => Password::class]])]
+#[GraphQL\Entity(group: 'NamingStrategyTest', hydratorNamingStrategy: CustomNamingStrategy::class)]
 #[GraphQL\Entity(group: 'CustomFieldStrategyTest')]
 #[GraphQL\Entity(group: 'InputFactoryTest')]
 #[ORM\Entity]
@@ -29,7 +29,7 @@ class User
     #[GraphQL\Field(description: 'User name', group: 'testNonDefaultGroup')]
     #[GraphQL\Field(description: 'User name', group: 'testPasswordFilter')]
     #[GraphQL\Field(group: 'NamingStrategyTest')]
-    #[GraphQL\Field(group: 'CustomFieldStrategyTest', strategy: ToBoolean::class)]
+    #[GraphQL\Field(group: 'CustomFieldStrategyTest', hydratorStrategy: ToBoolean::class)]
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
@@ -56,7 +56,7 @@ class User
 
     /** @var Collection<id, Recording> */
     #[GraphQL\Association(description: 'Recordings')]
-    #[GraphQL\Association(group: 'CustomFieldStrategyTest', strategy: AssociationDefault::class)]
+    #[GraphQL\Association(group: 'CustomFieldStrategyTest', hydratorStrategy: AssociationDefault::class)]
     #[ORM\ManyToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording', inversedBy: 'users')]
     #[ORM\JoinTable(name: 'RecordingToUser')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]

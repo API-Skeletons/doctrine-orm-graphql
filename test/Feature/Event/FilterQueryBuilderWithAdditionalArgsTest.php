@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use GraphQL\GraphQL;
@@ -25,7 +25,7 @@ class FilterQueryBuilderWithAdditionalArgsTest extends AbstractTest
         $driver = new Driver($this->getEntityManager());
         $driver->get(EventDispatcher::class)->subscribeTo(
             'filter.querybuilder',
-            function (FilterQueryBuilder $event): void {
+            function (QueryBuilder $event): void {
                 $event->getQueryBuilder()
                     ->andWhere($event->getQueryBuilder()->expr()->eq('entity.id', $event->getArgs()['id']));
 

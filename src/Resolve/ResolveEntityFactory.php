@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ArrayObject;
 use Closure;
@@ -32,15 +32,15 @@ class ResolveEntityFactory
     public function get(Entity $entity, string $eventName): Closure
     {
         return function ($objectValue, array $args, $context, ResolveInfo $info) use ($entity, $eventName) {
-            $entityClass = $entity->getEntityClass();
-            $filters     = new Filters();
+            $entityClass        = $entity->getEntityClass();
+            $queryBuilderFilter = new QueryBuilderFilter();
 
             $queryBuilder = $this->entityManager->createQueryBuilder();
             $queryBuilder->select('entity')
                 ->from($entityClass, 'entity');
 
             if (isset($args['filter'])) {
-                $filters->applyToQueryBuilder($args['filter'], $queryBuilder);
+                $queryBuilderFilter->apply($args['filter'], $queryBuilder);
             }
 
             return $this->buildPagination(
@@ -100,7 +100,7 @@ class ResolveEntityFactory
          * Include all resolve variables.
          */
         $this->eventDispatcher->dispatch(
-            new FilterQueryBuilder(
+            new QueryBuilderEvent(
                 $queryBuilder,
                 $eventName,
                 ...$resolve,

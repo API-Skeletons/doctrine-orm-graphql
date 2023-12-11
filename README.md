@@ -248,7 +248,7 @@ Each connection may have a unique event name.  `Entity::class . '.filterQueryBui
 Pass as the second parameter to `$driver->resolve()`.
 
 ```php
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
 use App\ORM\Entity\Artist;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
@@ -271,7 +271,7 @@ $schema = new Schema([
 ]);
 
 $driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.filterQueryBuilder',
-    function(FilterQueryBuilder $event) {
+    function(QueryBuilder $event) {
         $event->getQueryBuilder()
             ->innerJoin('entity.user', 'user')
             ->andWhere($event->getQueryBuilder()->expr()->eq('user.id', ':userId'))

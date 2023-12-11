@@ -6,7 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use GraphQL\GraphQL;
@@ -53,7 +53,7 @@ class EntityFilterTest extends AbstractTest
 
         $driver->get(EventDispatcher::class)->subscribeTo(
             Artist::class . '.filterQueryBuilder',
-            static function (FilterQueryBuilder $event): void {
+            static function (QueryBuilder $event): void {
                 if (! isset($event->getArgs()['moreFilters']['performanceCount_gte'])) {
                     return;
                 }

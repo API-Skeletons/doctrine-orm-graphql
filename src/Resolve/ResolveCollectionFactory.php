@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters as FiltersDef;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use ArrayObject;
@@ -75,7 +76,7 @@ class ResolveCollectionFactory
                 $args['pagination'] ?? [],
                 $collection,
                 $this->buildCriteria($args['filter'] ?? [], $collectionMetadata),
-                $this->metadata[$entityClassName]['fields'][$info->fieldName]['filterCriteriaEventName'],
+                $this->metadata[$entityClassName]['fields'][$info->fieldName]['criteriaEventName'],
                 $source,
                 $args,
                 $context,
@@ -93,25 +94,25 @@ class ResolveCollectionFactory
         foreach ($filter as $field => $filters) {
             foreach ($filters as $filter => $value) {
                 switch ($filter) {
-                    case FiltersDef::IN:
-                    case FiltersDef::NOTIN:
-                        $value = $this->parseArrayValue($collectionMetadata, $field, $value);
+                    case Filters::IN:
+                    case Filters::NOTIN:
+//                        $value = $this->parseArrayValue($collectionMetadata, $field, $value);
                         $criteria->andWhere($criteria->expr()->$filter($field, $value));
                         break;
-                    case FiltersDef::ISNULL:
+                    case Filters::ISNULL:
                         $criteria->andWhere($criteria->expr()->$filter($field));
                         break;
-                    case FiltersDef::BETWEEN:
-                        $value = $this->parseArrayValue($collectionMetadata, $field, $value);
+                    case Filters::BETWEEN:
+ //                      $value = $this->parseArrayValue($collectionMetadata, $field, $value);
 
                         $criteria->andWhere($criteria->expr()->gte($field, $value['from']));
                         $criteria->andWhere($criteria->expr()->lte($field, $value['to']));
                         break;
-                    case FiltersDef::SORT:
+                    case Filters::SORT:
                         $orderBy[$field] = $value;
                         break;
                     default:
-                        $value = $this->parseValue($collectionMetadata, $field, $value);
+ //                    $value = $this->parseValue($collectionMetadata, $field, $value);
                         $criteria->andWhere($criteria->expr()->$filter($field, $value));
                         break;
                 }
@@ -136,7 +137,7 @@ class ResolveCollectionFactory
         array $pagination,
         PersistentCollection $collection,
         Criteria $criteria,
-        string|null $filterCriteriaEventName,
+        string|null $criteriaEventName,
         mixed ...$resolve,
     ): array {
         $paginationFields = [
@@ -176,11 +177,11 @@ class ResolveCollectionFactory
         /**
          * Fire the event dispatcher using the passed event name.
          */
-        if ($filterCriteriaEventName) {
+        if ($criteriaEventName) {
             $this->eventDispatcher->dispatch(
-                new Criteria(
+                new CriteriaEvent(
                     $criteria,
-                    $filterCriteriaEventName,
+                    $criteriaEventName,
                     ...$resolve,
                 ),
             );

@@ -100,9 +100,9 @@ trait Services
                 },
             )
             ->set(
-                Criteria\CriteriaFactory::class,
+                Filter\FilterFactory::class,
                 static function (AbstractContainer $container) {
-                    return new Criteria\CriteriaFactory(
+                    return new Filter\FilterFactory(
                         $container->get(Config::class),
                         $container->get(EntityManager::class),
                         $container->get(Type\TypeManager::class),

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
-use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\HasEventName;
 
-class FilterQueryBuilder implements
+class QueryBuilder implements
     HasEventName
 {
     /**
@@ -16,7 +16,7 @@ class FilterQueryBuilder implements
      * @param mixed[]  $args
      */
     public function __construct(
-        protected QueryBuilder $queryBuilder,
+        protected DoctrineQueryBuilder $queryBuilder,
         protected string $eventName,
         protected mixed $objectValue,
         protected array $args,
@@ -30,7 +30,7 @@ class FilterQueryBuilder implements
         return $this->eventName;
     }
 
-    public function getQueryBuilder(): QueryBuilder
+    public function getQueryBuilder(): DoctrineQueryBuilder
     {
         return $this->queryBuilder;
     }

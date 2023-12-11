@@ -7,8 +7,8 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Buildable;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\CriteriaFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
@@ -36,7 +36,7 @@ class Entity implements Buildable
 
     protected Config $config;
 
-    protected CriteriaFactory $criteriaFactory;
+    protected FilterFactory $filterFactory;
 
     protected EntityManager $entityManager;
 
@@ -58,7 +58,7 @@ class Entity implements Buildable
 
         $this->collectionFactory = $container->get(ResolveCollectionFactory::class);
         $this->config            = $container->get(Config::class);
-        $this->criteriaFactory   = $container->get(CriteriaFactory::class);
+        $this->filterFactory     = $container->get(FilterFactory::class);
         $this->entityManager     = $container->get(EntityManager::class);
         $this->eventDispatcher   = $container->get(EventDispatcher::class);
         $this->fieldResolver     = $container->get(FieldResolver::class);
@@ -213,7 +213,7 @@ class Entity implements Buildable
                                 $entity->getGraphQLType(),
                             ),
                             'args' => [
-                                'filter' => $this->criteriaFactory->get(
+                                'filter' => $this->filterFactory->get(
                                     $entity,
                                     $this,
                                     $associationName,
