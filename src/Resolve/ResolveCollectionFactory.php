@@ -36,25 +36,6 @@ class ResolveCollectionFactory
     ) {
     }
 
-    public function parseValue(ClassMetadata $metadata, string $field, mixed $value): mixed
-    {
-        /** @psalm-suppress UndefinedDocblockClass */
-        $fieldMapping = $metadata->getFieldMapping($field);
-        $graphQLType  = $this->typeManager->get($fieldMapping['type']);
-
-        return $graphQLType->parseValue($graphQLType->serialize($value));
-    }
-
-    /** @param mixed[] $value */
-    public function parseArrayValue(ClassMetadata $metadata, string $field, array $value): mixed
-    {
-        foreach ($value as $key => $val) {
-            $value[$key] = $this->parseValue($metadata, $field, $val);
-        }
-
-        return $value;
-    }
-
     public function get(Entity $entity): Closure
     {
         return function ($source, array $args, $context, ResolveInfo $info) {
@@ -93,18 +74,15 @@ class ResolveCollectionFactory
 
         foreach ($filter as $field => $filters) {
             foreach ($filters as $filter => $value) {
-                switch ($filter) {
+                switch (Filters::from($filter)) {
                     case Filters::IN:
                     case Filters::NOTIN:
-//                        $value = $this->parseArrayValue($collectionMetadata, $field, $value);
                         $criteria->andWhere($criteria->expr()->$filter($field, $value));
                         break;
                     case Filters::ISNULL:
                         $criteria->andWhere($criteria->expr()->$filter($field));
                         break;
                     case Filters::BETWEEN:
- //                      $value = $this->parseArrayValue($collectionMetadata, $field, $value);
-
                         $criteria->andWhere($criteria->expr()->gte($field, $value['from']));
                         $criteria->andWhere($criteria->expr()->lte($field, $value['to']));
                         break;
@@ -112,7 +90,6 @@ class ResolveCollectionFactory
                         $orderBy[$field] = $value;
                         break;
                     default:
- //                    $value = $this->parseValue($collectionMetadata, $field, $value);
                         $criteria->andWhere($criteria->expr()->$filter($field, $value));
                         break;
                 }

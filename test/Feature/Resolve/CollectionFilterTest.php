@@ -120,16 +120,79 @@ class CollectionFilterTest extends AbstractTest
 
     public function testbetween(): void
     {
-        $query  = '{ artist { edges { node { performances ( filter: {id: { between: { from: 2, to: 3 } } } ) { edges { node { id } } } } } } }';
-        $result = GraphQL::executeQuery($this->schema, $query);
+        $query  = '
+          query BetweenTest($from: Int!, $to: Int!) {
+            artist {
+              edges {
+                node {
+                  performances ( filter: {
+                    id: {
+                      between: {
+                        from: $from, to: $to
+                      }
+                    }
+                  } ) {
+                    edges {
+                      node {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ';
+        $result = GraphQL::executeQuery(
+            schema: $this->schema,
+            source: $query,
+            variableValues: [
+                'from' => 2,
+                'to' => 3,
+            ],
+            operationName: 'BetweenTest',
+        );
 
         $data = $result->toArray()['data'];
 
         $this->assertEquals(2, count($data['artist']['edges'][0]['node']['performances']['edges']));
         $this->assertEquals(2, $data['artist']['edges'][0]['node']['performances']['edges'][0]['node']['id']);
 
-        $query  = '{ artist { edges { node { performances ( filter: {performanceDate: { between: { from: "1995-02-21T00:00:00+00:00" to: "1995-07-09T00:00:00+00:00" } } } ) { edges { node { id } } } } } } }';
-        $result = GraphQL::executeQuery($this->schema, $query);
+        $query  = '
+          query BetweenDatesTest ($from: DateTime!, $to: DateTime!) {
+            artist {
+              edges {
+                node {
+                  performances (
+                    filter: {
+                      performanceDate: {
+                        between: {
+                          from: $from
+                          to: $to
+                        }
+                      }
+                    }
+                  ) {
+                    edges {
+                      node {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ';
+        $result = GraphQL::executeQuery(
+            schema: $this->schema,
+            source: $query,
+            variableValues: [
+                'from' => '1995-02-21T00:00:00+00:00',
+                'to' => '1995-07-09T00:00:00+00:00',
+            ],
+            operationName: 'BetweenDatesTest',
+        );
 
         $data = $result->toArray()['data'];
 

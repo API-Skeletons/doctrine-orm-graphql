@@ -29,7 +29,7 @@ class HydratorFactory extends AbstractContainer
 {
     public function __construct(protected EntityManager $entityManager, protected TypeManager $typeManager)
     {
-        // Register project defaults
+        // Register default strategies
         $this
             ->set(Strategy\AssociationDefault::class, new Strategy\AssociationDefault())
             ->set(Strategy\FieldDefault::class, new Strategy\FieldDefault())
@@ -56,20 +56,20 @@ class HydratorFactory extends AbstractContainer
         if ($hydrator instanceof StrategyEnabledInterface) {
             foreach ($config['fields'] as $fieldName => $fieldMetadata) {
                 assert(
-                    in_array(StrategyInterface::class, class_implements($fieldMetadata['strategy'])),
+                    in_array(StrategyInterface::class, class_implements($fieldMetadata['hydratorStrategy'])),
                     'Strategy must implement ' . StrategyInterface::class,
                 );
 
-                $hydrator->addStrategy($fieldName, $this->get($fieldMetadata['strategy']));
+                $hydrator->addStrategy($fieldName, $this->get($fieldMetadata['hydratorStrategy']));
             }
         }
 
         // Create filters and assign to hydrator
         if ($hydrator instanceof Filter\FilterEnabledInterface) {
-            foreach ($config['filters'] as $name => $filterConfig) {
+            foreach ($config['hydratorFilters'] as $name => $filterConfig) {
                 // Default filters to AND
                 $condition   = $filterConfig['condition'] ?? Filter\FilterComposite::CONDITION_AND;
-                $filterClass = $filterConfig['filter'];
+                $filterClass = $filterConfig['hydratorFilters'];
                 assert(
                     in_array(Filter\FilterInterface::class, class_implements($filterClass)),
                     'Filter must implement ' . StrategyInterface::class,
@@ -80,12 +80,12 @@ class HydratorFactory extends AbstractContainer
         }
 
         // Create naming strategy and assign to hydrator
-        if ($hydrator instanceof NamingStrategyEnabledInterface && $config['namingStrategy']) {
-            $namingStrategyClass = $config['namingStrategy'];
+        if ($hydrator instanceof NamingStrategyEnabledInterface && $config['hydratorNamingStrategy']) {
+            $namingStrategyClass = $config['hydratorNamingStrategy'];
 
             assert(
                 in_array(NamingStrategyInterface::class, class_implements($namingStrategyClass)),
-                'Naming Strategy must implement ' . NamingStrategyInterface::class,
+                'Hydrator Naming Strategy must implement ' . NamingStrategyInterface::class,
             );
 
             $hydrator->setNamingStrategy($this->get($namingStrategyClass));
