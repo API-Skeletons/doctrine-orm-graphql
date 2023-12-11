@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Type\InputObjectType;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\InputObjectType;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\ORM\EntityManager;
@@ -38,6 +38,7 @@ class FilterFactory
 
     /**
      * Return an InputObjectType of filters for the target entity
+     *
      * @param mixed[]|null $associationMetadata
      */
     public function get(
@@ -59,7 +60,7 @@ class FilterFactory
         $excludedFilters = array_unique(
             array_merge(
                 Filters::fromArray($entityMetadata['excludeFilters'] ?? []),
-                Filters::fromArray($this->config->getExcludeFilers()),
+                Filters::fromArray($this->config->getExcludeFilters()),
             ),
             SORT_REGULAR,
         );

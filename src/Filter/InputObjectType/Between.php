@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Type;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType;
 
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;

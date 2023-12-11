@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Type\Between;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Between;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;

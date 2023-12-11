@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Type;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
-use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
 
 /**
  * This class is used to create an InputObjectType of filters for a field
+ * or association.  The generic term field is used for both here.
  */
-class InputObjectType extends GraphQLInputObjectType
+class Field extends InputObjectType
 {
     /** @param Filters[] $allowedFilters */
     public function __construct(
