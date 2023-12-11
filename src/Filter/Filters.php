@@ -12,6 +12,9 @@ use GraphQL\Type\Definition\Type;
 use function array_map;
 use function is_string;
 
+/**
+ * This handles all available filters
+ */
 enum Filters: string
 {
     case EQ         = 'eq';

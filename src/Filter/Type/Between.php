@@ -11,6 +11,9 @@ use GraphQL\Type\Definition\ScalarType;
 
 use function uniqid;
 
+/**
+ * This Type is a special case filter that takes two arguments
+ */
 class Between extends InputObjectType
 {
     public function __construct(ScalarType|ListOfType $type)
