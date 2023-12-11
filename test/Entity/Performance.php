@@ -22,7 +22,7 @@ use Doctrine\ORM\Mapping as ORM;
     Filters::CONTAINS,
 ])]
 #[GraphQL\Entity(
-    group: 'IncludeExcludeFilltersTest',
+    group: 'IncludeExcludeFiltersTest',
     excludeFilters: [Filters::IN],
     includeFilters: [
         Filters::EQ,

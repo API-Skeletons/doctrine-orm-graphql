@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Criteria;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
@@ -13,12 +13,12 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
-class CriteriaTypeCollisionTest extends AbstractTest
+class FiltersTypeCollisionTest extends AbstractTest
 {
-    public function testCriteriaTypeCollision(): void
+    public function testFiltersTypeCollision(): void
     {
         $driver1 = new Driver($this->getEntityManager());
-        $driver2 = new Driver($this->getEntityManager(), new Config(['group' => 'ExcludeCriteriaTest']));
+        $driver2 = new Driver($this->getEntityManager(), new Config(['group' => 'ExcludeFiltersTest']));
 
         $driver2->set(TypeManager::class, $driver1->get(TypeManager::class));
 

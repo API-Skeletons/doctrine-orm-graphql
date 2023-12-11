@@ -69,7 +69,7 @@ class HydratorFactory extends AbstractContainer
             foreach ($config['hydratorFilters'] as $name => $filterConfig) {
                 // Default filters to AND
                 $condition   = $filterConfig['condition'] ?? Filter\FilterComposite::CONDITION_AND;
-                $filterClass = $filterConfig['hydratorFilters'];
+                $filterClass = $filterConfig['filter'];
                 assert(
                     in_array(Filter\FilterInterface::class, class_implements($filterClass)),
                     'Filter must implement ' . StrategyInterface::class,

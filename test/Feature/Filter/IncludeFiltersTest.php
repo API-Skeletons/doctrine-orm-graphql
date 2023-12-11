@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Criteria;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
@@ -12,11 +12,11 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
-class IncludeCriteriaTest extends AbstractTest
+class IncludeFiltersTest extends AbstractTest
 {
-    public function testExcludeCriteria(): void
+    public function testIncludeFilters(): void
     {
-        $config = new Config(['group' => 'IncludeCriteriaTest']);
+        $config = new Config(['group' => 'IncludeFiltersTest']);
 
         $driver = new Driver($this->getEntityManager(), $config);
 
@@ -37,41 +37,137 @@ class IncludeCriteriaTest extends AbstractTest
         ]);
 
         // Test entity level included filters
-        $query  = '{ performances (filter: { venue: {contains: "Fillmore" } } ) { edges { node { venue } } } }';
+        $query  = '
+          {
+            performances (
+              filter: {
+                venue: {
+                  contains: "Fillmore"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  venue
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
         $data   = $result->toArray()['data'];
         $this->assertEquals('Fillmore Auditorium', $data['performances']['edges'][0]['node']['venue']);
 
-        $query  = '{ performances (filter: { venue: {eq: "Fillmore Auditorium" } } ) { edges { node { venue } } } }';
+        $query  = '
+          {
+            performances (
+              filter: {
+                venue: {
+                  eq: "Fillmore Auditorium"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  venue
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
         $data   = $result->toArray()['data'];
         $this->assertEquals('Fillmore Auditorium', $data['performances']['edges'][0]['node']['venue']);
 
         // Test entity level excluded filters
-        $query  = '{ performances (filter: { venue: {in: ["Fillmore Auditorium"] } } ) { edges { node { venue } } } }';
+        $query  = '
+          {
+            performances (
+              filter: {
+                venue: {
+                  in: ["Fillmore Auditorium"]
+                }
+              }
+            ) {
+              edges {
+                node {
+                  venue
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "in" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeCriteriaTest_filter_venue_filters".', $error->getMessage());
+            $this->assertEquals('Field "in" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeFiltersTest_filter_venue_filters".', $error->getMessage());
         }
 
         // Test entity>field level included filters
-        $query  = '{ performances (filter: { city: {eq: "Salt Lake City" } } ) { edges { node { city } } } }';
+        $query  = '
+          {
+            performances (
+              filter: {
+                city: {
+                  eq: "Salt Lake City"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  city
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
         $data   = $result->toArray()['data'];
         $this->assertEquals('Salt Lake City', $data['performances']['edges'][0]['node']['city']);
 
         // Test entity>field level excluded filters
-        $query  = '{ performances (filter: { city: {contains: "Salt Lake City" } } ) { edges { node { city } } } }';
+        $query  = '
+          {
+            performances (
+              filter: {
+                city: {
+                  contains: "Salt Lake City"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  city
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "contains" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeCriteriaTest_filter_city_filters".', $error->getMessage());
+            $this->assertEquals('Field "contains" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeFiltersTest_filter_city_filters".', $error->getMessage());
         }
 
         // Test entity>field level included filters excluded by field level exclude
-        $query  = '{ performances (filter: { state: { eq: "UT" } } ) { edges { node { state } } } }';
+        $query  = '
+          {
+            performances (
+              filter: {
+                state: {
+                  eq: "UT"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  state
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeCriteriaTest_filter_state_filters". Did you mean "neq"?', $error->getMessage());
+            $this->assertEquals('Field "eq" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeFiltersTest_filter_state_filters". Did you mean "neq"?', $error->getMessage());
         }
 
         // Test entity>association level included filters
@@ -131,7 +227,7 @@ class IncludeCriteriaTest extends AbstractTest
         }';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeCriteriaTest_recordings_filter_source_filters".', $error->getMessage());
+            $this->assertEquals('Field "eq" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeFiltersTest_recordings_filter_source_filters".', $error->getMessage());
         }
     }
 }
