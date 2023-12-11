@@ -14,6 +14,9 @@ use function is_resource;
 use function is_string;
 use function stream_get_contents;
 
+/**
+ * This class is used to create a Blob type
+ */
 class Blob extends ScalarType
 {
     public string|null $description = 'A binary file base64 encoded.';

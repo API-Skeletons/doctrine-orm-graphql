@@ -7,7 +7,10 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 use ArrayObject;
 use League\Event\HasEventName;
 
-class BuildMetadata implements
+/**
+ * This event is fired when the metadta is created
+ */
+class Metadata implements
     HasEventName
 {
     public function __construct(

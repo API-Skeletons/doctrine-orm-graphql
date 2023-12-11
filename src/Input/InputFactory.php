@@ -19,6 +19,9 @@ use function count;
 use function in_array;
 use function uniqid;
 
+/**
+ * Create an input object type for a mutation
+ */
 class InputFactory extends AbstractContainer
 {
     public function __construct(

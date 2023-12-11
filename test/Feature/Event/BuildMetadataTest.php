@@ -6,7 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\BuildMetadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ArrayObject;
 use League\Event\EventDispatcher;
@@ -25,7 +25,7 @@ class BuildMetadataTest extends AbstractTest
 
         $driver->get(EventDispatcher::class)->subscribeTo(
             'metadata.build',
-            static function (BuildMetadata $event) use ($test): void {
+            static function (Metadata $event) use ($test): void {
                 $metadata = $event->getMetadata();
 
                 $test->assertEquals('metadata.build', $event->eventName());
@@ -50,7 +50,7 @@ class BuildMetadataTest extends AbstractTest
 
         $driver->get(EventDispatcher::class)->subscribeTo(
             'metadata.build',
-            static function (BuildMetadata $event) use ($test): void {
+            static function (Metadata $event) use ($test): void {
                 $metadata = $event->getMetadata();
 
                 $test->assertEquals('metadata.build', $event->eventName());

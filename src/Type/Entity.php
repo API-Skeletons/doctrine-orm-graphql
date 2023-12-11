@@ -29,25 +29,20 @@ use function ksort;
 
 use const SORT_REGULAR;
 
+/**
+ * This class is used to build an ObjectType for an entity
+ */
 class Entity implements Buildable
 {
     /** @var mixed[]  */
     protected array $metadata;
-
     protected Config $config;
-
     protected FilterFactory $filterFactory;
-
     protected EntityManager $entityManager;
-
     protected EventDispatcher $eventDispatcher;
-
     protected FieldResolver $fieldResolver;
-
     protected HydratorFactory $hydratorFactory;
-
     protected ResolveCollectionFactory $collectionFactory;
-
     protected TypeManager $typeManager;
 
     /** @param mixed[] $params */

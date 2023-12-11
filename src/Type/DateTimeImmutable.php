@@ -12,6 +12,9 @@ use GraphQL\Type\Definition\ScalarType;
 
 use function is_string;
 
+/**
+ * This class is used to create a DateTimeImmutable type
+ */
 class DateTimeImmutable extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint

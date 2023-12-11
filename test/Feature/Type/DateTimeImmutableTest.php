@@ -128,6 +128,5 @@ class DateTimeImmutableTest extends AbstractTest
 
         $this->assertEquals(1, count($data['typetest']['edges']));
         $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
-
     }
 }

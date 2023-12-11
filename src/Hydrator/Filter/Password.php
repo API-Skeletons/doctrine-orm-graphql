@@ -8,6 +8,9 @@ use Laminas\Hydrator\Filter\FilterInterface;
 
 use function in_array;
 
+/**
+ * Filter out password fields
+ */
 class Password implements
     FilterInterface
 {

@@ -15,7 +15,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\PersistentCollection;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
@@ -24,6 +23,9 @@ use function base64_decode;
 use function base64_encode;
 use function count;
 
+/**
+ * Build a resolver for collections
+ */
 class ResolveCollectionFactory
 {
     public function __construct(
@@ -56,7 +58,7 @@ class ResolveCollectionFactory
                 $targetClassName,
                 $args['pagination'] ?? [],
                 $collection,
-                $this->buildCriteria($args['filter'] ?? [], $collectionMetadata),
+                $this->buildCriteria($args['filter'] ?? []),
                 $this->metadata[$entityClassName]['fields'][$info->fieldName]['criteriaEventName'],
                 $source,
                 $args,
@@ -67,7 +69,7 @@ class ResolveCollectionFactory
     }
 
     /** @param mixed[] $filter */
-    private function buildCriteria(array $filter, ClassMetadata $collectionMetadata): Criteria
+    protected function buildCriteria(array $filter): Criteria
     {
         $orderBy  = [];
         $criteria = Criteria::create();
@@ -108,7 +110,7 @@ class ResolveCollectionFactory
      *
      * @return mixed[]
      */
-    private function buildPagination(
+    protected function buildPagination(
         string $entityClassName,
         string $targetClassName,
         array $pagination,
@@ -225,8 +227,13 @@ class ResolveCollectionFactory
      *
      * @return array<string, int>
      */
-    protected function calculateOffsetAndLimit(string $associationName, string $entityClassName, string $targetClassName, array $paginationFields, int $itemCount): array
-    {
+    protected function calculateOffsetAndLimit(
+        string $associationName,
+        string $entityClassName,
+        string $targetClassName,
+        array $paginationFields,
+        int $itemCount,
+    ): array {
         $offset = 0;
 
         $limit            = $this->metadata[$targetClassName]['limit'];

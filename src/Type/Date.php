@@ -13,6 +13,9 @@ use GraphQL\Type\Definition\ScalarType;
 use function is_string;
 use function preg_match;
 
+/**
+ * This class is used to create a Date type
+ */
 class Date extends ScalarType
 {
     public string|null $description = 'The `Date` scalar type represents datetime data.'

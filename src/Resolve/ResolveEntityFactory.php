@@ -19,6 +19,9 @@ use League\Event\EventDispatcher;
 use function base64_decode;
 use function base64_encode;
 
+/**
+ * Build a resolver for entities
+ */
 class ResolveEntityFactory
 {
     public function __construct(

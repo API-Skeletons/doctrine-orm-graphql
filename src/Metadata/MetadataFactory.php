@@ -6,7 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\BuildMetadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
@@ -68,7 +68,7 @@ class MetadataFactory extends AbstractMetadataFactory
 
         // Fire the metadata.build event
         $this->eventDispatcher->dispatch(
-            new BuildMetadata($this->metadata, 'metadata.build'),
+            new Metadata($this->metadata, 'metadata.build'),
         );
 
         return $this->metadata;

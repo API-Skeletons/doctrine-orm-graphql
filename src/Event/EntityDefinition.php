@@ -7,6 +7,9 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 use ArrayObject;
 use League\Event\HasEventName;
 
+/**
+ * This event is fired each time an entity GraphQL type is created
+ */
 class EntityDefinition implements
     HasEventName
 {

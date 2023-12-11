@@ -8,6 +8,9 @@ use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\HasEventName;
 
+/**
+ * This event is fired when the QueryBuilder is created for an entity
+ */
 class QueryBuilder implements
     HasEventName
 {

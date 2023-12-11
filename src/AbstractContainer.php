@@ -13,6 +13,9 @@ use ReflectionException;
 use function assert;
 use function strtolower;
 
+/**
+ * Used in many places to create a container of types and services
+ */
 abstract class AbstractContainer implements ContainerInterface
 {
     /** @var mixed[] */

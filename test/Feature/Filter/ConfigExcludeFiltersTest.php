@@ -17,11 +17,13 @@ class ConfigExcludeFiltersTest extends AbstractTest
 {
     public function testConfigExcludeFilters(): void
     {
-        $config = new Config(['excludeFilters' => [
-            Filters::EQ,
-            Filters::NEQ,
-            Filters::CONTAINS,
-        ]]);
+        $config = new Config([
+            'excludeFilters' => [
+                Filters::EQ,
+                Filters::NEQ,
+                Filters::CONTAINS,
+            ],
+        ]);
 
         $driver = new Driver($this->getEntityManager(), $config);
 
