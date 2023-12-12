@@ -64,12 +64,12 @@ class GlobalEnableTest extends AbstractTest
         $this->assertTrue($driver->get(Config::class)->getGlobalEnable());
     }
 
-    public function testGlobalIgnoreFieldName(): void
+    public function testIgnoreFieldsFieldName(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config([
             'group' => 'globalEnable',
             'globalEnable' => true,
-            'globalIgnore' => ['name'],
+            'ignoreFields' => ['name'],
         ]));
 
         $schema = new Schema([
@@ -119,12 +119,12 @@ class GlobalEnableTest extends AbstractTest
         );
     }
 
-    public function testGlobalIgnoreAssociationName(): void
+    public function testIgnoreFieldsAssociationName(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config([
             'group' => 'globalEnable',
             'globalEnable' => true,
-            'globalIgnore' => ['performances'],
+            'ignoreFields' => ['performances'],
         ]));
 
         $schema = new Schema([

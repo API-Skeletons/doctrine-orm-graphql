@@ -46,7 +46,7 @@ class Config
     protected bool $globalEnable = false;
 
     /** @var string[] An array of field names to ignore when using globalEnable. */
-    protected array $globalIgnore = [];
+    protected array $ignoreFields = [];
 
     /**
      * @var bool|null When set to true, all entities will be extracted by value
@@ -149,18 +149,18 @@ class Config
         return $this->globalEnable;
     }
 
-    /** @param string[] $globalIgnore */
-    protected function setGlobalIgnore(array $globalIgnore): self
+    /** @param string[] $ignoreFields */
+    protected function setIgnoreFields(array $ignoreFields): self
     {
-        $this->globalIgnore = $globalIgnore;
+        $this->ignoreFields = $ignoreFields;
 
         return $this;
     }
 
     /** @return string[] */
-    public function getGlobalIgnore(): array
+    public function getIgnoreFields(): array
     {
-        return $this->globalIgnore;
+        return $this->ignoreFields;
     }
 
     protected function setGlobalByValue(bool|null $globalByValue): self

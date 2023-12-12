@@ -64,7 +64,7 @@ final class GlobalEnable extends AbstractMetadataFactory
         $entityClassMetadata = $this->entityManager->getMetadataFactory()->getMetadataFor($entityClass);
 
         foreach ($entityClassMetadata->getFieldNames() as $fieldName) {
-            if (in_array($fieldName, $this->config->getGlobalIgnore())) {
+            if (in_array($fieldName, $this->config->getIgnoreFields())) {
                 continue;
             }
 
@@ -82,7 +82,7 @@ final class GlobalEnable extends AbstractMetadataFactory
         $entityClassMetadata = $this->entityManager->getMetadataFactory()->getMetadataFor($entityClass);
 
         foreach ($entityClassMetadata->getAssociationNames() as $associationName) {
-            if (in_array($associationName, $this->config->getGlobalIgnore())) {
+            if (in_array($associationName, $this->config->getIgnoreFields())) {
                 continue;
             }
 
