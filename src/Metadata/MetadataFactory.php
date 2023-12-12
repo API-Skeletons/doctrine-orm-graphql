@@ -7,6 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
@@ -108,7 +109,7 @@ class MetadataFactory extends AbstractMetadataFactory
                 'hydratorNamingStrategy' => $instance->getHydratorNamingStrategy(),
                 'fields' => [],
                 'hydratorFilters' => $instance->getHydratorFilters(),
-                'excludeFilters' => $instance->getExcludeFilters(),
+                'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                 'description' => $instance->getDescription(),
                 'typeName' => $instance->getTypeName()
                     ? $this->appendGroupSuffix($instance->getTypeName()) :
@@ -149,7 +150,7 @@ class MetadataFactory extends AbstractMetadataFactory
                     'type' => $instance->getType() ?? $entityClassMetadata->getTypeOfField($fieldName),
                     'hydratorStrategy' => $instance->getHydratorStrategy() ??
                         $this->getDefaultStrategy($entityClassMetadata->getTypeOfField($fieldName)),
-                    'excludeFilters' => $instance->getExcludeFilters(),
+                    'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                 ];
 
                 $this->metadata[$reflectionClass->getName()]['fields'][$fieldName] = $fieldMetadata;
@@ -193,7 +194,7 @@ class MetadataFactory extends AbstractMetadataFactory
                 $associationMetadata = [
                     'limit' => $instance->getLimit(),
                     'description' => $instance->getDescription(),
-                    'excludeFilters' => $instance->getExcludeFilters(),
+                    'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                     'criteriaEventName' => $instance->getCriteriaEventName(),
                     'hydratorStrategy' => $instance->getHydratorStrategy() ??
                         Strategy\AssociationDefault::class,

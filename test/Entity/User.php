@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Filter\Password;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToBoolean;
@@ -22,6 +23,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'NamingStrategyTest', hydratorNamingStrategy: CustomNamingStrategy::class)]
 #[GraphQL\Entity(group: 'CustomFieldStrategyTest')]
 #[GraphQL\Entity(group: 'InputFactoryTest')]
+#[GraphQL\Entity(group: 'StaticMetadata')]
 #[ORM\Entity]
 class User
 {
@@ -31,6 +33,7 @@ class User
     #[GraphQL\Field(group: 'NamingStrategyTest')]
     #[GraphQL\Field(group: 'CustomFieldStrategyTest', hydratorStrategy: ToBoolean::class)]
     #[GraphQL\Field(group: 'InputFactoryTest')]
+    #[GraphQL\Field(group: 'StaticMetadata')]
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
 
@@ -57,6 +60,7 @@ class User
     /** @var Collection<id, Recording> */
     #[GraphQL\Association(description: 'Recordings')]
     #[GraphQL\Association(group: 'CustomFieldStrategyTest', hydratorStrategy: AssociationDefault::class)]
+    #[GraphQL\Association(group: 'StaticMetadata', excludeFilters: [Filters::EQ])]
     #[ORM\ManyToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording', inversedBy: 'users')]
     #[ORM\JoinTable(name: 'RecordingToUser')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]

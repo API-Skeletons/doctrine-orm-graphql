@@ -96,4 +96,21 @@ enum Filters: string
 
         return $filters;
     }
+
+    /**
+     * Covert an array of enum values to an array of strings
+     *
+     * @param Filters[] $filters
+     *
+     * @return string[]
+     */
+    public static function toStringArray(array $filters): array
+    {
+        return array_map(
+            static function (Filters $filter) {
+                return $filter->value;
+            },
+            $filters,
+        );
+    }
 }

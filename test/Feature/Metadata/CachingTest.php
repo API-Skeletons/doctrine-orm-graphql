@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
@@ -28,36 +29,42 @@ class CachingTest extends AbstractTest
 
     public function testStaticMetadata(): void
     {
+        $driver            = new Driver($this->getEntityManager(), new Config(['group' => 'StaticMetadata']));
+        $generatedMetadata = $driver->get('metadata')->getArrayCopy();
+
         $metadata = [
             'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User' => [
                 'entityClass' => 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User',
-                'documentation' => '',
-                'byValue' => 1,
-                'namingStrategy' => null,
+                'byValue' => true,
+                'limit' => 0,
+                'description' => '',
+                'hydratorNamingStrategy' => null,
+                'hydratorFilters' => [],
+                'excludeFilters' => [],
+                'typeName' => 'ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_User_StaticMetadata',
                 'fields' => [
                     'name' => [
-                        'strategy' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault',
-                        'documentation' => '',
+                        'description' => null,
+                        'type' => 'string',
+                        'hydratorStrategy' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault',
+                        'excludeFilters' => [],
                     ],
                     'recordings' => [
-                        'strategy' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault',
-                        'excludeCriteria' => ['eq'],
-                        'documentation' => '',
+                        'limit' => null,
+                        'description' => null,
+                        'criteriaEventName' => null,
+                        'hydratorStrategy' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault',
+                        'excludeFilters' => ['eq'],
                     ],
                 ],
-
-                'strategies' => [
-                    'name' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault',
-                    'email' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault',
-                    'id' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToInteger',
-                    'recordings' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault',
-                ],
-                'filters' => [],
-                'typeName' => 'User',
             ],
         ];
 
-        $driver = new Driver($this->getEntityManager(), null, $metadata);
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'StaticMetadata']), $metadata);
+
+        $this->assertEquals($generatedMetadata, $metadata);
+        $this->assertEquals($generatedMetadata, $driver->get('metadata')->getArrayCopy());
+
         $this->assertInstanceOf(Entity::class, $driver->get(TypeManager::class)->build(Entity::class, User::class));
 
         $this->expectException(Error::class);

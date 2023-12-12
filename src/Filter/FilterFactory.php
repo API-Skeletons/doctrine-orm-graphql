@@ -18,6 +18,7 @@ use League\Event\EventDispatcher;
 use function array_filter;
 use function array_keys;
 use function array_merge;
+use function array_udiff;
 use function array_unique;
 use function count;
 use function in_array;
@@ -68,15 +69,10 @@ class FilterFactory
             SORT_REGULAR,
         );
 
-        // Get a diff of the allowed filters and the excluded filters
-        // array_diff does not work on enum
-        foreach (Filters::cases() as $filter) {
-            if (in_array($filter, $excludedFilters)) {
-                continue;
-            }
-
-            $allowedFilters[] = $filter;
-        }
+        // Get the allowed filters
+        $allowedFilters = array_udiff(Filters::cases(), $excludedFilters, static function ($a, $b) {
+            return $a->value <=> $b->value;
+        });
 
         // Limit association filters
         if ($associationName) {
