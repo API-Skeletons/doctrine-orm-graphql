@@ -16,6 +16,12 @@ use function array_uintersect;
  */
 trait ExcludeFilters
 {
+    /** @var Filters[] */
+    private array $includeFilters = [];
+
+    /** @var Filters[] */
+    private array $excludeFilters = [];
+
     /** @return Filters[] */
     public function getExcludeFilters(): array
     {

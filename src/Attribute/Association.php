@@ -23,11 +23,13 @@ class Association
         protected string $group = 'default',
         protected string|null $hydratorStrategy = null,
         protected string|null $description = null,
-        protected array $excludeFilters = [],
-        protected array $includeFilters = [],
+        array $excludeFilters = [],
+        array $includeFilters = [],
         protected string|null $criteriaEventName = null,
         protected int|null $limit = null,
     ) {
+        $this->includeFilters = $includeFilters;
+        $this->excludeFilters = $excludeFilters;
     }
 
     public function getLimit(): int|null

@@ -41,9 +41,9 @@ final class Entity
     private array $hydratorFilters = [];
 
     /**
-     * @param mixed[]   $hydratorFilters
-     * @param Filters[] $excludeFilters
-     * @param Filters[] $includeFilters
+     * @param array<array-key, string[]> $hydratorFilters
+     * @param Filters[]                  $excludeFilters
+     * @param Filters[]                  $includeFilters
      */
     public function __construct(
         string $group = 'default',
@@ -53,14 +53,16 @@ final class Entity
         private string|null $typeName = null,
         array $hydratorFilters = [],
         private string|null $hydratorNamingStrategy = null,
-        private array $excludeFilters = [],
-        private array $includeFilters = [],
+        array $excludeFilters = [],
+        array $includeFilters = [],
     ) {
         $this->group           = $group;
         $this->byValue         = $byValue;
         $this->limit           = $limit;
         $this->description     = $description;
         $this->hydratorFilters = $hydratorFilters;
+        $this->includeFilters  = $includeFilters;
+        $this->excludeFilters  = $excludeFilters;
     }
 
     public function getGroup(): string|null

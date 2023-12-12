@@ -24,9 +24,11 @@ class Field
         protected string|null $hydratorStrategy = null,
         protected string|null $description = null,
         protected string|null $type = null,
-        private array $excludeFilters = [],
-        private array $includeFilters = [],
+        array $excludeFilters = [],
+        array $includeFilters = [],
     ) {
+        $this->includeFilters = $includeFilters;
+        $this->excludeFilters = $excludeFilters;
     }
 
     public function getGroup(): string
