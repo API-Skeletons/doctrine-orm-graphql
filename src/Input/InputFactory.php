@@ -76,6 +76,8 @@ class InputFactory extends AbstractContainer
              * Do not include identifiers as input.  In the majority of cases there will be
              * no reason to set or update an identifier.  For the case where an identifier
              * should be set or updated, this factory is not the correct solution.
+             *
+             * @phpcs-disable
              */
             if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
                 throw new Exception('Identifier ' . $fieldName . ' is an invalid input.');
