@@ -298,7 +298,7 @@ class InputFactoryTest extends AbstractTest
                         'type' => $driver->type(User::class),
                         'args' => [
                             'id' => Type::nonNull(Type::id()),
-                            'input' => Type::nonNull($driver->input(User::class, ['*'])),
+                            'input' => Type::nonNull($driver->input(User::class, ['name', 'email', 'password'])),
                         ],
                         'resolve' => function ($root, $args): User {
                             $user = $this->getEntityManager()->getRepository(User::class)
@@ -347,7 +347,7 @@ class InputFactoryTest extends AbstractTest
                         'type' => $driver->type(User::class),
                         'args' => [
                             'id' => Type::nonNull(Type::id()),
-                            'input' => Type::nonNull($driver->input(User::class, [], ['*'])),
+                            'input' => Type::nonNull($driver->input(User::class, [], ['name', 'email', 'password'])),
                         ],
                         'resolve' => function ($root, $args): User {
                             $user = $this->getEntityManager()->getRepository(User::class)
