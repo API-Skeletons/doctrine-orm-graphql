@@ -7,6 +7,9 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * This class is used to create a Pagination type
+ */
 class Pagination extends InputObjectType
 {
     public function __construct()

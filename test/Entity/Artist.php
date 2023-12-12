@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,35 +14,35 @@ use Doctrine\ORM\Mapping as ORM;
  * Artist
  */
 #[GraphQL\Entity(typeName: 'artist', description: 'Artists')]
-#[GraphQL\Entity(group: 'ExcludeCriteriaTest', excludeCriteria: ['neq'])]
+#[GraphQL\Entity(group: 'ExcludeFiltersTest', excludeFilters: [Filters::NEQ])]
 #[GraphQL\Entity(group: 'TypeNameTest')]
 #[GraphQL\Entity(group: 'DuplicateGroup')]
 #[GraphQL\Entity(group: 'DuplicateGroup')]
 #[GraphQL\Entity(group: 'DuplicateGroupField')]
 #[GraphQL\Entity(group: 'DuplicateGroupAssociation')]
-#[GraphQL\Entity(group: 'FilterCriteriaEvent')]
+#[GraphQL\Entity(group: 'CriteriaEvent')]
 #[GraphQL\Entity(group: 'AttributeLimit')]
 #[GraphQL\Entity(group: 'LimitTest', limit: 2)]
 #[ORM\Entity]
 class Artist
 {
     #[GraphQL\Field(description: 'Artist name')]
-    #[GraphQL\Field(group: 'ExcludeCriteriaTest', excludeCriteria: ['eq'])]
+    #[GraphQL\Field(group: 'ExcludeFiltersTest', excludeFilters: [Filters::EQ])]
     #[GraphQL\Field(group: 'TypeNameTest')]
     #[GraphQL\Field(group: 'DuplicateGroup')]
     #[GraphQL\Field(group: 'DuplicateGroup')]
     #[GraphQL\Field(group: 'DuplicateGroupField')]
     #[GraphQL\Field(group: 'DuplicateGroupField')]
-    #[GraphQL\Field(group: 'FilterCriteriaEvent')]
+    #[GraphQL\Field(group: 'CriteriaEvent')]
     #[GraphQL\Field(group: 'LimitTest')]
     #[GraphQL\Field(group: 'AttributeLimit')]
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
 
     #[GraphQL\Field(description: 'Primary key')]
-    #[GraphQL\Field(group: 'ExcludeCriteriaTest')]
+    #[GraphQL\Field(group: 'ExcludeFiltersTest')]
     #[GraphQL\Field(group: 'TypeNameTest')]
-    #[GraphQL\Field(group: 'FilterCriteriaEvent')]
+    #[GraphQL\Field(group: 'CriteriaEvent')]
     #[GraphQL\Field(group: 'LimitTest')]
     #[GraphQL\Field(group: 'AttributeLimit')]
     #[ORM\Id]
@@ -52,13 +52,13 @@ class Artist
 
     /** @var Collection<id, Performance> */
     #[GraphQL\Association(description: 'Performances')]
-    #[GraphQL\Association(group: 'ExcludeCriteriaTest', excludeCriteria: [Filters::NEQ])]
-    #[GraphQL\Association(group: 'IncludeCriteriaTest', includeCriteria: [Filters::EQ])]
+    #[GraphQL\Association(group: 'ExcludeFiltersTest', excludeFilters: [Filters::NEQ])]
+    #[GraphQL\Association(group: 'IncludeFiltersTest', includeFilters: [Filters::EQ])]
     #[GraphQL\Association(group: 'DuplicateGroup')]
     #[GraphQL\Association(group: 'DuplicateGroup')]
     #[GraphQL\Association(group: 'DuplicateGroupAssociation')]
     #[GraphQL\Association(group: 'DuplicateGroupAssociation')]
-    #[GraphQL\Association(group: 'FilterCriteriaEvent', filterCriteriaEventName: self::class . '.performances.filterCriteria')]
+    #[GraphQL\Association(group: 'CriteriaEvent', criteriaEventName: self::class . '.performances.criteria')]
     #[GraphQL\Association(group: 'LimitTest')]
     #[GraphQL\Association(group: 'AttributeLimit', limit: 3)]
 

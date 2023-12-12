@@ -298,7 +298,7 @@ class InputFactoryTest extends AbstractTest
                         'type' => $driver->type(User::class),
                         'args' => [
                             'id' => Type::nonNull(Type::id()),
-                            'input' => Type::nonNull($driver->input(User::class, ['*'])),
+                            'input' => Type::nonNull($driver->input(User::class, ['name', 'email', 'password'])),
                         ],
                         'resolve' => function ($root, $args): User {
                             $user = $this->getEntityManager()->getRepository(User::class)
@@ -347,7 +347,59 @@ class InputFactoryTest extends AbstractTest
                         'type' => $driver->type(User::class),
                         'args' => [
                             'id' => Type::nonNull(Type::id()),
-                            'input' => Type::nonNull($driver->input(User::class, [], ['*'])),
+                            'input' => Type::nonNull($driver->input(User::class, [], ['name', 'email', 'password'])),
+                        ],
+                        'resolve' => function ($root, $args): User {
+                            $user = $this->getEntityManager()->getRepository(User::class)
+                                ->find($args['id']);
+
+                            $user->setName($args['input']['name']);
+                            $this->getEntityManager()->flush();
+
+                            return $user;
+                        },
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query = 'mutation {
+            testInput(id: 1, input: { name: "inputTest" email: "email" password: "password"}) {
+                id
+                name
+            }
+        }';
+
+        $result = GraphQL::executeQuery($schema, $query);
+        $output = $result->toArray();
+
+        $this->getEntityManager()->clear();
+        $user = $this->getEntityManager()->getRepository(User::class)
+            ->find(1);
+
+        $this->assertEquals('inputTest', $user->getName());
+        $this->assertEquals(1, $output['data']['testInput']['id']);
+        $this->assertEquals('inputTest', $output['data']['testInput']['name']);
+    }
+
+    public function testInputThrowsExceptionIfIdentifierFound(): void
+    {
+        $this->expectException(Throwable::class);
+        $this->expectExceptionMessage('Identifier id is an invalid input.');
+
+        $config = new Config(['group' => 'InputFactoryTest']);
+
+        $driver = new Driver($this->getEntityManager(), $config);
+
+        $schema = new Schema([
+            'mutation' => new ObjectType([
+                'name' => 'mutation',
+                'fields' => [
+                    'testInput' => [
+                        'type' => $driver->type(User::class),
+                        'args' => [
+                            'id' => Type::nonNull(Type::id()),
+                            'input' => Type::nonNull($driver->input(User::class, [], ['id', 'email', 'password'])),
                         ],
                         'resolve' => function ($root, $args): User {
                             $user = $this->getEntityManager()->getRepository(User::class)

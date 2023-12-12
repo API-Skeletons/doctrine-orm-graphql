@@ -13,6 +13,9 @@ use GraphQL\Type\Definition\ScalarType;
 use function is_string;
 use function preg_match;
 
+/**
+ * This class is used to create a DateImmutable type
+ */
 class DateImmutable extends ScalarType
 {
     public string|null $description = 'The `date_immutable` scalar type represents datetime data.'

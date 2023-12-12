@@ -16,7 +16,7 @@ use function is_object;
 use function spl_object_hash;
 
 /**
- * A field resolver that uses the Doctrine Laminas hydrator.
+ * A field resolver that uses the Doctrine Laminas hydrator to extract values
  */
 class FieldResolver
 {
@@ -27,8 +27,10 @@ class FieldResolver
      */
     private array $extractValues = [];
 
-    public function __construct(protected Config $config, protected TypeManager $typeManager)
-    {
+    public function __construct(
+        protected Config $config,
+        protected TypeManager $typeManager,
+    ) {
     }
 
     /** @throws Error */
@@ -41,7 +43,7 @@ class FieldResolver
         $splObjectHash = spl_object_hash($source);
 
         /**
-         * For disabled hydrator cache, store only last hydrator result and reuse for consecutive calls
+         * For disabled hydrator cache, store only the last hydrator result and reuse for consecutive calls
          * then drop the cache if it doesn't hit.
          */
         if (! $this->config->getUseHydratorCache()) {

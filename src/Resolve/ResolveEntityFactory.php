@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ArrayObject;
 use Closure;
@@ -19,6 +19,9 @@ use League\Event\EventDispatcher;
 use function base64_decode;
 use function base64_encode;
 
+/**
+ * Build a resolver for entities
+ */
 class ResolveEntityFactory
 {
     public function __construct(
@@ -29,18 +32,18 @@ class ResolveEntityFactory
     ) {
     }
 
-    public function get(Entity $entity, string $eventName): Closure
+    public function get(Entity $entity, string|null $eventName): Closure
     {
         return function ($objectValue, array $args, $context, ResolveInfo $info) use ($entity, $eventName) {
-            $entityClass = $entity->getEntityClass();
-            $filters     = new Filters();
+            $entityClass        = $entity->getEntityClass();
+            $queryBuilderFilter = new QueryBuilderFilter();
 
             $queryBuilder = $this->entityManager->createQueryBuilder();
             $queryBuilder->select('entity')
                 ->from($entityClass, 'entity');
 
             if (isset($args['filter'])) {
-                $filters->applyToQueryBuilder($args['filter'], $queryBuilder);
+                $queryBuilderFilter->apply($args['filter'], $queryBuilder);
             }
 
             return $this->buildPagination(
@@ -59,7 +62,7 @@ class ResolveEntityFactory
     public function buildPagination(
         Entity $entity,
         QueryBuilder $queryBuilder,
-        string $eventName,
+        string|null $eventName,
         mixed ...$resolve,
     ): array {
         $paginationFields = [
@@ -99,13 +102,15 @@ class ResolveEntityFactory
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
          */
-        $this->eventDispatcher->dispatch(
-            new FilterQueryBuilder(
-                $queryBuilder,
-                $eventName,
-                ...$resolve,
-            ),
-        );
+        if ($eventName) {
+            $this->eventDispatcher->dispatch(
+                new QueryBuilderEvent(
+                    $queryBuilder,
+                    $eventName,
+                    ...$resolve,
+                ),
+            );
+        }
 
         $edgesAndCursors = $this->buildEdgesAndCursors($queryBuilder, $offsetAndLimit, $paginationFields);
 

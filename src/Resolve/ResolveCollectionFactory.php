@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters as FiltersDef;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterCriteria;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use ArrayObject;
@@ -15,7 +15,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\PersistentCollection;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
@@ -24,6 +23,9 @@ use function base64_decode;
 use function base64_encode;
 use function count;
 
+/**
+ * Build a resolver for collections
+ */
 class ResolveCollectionFactory
 {
     public function __construct(
@@ -34,25 +36,6 @@ class ResolveCollectionFactory
         protected EventDispatcher $eventDispatcher,
         protected ArrayObject $metadata,
     ) {
-    }
-
-    public function parseValue(ClassMetadata $metadata, string $field, mixed $value): mixed
-    {
-        /** @psalm-suppress UndefinedDocblockClass */
-        $fieldMapping = $metadata->getFieldMapping($field);
-        $graphQLType  = $this->typeManager->get($fieldMapping['type']);
-
-        return $graphQLType->parseValue($graphQLType->serialize($value));
-    }
-
-    /** @param mixed[] $value */
-    public function parseArrayValue(ClassMetadata $metadata, string $field, array $value): mixed
-    {
-        foreach ($value as $key => $val) {
-            $value[$key] = $this->parseValue($metadata, $field, $val);
-        }
-
-        return $value;
     }
 
     public function get(Entity $entity): Closure
@@ -67,16 +50,13 @@ class ResolveCollectionFactory
                 ->getMetadataFor($entityClassName)
                 ->getAssociationTargetClass($info->fieldName);
 
-            $collectionMetadata = $this->entityManager->getMetadataFactory()
-                ->getMetadataFor($targetClassName);
-
             return $this->buildPagination(
                 $entityClassName,
                 $targetClassName,
                 $args['pagination'] ?? [],
                 $collection,
-                $this->buildCriteria($args['filter'] ?? [], $collectionMetadata),
-                $this->metadata[$entityClassName]['fields'][$info->fieldName]['filterCriteriaEventName'],
+                $this->buildCriteria($args['filter'] ?? []),
+                $this->metadata[$entityClassName]['fields'][$info->fieldName]['criteriaEventName'],
                 $source,
                 $args,
                 $context,
@@ -86,33 +66,29 @@ class ResolveCollectionFactory
     }
 
     /** @param mixed[] $filter */
-    private function buildCriteria(array $filter, ClassMetadata $collectionMetadata): Criteria
+    protected function buildCriteria(array $filter): Criteria
     {
         $orderBy  = [];
         $criteria = Criteria::create();
 
         foreach ($filter as $field => $filters) {
             foreach ($filters as $filter => $value) {
-                switch ($filter) {
-                    case FiltersDef::IN:
-                    case FiltersDef::NOTIN:
-                        $value = $this->parseArrayValue($collectionMetadata, $field, $value);
+                switch (Filters::from($filter)) {
+                    case Filters::IN:
+                    case Filters::NOTIN:
                         $criteria->andWhere($criteria->expr()->$filter($field, $value));
                         break;
-                    case FiltersDef::ISNULL:
+                    case Filters::ISNULL:
                         $criteria->andWhere($criteria->expr()->$filter($field));
                         break;
-                    case FiltersDef::BETWEEN:
-                        $value = $this->parseArrayValue($collectionMetadata, $field, $value);
-
+                    case Filters::BETWEEN:
                         $criteria->andWhere($criteria->expr()->gte($field, $value['from']));
                         $criteria->andWhere($criteria->expr()->lte($field, $value['to']));
                         break;
-                    case FiltersDef::SORT:
+                    case Filters::SORT:
                         $orderBy[$field] = $value;
                         break;
                     default:
-                        $value = $this->parseValue($collectionMetadata, $field, $value);
                         $criteria->andWhere($criteria->expr()->$filter($field, $value));
                         break;
                 }
@@ -131,13 +107,13 @@ class ResolveCollectionFactory
      *
      * @return mixed[]
      */
-    private function buildPagination(
+    protected function buildPagination(
         string $entityClassName,
         string $targetClassName,
         array $pagination,
         PersistentCollection $collection,
         Criteria $criteria,
-        string|null $filterCriteriaEventName,
+        string|null $criteriaEventName,
         mixed ...$resolve,
     ): array {
         $paginationFields = [
@@ -158,7 +134,6 @@ class ResolveCollectionFactory
                     break;
                 default:
                     $paginationFields[$field] = $value;
-                    $first                    = $value;
                     break;
             }
         }
@@ -177,11 +152,11 @@ class ResolveCollectionFactory
         /**
          * Fire the event dispatcher using the passed event name.
          */
-        if ($filterCriteriaEventName) {
+        if ($criteriaEventName) {
             $this->eventDispatcher->dispatch(
-                new FilterCriteria(
+                new CriteriaEvent(
                     $criteria,
-                    $filterCriteriaEventName,
+                    $criteriaEventName,
                     ...$resolve,
                 ),
             );
@@ -248,8 +223,13 @@ class ResolveCollectionFactory
      *
      * @return array<string, int>
      */
-    protected function calculateOffsetAndLimit(string $associationName, string $entityClassName, string $targetClassName, array $paginationFields, int $itemCount): array
-    {
+    protected function calculateOffsetAndLimit(
+        string $associationName,
+        string $entityClassName,
+        string $targetClassName,
+        array $paginationFields,
+        int $itemCount,
+    ): array {
         $offset = 0;
 
         $limit            = $this->metadata[$targetClassName]['limit'];

@@ -12,6 +12,9 @@ use function is_string;
 use function json_decode;
 use function json_encode;
 
+/**
+ * This class is used to create a Json type
+ */
 class Json extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint

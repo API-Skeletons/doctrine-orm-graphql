@@ -4,26 +4,32 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use Attribute;
 
+/**
+ * Attribute to describe an association for GraphQL
+ */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
 class Association
 {
-    use ExcludeCriteria;
+    use ExcludeFilters;
 
     /**
-     * @param string[] $excludeCriteria
-     * @param string[] $includeCriteria
+     * @param Filters[] $excludeFilters
+     * @param Filters[] $includeFilters
      */
     public function __construct(
         protected string $group = 'default',
-        protected string|null $strategy = null,
+        protected string|null $hydratorStrategy = null,
         protected string|null $description = null,
-        protected array $excludeCriteria = [],
-        protected array $includeCriteria = [],
-        protected string|null $filterCriteriaEventName = null,
+        array $excludeFilters = [],
+        array $includeFilters = [],
+        protected string|null $criteriaEventName = null,
         protected int|null $limit = null,
     ) {
+        $this->includeFilters = $includeFilters;
+        $this->excludeFilters = $excludeFilters;
     }
 
     public function getLimit(): int|null
@@ -36,9 +42,9 @@ class Association
         return $this->group;
     }
 
-    public function getStrategy(): string|null
+    public function getHydratorStrategy(): string|null
     {
-        return $this->strategy;
+        return $this->hydratorStrategy;
     }
 
     public function getDescription(): string|null
@@ -46,8 +52,8 @@ class Association
         return $this->description;
     }
 
-    public function getFilterCriteriaEventName(): string|null
+    public function getCriteriaEventName(): string|null
     {
-        return $this->filterCriteriaEventName;
+        return $this->criteriaEventName;
     }
 }

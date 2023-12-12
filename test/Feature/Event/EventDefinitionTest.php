@@ -60,10 +60,25 @@ class EventDefinitionTest extends AbstractTest
             ]),
         ]);
 
-        $query = '{
-            artist (filter: { name: { contains: "beatles" } } )
-                { edges { node { id name nameUnprefix  } } }
-        }';
+        $query = '
+          {
+            artist (
+              filter: {
+                name: {
+                  contains: "beatles"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                  name
+                  nameUnprefix
+                }
+              }
+            }
+          }
+        ';
 
         $result = GraphQL::executeQuery($schema, $query);
         $data   = $result->toArray()['data'];

@@ -19,6 +19,9 @@ use function count;
 use function in_array;
 use function uniqid;
 
+/**
+ * Create an input object type for a mutation
+ */
 class InputFactory extends AbstractContainer
 {
     public function __construct(
@@ -65,7 +68,7 @@ class InputFactory extends AbstractContainer
         array &$fields,
     ): void {
         foreach ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->getFieldNames() as $fieldName) {
-            if (! in_array($fieldName, $optionalFields) && $optionalFields !== ['*']) {
+            if (! in_array($fieldName, $optionalFields)) {
                 continue;
             }
 
@@ -73,9 +76,11 @@ class InputFactory extends AbstractContainer
              * Do not include identifiers as input.  In the majority of cases there will be
              * no reason to set or update an identifier.  For the case where an identifier
              * should be set or updated, this factory is not the correct solution.
+             *
+             * @phpcs-disable
              */
-            if ($optionalFields === ['*'] && $this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
-                continue;
+            if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
+                throw new Exception('Identifier ' . $fieldName . ' is an invalid input.');
             }
 
             $fields[$fieldName] = new InputObjectField([
@@ -96,7 +101,7 @@ class InputFactory extends AbstractContainer
         array &$fields,
     ): void {
         foreach ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->getFieldNames() as $fieldName) {
-            if (! in_array($fieldName, $requiredFields) && $requiredFields !== ['*']) {
+            if (! in_array($fieldName, $requiredFields)) {
                 continue;
             }
 
@@ -105,13 +110,6 @@ class InputFactory extends AbstractContainer
              * no reason to set or update an identifier.  For the case where an identifier
              * should be set or updated, this factory is not the correct solution.
              */
-            if (
-                $requiredFields === ['*']
-                && $this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)
-            ) {
-                continue;
-            }
-
             if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
                 throw new Exception('Identifier ' . $fieldName . ' is an invalid input.');
             }

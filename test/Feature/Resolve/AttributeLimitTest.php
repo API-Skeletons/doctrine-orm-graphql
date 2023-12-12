@@ -35,7 +35,29 @@ class AttributeLimitTest extends AbstractTest
             ]),
         ]);
 
-        $query  = '{ artist ( filter: { id: { eq: 1 } }) { edges { node { performances { edges { node { id } } } } } } }';
+        $query  = '
+          {
+            artist (
+              filter: {
+                id: {
+                  eq: "1"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  performances {
+                    edges {
+                      node {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];

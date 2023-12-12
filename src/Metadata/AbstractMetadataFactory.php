@@ -65,7 +65,7 @@ abstract class AbstractMetadataFactory
     }
 
     /**
-     * Append the configured groupSuffix from the type name
+     * Append the configured groupSuffix to the type name
      */
     protected function appendGroupSuffix(string $entityClass): string
     {

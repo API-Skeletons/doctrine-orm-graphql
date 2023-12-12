@@ -13,6 +13,9 @@ use Ramsey\Uuid\UuidInterface;
 
 use function preg_match;
 
+/**
+ * This class is used to create a Uuid type
+ */
 class Uuid extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint

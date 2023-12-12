@@ -13,6 +13,9 @@ use GraphQL\Type\Definition\ScalarType;
 use function is_string;
 use function preg_match;
 
+/**
+ * This class is used to create a TimeImmutable type
+ */
 class TimeImmutable extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint

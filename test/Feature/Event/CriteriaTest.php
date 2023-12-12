@@ -6,7 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterCriteria;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use Doctrine\Common\Collections\Criteria;
@@ -18,15 +18,15 @@ use League\Event\EventDispatcher;
 
 use function count;
 
-class FilterCriteriaTest extends AbstractTest
+class CriteriaTest extends AbstractTest
 {
     public function testEvent(): void
     {
-        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'FilterCriteriaEvent']));
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'CriteriaEvent']));
 
         $driver->get(EventDispatcher::class)->subscribeTo(
-            Artist::class . '.performances.filterCriteria',
-            function (FilterCriteria $event): void {
+            Artist::class . '.performances.criteria',
+            function (CriteriaEvent $event): void {
                 $this->assertInstanceOf(Criteria::class, $event->getCriteria());
 
                 $event->getCriteria()->andWhere(
@@ -55,8 +55,9 @@ class FilterCriteriaTest extends AbstractTest
             ]),
         ]);
 
-        $query = '{
-            artist (filter: { id: { eq: 1 } } ) {
+        $query = '
+          query ($id: String!) {
+            artist (filter: { id: { eq: $id } } ) {
               edges {
                 node {
                   id
@@ -73,7 +74,12 @@ class FilterCriteriaTest extends AbstractTest
             }
         }';
 
-        $result = GraphQL::executeQuery($schema, $query, null, 'contextTest');
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['id' => '1'],
+            contextValue:  'contextTest',
+        );
         $data   = $result->toArray()['data'];
 
         $this->assertEquals(1, count($data['artist']['edges']));

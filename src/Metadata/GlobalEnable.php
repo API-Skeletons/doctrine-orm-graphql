@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\BuildMetadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
@@ -13,6 +13,9 @@ use League\Event\EventDispatcher;
 
 use function in_array;
 
+/**
+ * Build metadata for all entities
+ */
 final class GlobalEnable extends AbstractMetadataFactory
 {
     private ArrayObject $metadata;
@@ -37,10 +40,10 @@ final class GlobalEnable extends AbstractMetadataFactory
                 'entityClass' => $entityClass,
                 'byValue' => $byValue,
                 'limit' => 0,
-                'namingStrategy' => null,
+                'hydratorNamingStrategy' => null,
                 'fields' => [],
                 'filters' => [],
-                'excludeCriteria' => [],
+                'excludeFilters' => [],
                 'description' => $entityClass,
                 'typeName' => $this->getTypeName($entityClass),
             ];
@@ -50,7 +53,7 @@ final class GlobalEnable extends AbstractMetadataFactory
         }
 
         $this->eventDispatcher->dispatch(
-            new BuildMetadata($this->metadata, 'metadata.build'),
+            new Metadata($this->metadata, 'metadata.build'),
         );
 
         return $this->metadata;
@@ -61,7 +64,7 @@ final class GlobalEnable extends AbstractMetadataFactory
         $entityClassMetadata = $this->entityManager->getMetadataFactory()->getMetadataFor($entityClass);
 
         foreach ($entityClassMetadata->getFieldNames() as $fieldName) {
-            if (in_array($fieldName, $this->config->getGlobalIgnore())) {
+            if (in_array($fieldName, $this->config->getIgnoreFields())) {
                 continue;
             }
 
@@ -69,7 +72,7 @@ final class GlobalEnable extends AbstractMetadataFactory
                 'description' => $fieldName,
                 'type' => $entityClassMetadata->getTypeOfField($fieldName),
                 'strategy' => $this->getDefaultStrategy($entityClassMetadata->getTypeOfField($fieldName)),
-                'excludeCriteria' => [],
+                'excludeFilters' => [],
             ];
         }
     }
@@ -79,14 +82,14 @@ final class GlobalEnable extends AbstractMetadataFactory
         $entityClassMetadata = $this->entityManager->getMetadataFactory()->getMetadataFor($entityClass);
 
         foreach ($entityClassMetadata->getAssociationNames() as $associationName) {
-            if (in_array($associationName, $this->config->getGlobalIgnore())) {
+            if (in_array($associationName, $this->config->getIgnoreFields())) {
                 continue;
             }
 
             $this->metadata[$entityClass]['fields'][$associationName] = [
-                'excludeCriteria' => [],
+                'excludeFilters' => [],
                 'description' => $associationName,
-                'filterCriteriaEventName' => null,
+                'criteriaEventName' => null,
                 'strategy' => Strategy\AssociationDefault::class,
             ];
         }

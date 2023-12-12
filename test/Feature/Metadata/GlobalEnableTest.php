@@ -36,18 +36,40 @@ class GlobalEnableTest extends AbstractTest
             ]),
         ]);
 
-        $query  = '{ artist { edges { node { performances ( filter: {venue: { neq: "test" } } ) { edges { node { venue } } } } } } }';
+        $query  = '
+          {
+            artist {
+              edges {
+                node {
+                  performances (
+                    filter: {
+                      venue: {
+                        neq: "test"
+                      }
+                    }
+                  ) {
+                    edges {
+                      node {
+                        venue
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
 
         $this->assertTrue($driver->get(Config::class)->getGlobalEnable());
     }
 
-    public function testGlobalIgnoreFieldName(): void
+    public function testIgnoreFieldsFieldName(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config([
             'group' => 'globalEnable',
             'globalEnable' => true,
-            'globalIgnore' => ['name'],
+            'ignoreFields' => ['name'],
         ]));
 
         $schema = new Schema([
@@ -65,7 +87,30 @@ class GlobalEnableTest extends AbstractTest
             ]),
         ]);
 
-        $query  = '{ artist { edges { node { name performances ( filter: {venue: { neq: "test" } } ) { edges { node { venue } } } } } } }';
+        $query  = '
+          {
+            artist {
+              edges {
+                node {
+                  name
+                  performances (
+                    filter: {
+                      venue: {
+                        neq: "test"
+                      }
+                    }
+                  ) {
+                    edges {
+                      node {
+                        venue
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
 
         $this->assertEquals(
@@ -74,12 +119,12 @@ class GlobalEnableTest extends AbstractTest
         );
     }
 
-    public function testGlobalIgnoreAssociationName(): void
+    public function testIgnoreFieldsAssociationName(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config([
             'group' => 'globalEnable',
             'globalEnable' => true,
-            'globalIgnore' => ['performances'],
+            'ignoreFields' => ['performances'],
         ]));
 
         $schema = new Schema([
@@ -97,7 +142,30 @@ class GlobalEnableTest extends AbstractTest
             ]),
         ]);
 
-        $query  = '{ artist { edges { node { name performances ( filter: {venue: { neq: "test" } } ) { edges { node { venue } } } } } } }';
+        $query  = '
+          {
+            artist {
+              edges {
+                node {
+                  name
+                  performances (
+                    filter: {
+                      venue: {
+                        neq: "test"
+                      }
+                    }
+                  ) {
+                    edges {
+                      node {
+                        venue
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
 
         $this->assertEquals(

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Criteria;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
@@ -12,14 +12,14 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use Throwable;
 
-class IncludeExcludeCriteriaTest extends AbstractTest
+class IncludeExcludeFiltersTest extends AbstractTest
 {
-    public function testExcludeCriteria(): void
+    public function testIncludeExcludeFilters(): void
     {
         $this->expectException(Throwable::class);
-        $this->expectExceptionMessage('includeCriteria and excludeCriteria are mutually exclusive.');
+        $this->expectExceptionMessage('includeFilters and excludeFilters are mutually exclusive.');
 
-        $config = new Config(['group' => 'IncludeExcludeCriteriaTest']);
+        $config = new Config(['group' => 'IncludeExcludeFiltersTest']);
 
         $driver = new Driver($this->getEntityManager(), $config);
 

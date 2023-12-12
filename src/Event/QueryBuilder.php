@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
-use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\HasEventName;
 
-class FilterCriteria implements
+/**
+ * This event is fired when the QueryBuilder is created for an entity
+ */
+class QueryBuilder implements
     HasEventName
 {
-    /** @param mixed[] $args */
+    /**
+     * @param string[] $entityAliasMap
+     * @param mixed[]  $args
+     */
     public function __construct(
-        protected Criteria $criteria,
+        protected DoctrineQueryBuilder $queryBuilder,
         protected string $eventName,
         protected mixed $objectValue,
         protected array $args,
@@ -27,9 +33,9 @@ class FilterCriteria implements
         return $this->eventName;
     }
 
-    public function getCriteria(): Criteria
+    public function getQueryBuilder(): DoctrineQueryBuilder
     {
-        return $this->criteria;
+        return $this->queryBuilder;
     }
 
     public function getObjectValue(): mixed

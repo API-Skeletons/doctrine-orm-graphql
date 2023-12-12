@@ -12,6 +12,9 @@ use GraphQL\Type\Definition\ScalarType;
 
 use function is_string;
 
+/**
+ * This class is used to create a DateTime type
+ */
 class DateTime extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint

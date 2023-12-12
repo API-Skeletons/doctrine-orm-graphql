@@ -4,25 +4,31 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use Attribute;
 
+/**
+ * Attribute to describe a field for GraphQL
+ */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
 class Field
 {
-    use ExcludeCriteria;
+    use ExcludeFilters;
 
     /**
-     * @param string[] $excludeCriteria
-     * @param string[] $includeCriteria
+     * @param Filters[] $excludeFilters
+     * @param Filters[] $includeFilters
      */
     public function __construct(
         protected string $group = 'default',
-        protected string|null $strategy = null,
+        protected string|null $hydratorStrategy = null,
         protected string|null $description = null,
         protected string|null $type = null,
-        private array $excludeCriteria = [],
-        private array $includeCriteria = [],
+        array $excludeFilters = [],
+        array $includeFilters = [],
     ) {
+        $this->includeFilters = $includeFilters;
+        $this->excludeFilters = $excludeFilters;
     }
 
     public function getGroup(): string
@@ -30,9 +36,9 @@ class Field
         return $this->group;
     }
 
-    public function getStrategy(): string|null
+    public function getHydratorStrategy(): string|null
     {
-        return $this->strategy;
+        return $this->hydratorStrategy;
     }
 
     public function getDescription(): string|null

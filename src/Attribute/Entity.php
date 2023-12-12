@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use Attribute;
 
+/**
+ * Attribute to define an entity for GraphQL
+ */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 final class Entity
 {
-    use ExcludeCriteria;
+    use ExcludeFilters;
 
     /** @var string The GraphQL group */
     private string $group;
@@ -34,12 +38,12 @@ final class Entity
      *   'filter' => 'Filter\ClassName',
      * ]
      */
-    private array $filters = [];
+    private array $hydratorFilters = [];
 
     /**
-     * @param mixed[]  $filters
-     * @param string[] $excludeCriteria
-     * @param string[] $includeCriteria
+     * @param array<array<string, string>> $hydratorFilters
+     * @param Filters[]                    $excludeFilters
+     * @param Filters[]                    $includeFilters
      */
     public function __construct(
         string $group = 'default',
@@ -47,16 +51,18 @@ final class Entity
         int $limit = 0,
         string|null $description = null,
         private string|null $typeName = null,
-        array $filters = [],
-        private string|null $namingStrategy = null,
-        private array $excludeCriteria = [],
-        private array $includeCriteria = [],
+        array $hydratorFilters = [],
+        private string|null $hydratorNamingStrategy = null,
+        array $excludeFilters = [],
+        array $includeFilters = [],
     ) {
-        $this->group       = $group;
-        $this->byValue     = $byValue;
-        $this->limit       = $limit;
-        $this->description = $description;
-        $this->filters     = $filters;
+        $this->group           = $group;
+        $this->byValue         = $byValue;
+        $this->limit           = $limit;
+        $this->description     = $description;
+        $this->hydratorFilters = $hydratorFilters;
+        $this->includeFilters  = $includeFilters;
+        $this->excludeFilters  = $excludeFilters;
     }
 
     public function getGroup(): string|null
@@ -85,13 +91,13 @@ final class Entity
     }
 
     /** @return mixed[] */
-    public function getFilters(): array
+    public function getHydratorFilters(): array
     {
-        return $this->filters;
+        return $this->hydratorFilters;
     }
 
-    public function getNamingStrategy(): string|null
+    public function getHydratorNamingStrategy(): string|null
     {
-        return $this->namingStrategy;
+        return $this->hydratorNamingStrategy;
     }
 }

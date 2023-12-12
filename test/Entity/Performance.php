@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -15,38 +15,38 @@ use Doctrine\ORM\Mapping as ORM;
  * Performance
  */
 #[GraphQL\Entity(typeName: 'performance', description: 'Performances')]
-#[GraphQL\Entity(group: 'ExcludeCriteriaTest', excludeCriteria: ['contains'])]
-#[GraphQL\Entity(group: 'IncludeCriteriaTest', includeCriteria: [
+#[GraphQL\Entity(group: 'ExcludeFiltersTest', excludeFilters: [Filters::CONTAINS])]
+#[GraphQL\Entity(group: 'IncludeFiltersTest', includeFilters: [
     Filters::EQ,
     Filters::NEQ,
     Filters::CONTAINS,
 ])]
 #[GraphQL\Entity(
-    group: 'IncludeExcludeCriteriaTest',
-    excludeCriteria: [Filters::IN],
-    includeCriteria: [
+    group: 'IncludeExcludeFiltersTest',
+    excludeFilters: [Filters::IN],
+    includeFilters: [
         Filters::EQ,
         Filters::NEQ,
         Filters::CONTAINS,
     ],
 )]
-#[GraphQL\Entity(group: 'FilterCriteriaEvent')]
+#[GraphQL\Entity(group: 'CriteriaEvent')]
 #[GraphQL\Entity(group: 'LimitTest')]
 #[GraphQL\Entity(group: 'AttributeLimit')]
 #[ORM\Entity]
 class Performance
 {
     #[GraphQL\Field(description: 'Venue name')]
-    #[GraphQL\Field(description: 'Venue name', group: 'ExcludeCriteriaTest')]
-    #[GraphQL\Field(group: 'IncludeCriteriaTest')]
-    #[GraphQL\Field(group: 'FilterCriteriaEvent')]
+    #[GraphQL\Field(description: 'Venue name', group: 'ExcludeFiltersTest')]
+    #[GraphQL\Field(group: 'IncludeFiltersTest')]
+    #[GraphQL\Field(group: 'CriteriaEvent')]
     #[GraphQL\Field(group: 'AttributeLimit')]
     #[ORM\Column(type: 'string', nullable: true)]
     private string|null $venue = null;
 
     #[GraphQL\Field(description: 'City name')]
-    #[GraphQL\Field(group: 'FilterCriteriaEvent')]
-    #[GraphQL\Field(group: 'IncludeCriteriaTest', includeCriteria: [
+    #[GraphQL\Field(group: 'CriteriaEvent')]
+    #[GraphQL\Field(group: 'IncludeFiltersTest', includeFilters: [
         Filters::EQ,
         Filters::NEQ,
     ])]
@@ -55,8 +55,8 @@ class Performance
     private string|null $city = null;
 
     #[GraphQL\Field(description: 'State name')]
-    #[GraphQL\Field(group: 'FilterCriteriaEvent')]
-    #[GraphQL\Field(group: 'IncludeCriteriaTest', excludeCriteria: [
+    #[GraphQL\Field(group: 'CriteriaEvent')]
+    #[GraphQL\Field(group: 'IncludeFiltersTest', excludeFilters: [
         Filters::EQ,
     ])]
     #[ORM\Column(type: 'string', nullable: true)]
@@ -68,8 +68,8 @@ class Performance
     private DateTime $performanceDate;
 
     #[GraphQL\Field(description: 'Primary key')]
-    #[GraphQL\Field(group: 'ExcludeCriteriaTest')]
-    #[GraphQL\Field(group: 'IncludeCriteriaTest')]
+    #[GraphQL\Field(group: 'ExcludeFiltersTest')]
+    #[GraphQL\Field(group: 'IncludeFiltersTest')]
     #[GraphQL\Field(group: 'LimitTest')]
     #[GraphQL\Field(group: 'AttributeLimit')]
     #[ORM\Id]
@@ -79,7 +79,7 @@ class Performance
 
     /** @var Collection<id, Recording> */
     #[GraphQL\Association(description: 'Recordings by artist')]
-    #[GraphQL\Association(group: 'IncludeCriteriaTest', includeCriteria: [Filters::CONTAINS])]
+    #[GraphQL\Association(group: 'IncludeFiltersTest', includeFilters: [Filters::CONTAINS])]
     #[ORM\OneToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording', mappedBy: 'performance')]
     private Collection $recordings;
 

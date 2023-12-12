@@ -7,6 +7,9 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * This type is defined in the GraphqQL Complete Connection Specification
+ */
 class PageInfo extends ObjectType
 {
     public function __construct()

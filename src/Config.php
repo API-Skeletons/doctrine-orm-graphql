@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+
 /**
  * This class is used for setting parameters when
  * creating the driver
@@ -44,7 +46,7 @@ class Config
     protected bool $globalEnable = false;
 
     /** @var string[] An array of field names to ignore when using globalEnable. */
-    protected array $globalIgnore = [];
+    protected array $ignoreFields = [];
 
     /**
      * @var bool|null When set to true, all entities will be extracted by value
@@ -68,11 +70,11 @@ class Config
     protected bool|null $sortFields = null;
 
     /**
-     * @var string[] An array of filters to exclude from
-     *               available filters for all fields and
-     *               associations in every entity
+     * @var Filters[] An array of filters to exclude from
+     *                available filters for all fields and
+     *                associations in every entity
      */
-    protected array $excludeCriteria = [];
+    protected array $excludeFilters = [];
 
     /** @param mixed[] $config */
     public function __construct(array $config = [])
@@ -147,18 +149,18 @@ class Config
         return $this->globalEnable;
     }
 
-    /** @param string[] $globalIgnore */
-    protected function setGlobalIgnore(array $globalIgnore): self
+    /** @param string[] $ignoreFields */
+    protected function setIgnoreFields(array $ignoreFields): self
     {
-        $this->globalIgnore = $globalIgnore;
+        $this->ignoreFields = $ignoreFields;
 
         return $this;
     }
 
     /** @return string[] */
-    public function getGlobalIgnore(): array
+    public function getIgnoreFields(): array
     {
-        return $this->globalIgnore;
+        return $this->ignoreFields;
     }
 
     protected function setGlobalByValue(bool|null $globalByValue): self
@@ -197,17 +199,17 @@ class Config
         return $this->sortFields;
     }
 
-    /** @param string[] $excludeCriteria */
-    public function setExcludeCriteria(array $excludeCriteria): self
+    /** @param Filters[] $excludeFilters */
+    public function setExcludeFilters(array $excludeFilters): self
     {
-        $this->excludeCriteria = $excludeCriteria;
+        $this->excludeFilters = $excludeFilters;
 
         return $this;
     }
 
-    /** @return string[] */
-    public function getExcludeCriteria(): array
+    /** @return Filters[] */
+    public function getExcludeFilters(): array
     {
-        return $this->excludeCriteria;
+        return $this->excludeFilters;
     }
 }
