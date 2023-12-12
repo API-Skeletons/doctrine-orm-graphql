@@ -34,7 +34,7 @@ trait ExcludeFilters
             $this->excludeFilters = array_udiff(
                 Filters::cases(),
                 $this->includeFilters,
-                static function ($a1, $a2) {
+                static function (Filters $a1, Filters $a2) {
                     return $a1->value <=> $a2->value;
                 },
             );
@@ -42,7 +42,7 @@ trait ExcludeFilters
             $this->excludeFilters = array_uintersect(
                 Filters::cases(),
                 $this->excludeFilters,
-                static function ($a1, $a2) {
+                static function (Filters $a1, Filters $a2) {
                     return $a1->value <=> $a2->value;
                 },
             );
