@@ -168,9 +168,11 @@ class FilterFactory
             $associationMetadata = $classMetadata->getAssociationMapping($associationName);
 
             if (
-                $associationMetadata['type'] === ClassMetadataInfo::TO_MANY
-                || $associationMetadata['type'] === ClassMetadataInfo::MANY_TO_MANY
-                || $associationMetadata['type'] === ClassMetadataInfo::ONE_TO_MANY
+                in_array($associationMetadata['type'], [
+                    ClassMetadataInfo::TO_MANY,
+                    ClassMetadataInfo::MANY_TO_MANY,
+                    ClassMetadataInfo::ONE_TO_MANY,
+                ])
                 || ! in_array(Filters::EQ, $allowedFilters)
             ) {
                 continue;
