@@ -9,6 +9,7 @@ use Exception;
 
 use function array_udiff;
 use function array_uintersect;
+use function count;
 
 /**
  * A common function to compute excluded filters from included
@@ -25,11 +26,11 @@ trait ExcludeFilters
     /** @return Filters[] */
     public function getExcludeFilters(): array
     {
-        if ($this->includeFilters && $this->excludeFilters) {
+        if (count($this->includeFilters) && count($this->excludeFilters)) {
             throw new Exception('includeFilters and excludeFilters are mutually exclusive.');
         }
 
-        if ($this->includeFilters) {
+        if (count($this->includeFilters)) {
             $this->excludeFilters = array_udiff(
                 Filters::cases(),
                 $this->includeFilters,
@@ -37,7 +38,7 @@ trait ExcludeFilters
                     return $a1->value <=> $a2->value;
                 },
             );
-        } elseif ($this->excludeFilters) {
+        } elseif (count($this->excludeFilters)) {
             $this->excludeFilters = array_uintersect(
                 Filters::cases(),
                 $this->excludeFilters,

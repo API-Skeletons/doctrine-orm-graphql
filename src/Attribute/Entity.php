@@ -41,9 +41,9 @@ final class Entity
     private array $hydratorFilters = [];
 
     /**
-     * @param array<array-key, string[]> $hydratorFilters
-     * @param Filters[]                  $excludeFilters
-     * @param Filters[]                  $includeFilters
+     * @param array<array<string, string>> $hydratorFilters
+     * @param Filters[]                    $excludeFilters
+     * @param Filters[]                    $includeFilters
      */
     public function __construct(
         string $group = 'default',
