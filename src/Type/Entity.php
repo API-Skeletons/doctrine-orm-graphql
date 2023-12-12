@@ -178,50 +178,49 @@ class Entity implements Buildable
             }
 
             $associationMetadata = $classMetadata->getAssociationMapping($associationName);
+            if (
+                in_array($associationMetadata['type'], [
+                    ClassMetadataInfo::ONE_TO_ONE,
+                    ClassMetadataInfo::MANY_TO_ONE,
+                    ClassMetadataInfo::TO_ONE,
+                ])
+            ) {
+                $targetEntity             = $associationMetadata['targetEntity'];
+                $fields[$associationName] = function () use ($targetEntity) {
+                    $entity = $this->typeManager->build(self::class, $targetEntity);
 
-            switch ($associationMetadata['type']) {
-                case ClassMetadataInfo::ONE_TO_ONE:
-                case ClassMetadataInfo::MANY_TO_ONE:
-                case ClassMetadataInfo::TO_ONE:
-                    $targetEntity             = $associationMetadata['targetEntity'];
-                    $fields[$associationName] = function () use ($targetEntity) {
-                        $entity = $this->typeManager->build(self::class, $targetEntity);
-
-                        return [
-                            'type' => $entity->getGraphQLType(),
-                            'description' => $entity->getDescription(),
-                        ];
-                    };
-                    break;
-                case ClassMetadataInfo::ONE_TO_MANY:
-                case ClassMetadataInfo::MANY_TO_MANY:
-                case ClassMetadataInfo::TO_MANY:
-                    $targetEntity             = $associationMetadata['targetEntity'];
-                    $fields[$associationName] = function () use ($targetEntity, $associationName) {
-                        $entity    = $this->typeManager->build(self::class, $targetEntity);
-                        $shortName = $this->getTypeName() . '_' . $associationName;
-
-                        return [
-                            'type' => $this->typeManager->build(
-                                Connection::class,
-                                $shortName . '_Connection',
-                                $entity->getGraphQLType(),
-                            ),
-                            'args' => [
-                                'filter' => $this->filterFactory->get(
-                                    $entity,
-                                    $this,
-                                    $associationName,
-                                    $this->metadata['fields'][$associationName],
-                                ),
-                                'pagination' => $this->typeManager->get('pagination'),
-                            ],
-                            'description' => $this->metadata['fields'][$associationName]['description'],
-                            'resolve' => $this->collectionFactory->get($entity),
-                        ];
-                    };
-                    break;
+                    return [
+                        'type' => $entity->getGraphQLType(),
+                        'description' => $entity->getDescription(),
+                    ];
+                };
             }
+
+            // Collections
+            $targetEntity             = $associationMetadata['targetEntity'];
+            $fields[$associationName] = function () use ($targetEntity, $associationName) {
+                $entity    = $this->typeManager->build(self::class, $targetEntity);
+                $shortName = $this->getTypeName() . '_' . $associationName;
+
+                return [
+                    'type' => $this->typeManager->build(
+                        Connection::class,
+                        $shortName . '_Connection',
+                        $entity->getGraphQLType(),
+                    ),
+                    'args' => [
+                        'filter' => $this->filterFactory->get(
+                            $entity,
+                            $this,
+                            $associationName,
+                            $this->metadata['fields'][$associationName],
+                        ),
+                        'pagination' => $this->typeManager->get('pagination'),
+                    ],
+                    'description' => $this->metadata['fields'][$associationName]['description'],
+                    'resolve' => $this->collectionFactory->get($entity),
+                ];
+            };
         }
     }
 }
