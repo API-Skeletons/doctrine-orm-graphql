@@ -161,25 +161,27 @@ class FilterFactory
         // Add eq filter for to-one associations
         foreach ($classMetadata->getAssociationNames() as $associationName) {
             // Only process fields which are in the graphql metadata
-            if (! in_array($associationName, array_keys($entityMetadata['fields']))) {
+            if (! isset($entityMetadata['fields'][$associationName])) {
                 continue;
             }
 
             $associationMetadata = $classMetadata->getAssociationMapping($associationName);
-            $graphQLType         = Type::id();
-            switch ($associationMetadata['type']) {
-                case ClassMetadataInfo::ONE_TO_ONE:
-                case ClassMetadataInfo::MANY_TO_ONE:
-                case ClassMetadataInfo::TO_ONE:
-                    // eq filter is for association:value
-                    if (in_array(Filters::EQ, $allowedFilters)) {
-                        $fields[$associationName] = [
-                            'name' => $associationName,
-                            'type' => new Association($typeName, $associationName, $graphQLType, [Filters::EQ]),
-                            'description' => 'Filters for ' . $associationName,
-                        ];
-                    }
+
+            if (
+                $associationMetadata['type'] === ClassMetadataInfo::TO_MANY
+                || $associationMetadata['type'] === ClassMetadataInfo::MANY_TO_MANY
+                || $associationMetadata['type'] === ClassMetadataInfo::ONE_TO_MANY
+                || ! in_array(Filters::EQ, $allowedFilters)
+            ) {
+                continue;
             }
+
+            // eq filter is for association id from parent entity
+            $fields[$associationName] = [
+                'name' => $associationName,
+                'type' => new Association($typeName, $associationName, Type::id(), [Filters::EQ]),
+                'description' => 'Filters for ' . $associationName,
+            ];
         }
 
         return $fields;
