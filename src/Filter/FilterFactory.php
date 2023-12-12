@@ -49,8 +49,6 @@ class FilterFactory
         string|null $associationName = null,
         array|null $associationMetadata = null,
     ): GraphQLInputObjectType {
-        $allowedFilters = [];
-
         $typeName = $owningEntity ?
             $owningEntity->getTypeName() . '_' . $associationName . '_filter'
             : $targetEntity->getTypeName() . '_filter';

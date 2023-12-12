@@ -64,7 +64,7 @@ class MetadataFactory extends AbstractMetadataFactory
 
             $this->buildMetadataForEntity($reflectionClass);
             $this->buildMetadataForFields($entityClassMetadata, $reflectionClass);
-            $this->buildMetadataForAssociations($entityClassMetadata, $reflectionClass);
+            $this->buildMetadataForAssociations($reflectionClass);
         }
 
         // Fire the metadata.build event
@@ -162,7 +162,6 @@ class MetadataFactory extends AbstractMetadataFactory
      * Build the metadata for each field in an entity based on the Attribute\Association
      */
     private function buildMetadataForAssociations(
-        ClassMetadata $entityClassMetadata,
         ReflectionClass $reflectionClass,
     ): void {
         // Fetch attributes for associations

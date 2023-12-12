@@ -50,9 +50,6 @@ class ResolveCollectionFactory
                 ->getMetadataFor($entityClassName)
                 ->getAssociationTargetClass($info->fieldName);
 
-            $collectionMetadata = $this->entityManager->getMetadataFactory()
-                ->getMetadataFor($targetClassName);
-
             return $this->buildPagination(
                 $entityClassName,
                 $targetClassName,
@@ -137,7 +134,6 @@ class ResolveCollectionFactory
                     break;
                 default:
                     $paginationFields[$field] = $value;
-                    $first                    = $value;
                     break;
             }
         }
