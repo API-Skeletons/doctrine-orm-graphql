@@ -14,8 +14,7 @@ of a field you can construct your query like this:
 
    <?php
 
-   use ApiSkeletons\Doctrine\ORM\GraphQL\Criteria\Filters;
-   use ApiSkeletons\Doctrine\QueryBuilder\Filter\Applicator;
+   use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as FilterQueryBuilder;
    use Doctrine\ORM\EntityManager;
    use GraphQL\Type\Definition\Type;
 
@@ -25,15 +24,15 @@ of a field you can construct your query like this:
            'filter' => $driver->filter(Entity::class),
        ],
        'resolve' => function ($root, array $args, $context, ResolveInfo $info) use ($driver) {
-           $filters = new Filters();
+           $filterQueryBuilder = new FilterQueryBuilder();
 
-           $queyBuilder = $driver->get(EntityManager::class)
+           $queryBuilder = $driver->get(EntityManager::class)
                ->createQueryBuilder();
            $queryBuilder
                ->select('AVG(entity.fieldName)')
                ->from(Entity::class, 'entity');
 
-           $filters->applyToQueryBuilder($args['filter'], $queryBuilder);
+           $filterQueryBuilder->apply($args['filter'], $queryBuilder);
 
            return $queryBuilder->getQuery()->getScalarResult();
        }

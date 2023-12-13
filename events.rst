@@ -4,24 +4,23 @@ Events
 A PSR-14 event dispatcher is included for handling events.
 
 
-Filtering Query Builders
-------------------------
+Query Builder Event
+-------------------
 
-Each top level connection uses a QueryBuilder object.  This QueryBuilder
+Each top level connection uses a Doctrine QueryBuilder object.  This QueryBuilder
 object may be modified to filter the data for the logged in user and such.
 For instance, this can be used as a security layer and can be used to make
 customizations to QueryBuilder objects.  QueryBuilders are built then
 triggered through an event.  Listen to this event and modify the passed
 QueryBuilder to apply your security.
 
-Event names are passed as a second parameter to a ``$driver->resolve()``.  The
-default event name is 'filter.querybuilder'.
+Event names are passed as a second parameter to a ``$driver->resolve()``.
 
 You may specify an event name to resolve a connection.  Only this event will
 fire when the QueryBuilder is created.  The default 'filter.querybuilder' will
 not fire.
 
-In the code below the custom event ``Artist::class . '.filterQueryBuilder'`` will fire:
+In the code below the custom event ``Artist::class . '.queryBuilder'`` will fire:
 
 .. code-block:: php
 
@@ -41,7 +40,7 @@ In the code below the custom event ``Artist::class . '.filterQueryBuilder'`` wil
                 'args' => [
                     'filter' => $driver->filter(Artist::class),
                 ],
-                'resolve' => $driver->resolve(Artist::class, Artist::class . '.filterQueryBuilder'),
+                'resolve' => $driver->resolve(Artist::class, Artist::class . '.queryBuilder'),
             ],
         ],
     ]),
@@ -54,11 +53,11 @@ user, create at least one listener.  You may add multiple listeners.
 
   <?php
 
-  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterQueryBuilder;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
   use League\Event\EventDispatcher;
 
-  $driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.filterQueryBuilder',
-      function(FilterQueryBuilder $event) {
+  $driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.queryBuilder',
+      function(QueryBuilder $event) {
           $event->getQueryBuilder()
               ->innerJoin('entity.user', 'user') // The default entity alias is always `entity`
               ->andWhere($event->getQueryBuilder()->expr()->eq('user.id', ':userId'))
@@ -74,11 +73,11 @@ all resolve parameters:
   filters already applied.
 
 
-Filtering Criteria
-------------------
+Criteria Event
+--------------
 
 When an association is resolved from an entity or another association you may
-listen to the filterCriteria event to add additional criteria for filtering
+listen to the Criteria Event to add additional criteria for filtering
 the association if you assigned an event name in the attributes.
 
 .. code-block:: php
@@ -86,7 +85,7 @@ the association if you assigned an event name in the attributes.
   <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
-  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\FilterCriteria;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria;
   use App\ORM\Entity\Artist;
   use League\Event\EventDispatcher;
 
@@ -99,14 +98,14 @@ the association if you assigned an event name in the attributes.
       #[GraphQL\Field]
       public $name;
 
-      #[GraphQL\Association(filterCriteriaEventName: self::class . '.performances.filterCriteria')]
+      #[GraphQL\Association(filterCriteriaEventName: self::class . '.performances.criteria')]
       public $performances;
   }
 
   // Add a listener to your driver
   $driver->get(EventDispatcher::class)->subscribeTo(
-      Artist::class . '.performances.filterCriteria',
-      function (FilterCriteria $event): void {
+      Artist::class . '.performances.criteria',
+      function (Criteria $event): void {
           $event->getCriteria()->andWhere(
               $event->getCriteria()->expr()->eq('isDeleted', false)
           );
@@ -187,7 +186,7 @@ This event is named ``'metadata.build'``.
   <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\BuildMetadata;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
   use App\ORM\Entity\Performance;
   use League\Event\EventDispatcher;
 
@@ -195,7 +194,7 @@ This event is named ``'metadata.build'``.
 
   $driver->get(EventDispatcher::class)->subscribeTo(
       'metadata.build',
-      static function (BuildMetadata $event): void {
+      static function (Metadata $event): void {
           $metadata = $event->getMetadata();
 
           $metadata[Performance::class]['limit'] = 100;
