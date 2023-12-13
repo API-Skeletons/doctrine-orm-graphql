@@ -42,7 +42,7 @@ final class GlobalEnable extends AbstractMetadataFactory
                 'limit' => 0,
                 'hydratorNamingStrategy' => null,
                 'fields' => [],
-                'filters' => [],
+                'hydratorFilters' => [],
                 'excludeFilters' => [],
                 'description' => $entityClass,
                 'typeName' => $this->getTypeName($entityClass),
