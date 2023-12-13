@@ -19,15 +19,15 @@ becomes
 See also ``groupSuffix``
 
 
-excludeCriteria
+excludeFilters
 ---------------
 
-An array of filters to exclude from all available filters for all fields 
+An array of filters to exclude from all available filters for all fields
 and associations for all entities.
 
 
 group
---------- 
+---------
 
 Each attribute has an optional ``group`` parameter that allows
 for multiple configurations within the entities.  Specify the group in the
@@ -40,9 +40,9 @@ groupSuffix
 
 By default, the group name is appended to GraphQL types.  You may specify
 a different suffix or an empty suffix.  When used in combination with
-``entityPrefix`` your type names can be changed from 
+``entityPrefix`` your type names can be changed from
 ``App_ORM_Entity_Artist_groupname``
-to 
+to
 ``Artist``
 
 
@@ -51,14 +51,10 @@ globalEnable
 
 When set to true all fields and all associations will be
 enabled.  This is best used as a development setting when
-the entities are subject to change.  
-
-.. note:: The strategy
-   ``NullifyOwningAssociation`` is not automatically applied to many
-   to many relationships when using ``globalEnable``.
+the entities are subject to change.  Really.
 
 
-globalIgnore
+ignoreFields
 ----------------
 
 When ``globalEnable`` is set to true, this array of field and associations names
@@ -69,14 +65,14 @@ to ignore globally.
 globalByValue
 -----------------
 
-This overrides the ``byValue`` entity attribute globally.  When set to true 
+This overrides the ``byValue`` entity attribute globally.  When set to true
 all hydrators will extract by value.  When set to false all hydrators will
 extract by reference.  When not set the individual entity attribute value
 is used and that is, by default, extract by value.
 
 
 limit
------ 
+-----
 
 A hard limit for all queries throughout the entities.  Use this
 to prevent abuse of GraphQL.  Default is 1000.
@@ -91,7 +87,7 @@ This can aid reading of the documentation created by GraphQL.
 
 
 useHydratorCache
--------------------- 
+--------------------
 
 When set to true hydrator results will be cached for
 the duration of the request thereby saving multiple extracts for
@@ -106,17 +102,19 @@ Creating a ``Driver`` with all config options:
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 
   $driver = new Driver($entityManager, new Config[
       'entityPrefix' => 'App\\ORM\\Entity\\',
       'group' => 'customGroup',
       'groupSuffix' => 'customGroupSuffix',
       'globalEnable' => true,
-      'globalIgnore' => ['password'],
+      'ignoreFields' => ['password'],
       'globalByValue' => true,
       'limit' => 500,
       'sortFields' => true,
       'useHydratorCache' => true,
+      'excludeFilters' => [Filters::LIKE],
   ]);
 
 

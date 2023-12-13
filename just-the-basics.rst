@@ -1,9 +1,6 @@
 Just The Basics
 ===============
 
-The goal of this project is to get you up and running with GraphQL and Doctrine
-as easily as possible.
-
 You will need a Doctrine object manager with entities configured with
 appropriate associations throughout.  Support for ad-hoc joins between
 entities is not supported (but you can use the EntityDefinition event
