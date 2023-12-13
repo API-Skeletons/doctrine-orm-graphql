@@ -125,16 +125,12 @@ class ResolveCollectionFactory
 
         // Pagination
         foreach ($pagination as $field => $value) {
-            switch ($field) {
-                case 'after':
-                    $paginationFields[$field] = (int) base64_decode($value, true) + 1;
-                    break;
-                case 'before':
-                    $paginationFields[$field] = (int) base64_decode($value, true);
-                    break;
-                default:
-                    $paginationFields[$field] = $value;
-                    break;
+            if ($field === 'after') {
+                $paginationFields[$field] = (int) base64_decode($value, true) + 1;
+            } elseif ($field === 'before') {
+                $paginationFields[$field] = (int) base64_decode($value, true);
+            } else {
+                $paginationFields[$field] = $value;
             }
         }
 
