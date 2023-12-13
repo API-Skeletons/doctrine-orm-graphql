@@ -14,7 +14,6 @@ use GraphQL\Error\Error;
 use Laminas\Hydrator\Filter;
 use Laminas\Hydrator\NamingStrategy\NamingStrategyEnabledInterface;
 use Laminas\Hydrator\NamingStrategy\NamingStrategyInterface;
-use Laminas\Hydrator\Strategy\StrategyEnabledInterface;
 use Laminas\Hydrator\Strategy\StrategyInterface;
 
 use function assert;
@@ -52,30 +51,26 @@ class HydratorFactory extends AbstractContainer
         $hydrator = new DoctrineObject($this->entityManager, $config['byValue']);
 
         // Create field strategy and assign to hydrator
-        if ($hydrator instanceof StrategyEnabledInterface) {
-            foreach ($config['fields'] as $fieldName => $fieldMetadata) {
-                assert(
-                    in_array(StrategyInterface::class, class_implements($fieldMetadata['hydratorStrategy'])),
-                    'Strategy must implement ' . StrategyInterface::class,
-                );
+        foreach ($config['fields'] as $fieldName => $fieldMetadata) {
+            assert(
+                in_array(StrategyInterface::class, class_implements($fieldMetadata['hydratorStrategy'])),
+                'Strategy must implement ' . StrategyInterface::class,
+            );
 
-                $hydrator->addStrategy($fieldName, $this->get($fieldMetadata['hydratorStrategy']));
-            }
+            $hydrator->addStrategy($fieldName, $this->get($fieldMetadata['hydratorStrategy']));
         }
 
         // Create filters and assign to hydrator
-        if ($hydrator instanceof Filter\FilterEnabledInterface) {
-            foreach ($config['hydratorFilters'] as $name => $filterConfig) {
-                // Default filters to AND
-                $condition   = $filterConfig['condition'] ?? Filter\FilterComposite::CONDITION_AND;
-                $filterClass = $filterConfig['filter'];
-                assert(
-                    in_array(Filter\FilterInterface::class, class_implements($filterClass)),
-                    'Filter must implement ' . StrategyInterface::class,
-                );
+        foreach ($config['hydratorFilters'] as $name => $filterConfig) {
+            // Default filters to AND
+            $condition   = $filterConfig['condition'] ?? Filter\FilterComposite::CONDITION_AND;
+            $filterClass = $filterConfig['filter'];
+            assert(
+                in_array(Filter\FilterInterface::class, class_implements($filterClass)),
+                'Filter must implement ' . StrategyInterface::class,
+            );
 
-                $hydrator->addFilter($name, $this->get($filterClass), $condition);
-            }
+            $hydrator->addFilter($name, $this->get($filterClass), $condition);
         }
 
         // Create naming strategy and assign to hydrator
