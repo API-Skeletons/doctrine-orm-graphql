@@ -71,7 +71,7 @@ final class GlobalEnable extends AbstractMetadataFactory
             $this->metadata[$entityClass]['fields'][$fieldName] = [
                 'description' => $fieldName,
                 'type' => $entityClassMetadata->getTypeOfField($fieldName),
-                'strategy' => $this->getDefaultStrategy($entityClassMetadata->getTypeOfField($fieldName)),
+                'hydratorStrategy' => $this->getDefaultStrategy($entityClassMetadata->getTypeOfField($fieldName)),
                 'excludeFilters' => [],
             ];
         }
@@ -87,10 +87,11 @@ final class GlobalEnable extends AbstractMetadataFactory
             }
 
             $this->metadata[$entityClass]['fields'][$associationName] = [
+                'limit' => null,
                 'excludeFilters' => [],
                 'description' => $associationName,
                 'criteriaEventName' => null,
-                'strategy' => Strategy\AssociationDefault::class,
+                'hydratorStrategy' => Strategy\AssociationDefault::class,
             ];
         }
     }
