@@ -13,6 +13,8 @@ GraphQL Type Driver for Doctrine ORM
 [![Total Downloads](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/downloads)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
+* 2023-12-12 - New version 9.0 is released dropping support for PHP 8.0
+
 This library provides a GraphQL driver for Doctrine ORM for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).
 Configuration is available from simple to verbose.  Multiple configurations for multiple drivers are supported.
 
@@ -202,12 +204,24 @@ Example
 
 ```gql
 {
-  artists ( filter: { name: { contains: "dead" } } ) {
+  artists ( 
+    filter: { 
+      name: { 
+        contains: "dead" 
+      } 
+    } 
+  ) {
     edges {
       node {
         id
         name
-        performances ( filter: { venue: { eq: "The Fillmore" } } ) {
+        performances ( 
+          filter: { 
+            venue: { 
+              eq: "The Fillmore" 
+            } 
+          } 
+        ) {
           edges {
             node {
               venue
@@ -236,12 +250,12 @@ Each field has their own set of filters.  Most fields have the following:
 * endswith - A like query with a wildcard on the left side of the value.
 * contains - A like query.
 
-You may [exclude any filter (excludeCriteria)](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html#entity) from any entity, association, or globally.
+You may [exclude any filter](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html#entity) from any entity, association, or globally.
 
 Events
 ------
 
-### Filter Query Builder
+### Query Builder
 
 You may modify the query builder used to resolve any connection by subscribing to events.
 Each connection may have a unique event name.  `Entity::class . '.filterQueryBuilder'` is recommended.
@@ -264,13 +278,13 @@ $schema = new Schema([
                     'filter' => $driver->filter(Artist::class),
                     'pagination' => $driver->pagination(),
                 ],
-                'resolve' => $driver->resolve(Artist::class, Artist::class . '.filterQueryBuilder'),
+                'resolve' => $driver->resolve(Artist::class, Artist::class . '.queryBuilder'),
             ],
         ],
   ]),
 ]);
 
-$driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.filterQueryBuilder',
+$driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.queryBuilder',
     function(QueryBuilder $event) {
         $event->getQueryBuilder()
             ->innerJoin('entity.user', 'user')
@@ -281,7 +295,7 @@ $driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.filterQueryB
 );
 ```
 
-### Filter Association Criteria
+### Association Criteria
 
 You may modify the criteria object used to filter associations.  For instance, if you use soft
 deletes then you would want to filter out deleted rows from an association.
