@@ -194,6 +194,8 @@ class Entity implements Buildable
                         'description' => $entity->getDescription(),
                     ];
                 };
+
+                continue;
             }
 
             // Collections
