@@ -258,7 +258,7 @@ Events
 ### Query Builder
 
 You may modify the query builder used to resolve any connection by subscribing to events.
-Each connection may have a unique event name.  `Entity::class . '.filterQueryBuilder'` is recommended.
+Each connection may have a unique event name.  `Entity::class . '.queryBuilder'` is recommended.
 Pass as the second parameter to `$driver->resolve()`.
 
 ```php
