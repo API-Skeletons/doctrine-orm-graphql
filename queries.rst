@@ -14,29 +14,28 @@ An example query:
 
 Fetch at most 100 performances in CA for each artist with 'Dead' in their name.
 
-.. code-block:: php
+.. code-block:: js
 
-  <?php
-
-  $query = '{
-      artists ( filter: { name: { contains: "Dead" } } ) {
-        edges {
-          node {
-            name
-            performances (
-              filter: { state: { eq: "CA" } }
-              pagination: { first: 100 }
-            ) {
-              edges {
-                node {
-                  performanceDate venue
-                }
+  {
+    artists ( filter: { name: { contains: "Dead" } } ) {
+      edges {
+        node {
+          name
+          performances (
+            filter: { state: { eq: "CA" } }
+            pagination: { first: 100 }
+          ) {
+            edges {
+              node {
+                performanceDate 
+                venue
               }
             }
           }
         }
       }
-  }';
+    }
+  }
 
 
 Filters
@@ -133,26 +132,7 @@ A pagination argument is included with embedded collections but for top-level
 collections you must include the pagination argument yourself just as you do
 for filters.
 
-.. code-block:: php
-  <?php
-
-  $this->schema = new Schema([
-      'query' => new ObjectType([
-          'name' => 'query',
-          'fields' => [
-              'artist' => [
-                  'type' => $driver->connection($driver->type(Artist::class)),
-                  'args' => [
-                      'filter' => $driver->filter(Artist::class),
-                      'pagination' => $driver->pagination(),
-                  ],
-                  'resolve' => $driver->resolve(Artist::class),
-              ],
-          ],
-      ]),
-  ]);
-
-A complete query for all pagination data
+A complete query for all pagination data:
 
 .. code-block:: js
 
