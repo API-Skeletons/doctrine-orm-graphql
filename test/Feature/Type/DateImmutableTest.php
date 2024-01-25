@@ -78,8 +78,78 @@ class DateImmutableTest extends AbstractTest
             ]),
         ]);
 
+        $now   = (new PHPDateTime())->format('Y-m-d');
+        $query = '
+          query TypeTest($from: DateImmutable!, $to: DateImmutable!) {
+            typetest (
+              filter: {
+                testDateImmutable: {
+                  between: { from: $from, to: $to }
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                  testDateImmutable
+                }
+              }
+            }
+          }
+        ';
+
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: [
+                'from' => '2022-08-06',
+                'to' => $now,
+            ],
+        );
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(1, count($data['typetest']['edges']));
+        $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
+    }
+
+    public function testBetweenLiteral(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'typetest' => [
+                        'type' => $driver->connection($driver->type(TypeTest::class)),
+                        'args' => [
+                            'filter' => $driver->filter(TypeTest::class),
+                        ],
+                        'resolve' => $driver->resolve(TypeTest::class),
+                    ],
+                ],
+            ]),
+        ]);
+
         $now    = (new PHPDateTime())->format('Y-m-d');
-        $query  = '{ typetest ( filter: { testDateImmutable: { between: { from: "2022-08-06" to: "' . $now . '" } } } ) { edges { node { id testDateImmutable } } } }';
+        $query  = '
+          {
+            typetest (
+              filter: {
+                testDateImmutable: {
+                  between: { from: "2022-08-06" to: "' . $now . '" }
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                  testDateImmutable
+                }
+              }
+            }
+          }
+        ';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];

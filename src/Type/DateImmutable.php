@@ -43,7 +43,7 @@ class DateImmutable extends ScalarType
             throw new Error('Date format does not match Y-m-d e.g. 2004-02-12.');
         }
 
-        return DateTimeImmutable::createFromFormat('Y-m-d', $value);
+        return DateTimeImmutable::createFromFormat(DateTimeImmutable::ATOM, $value . 'T00:00:00+00:00');
     }
 
     public function serialize(mixed $value): string|null
