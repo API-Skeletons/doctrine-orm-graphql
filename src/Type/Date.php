@@ -43,7 +43,7 @@ class Date extends ScalarType
             throw new Error('Date format does not match Y-m-d e.g. 2004-02-12.');
         }
 
-        return DateTime::createFromFormat('Y-m-d', $value);
+        return DateTime::createFromFormat(DateTime::ATOM, $value . 'T00:00:00+00:00');
     }
 
     public function serialize(mixed $value): string|null
