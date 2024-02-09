@@ -1,1 +1,1 @@
-sphinx-sizzle-theme
+guzzle_sphinx_theme
