@@ -11,10 +11,10 @@ extensions = []
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'Doctrine ORM GraphQL'
-copyright = u'2024 API Skeletons'
+project = 'Doctrine ORM GraphQL'
+copyright = '2024 API Skeletons'
 version = '9'
-html_title = "GraphQL Driver for Doctrine ORM Documentation"
+html_title = "GraphQL Driver for Doctrine ORM"
 html_short_title = "Doctrine ORM GraphQL"
 html_favicon = 'favicon.ico'
 
