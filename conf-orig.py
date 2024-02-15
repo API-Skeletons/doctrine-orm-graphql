@@ -11,11 +11,12 @@ extensions = []
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'Guzzle'
-copyright = u'2015, Michael Dowling'
-version = '7'
-html_title = "Guzzle Documentation"
-html_short_title = "Guzzle 7"
+project = 'Doctrine ORM GraphQL'
+copyright = '2024 API Skeletons'
+version = '9'
+html_title = "GraphQL Driver for Doctrine ORM"
+html_short_title = "Doctrine ORM GraphQL"
+html_favicon = 'favicon.ico'
 
 exclude_patterns = ['_build']
 html_static_path = ['_static']
@@ -58,7 +59,7 @@ html_theme_options = {
 
     # Specify a base_url used to generate sitemap.xml links. If not
     # specified, then no sitemap will be built.
-    "base_url": "http://guzzlephp.org"
+    "base_url": "https://doctrine-orm-graphql.apiskeletons.dev"
 
     # Allow the "Table of Contents" page to be defined separately from "master_doc"
     # tocpage = Contents
