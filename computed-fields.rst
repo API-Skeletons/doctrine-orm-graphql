@@ -16,8 +16,6 @@ name cannot be modified.
 
 .. code-block:: php
 
-  <?php
-
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
   use App\ORM\Entity\Artist;

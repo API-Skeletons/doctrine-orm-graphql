@@ -18,9 +18,6 @@ attributed entities it may be faster to cache your metadata instead of
 rebuilding it with each request.
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;

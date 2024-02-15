@@ -95,9 +95,6 @@ input type.
 To use a type you must fetch it from the TypeManager.
 
 .. code-block:: php
-   :linenos:
-
-   <?php
 
    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 

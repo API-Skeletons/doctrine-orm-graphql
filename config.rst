@@ -96,9 +96,6 @@ the same entity.  **Default is ``false``**.
 Creating a ``Driver`` with all config options:
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
