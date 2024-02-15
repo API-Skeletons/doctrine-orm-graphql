@@ -11,9 +11,6 @@ It is recommended you alias this namespace in your entities as ``GraphQL``.
 A slightly complicated example:
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL
 
@@ -96,9 +93,6 @@ in your graph. Optional parameters are:
   See `containers <containers.html>`_
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   // Handle a number field as a string
 

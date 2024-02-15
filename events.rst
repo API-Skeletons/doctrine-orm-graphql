@@ -24,8 +24,6 @@ In the code below the custom event ``Artist::class . '.queryBuilder'`` will fire
 
 .. code-block:: php
 
-  <?php
-
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use App\ORM\Entity\Artist;
   use GraphQL\Type\Definition\ObjectType;
@@ -50,8 +48,6 @@ To listen for this event and add filtering, such as filtering for the context
 user, create at least one listener.  You may add multiple listeners.
 
 .. code-block:: php
-
-  <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
   use League\Event\EventDispatcher;
@@ -81,8 +77,6 @@ listen to the Criteria Event to add additional criteria for filtering
 the association if you assigned an event name in the attributes.
 
 .. code-block:: php
-
-  <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria;
@@ -130,8 +124,6 @@ Events of this type are named ``Entity::class . '.definition'`` and the event
 name cannot be modified.
 
 .. code-block:: php
-
-  <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
@@ -182,8 +174,6 @@ to immediatly after creating the driver. See `Metadata documentation <metadata.h
 This event is named ``'metadata.build'``.
 
 .. code-block:: php
-
-  <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;

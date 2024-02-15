@@ -21,9 +21,6 @@ used in the library.  If you want to specify your own type for a field you'll
 need to add your custom type to the container.
 
   .. code-block:: php
-    :linenos:
-
-    <?php
 
     use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
     use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
@@ -43,7 +40,6 @@ new Timestamp type (modifying the DateTime class is uncomplicated) then adding t
 type to the type manager.
 
   .. code-block:: php
-    :linenos:
 
     $driver->get(TypeManager::class)
         ->set('timestamp', fn() => new Type\Timestamp());
@@ -56,9 +52,6 @@ The ``HydratorFactory`` stores hydrator strategies,
 filter classes, naming strategy classes, and all the generated hydrators.
 
   .. code-block:: php
-    :linenos:
-
-    <?php
 
     use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
     use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;

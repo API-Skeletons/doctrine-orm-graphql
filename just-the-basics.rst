@@ -19,9 +19,6 @@ Attributes are stored in the namespace
 each element you want to be queryable from GraphQL.
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 
@@ -39,9 +36,6 @@ That's the minimum configuration requried.  Next, create your driver using your
 entity manager
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 
@@ -51,9 +45,6 @@ The next step is configuring your GraphQL schema.  In this section we'll create
 types for the entity, the filter for the entity, and the resolver.
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   use GraphQL\Type\Definition\ObjectType;
   use GraphQL\Type\Definition\Type;
@@ -78,9 +69,6 @@ types for the entity, the filter for the entity, and the resolver.
 Now, using the schema, you can start making GraphqL queries
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   use GraphQL\GraphQL;
 
@@ -104,9 +92,6 @@ In the following example the Artist entity has a one-to-many relationship with
 Performance and we want to make deeper queries from Artist to Performance.
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 
@@ -137,9 +122,6 @@ Using the same Schema configuration as above, with the new Performance
 attributes, a query of performances is now possible:
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   use GraphQL\GraphQL;
 

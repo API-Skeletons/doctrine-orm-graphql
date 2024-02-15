@@ -12,8 +12,6 @@ of a field you can construct your query like this:
 
 .. code-block:: php
 
-   <?php
-
    use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as FilterQueryBuilder;
    use Doctrine\ORM\EntityManager;
    use GraphQL\Type\Definition\Type;
@@ -51,10 +49,7 @@ To work around this you must use a shared type manager:
 
 .. code-block:: php
 
-   <?php
-
    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
-
 
    $driver1 = new Driver($entityManager, new Config(['group' => 'group1']));
    $driver2 = new Driver($entityManager, new Config(['group' => 'group2']));

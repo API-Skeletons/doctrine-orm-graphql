@@ -4,9 +4,6 @@ Running Mutations
 Mutations modify data in your Doctrine ORM.  They are defined as such:
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   $schema = new Schema([
       'mutation' => new ObjectType([
@@ -46,9 +43,6 @@ Calling Mutations
 -----------------
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   $query = 'mutation MutationName($id: Int!, $name: String!) {
       mutationName(id: $id, input: { name: $name }) {
@@ -71,9 +65,6 @@ required.  Since this is rarely what is intended, there are two optional
 parameters to specify required and optional fields.
 
 .. code-block:: php
-  :linenos:
-
-  <?php
 
   $driver->input(Entity::class, ['requiredField'], ['optionalField'])
 
