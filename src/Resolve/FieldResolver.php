@@ -7,7 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
-use Doctrine\Common\Util\ClassUtils;
+use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -39,7 +39,9 @@ class FieldResolver
         assert(is_object($source), 'A non-object was passed to the FieldResolver.  '
             . 'Verify you\'re wrapping your Doctrine GraohQL type() call in a connection.');
 
-        $entityClass   = ClassUtils::getRealClass($source::class);
+        $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
+
+        $entityClass = $defaultProxyClassNameResolver->getClass($source);
         $splObjectHash = spl_object_hash($source);
 
         /**

@@ -16,6 +16,7 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\PersistentCollection;
+use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
 
@@ -44,7 +45,8 @@ class ResolveCollectionFactory
             $fieldResolver = $this->fieldResolver;
             $collection    = $fieldResolver($source, $args, $context, $info);
 
-            $entityClassName = ClassUtils::getRealClass($source::class);
+            $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
+            $entityClassName               = $defaultProxyClassNameResolver->getClass($source);
 
             $targetClassName = (string) $this->entityManager->getMetadataFactory()
                 ->getMetadataFor($entityClassName)

@@ -10,7 +10,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
 use GraphQL\Type\Definition\Type;
 use League\Event\EventDispatcher;
@@ -167,9 +167,9 @@ class FilterFactory
 
             if (
                 in_array($associationMetadata['type'], [
-                    ClassMetadataInfo::TO_MANY,
-                    ClassMetadataInfo::MANY_TO_MANY,
-                    ClassMetadataInfo::ONE_TO_MANY,
+                    ClassMetadata::TO_MANY,
+                    ClassMetadata::MANY_TO_MANY,
+                    ClassMetadata::ONE_TO_MANY,
                 ])
                 || ! in_array(Filters::EQ, $allowedFilters)
             ) {
