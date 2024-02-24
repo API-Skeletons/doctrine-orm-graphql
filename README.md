@@ -15,7 +15,7 @@ GraphQL Type Driver for Doctrine ORM
 
 * 2023-12-12 - New version 9.0 is released dropping support for PHP 8.0
 
-This library provides a GraphQL driver for Doctrine ORM for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).
+This library provides a GraphQL driver for Doctrine ORM version 2 for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).
 Configuration is available from simple to verbose.  Multiple configurations for multiple drivers are supported.
 
 This library **does not** try to redefine how the excellent library [webonyx/graphql-php](https://github.com/webonyx/graphql-php) operates.  Instead, it creates types to be used within the framework that library provides.
