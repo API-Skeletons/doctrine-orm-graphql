@@ -13,6 +13,7 @@ GraphQL Type Driver for Doctrine ORM
 [![Total Downloads](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/downloads)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
+* 2024-02-24 - Support for ORM version 3
 * 2023-12-12 - New version 9.0 is released dropping support for PHP 8.0
 
 This library provides a GraphQL driver for Doctrine ORM version 2 for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).
