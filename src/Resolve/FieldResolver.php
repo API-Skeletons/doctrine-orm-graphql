@@ -41,7 +41,7 @@ class FieldResolver
 
         $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
 
-        $entityClass = $defaultProxyClassNameResolver->getClass($source);
+        $entityClass   = $defaultProxyClassNameResolver->getClass($source);
         $splObjectHash = spl_object_hash($source);
 
         /**

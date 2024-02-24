@@ -13,7 +13,6 @@ use ArrayObject;
 use Closure;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\PersistentCollection;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
