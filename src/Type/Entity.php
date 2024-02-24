@@ -15,7 +15,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ArrayObject;
 use Closure;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ObjectType;
@@ -180,9 +180,9 @@ class Entity implements Buildable
             $associationMetadata = $classMetadata->getAssociationMapping($associationName);
             if (
                 in_array($associationMetadata['type'], [
-                    ClassMetadataInfo::ONE_TO_ONE,
-                    ClassMetadataInfo::MANY_TO_ONE,
-                    ClassMetadataInfo::TO_ONE,
+                    ClassMetadata::ONE_TO_ONE,
+                    ClassMetadata::MANY_TO_ONE,
+                    ClassMetadata::TO_ONE,
                 ])
             ) {
                 $targetEntity             = $associationMetadata['targetEntity'];

@@ -6,11 +6,12 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL;
 
 use DateTime;
 use DateTimeImmutable;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
-use Doctrine\ORM\Tools\Setup;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
@@ -28,23 +29,25 @@ abstract class AbstractTest extends TestCase
     public function setUp(): void
     {
         // Create a simple "default" Doctrine ORM configuration for Annotations
-        $isDevMode = true;
-        $config    = Setup::createAttributeMetadataConfiguration([__DIR__ . '/Entity'], $isDevMode);
+        $config = ORMSetup::createAttributeMetadataConfiguration(
+            paths: [__DIR__ . '/Entity'],
+            isDevMode: true,
+        );
 
-        // database configuration parameters
-        $conn = [
+        // database connection
+        $connection = DriverManager::getConnection([
             'driver' => 'pdo_sqlite',
             'memory' => true,
-        ];
+        ]);
 
         if (! Type::hasType('uuid')) {
             Type::addType('uuid', 'Ramsey\Uuid\Doctrine\UuidType');
         }
 
         // obtaining the entity manager
-        $this->entityManager = EntityManager::create($conn, $config);
+        $this->entityManager = new EntityManager($connection, $config);
         $tool                = new SchemaTool($this->entityManager);
-        $res                 = $tool->createSchema($this->entityManager->getMetadataFactory()->getAllMetadata());
+        $tool->createSchema($this->entityManager->getMetadataFactory()->getAllMetadata());
 
         $this->populateData();
     }
