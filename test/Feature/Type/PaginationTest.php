@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Resolve;
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
