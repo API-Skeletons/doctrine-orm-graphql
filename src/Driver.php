@@ -10,36 +10,53 @@ use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
 
+use GraphQL\Type\Definition\ScalarType;
+use function method_exists;
+
 class Driver extends AbstractContainer
 {
     use Services;
 
     /**
-     * Return a connection wrapper for a type
+     * Return a connection wrapper for a type.  This is a special type that
+     * wraps the entity type
      *
      * @throws Error
      */
     public function connection(ObjectType $objectType): ObjectType
     {
-        /**
-         * Connections rely on the entity ObjectType so the build() method is used
-         */
         return $this->get(Type\TypeManager::class)
             ->build(Type\Connection::class, $objectType->name . '_Connection', $objectType);
     }
 
     /**
-     * Return a GraphQL type for the entity class
+     * A shortcut into the TypeManager
+     *
+     * This handles the special case for types that are both a GraphQL type
+     * and a PHP type by resolving the __invoke method.
      *
      * @throws Error
      */
-    public function type(string $entityClass): ObjectType
+    public function type(string $typeName): ObjectType|ScalarType
     {
-        return $this->get(Type\TypeManager::class)->build(Type\Entity::class, $entityClass)();
+        $typeManager = $this->get(Type\TypeManager::class);
+
+        if (! $typeManager->has($typeName)) {
+            return $typeManager->build(Type\Entity::class, $typeName)();
+        }
+
+        $type = $typeManager->get($typeName);
+
+        if (method_exists($type, '__invoke')) {
+            return $type();
+        }
+
+        return $type;
     }
 
     /**
-     * Filters for a connection
+     * Return an InputObject type of filters for a connection
+     * Requires the internal representation of the entity
      *
      * @throws Error
      */
@@ -47,7 +64,7 @@ class Driver extends AbstractContainer
     {
         return $this->get(Filter\FilterFactory::class)->get(
             $this->get(Type\TypeManager::class)
-                ->build(Type\Entity::class, $entityClass),
+               ->build(Type\Entity::class, $entityClass),
         );
     }
 
