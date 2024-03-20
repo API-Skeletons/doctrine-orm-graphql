@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
-
-use GraphQL\Type\Definition\ScalarType;
-use function method_exists;
 
 class Driver extends AbstractContainer
 {
@@ -30,25 +27,28 @@ class Driver extends AbstractContainer
     }
 
     /**
-     * A shortcut into the TypeManager
-     *
-     * This handles the special case for types that are both a GraphQL type
-     * and a PHP type by resolving the __invoke method.
+     * A shortcut into the TypeManager that also handles Entity objects
      *
      * @throws Error
      */
-    public function type(string $typeName): ObjectType|ScalarType
+    public function type(string $typeName): mixed
     {
         $typeManager = $this->get(Type\TypeManager::class);
 
-        if (! $typeManager->has($typeName)) {
-            return $typeManager->build(Type\Entity::class, $typeName)();
-        }
+        try {
+            // If a type is not registered, try to resolve it as an Entity
+            if (! $typeManager->has($typeName)) {
+                return $this->entityType($typeName)();
+            }
 
-        $type = $typeManager->get($typeName);
+            $type = $typeManager->get($typeName);
 
-        if (method_exists($type, '__invoke')) {
-            return $type();
+            // Resolve an Entity type to its GraphQL representation
+            if ($type instanceof Entity) {
+                return $type();
+            }
+        } catch (Error) {
+            throw new Error('Type "' . $typeName . '" is not registered');
         }
 
         return $type;
@@ -63,8 +63,7 @@ class Driver extends AbstractContainer
     public function filter(string $entityClass): object
     {
         return $this->get(Filter\FilterFactory::class)->get(
-            $this->get(Type\TypeManager::class)
-               ->build(Type\Entity::class, $entityClass),
+            $this->entityType($entityClass),
         );
     }
 
@@ -75,7 +74,7 @@ class Driver extends AbstractContainer
      */
     public function pagination(): object
     {
-        return $this->get(TypeManager::class)->get('pagination');
+        return $this->type('pagination');
     }
 
     /**
@@ -86,8 +85,7 @@ class Driver extends AbstractContainer
     public function resolve(string $entityClass, string|null $eventName = null): Closure
     {
         return $this->get(Resolve\ResolveEntityFactory::class)->get(
-            $this->get(Type\TypeManager::class)
-                ->build(Type\Entity::class, $entityClass),
+            $this->entityType($entityClass),
             $eventName,
         );
     }
@@ -101,5 +99,22 @@ class Driver extends AbstractContainer
     public function input(string $entityClass, array $requiredFields = [], array $optionalFields = []): InputObjectType
     {
         return $this->get(Input\InputFactory::class)->get($entityClass, $requiredFields, $optionalFields);
+    }
+
+    /**
+     * Internally an Entity object is used for Doctrine entities.
+     * The Entity object has an __invoke method which returns the
+     * GraphQL ObjectType.  This method exists to fetch that Entity
+     * object.  It is resolved by $this->type()
+     *
+     * Access to this method is not recommended.  It is used internally
+     * but requires public scope.
+     *
+     * @throws Error
+     */
+    public function entityType(string $entityClass): Entity
+    {
+        return $this->get(Type\TypeManager::class)
+            ->build(Type\Entity::class, $entityClass);
     }
 }

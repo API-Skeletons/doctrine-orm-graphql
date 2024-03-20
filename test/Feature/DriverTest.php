@@ -177,4 +177,14 @@ class DriverTest extends AbstractTest
 
         $this->assertInstanceOf(BooleanType::class, $driver->type('custom'));
     }
+
+    public function testTypeMethodInvalidType(): void
+    {
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('Type "custom" is not registered');
+
+        $driver = new Driver($this->getEntityManager());
+
+        $this->assertInstanceOf(BooleanType::class, $driver->type('custom'));
+    }
 }
