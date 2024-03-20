@@ -6,7 +6,6 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Uuid;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
@@ -109,7 +108,7 @@ class UuidTest extends AbstractTest
                     'typetest' => [
                         'type' => $driver->type(TypeTest::class),
                         'args' => [
-                            'uuid' => $driver->get(TypeManager::class)->get('uuid'),
+                            'uuid' => $driver->type('uuid'),
                         ],
                         'resolve' => function ($root, array $args, $context, ResolveInfo $info) use ($driver) {
                             // This tests the Uuid type for changing a string into a UuidInterface

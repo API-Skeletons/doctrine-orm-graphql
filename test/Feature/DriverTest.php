@@ -16,7 +16,9 @@ use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ArrayObject;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
+use GraphQL\Type\Definition\BooleanType;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 use Psr\Container\ContainerInterface;
 
@@ -164,5 +166,25 @@ class DriverTest extends AbstractTest
         $output = $result->toArray();
 
         $this->assertEquals('Grateful Dead', $output['data']['artist']['edges'][0]['node']['name']);
+    }
+
+    public function testTypeMethodForCustomScalarValues(): void
+    {
+        $driver = new Driver($this->getEntityManager());
+
+        $driver->get(TypeManager::class)
+            ->set('custom', static fn () => Type::boolean());
+
+        $this->assertInstanceOf(BooleanType::class, $driver->type('custom'));
+    }
+
+    public function testTypeMethodInvalidType(): void
+    {
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('Type "custom" is not registered');
+
+        $driver = new Driver($this->getEntityManager());
+
+        $this->assertInstanceOf(BooleanType::class, $driver->type('custom'));
     }
 }

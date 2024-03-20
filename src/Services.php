@@ -38,11 +38,11 @@ trait Services
             )
             ->set(
                 EventDispatcher::class,
-                static fn () => new EventDispatcher()
+                static fn () => new EventDispatcher(),
             )
             ->set(
                 Type\TypeManager::class,
-                static fn (AbstractContainer $container) => new Type\TypeManager($container)
+                static fn (AbstractContainer $container) => new Type\TypeManager($container),
             )
             ->set(
                 'metadata',
