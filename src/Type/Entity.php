@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Buildable;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;
@@ -32,13 +32,14 @@ use const SORT_REGULAR;
 /**
  * This class is used to build an ObjectType for an entity
  */
-class Entity implements Buildable
+class Entity
 {
     /** @var mixed[]  */
     protected array $metadata;
     protected Config $config;
     protected FilterFactory $filterFactory;
     protected EntityManager $entityManager;
+    protected EntityTypeManager $entityTypeManager;
     protected EventDispatcher $eventDispatcher;
     protected FieldResolver $fieldResolver;
     protected HydratorFactory $hydratorFactory;
@@ -46,17 +47,17 @@ class Entity implements Buildable
     protected TypeManager $typeManager;
 
     /** @param mixed[] $params */
-    public function __construct(AbstractContainer $container, string $typeName, array $params)
+    public function __construct(AbstractContainer $container, string $typeName)
     {
-        assert($container instanceof TypeManager);
-        $container = $container->getContainer();
+        assert($container instanceof Driver);
 
         $this->collectionFactory = $container->get(ResolveCollectionFactory::class);
         $this->config            = $container->get(Config::class);
-        $this->filterFactory     = $container->get(FilterFactory::class);
         $this->entityManager     = $container->get(EntityManager::class);
+        $this->entityTypeManager = $container->get(EntityTypeManager::class);
         $this->eventDispatcher   = $container->get(EventDispatcher::class);
         $this->fieldResolver     = $container->get(FieldResolver::class);
+        $this->filterFactory     = $container->get(FilterFactory::class);
         $this->hydratorFactory   = $container->get(HydratorFactory::class);
         $this->typeManager       = $container->get(TypeManager::class);
 
@@ -67,11 +68,6 @@ class Entity implements Buildable
         }
 
         $this->metadata = $container->get('metadata')[$typeName];
-    }
-
-    public function __invoke(): ObjectType
-    {
-        return $this->getGraphQLType();
     }
 
     public function getHydrator(): HydratorInterface
@@ -105,7 +101,7 @@ class Entity implements Buildable
      *
      * @throws MappingException
      */
-    protected function getGraphQLType(): ObjectType
+    public function getGraphQLType(): ObjectType
     {
         if ($this->typeManager->has($this->getTypeName())) {
             return $this->typeManager->get($this->getTypeName());
@@ -132,7 +128,7 @@ class Entity implements Buildable
         );
 
         /**
-         * If sortFields then resolve the fiels and sort them
+         * If sortFields then resolve the fields and sort them
          */
         if ($this->config->getSortFields()) {
             if ($arrayObject['fields'] instanceof Closure) {
@@ -187,7 +183,7 @@ class Entity implements Buildable
             ) {
                 $targetEntity             = $associationMetadata['targetEntity'];
                 $fields[$associationName] = function () use ($targetEntity) {
-                    $entity = $this->typeManager->build(self::class, $targetEntity);
+                    $entity = $this->entityTypeManager->get($targetEntity);
 
                     return [
                         'type' => $entity->getGraphQLType(),
@@ -201,7 +197,7 @@ class Entity implements Buildable
             // Collections
             $targetEntity             = $associationMetadata['targetEntity'];
             $fields[$associationName] = function () use ($targetEntity, $associationName) {
-                $entity    = $this->typeManager->build(self::class, $targetEntity);
+                $entity    = $this->entityTypeManager->get($targetEntity);
                 $shortName = $this->getTypeName() . '_' . $associationName;
 
                 return [

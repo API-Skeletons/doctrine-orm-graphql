@@ -11,7 +11,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToInteger;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\EntityTypeManager;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
@@ -28,7 +28,7 @@ class EntityTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'entityTest']));
 
-        $entity = $driver->get(TypeManager::class)->build(Entity::class, Recording::class);
+        $entity = $driver->get(EntityTypeManager::class)->get(Recording::class);
 
         $this->assertInstanceOf(Entity::class, $entity);
         $this->assertEquals(Recording::class, $entity->getEntityClass());
@@ -86,8 +86,7 @@ class EntityTest extends AbstractTest
             },
         );
 
-        $graphQLType  = $driver->get(TypeManager::class)
-            ->build(Entity::class, User::class)();
+        $graphQLType  = $driver->type(User::class);
         $fields       = array_keys($graphQLType->getFields());
         $fieldsSorted = $fields;
         sort($fieldsSorted);

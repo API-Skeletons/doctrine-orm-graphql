@@ -28,7 +28,7 @@ class CustomTypeTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'typeTest' => [
-                        'type' => $driver->connection($driver->type(TypeTest::class)),
+                        'type' => $driver->connection(TypeTest::class),
                         'args' => [
                             'filter' => $driver->filter(TypeTest::class),
                         ],

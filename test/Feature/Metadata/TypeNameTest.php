@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\EntityTypeManager;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use GraphQL\GraphQL;
@@ -27,7 +28,7 @@ class TypeNameTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'artist' => [
-                        'type' => $driver->connection($driver->type(Artist::class)),
+                        'type' => $driver->connection(Artist::class),
                         'args' => [
                             'filter' => $driver->filter(Artist::class),
                         ],
@@ -37,9 +38,9 @@ class TypeNameTest extends AbstractTest
             ]),
         ]);
 
-        $artistClass = $driver->entityType(Artist::class);
+        $artistObject = $driver->get(EntityTypeManager::class)->get(Artist::class);
 
-        $this->assertEquals('Artist_unittest', $artistClass->getTypeName());
+        $this->assertEquals('Artist_unittest', $artistObject->getTypeName());
     }
 
     public function testEmptyGroupNameGlobalEnable(): void
@@ -55,7 +56,7 @@ class TypeNameTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'artist' => [
-                        'type' => $driver->connection($driver->type(Artist::class)),
+                        'type' => $driver->connection(Artist::class),
                         'args' => [
                             'filter' => $driver->filter(Artist::class),
                         ],
@@ -84,7 +85,7 @@ class TypeNameTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'artist' => [
-                        'type' => $driver->connection($driver->type(Artist::class)),
+                        'type' => $driver->connection(Artist::class),
                         'args' => [
                             'filter' => $driver->filter(Artist::class),
                         ],
@@ -112,7 +113,7 @@ class TypeNameTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'artist' => [
-                        'type' => $driver->connection($driver->type(Artist::class)),
+                        'type' => $driver->connection(Artist::class),
                         'args' => [
                             'filter' => $driver->filter(Artist::class),
                         ],

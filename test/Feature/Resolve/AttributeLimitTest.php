@@ -24,7 +24,7 @@ class AttributeLimitTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'artist' => [
-                        'type' => $driver->connection($driver->type(Artist::class)),
+                        'type' => $driver->connection(Artist::class),
                         'args' => [
                             'filter' => $driver->filter(Artist::class),
                             'pagination' => $driver->pagination(),

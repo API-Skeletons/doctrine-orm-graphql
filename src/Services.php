@@ -42,7 +42,7 @@ trait Services
             )
             ->set(
                 Type\TypeManager::class,
-                static fn (AbstractContainer $container) => new Type\TypeManager($container),
+                static fn (AbstractContainer $container) => new Type\TypeManager(),
             )
             ->set(
                 'metadata',
@@ -71,7 +71,7 @@ trait Services
                 static function (AbstractContainer $container) {
                     return new Resolve\FieldResolver(
                         $container->get(Config::class),
-                        $container->get(Type\TypeManager::class),
+                        $container->get(Type\EntityTypeManager::class),
                     );
                 },
             )
@@ -115,7 +115,7 @@ trait Services
                 static function (AbstractContainer $container) {
                     return new Hydrator\HydratorFactory(
                         $container->get(EntityManager::class),
-                        $container->get(Type\TypeManager::class),
+                        $container->get(Type\EntityTypeManager::class),
                     );
                 },
             )
@@ -125,10 +125,19 @@ trait Services
                     return new Input\InputFactory(
                         $container->get(Config::class),
                         $container->get(EntityManager::class),
+                        $container->get(Type\EntityTypeManager::class),
                         $container->get(Type\TypeManager::class),
                     );
                 },
-            );
+            )
+        ->set(
+            Type\EntityTypeManager::class,
+            static function (AbstractContainer $container) {
+                return new Type\EntityTypeManager(
+                    $container,
+                );
+            },
+        );
     }
 
     abstract public function set(string $id, mixed $value): mixed;
