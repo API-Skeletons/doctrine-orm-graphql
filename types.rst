@@ -1,3 +1,4 @@
+==========
 Data Types
 ==========
 
@@ -8,7 +9,7 @@ This library has many other types that are primarily
 used to map Doctrine types to GraphQL types.
 
 Data Type Mappings
-------------------
+==================
 
 .. list-table:: Data Type Mappings
    :widths: 33 33 34
@@ -87,7 +88,7 @@ Data Type Mappings
 See also `Doctrine Mapping Types <https://www.doctrine-project.org/projects/doctrine-orm/en/2.16/reference/basic-mapping.html#doctrine-mapping-types>`_.
 
 Using Types
------------
+===========
 
 You may use any of the above types freely such as a blob for an
 input type.
@@ -96,10 +97,7 @@ To use a type you must fetch it from the TypeManager.
 
 .. code-block:: php
 
-   use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
-
-   $graphqlBlobType = $driver->get(TypeManager::class)
-       ->get('blob');
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 
     $schema = new Schema([
         'mutation' => new ObjectType([
@@ -108,7 +106,7 @@ To use a type you must fetch it from the TypeManager.
                 'uploadFile' => [
                     'type' => $driver->type(ArtistFile::class),
                     'args' => [
-                        'file' => $graphqlBlobType,
+                        'file' => $driver->type('blob'),
                     ],
                     'resolve' => function ($root, array $args, $context, ResolveInfo $info) use ($driver) {
                         /**
@@ -125,7 +123,7 @@ To use a type you must fetch it from the TypeManager.
     ]);
 
 Custom Types
-------------
+============
 
 If your schema has a ``timestamp`` type, that data type is not suppored
 by this library.  But adding the type is just a matter of creating a

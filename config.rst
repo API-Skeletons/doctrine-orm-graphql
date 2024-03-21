@@ -1,3 +1,4 @@
+=============
 Driver Config
 =============
 
@@ -9,7 +10,7 @@ The parameter options are:
 
 
 entityPrefix
-----------------
+============
 
 This is a common namespace prefix for all entities in a group.  When specified,
 the ``entityPrefix`` such as, 'App\\ORM\\Entity\\', will be stripped from driver name.  So
@@ -20,14 +21,14 @@ See also ``groupSuffix``
 
 
 excludeFilters
----------------
+==============
 
 An array of filters to exclude from all available filters for all fields
 and associations for all entities.
 
 
 group
----------
+=====
 
 Each attribute has an optional ``group`` parameter that allows
 for multiple configurations within the entities.  Specify the group in the
@@ -36,7 +37,7 @@ If no ``group`` is specified the group value is ``default``.
 
 
 groupSuffix
----------------
+===========
 
 By default, the group name is appended to GraphQL types.  You may specify
 a different suffix or an empty suffix.  When used in combination with
@@ -47,7 +48,7 @@ to
 
 
 globalEnable
-----------------
+============
 
 When set to true all fields and all associations will be
 enabled.  This is best used as a development setting when
@@ -55,7 +56,7 @@ the entities are subject to change.  Really.
 
 
 ignoreFields
-----------------
+============
 
 When ``globalEnable`` is set to true, this array of field and associations names
 will be excluded from the schema.  For instance ``['password']`` is a good choice
@@ -63,7 +64,7 @@ to ignore globally.
 
 
 globalByValue
------------------
+=============
 
 This overrides the ``byValue`` entity attribute globally.  When set to true
 all hydrators will extract by value.  When set to false all hydrators will
@@ -72,14 +73,14 @@ is used and that is, by default, extract by value.
 
 
 limit
------
+=====
 
 A hard limit for all queries throughout the entities.  Use this
 to prevent abuse of GraphQL.  Default is 1000.
 
 
 sortFields
-----------
+==========
 
 When entity types are created, and after the definition event,
 the fields will be sorted alphabetically when set to true.
@@ -87,7 +88,7 @@ This can aid reading of the documentation created by GraphQL.
 
 
 useHydratorCache
---------------------
+================
 
 When set to true hydrator results will be cached for
 the duration of the request thereby saving multiple extracts for

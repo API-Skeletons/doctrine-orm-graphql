@@ -1,3 +1,4 @@
+===============
 Just The Basics
 ===============
 
@@ -55,7 +56,7 @@ types for the entity, the filter for the entity, and the resolver.
           'name' => 'query',
           'fields' => [
               'artist' => [
-                  'type' => $driver->connection($driver->type(Artist::class)),
+                  'type' => $driver->connection(Artist::class),
                   'args' => [
                       'filter' => $driver->filter(Artist::class),
                       'pagination' => $driver->pagination(),
