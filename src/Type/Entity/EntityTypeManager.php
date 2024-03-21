@@ -6,7 +6,6 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ArrayObject;
 
 use function assert;
 use function strtolower;
@@ -17,8 +16,6 @@ use function strtolower;
  */
 class EntityTypeManager extends AbstractContainer
 {
-    protected ArrayObject $metadata;
-
     public function __construct(
         protected AbstractContainer $container,
     ) {
