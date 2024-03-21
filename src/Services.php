@@ -45,6 +45,10 @@ trait Services
                 static fn (AbstractContainer $container) => new Type\TypeManager(),
             )
             ->set(
+                Type\Entity\EntityTypeManager::class,
+                static fn (AbstractContainer $container) => new Type\Entity\EntityTypeManager($container),
+            )
+            ->set(
                 'metadata',
                 static function (AbstractContainer $container) use ($metadata) {
                     return (new Metadata\MetadataFactory(
@@ -129,15 +133,7 @@ trait Services
                         $container->get(Type\TypeManager::class),
                     );
                 },
-            )
-        ->set(
-            Type\Entity\EntityTypeManager::class,
-            static function (AbstractContainer $container) {
-                return new Type\Entity\EntityTypeManager(
-                    $container,
-                );
-            },
-        );
+            );
     }
 
     abstract public function set(string $id, mixed $value): mixed;
