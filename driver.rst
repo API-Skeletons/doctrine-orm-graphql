@@ -39,11 +39,11 @@ filter()
 ========
 
 Based on the attribute configuration of an entity, this funciton adds a
-``filter`` argument to a connection.  See `filters <queries>`_ for a list of
+``filter`` argument to a connection.  See `filters <queries.html>`_ for a list of
 available filters per field.  The args field must be ``filter``.
 
 Filters are applied to a ``connection``.  It is also possible to use them ad-hoc
-as detailed in `tips <tips>`_.
+as detailed in `tips <tips.html>`_.
 
   .. code-block:: php
 
@@ -70,10 +70,10 @@ and Doctrine entity types.
 There are two type managers:  ``TypeManager`` and ``EntityTypeManager``.
 Types from each of these managers are returned from this `type()` function.
 
-See `types <types>`_ for details on custom types and using the ``TypeManager``.
+See `types <types.html>`_ for details on custom types and using the ``TypeManager``.
 
 The ``EntityTypeManager`` is used only for Doctrine entities and is populated
-though the `metadata <metadata>`_.  This class is used internally for generating
+though the `metadata <metadata.html>`_.  This class is used internally for generating
 ``ObjectType``s for entities.
 
 Though a ``connection`` is a type, it is not
