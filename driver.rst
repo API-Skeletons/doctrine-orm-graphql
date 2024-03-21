@@ -46,6 +46,7 @@ Filters are applied to a ``connection``.  It is also possible to use them ad-hoc
 as detailed in `tips <tips>`_.
 
   .. code-block:: php
+
     'args' => [
         'pagination' => $driver->pagination(),
         'filter' => $driver->filter(Artist::class),
