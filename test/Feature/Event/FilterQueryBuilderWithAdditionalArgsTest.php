@@ -43,7 +43,7 @@ class FilterQueryBuilderWithAdditionalArgsTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'artists' => [
-                        'type' => $driver->connection($driver->type(Artist::class)),
+                        'type' => $driver->connection(Artist::class),
                         'args' => [
                             'id' => Type::String(),
                             'filter' => $driver->filter(Artist::class),

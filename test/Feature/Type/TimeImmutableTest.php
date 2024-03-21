@@ -62,7 +62,7 @@ class TimeImmutableTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'typetest' => [
-                        'type' => $driver->connection($driver->type(TypeTest::class)),
+                        'type' => $driver->connection(TypeTest::class),
                         'args' => [
                             'filter' => $driver->filter(TypeTest::class),
                         ],

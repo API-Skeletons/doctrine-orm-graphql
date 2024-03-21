@@ -6,7 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Input;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\ORM\EntityManager;
 use Exception;
@@ -27,6 +27,7 @@ class InputFactory extends AbstractContainer
     public function __construct(
         protected Config $config,
         protected EntityManager $entityManager,
+        protected EntityTypeManager $entityTypeManager,
         protected TypeManager $typeManager,
     ) {
     }
@@ -42,7 +43,7 @@ class InputFactory extends AbstractContainer
     public function get(string $id, array $requiredFields = [], array $optionalFields = []): InputObjectType
     {
         $fields       = [];
-        $targetEntity = $this->typeManager->build(Entity::class, $id);
+        $targetEntity = $this->entityTypeManager->get($id);
 
         if (! count($requiredFields) && ! count($optionalFields)) {
             $this->addAllFieldsAsRequired($targetEntity, $fields);

@@ -27,7 +27,7 @@ class FiltersTypeCollisionTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'performance1' => [
-                        'type' => $driver1->connection($driver1->type(Performance::class)),
+                        'type' => $driver1->connection(Performance::class),
                         'args' => [
                             'filter' => $driver1->filter(Performance::class),
                             'pagination' => $driver1->pagination(),
@@ -35,7 +35,7 @@ class FiltersTypeCollisionTest extends AbstractTest
                         'resolve' => $driver1->resolve(Performance::class),
                     ],
                     'performance2' => [
-                        'type' => $driver2->connection($driver2->type(Performance::class)),
+                        'type' => $driver2->connection(Performance::class),
                         'args' => [
                             'filter' => $driver2->filter(Performance::class),
                             'pagination' => $driver2->pagination(),

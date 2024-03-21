@@ -6,8 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Filter\Password;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
 use Doctrine\Laminas\Hydrator\DoctrineObject;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
@@ -26,8 +25,10 @@ use function in_array;
  */
 class HydratorFactory extends AbstractContainer
 {
-    public function __construct(protected EntityManager $entityManager, protected TypeManager $typeManager)
-    {
+    public function __construct(
+        protected EntityManager $entityManager,
+        protected EntityTypeManager $entityTypeManager,
+    ) {
         // Register default strategies
         $this
             ->set(Strategy\AssociationDefault::class, new Strategy\AssociationDefault())
@@ -46,7 +47,7 @@ class HydratorFactory extends AbstractContainer
             return parent::get($id);
         }
 
-        $entity   = $this->typeManager->build(Entity::class, $id);
+        $entity   = $this->entityTypeManager->get($id);
         $config   = $entity->getMetadata();
         $hydrator = new DoctrineObject($this->entityManager, $config['byValue']);
 

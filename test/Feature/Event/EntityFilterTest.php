@@ -73,7 +73,7 @@ class EntityFilterTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'artists' => [
-                        'type' => $driver->connection($driver->type(Artist::class)),
+                        'type' => $driver->connection(Artist::class),
                         'args' => [
                             'filter' => $driver->filter(Artist::class),
                             'moreFilters' => new InputObjectType([

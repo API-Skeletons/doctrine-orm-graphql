@@ -7,7 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ArrayObject;
 use Closure;
 use Doctrine\ORM\EntityManager;
