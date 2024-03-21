@@ -40,7 +40,7 @@ filter()
 
 Based on the attribute configuration of an entity, this funciton adds a
 ``filter`` argument to a connection.  See `filters <queries>`_ for a list of
-available filter per field.  The field title must be ``filter``.
+available filters per field.  The args field must be ``filter``.
 
 Filters are applied to a ``connection``.  It is also possible to use them ad-hoc
 as detailed in `tips <tips>`_.
@@ -73,7 +73,7 @@ See `types <types>`_ for details on custom types and using the ``TypeManager``.
 
 The ``EntityTypeManager`` is used only for Doctrine entities and is populated
 though the `metadata <metadata>`_.  This class is used internally for generating
-``ObjectType``s for entiees.
+``ObjectType``s for entities.
 
 Though a ``connection`` is a type, it is not
 available through this function.  Use the ``connection`` function of the Driver.
