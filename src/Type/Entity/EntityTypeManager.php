@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;

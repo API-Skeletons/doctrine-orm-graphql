@@ -6,7 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Filter\Password;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\EntityTypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
 use Doctrine\Laminas\Hydrator\DoctrineObject;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;

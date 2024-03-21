@@ -6,8 +6,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\EntityTypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;

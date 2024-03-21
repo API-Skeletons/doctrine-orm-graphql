@@ -71,7 +71,7 @@ trait Services
                 static function (AbstractContainer $container) {
                     return new Resolve\FieldResolver(
                         $container->get(Config::class),
-                        $container->get(Type\EntityTypeManager::class),
+                        $container->get(Type\Entity\EntityTypeManager::class),
                     );
                 },
             )
@@ -115,7 +115,7 @@ trait Services
                 static function (AbstractContainer $container) {
                     return new Hydrator\HydratorFactory(
                         $container->get(EntityManager::class),
-                        $container->get(Type\EntityTypeManager::class),
+                        $container->get(Type\Entity\EntityTypeManager::class),
                     );
                 },
             )
@@ -125,15 +125,15 @@ trait Services
                     return new Input\InputFactory(
                         $container->get(Config::class),
                         $container->get(EntityManager::class),
-                        $container->get(Type\EntityTypeManager::class),
+                        $container->get(Type\Entity\EntityTypeManager::class),
                         $container->get(Type\TypeManager::class),
                     );
                 },
             )
         ->set(
-            Type\EntityTypeManager::class,
+            Type\Entity\EntityTypeManager::class,
             static function (AbstractContainer $container) {
-                return new Type\EntityTypeManager(
+                return new Type\Entity\EntityTypeManager(
                     $container,
                 );
             },

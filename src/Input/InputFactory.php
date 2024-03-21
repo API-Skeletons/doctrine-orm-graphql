@@ -6,7 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Input;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\EntityTypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\ORM\EntityManager;
 use Exception;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
@@ -12,6 +12,8 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use ArrayObject;
 use Closure;
 use Doctrine\ORM\EntityManager;
@@ -42,6 +44,7 @@ class Entity
     protected EntityTypeManager $entityTypeManager;
     protected EventDispatcher $eventDispatcher;
     protected FieldResolver $fieldResolver;
+    protected ObjectType|null $objectType = null;
     protected HydratorFactory $hydratorFactory;
     protected ResolveCollectionFactory $collectionFactory;
     protected TypeManager $typeManager;
@@ -101,10 +104,12 @@ class Entity
      *
      * @throws MappingException
      */
-    public function getGraphQLType(): ObjectType
+    public function getObjectType(): ObjectType
     {
-        if ($this->typeManager->has($this->getTypeName())) {
-            return $this->typeManager->get($this->getTypeName());
+        // The result of this function is cached in the objectType property.
+        // Entity object types are not stored in the TypeManager
+        if ($this->objectType) {
+            return $this->objectType;
         }
 
         $fields = [];
@@ -139,10 +144,9 @@ class Entity
         }
 
         /** @psalm-suppress InvalidArgument */
-        $objectType = new ObjectType($arrayObject->getArrayCopy());
-        $this->typeManager->set($this->getTypeName(), $objectType);
+        $this->objectType = new ObjectType($arrayObject->getArrayCopy());
 
-        return $objectType;
+        return $this->objectType;
     }
 
     /** @param array<int, mixed[]> $fields */
@@ -186,7 +190,7 @@ class Entity
                     $entity = $this->entityTypeManager->get($targetEntity);
 
                     return [
-                        'type' => $entity->getGraphQLType(),
+                        'type' => $entity->getObjectType(),
                         'description' => $entity->getDescription(),
                     ];
                 };
@@ -204,7 +208,7 @@ class Entity
                     'type' => $this->typeManager->build(
                         Connection::class,
                         $shortName . '_Connection',
-                        $entity->getGraphQLType(),
+                        $entity->getObjectType(),
                     ),
                     'args' => [
                         'filter' => $this->filterFactory->get(

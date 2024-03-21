@@ -34,9 +34,9 @@ class Driver extends AbstractContainer
      */
     public function type(string $id): mixed
     {
-        $entityTypeManager = $this->get(Type\EntityTypeManager::class);
+        $entityTypeManager = $this->get(Type\Entity\EntityTypeManager::class);
         if ($entityTypeManager->has($id)) {
-            return $entityTypeManager->get($id)->getGraphQLType();
+            return $entityTypeManager->get($id)->getObjectType();
         }
 
         $typeManager = $this->get(Type\TypeManager::class);
@@ -56,7 +56,7 @@ class Driver extends AbstractContainer
     public function filter(string $id): object
     {
         return $this->get(Filter\FilterFactory::class)->get(
-            $this->get(Type\EntityTypeManager::class)->get($id),
+            $this->get(Type\Entity\EntityTypeManager::class)->get($id),
         );
     }
 
@@ -78,7 +78,7 @@ class Driver extends AbstractContainer
     public function resolve(string $id, string|null $eventName = null): Closure
     {
         return $this->get(Resolve\ResolveEntityFactory::class)->get(
-            $this->get(Type\EntityTypeManager::class)->get($id),
+            $this->get(Type\Entity\EntityTypeManager::class)->get($id),
             $eventName,
         );
     }

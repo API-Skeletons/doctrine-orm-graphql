@@ -7,7 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use ArrayObject;
 use Closure;

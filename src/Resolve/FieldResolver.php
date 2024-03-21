@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\EntityTypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
