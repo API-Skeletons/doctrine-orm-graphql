@@ -1,3 +1,4 @@
+======
 Events
 ======
 
@@ -5,7 +6,7 @@ A PSR-14 event dispatcher is included for handling events.
 
 
 Query Builder Event
--------------------
+===================
 
 Each top level connection uses a Doctrine QueryBuilder object.  This QueryBuilder
 object may be modified to filter the data for the logged in user and such.
@@ -34,7 +35,7 @@ In the code below the custom event ``Artist::class . '.queryBuilder'`` will fire
         'name' => 'query',
         'fields' => [
             'artists' => [
-                'type' => $driver->connection($driver->type(Artist::class)),
+                'type' => $driver->connection(Artist::class),
                 'args' => [
                     'filter' => $driver->filter(Artist::class),
                 ],
@@ -70,7 +71,7 @@ all resolve parameters:
 
 
 Criteria Event
---------------
+==============
 
 When an association is resolved from an entity or another association you may
 listen to the Criteria Event to add additional criteria for filtering
@@ -114,7 +115,7 @@ all resolve parameters:
 
 
 Modify an Entity Definition
----------------------------
+===========================
 
 You may modify the array used to define an entity type before it is created.
 This can be used for generated data and the like.  You must attach to events
@@ -166,7 +167,7 @@ a custom FilterQueryBuilder event in the ``$driver->resolve()`` function.
 
 
 Manually change the Metadata
-----------------------------
+============================
 
 You may modify the metadata directly when built.  This event must be subscribed
 to immediatly after creating the driver. See `Metadata documentation <metadata.html>`_.

@@ -1,3 +1,4 @@
+===============
 Running Queries
 ===============
 
@@ -27,7 +28,7 @@ Fetch at most 100 performances in CA for each artist with 'Dead' in their name.
           ) {
             edges {
               node {
-                performanceDate 
+                performanceDate
                 venue
               }
             }
@@ -39,7 +40,7 @@ Fetch at most 100 performances in CA for each artist with 'Dead' in their name.
 
 
 Filters
--------
+=======
 
 For each field, which is not a reference to another entity, a colletion of
 filters exist. Given an entity which contains a `name` field you may directly
@@ -123,7 +124,7 @@ queries and aggregate them.
 
 
 Pagination
-----------
+==========
 
 Pagination of collections supports
 `GraphQL's Complete Connection Model <https://graphql.org/learn/pagination/#complete-connection-model>`_.

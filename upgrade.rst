@@ -1,5 +1,13 @@
+==============================
 Upgrade from previous versions
 ==============================
+
+9.x to 10.x
+===========
+
+The ``$driver->connection()`` function no longer takes an ObjectType for an
+entity.  Instead, just pass the entity class name.
+
 
 8.1.3 doctrine-graphql
 ======================

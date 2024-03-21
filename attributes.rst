@@ -1,3 +1,4 @@
+==========
 Attributes
 ==========
 
@@ -33,7 +34,7 @@ A slightly complicated example:
 
 
 Entity
-----------
+======
 
 Use this attribute on entities you want included in your graph.
 Optional parameters are:
@@ -73,7 +74,7 @@ data from Doctrine entities.  The hydrator library is
 
 
 Field
----------
+=====
 
 Use this attribute on fields (not associations) you want included
 in your graph. Optional parameters are:
@@ -108,7 +109,7 @@ in your graph. Optional parameters are:
 
 
 Association
----------------
+===========
 
 Used on any type of association including one to one, one to many, many to one,
 etc.  Associations which are to one types will just include the entity they are

@@ -1,20 +1,21 @@
+==========
 Containers
 ==========
 
 Internal to the classes used in this library, PSR-11 containers are used.
 You can set values in the containers using ``container->set($id, $value);``.
-If a value already exists for the ``$id`` then it will be overwritten.
+If a value already exists for the ``$id`` it will be overwritten.
 
 Containers will execute any ``Closure`` found when getting from itself and pass
 the container to the closure as the only argument.  This provides a basic
-method for using factories.  Once a factory has executed the result will
+method for using factories.  Once a factory has executed, the result will
 replace the factory so later requests will just get the composed object.
 
 There are two containers you should be aware of if you intened to extend this
 library.
 
 Type Manager
-------------
+============
 
 The ``TypeManager`` stores all the GraphQL types created or
 used in the library.  If you want to specify your own type for a field you'll
@@ -32,7 +33,7 @@ need to add your custom type to the container.
 
 
 Custom Types
-------------
+============
 
 For instance, if your schema has a ``timestamp`` type, that data type is not suppored
 by default in this library.  But adding the type is just a matter of creating a
@@ -46,7 +47,7 @@ type to the type manager.
 
 
 Hydrator Factory
-----------------
+================
 
 The ``HydratorFactory`` stores hydrator strategies,
 filter classes, naming strategy classes, and all the generated hydrators.

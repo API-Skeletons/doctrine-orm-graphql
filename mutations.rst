@@ -1,3 +1,4 @@
+=================
 Running Mutations
 =================
 
@@ -40,7 +41,7 @@ a function that will do the work.  In this example that function returns an
 
 
 Calling Mutations
------------------
+=================
 
 .. code-block:: php
 
@@ -57,7 +58,7 @@ mutation will return the new values from the mutated entity.
 
 
 Input Argument
---------------
+==============
 
 The driver function ``$driver->input(Entity::class)`` will return an
 ``InputObjectType`` with all the fields set to nonNull, thereby making them
