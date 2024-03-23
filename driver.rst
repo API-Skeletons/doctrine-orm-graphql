@@ -83,7 +83,7 @@ available through this function.  Use the ``connection`` function of the Driver.
 
 
 Config
-=============
+======
 
 The ``Driver`` takes a second, optional, argument of type
 ``ApiSkeletons\Doctrine\ORM\GraphQL\Config``.  The constructor of ``Config`` takes
