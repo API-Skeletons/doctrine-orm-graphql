@@ -10,7 +10,8 @@ a Type with such ad-hoc support).  Your Doctrine metadata must contain all the
 associations.  This requriement relates to the very basics of working in
 Doctrine.
 
-There are some `config options <config.html>`_ available but they are all optional.
+There are some `config options <driver.html#config>`_ available but they are
+all optional.
 
 The first step is to add attributes to your entities.  Attributes are a
 feature of PHP 8.0 which act like annotations but are built into the language.

@@ -18,13 +18,12 @@ you'll see, there's a lot of customizable power built in too.
 
     install
     just-the-basics
+    attributes
     driver
     queries
     mutations
     types
     computed-fields
-    config
-    attributes
     events
     containers
     metadata
