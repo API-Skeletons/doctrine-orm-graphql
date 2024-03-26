@@ -18,8 +18,10 @@ class Between extends InputObjectType
 {
     public function __construct(ScalarType|ListOfType $type)
     {
+        $name = $type instanceof ScalarType ? $type->name() : uniqid();
+
         parent::__construct([
-            'name' => 'Between_' . uniqid(),
+            'name' => 'Between_' . $name,
             'description' => 'Between `from` and `to`',
             'fields' =>  [
                 'from' => new InputObjectField([

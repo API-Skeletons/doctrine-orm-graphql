@@ -133,7 +133,7 @@ class FilterFactory
 
             $fields[$fieldName] = [
                 'name'        => $fieldName,
-                'type'        => new Field($typeName, $fieldName, $graphQLType, $allowedFilters),
+                'type'        => new Field($this->typeManager, $typeName, $fieldName, $graphQLType, $allowedFilters),
                 'description' => 'Filters for ' . $fieldName,
             ];
         }
@@ -179,7 +179,7 @@ class FilterFactory
             // eq filter is for association id from parent entity
             $fields[$associationName] = [
                 'name' => $associationName,
-                'type' => new Association($typeName, $associationName, Type::id(), [Filters::EQ]),
+                'type' => new Association($this->typeManager, $typeName, $associationName, Type::id(), [Filters::EQ]),
                 'description' => 'Filters for ' . $associationName,
             ];
         }
