@@ -42,7 +42,7 @@ trait Services
             )
             ->set(
                 Type\TypeManager::class,
-                static fn (AbstractContainer $container) => new Type\TypeManager(),
+                static fn () => new Type\TypeManager(),
             )
             ->set(
                 Type\Entity\EntityTypeManager::class,

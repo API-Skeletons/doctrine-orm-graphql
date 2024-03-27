@@ -75,10 +75,6 @@ class ResolveCollectionFactory
         foreach ($filter as $field => $filters) {
             foreach ($filters as $filter => $value) {
                 switch (Filters::from($filter)) {
-                    case Filters::IN:
-                    case Filters::NOTIN:
-                        $criteria->andWhere($criteria->expr()->$filter($field, $value));
-                        break;
                     case Filters::ISNULL:
                         $criteria->andWhere($criteria->expr()->$filter($field));
                         break;
@@ -126,13 +122,17 @@ class ResolveCollectionFactory
 
         // Pagination
         foreach ($pagination as $field => $value) {
+            $paginationFields[$field] = $value;
+
             if ($field === 'after') {
                 $paginationFields[$field] = (int) base64_decode($value, true) + 1;
-            } elseif ($field === 'before') {
-                $paginationFields[$field] = (int) base64_decode($value, true);
-            } else {
-                $paginationFields[$field] = $value;
             }
+
+            if ($field !== 'before') {
+                continue;
+            }
+
+            $paginationFields[$field] = (int) base64_decode($value, true);
         }
 
         $itemCount = count($collection->matching($criteria));

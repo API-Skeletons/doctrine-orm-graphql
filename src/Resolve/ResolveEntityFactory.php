@@ -74,13 +74,17 @@ class ResolveEntityFactory
 
         if (isset($resolve['args']['pagination'])) {
             foreach ($resolve['args']['pagination'] as $field => $value) {
+                $paginationFields[$field] = $value;
+
                 if ($field === 'after') {
                     $paginationFields[$field] = (int) base64_decode($value, true) + 1;
-                } elseif ($field === 'before') {
-                    $paginationFields[$field] = (int) base64_decode($value, true);
-                } else {
-                    $paginationFields[$field] = $value;
                 }
+
+                if ($field !== 'before') {
+                    continue;
+                }
+
+                $paginationFields[$field] = (int) base64_decode($value, true);
             }
         }
 
