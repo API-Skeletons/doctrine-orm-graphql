@@ -28,7 +28,7 @@ class Connection extends ObjectType implements
             'description' => 'Connection for ' . $typeName,
             'fields' => [
                 'edges' => Type::listOf($container
-                    ->build(Node::class, $typeName . '_Node', $objectType)),
+                    ->build(Node::class, 'Node_' . $typeName, $objectType)),
                 'totalCount' => Type::nonNull(Type::int()),
                 'pageInfo' => $container->get('PageInfo'),
             ],

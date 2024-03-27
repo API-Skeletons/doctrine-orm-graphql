@@ -207,7 +207,7 @@ class Entity
                 return [
                     'type' => $this->typeManager->build(
                         Connection::class,
-                        $shortName . '_Connection',
+                        'Connection_' . $shortName,
                         $entity->getObjectType(),
                     ),
                     'args' => [
