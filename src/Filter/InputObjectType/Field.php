@@ -12,6 +12,7 @@ use GraphQL\Type\Definition\ScalarType;
 
 use function md5;
 use function serialize;
+use function uniqid;
 
 /**
  * This class is used to create an InputObjectType of filters for a field
@@ -37,11 +38,11 @@ class Field extends InputObjectType
                 'description' => $filter->description(),
             ];
 
-
             // @codeCoverageIgnoreStart
             if (! $type instanceof ScalarType) {
                 continue;
             }
+
             // @codeCoverageIgnoreEnd
 
             if (! ($fields[$filter->value]['type'] instanceof Between)) {
@@ -60,10 +61,12 @@ class Field extends InputObjectType
             }
         }
 
+        $typeName = $type instanceof ScalarType ? $type->name : uniqid();
+
         // ScalarType field filters are named by their field type
         // and a hash of the allowed filters
         parent::__construct([
-            'name' => 'Filters_' . $type->name . '_' . md5(serialize($allowedFilters)),
+            'name' => 'Filters_' . $typeName . '_' . md5(serialize($allowedFilters)),
             'description' => 'Field filters',
             'fields' => static fn () => $fields,
         ]);
