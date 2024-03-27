@@ -25,7 +25,7 @@ class FieldStrategyTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'user' => [
-                        'type' => $driver->connection($driver->type(User::class)),
+                        'type' => $driver->connection(User::class),
                         'args' => [
                             'filter' => $driver->filter(User::class),
                         ],

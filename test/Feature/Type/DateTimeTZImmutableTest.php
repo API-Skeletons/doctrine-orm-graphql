@@ -15,6 +15,8 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
+use function count;
+
 class DateTimeTZImmutableTest extends AbstractTest
 {
     public function testParseValue(): void
@@ -50,7 +52,7 @@ class DateTimeTZImmutableTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'typetest' => [
-                        'type' => $driver->connection($driver->type(TypeTest::class)),
+                        'type' => $driver->connection(TypeTest::class),
                         'args' => [
                             'filter' => $driver->filter(TypeTest::class),
                         ],
@@ -66,9 +68,7 @@ class DateTimeTZImmutableTest extends AbstractTest
 
         $data = $result->toArray()['data'];
 
-        $this->assertTrue(true);
-
-// $this->assertEquals(1, count($data['typetest']['edges']));
-// $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
+        $this->assertEquals(1, count($data['typetest']['edges']));
+        $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
     }
 }

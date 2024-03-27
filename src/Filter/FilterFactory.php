@@ -7,7 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Association;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;

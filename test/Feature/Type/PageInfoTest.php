@@ -23,7 +23,7 @@ class PageInfoTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'performance' => [
-                        'type' => $driver->connection($driver->type(Performance::class)),
+                        'type' => $driver->connection(Performance::class),
                         'args' => [
                             'filter' => $driver->filter(Performance::class),
                             'pagination' => $driver->pagination(),
@@ -74,7 +74,7 @@ class PageInfoTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'performance' => [
-                        'type' => $driver->connection($driver->type(Performance::class)),
+                        'type' => $driver->connection(Performance::class),
                         'args' => [
                             'filter' => $driver->filter(Performance::class),
                             'pagination' => $driver->pagination(),
@@ -114,7 +114,7 @@ class PageInfoTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'performance' => [
-                        'type' => $driver->connection($driver->type(Performance::class)),
+                        'type' => $driver->connection(Performance::class),
                         'args' => [
                             'filter' => $driver->filter(Performance::class),
                             'pagination' => $driver->pagination(),
