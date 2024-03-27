@@ -23,7 +23,7 @@ This library **does not** try to redefine how the excellent library [webonyx/gra
 
 Please read the [detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/).
 
-For an example implementation see `https://graphql.lcdb.org/`
+For an working implementation see https://graphql.lcdb.org
 
 For an example application see [https://github.com/lcdborg/graphql.lcdb.org](https://github.com/lcdborg/graphql.lcdb.org)
 
