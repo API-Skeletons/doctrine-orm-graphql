@@ -24,7 +24,7 @@ class Driver extends AbstractContainer
         $objectType = $this->type($id);
 
         return $this->get(Type\TypeManager::class)
-            ->build(Type\Connection::class, 'Connection_' . $objectType->name, $objectType);
+            ->build(Type\Connection::class, $objectType->name, $objectType);
     }
 
     /**

@@ -25,6 +25,7 @@ use function count;
 use function in_array;
 use function md5;
 use function serialize;
+use function ucwords;
 
 use const SORT_REGULAR;
 
@@ -53,7 +54,7 @@ class FilterFactory
         array|null $associationMetadata = null,
     ): GraphQLInputObjectType {
         $typeName = $owningEntity ?
-            'Filter_' . $owningEntity->getTypeName() . '_' . $associationName
+            'Filter_' . $owningEntity->getTypeName() . '_' . ucwords($associationName)
             : 'Filter_' . $targetEntity->getTypeName();
 
         if ($this->typeManager->has($typeName)) {

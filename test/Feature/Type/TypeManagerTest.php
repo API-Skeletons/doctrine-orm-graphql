@@ -18,8 +18,8 @@ class TypeManagerTest extends AbstractTest
         $typeManager = $driver->get(TypeManager::class);
 
         $objectType = $driver->type(Artist::class);
-        $connection = $typeManager->build(Connection::class, $objectType->name . '_Connection', $objectType);
-        $this->assertEquals($objectType->name . '_Connection', $connection->name);
+        $connection = $typeManager->build(Connection::class, $objectType->name, $objectType);
+        $this->assertEquals('Connection_' . $objectType->name, $connection->name);
     }
 
     public function testBuildTwiceReturnsSameType(): void
@@ -28,8 +28,8 @@ class TypeManagerTest extends AbstractTest
         $typeManager = $driver->get(TypeManager::class);
 
         $objectType  = $driver->type(Artist::class);
-        $connection1 = $typeManager->build(Connection::class, $objectType->name . '_Connection', $objectType);
-        $connection2 = $typeManager->build(Connection::class, $objectType->name . '_Connection', $objectType);
+        $connection1 = $typeManager->build(Connection::class, $objectType->name, $objectType);
+        $connection2 = $typeManager->build(Connection::class, $objectType->name, $objectType);
 
         $this->assertSame($connection1, $connection2);
     }

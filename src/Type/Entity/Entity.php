@@ -28,6 +28,7 @@ use function array_keys;
 use function assert;
 use function in_array;
 use function ksort;
+use function ucwords;
 
 use const SORT_REGULAR;
 
@@ -202,12 +203,12 @@ class Entity
             $targetEntity             = $associationMetadata['targetEntity'];
             $fields[$associationName] = function () use ($targetEntity, $associationName) {
                 $entity    = $this->entityTypeManager->get($targetEntity);
-                $shortName = $this->getTypeName() . '_' . $associationName;
+                $shortName = $this->getTypeName() . '_' . ucwords($associationName);
 
                 return [
                     'type' => $this->typeManager->build(
                         Connection::class,
-                        'Connection_' . $shortName,
+                        $shortName,
                         $entity->getObjectType(),
                     ),
                     'args' => [
