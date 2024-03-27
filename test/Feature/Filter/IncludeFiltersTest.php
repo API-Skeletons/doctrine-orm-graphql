@@ -99,7 +99,7 @@ class IncludeFiltersTest extends AbstractTest
         ';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "in" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeFiltersTest_filter_venue_filters".', $error->getMessage());
+            $this->assertEquals('Field "in" is not defined by type "Filters_String_8254df8c7959ea47c8b536a2b975a8e6".', $error->getMessage());
         }
 
         // Test entity>field level included filters
@@ -144,7 +144,7 @@ class IncludeFiltersTest extends AbstractTest
         ';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "contains" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeFiltersTest_filter_city_filters".', $error->getMessage());
+            $this->assertEquals('Field "contains" is not defined by type "Filters_String_22ea8c5dceaa153b3729393465ba253d".', $error->getMessage());
         }
 
         // Test entity>field level included filters excluded by field level exclude
@@ -167,7 +167,7 @@ class IncludeFiltersTest extends AbstractTest
         ';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeFiltersTest_filter_state_filters". Did you mean "neq"?', $error->getMessage());
+            $this->assertEquals('Field "eq" is not defined by type "Filters_String_2b95866a5016efda298ddbf2e3ed5c14". Did you mean "neq"?', $error->getMessage());
         }
 
         // Test entity>association level included filters
@@ -227,7 +227,7 @@ class IncludeFiltersTest extends AbstractTest
         }';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Performance_IncludeFiltersTest_recordings_filter_source_filters".', $error->getMessage());
+            $this->assertEquals('Field "eq" is not defined by type "Filters_String_daeebc957d3b444810fef662f84b89e8".', $error->getMessage());
         }
     }
 }

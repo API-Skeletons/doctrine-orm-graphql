@@ -12,6 +12,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
+use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
 use League\Event\EventDispatcher;
 
@@ -22,6 +23,8 @@ use function array_udiff;
 use function array_unique;
 use function count;
 use function in_array;
+use function md5;
+use function serialize;
 
 use const SORT_REGULAR;
 
@@ -117,6 +120,10 @@ class FilterFactory
             $graphQLType = $this->typeManager
                 ->get($entityMetadata['fields'][$fieldName]['type']);
 
+            if (! $graphQLType instanceof ScalarType) {
+                continue;
+            }
+
             // Limit field filters
             if (
                 isset($entityMetadata['fields'][$fieldName]['excludeFilters'])
@@ -131,9 +138,20 @@ class FilterFactory
                 );
             }
 
+            // ScalarType field filters are named by their field type
+            // and a hash of the allowed filters
+            $filterTypeName = 'Filters_' . $graphQLType->name . '_' . md5(serialize($allowedFilters));
+
+            if ($this->typeManager->has($filterTypeName)) {
+                $type = $this->typeManager->get($filterTypeName);
+            } else {
+                $type = new Field($this->typeManager, $typeName, $fieldName, $graphQLType, $allowedFilters);
+                $this->typeManager->set($filterTypeName, $type);
+            }
+
             $fields[$fieldName] = [
                 'name'        => $fieldName,
-                'type'        => new Field($this->typeManager, $typeName, $fieldName, $graphQLType, $allowedFilters),
+                'type'        => $type,
                 'description' => 'Filters for ' . $fieldName,
             ];
         }
@@ -176,10 +194,19 @@ class FilterFactory
                 continue;
             }
 
+            $filterTypeName = 'Filters_ID_' . md5(serialize($allowedFilters));
+
+            if ($this->typeManager->has($filterTypeName)) {
+                $type = $this->typeManager->get($filterTypeName);
+            } else {
+                $type = new Association($this->typeManager, $typeName, $associationName, Type::id(), [Filters::EQ]);
+                $this->typeManager->set($filterTypeName, $type);
+            }
+
             // eq filter is for association id from parent entity
             $fields[$associationName] = [
                 'name' => $associationName,
-                'type' => new Association($this->typeManager, $typeName, $associationName, Type::id(), [Filters::EQ]),
+                'type' => $type,
                 'description' => 'Filters for ' . $associationName,
             ];
         }
