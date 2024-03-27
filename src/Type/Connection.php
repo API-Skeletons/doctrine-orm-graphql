@@ -24,7 +24,7 @@ class Connection extends ObjectType implements
         $objectType = $params[0];
 
         $configuration = [
-            'name' => $typeName,
+            'name' => 'Connection_' . $typeName,
             'description' => 'Connection for ' . $typeName,
             'fields' => [
                 'edges' => Type::listOf($container
