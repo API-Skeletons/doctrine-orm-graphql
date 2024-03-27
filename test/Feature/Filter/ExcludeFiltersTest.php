@@ -39,28 +39,28 @@ class ExcludeFiltersTest extends AbstractTest
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Artist_ExcludeFiltersTest_filter_name_filters".', $error->getMessage());
+            $this->assertEquals('Field "eq" is not defined by type "Filters_String_436fb9911a1f07ad8eb7057c1a8e3d2b".', $error->getMessage());
         }
 
         $query  = '{ artists (filter: { name: { neq: "Grateful Dead" } } ) { edges { node { name } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "neq" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Artist_ExcludeFiltersTest_filter_name_filters".', $error->getMessage());
+            $this->assertEquals('Field "neq" is not defined by type "Filters_String_436fb9911a1f07ad8eb7057c1a8e3d2b".', $error->getMessage());
         }
 
         $query  = '{ artists { edges { node { performances ( filter: {venue: { neq: "test"} } ) { edges { node { venue } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "neq" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Artist_ExcludeFiltersTest_performances_filter_venue_filters". Did you mean "eq"?', $error->getMessage());
+            $this->assertEquals('Field "neq" is not defined by type "Filters_String_bef569e688f8bb56acb1e0e4e430b055". Did you mean "eq"?', $error->getMessage());
         }
 
         $query  = '{ artists { edges { node { performances ( filter: {venue: { contains: "test" } } ) { edges { node { venue } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "contains" is not defined by type "ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Artist_ExcludeFiltersTest_performances_filter_venue_filters". Did you mean "notin"?', $error->getMessage());
+            $this->assertEquals('Field "contains" is not defined by type "Filters_String_bef569e688f8bb56acb1e0e4e430b055". Did you mean "notin"?', $error->getMessage());
         }
     }
 }
