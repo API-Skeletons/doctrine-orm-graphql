@@ -7,6 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
+use function in_array;
 use function str_replace;
 use function strlen;
 use function strpos;
@@ -23,23 +24,19 @@ abstract class AbstractMetadataFactory
     protected function getDefaultStrategy(string|null $fieldType): string
     {
         // Set default strategy based on field type
-        switch ($fieldType) {
-            case 'tinyint':
-            case 'smallint':
-            case 'integer':
-            case 'int':
-                return Strategy\ToInteger::class;
-
-            case 'boolean':
-                return Strategy\ToBoolean::class;
-
-            case 'decimal':
-            case 'float':
-                return Strategy\ToFloat::class;
-
-            default:
-                return Strategy\FieldDefault::class;
+        if (in_array($fieldType, ['tinyint', 'smallint', 'integer', 'int'])) {
+            return Strategy\ToInteger::class;
         }
+
+        if (in_array($fieldType, ['decimal', 'float'])) {
+            return Strategy\ToFloat::class;
+        }
+
+        if ($fieldType === 'boolean') {
+            return Strategy\ToBoolean::class;
+        }
+
+        return Strategy\FieldDefault::class;
     }
 
     /**
