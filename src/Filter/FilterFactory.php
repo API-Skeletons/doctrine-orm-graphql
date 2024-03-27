@@ -25,6 +25,7 @@ use function count;
 use function in_array;
 use function md5;
 use function serialize;
+use function ucwords;
 
 use const SORT_REGULAR;
 
