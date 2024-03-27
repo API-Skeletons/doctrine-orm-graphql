@@ -53,8 +53,8 @@ class FilterFactory
         array|null $associationMetadata = null,
     ): GraphQLInputObjectType {
         $typeName = $owningEntity ?
-            $owningEntity->getTypeName() . '_' . $associationName . '_filter'
-            : $targetEntity->getTypeName() . '_filter';
+            'Filter_' . $owningEntity->getTypeName() . '_' . $associationName
+            : 'Filter_' . $targetEntity->getTypeName();
 
         if ($this->typeManager->has($typeName)) {
             return $this->typeManager->get($typeName);
