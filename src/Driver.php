@@ -9,7 +9,7 @@ use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
 
-class Driver extends AbstractContainer
+class Driver extends Container
 {
     use Services;
 
@@ -23,25 +23,25 @@ class Driver extends AbstractContainer
     {
         $objectType = $this->type($id);
 
-        return $this->get(Type\TypeManager::class)
+        return $this->get(Type\TypeContainer::class)
             ->build(Type\Connection::class, $objectType->name, $objectType);
     }
 
     /**
-     * A shortcut into the EntityTypeManager and TypeManager
+     * A shortcut into the EntityTypeContainer and TypeContainer
      *
      * @throws Error
      */
     public function type(string $id): mixed
     {
-        $entityTypeManager = $this->get(Type\Entity\EntityTypeManager::class);
-        if ($entityTypeManager->has($id)) {
-            return $entityTypeManager->get($id)->getObjectType();
+        $entityTypeContainer = $this->get(Type\Entity\EntityTypeContainer::class);
+        if ($entityTypeContainer->has($id)) {
+            return $entityTypeContainer->get($id)->getObjectType();
         }
 
-        $typeManager = $this->get(Type\TypeManager::class);
-        if ($typeManager->has($id)) {
-            return $typeManager->get($id);
+        $typeContainer = $this->get(Type\TypeContainer::class);
+        if ($typeContainer->has($id)) {
+            return $typeContainer->get($id);
         }
 
         throw new Error('Type "' . $id . '" is not registered');
@@ -56,7 +56,7 @@ class Driver extends AbstractContainer
     public function filter(string $id): object
     {
         return $this->get(Filter\FilterFactory::class)->get(
-            $this->get(Type\Entity\EntityTypeManager::class)->get($id),
+            $this->get(Type\Entity\EntityTypeContainer::class)->get($id),
         );
     }
 
@@ -78,7 +78,7 @@ class Driver extends AbstractContainer
     public function resolve(string $id, string|null $eventName = null): Closure
     {
         return $this->get(Resolve\ResolveEntityFactory::class)->get(
-            $this->get(Type\Entity\EntityTypeManager::class)->get($id),
+            $this->get(Type\Entity\EntityTypeContainer::class)->get($id),
             $eventName,
         );
     }

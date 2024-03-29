@@ -8,7 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Association;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -38,7 +38,7 @@ class FilterFactory
     public function __construct(
         protected Config $config,
         protected EntityManager $entityManager,
-        protected TypeManager $typeManager,
+        protected TypeContainer $typeContainer,
         protected EventDispatcher $eventDispatcher,
     ) {
     }
@@ -58,8 +58,8 @@ class FilterFactory
             'Filter_' . $owningEntity->getTypeName() . '_' . ucwords($associationName)
             : 'Filter_' . $targetEntity->getTypeName();
 
-        if ($this->typeManager->has($typeName)) {
-            return $this->typeManager->get($typeName);
+        if ($this->typeContainer->has($typeName)) {
+            return $this->typeContainer->get($typeName);
         }
 
         $entityMetadata = $targetEntity->getMetadata();
@@ -93,7 +93,7 @@ class FilterFactory
             'fields' => static fn () => $fields,
         ]);
 
-        $this->typeManager->set($typeName, $inputObject);
+        $this->typeContainer->set($typeName, $inputObject);
 
         return $inputObject;
     }
@@ -119,7 +119,7 @@ class FilterFactory
                 continue;
             }
 
-            $type = $this->typeManager
+            $type = $this->typeContainer
                 ->get($entityMetadata['fields'][$fieldName]['type']);
 
             // Custom types may hit this condition
@@ -153,11 +153,11 @@ class FilterFactory
             // and a hash of the allowed filters
             $filterTypeName = 'Filters_' . $type->name() . '_' . md5(serialize($filteredFilters));
 
-            if ($this->typeManager->has($filterTypeName)) {
-                $fieldType = $this->typeManager->get($filterTypeName);
+            if ($this->typeContainer->has($filterTypeName)) {
+                $fieldType = $this->typeContainer->get($filterTypeName);
             } else {
-                $fieldType = new Field($this->typeManager, $type, $filteredFilters);
-                $this->typeManager->set($filterTypeName, $fieldType);
+                $fieldType = new Field($this->typeContainer, $type, $filteredFilters);
+                $this->typeContainer->set($filterTypeName, $fieldType);
             }
 
             $fields[$fieldName] = [
@@ -207,11 +207,11 @@ class FilterFactory
 
             $filterTypeName = 'Filters_ID_' . md5(serialize($allowedFilters));
 
-            if ($this->typeManager->has($filterTypeName)) {
-                $associationType = $this->typeManager->get($filterTypeName);
+            if ($this->typeContainer->has($filterTypeName)) {
+                $associationType = $this->typeContainer->get($filterTypeName);
             } else {
-                $associationType = new Association($this->typeManager, Type::id(), [Filters::EQ]);
-                $this->typeManager->set($filterTypeName, $associationType);
+                $associationType = new Association($this->typeContainer, Type::id(), [Filters::EQ]);
+                $this->typeContainer->set($filterTypeName, $associationType);
             }
 
             // eq filter is for association id from parent entity

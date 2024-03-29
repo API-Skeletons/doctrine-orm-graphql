@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Buildable;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
 use function assert;
 
 /**
- * This type is built within the TypeManager
+ * This type is built within the TypeContainer
  */
 class Connection extends ObjectType implements
     Buildable
 {
     /** @param mixed[] $params */
-    public function __construct(AbstractContainer $container, string $typeName, array $params)
+    public function __construct(Container $container, string $typeName, array $params)
     {
         assert($params[0] instanceof ObjectType);
         $objectType = $params[0];

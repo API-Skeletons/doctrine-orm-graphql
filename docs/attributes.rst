@@ -90,7 +90,7 @@ in your graph. Optional parameters are:
 * ``hydratorStrategy`` - A custom hydrator strategy class.
   Class must be injected into the HydratorFactory container.  See `strategies <strategies.html>`_ and `containers <containers.html>`_
 * ``type`` - Used for overriding the GraphQL type used for the field.
-  The custom type must be injected into the TypeManager container.
+  The custom type must be injected into the TypeContainer
   See `containers <containers.html>`_
 
 .. code-block:: php
@@ -105,7 +105,7 @@ in your graph. Optional parameters are:
   }
 
   $driver = new Driver($this->getEntityManager());
-  $driver->get(TypeManager::class)->set('customtype', fn() => Type::string());
+  $driver->get(TypeContainer::class)->set('customtype', fn() => Type::string());
 
 
 Association

@@ -9,7 +9,7 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
 /**
  * Return the same value
  */
-class FieldDefault extends AbstractCollectionStrategy implements
+class FieldDefault extends Collection implements
     StrategyInterface
 {
     public function extract(mixed $value, object|null $object = null): mixed

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\UuidInterface;
@@ -17,13 +18,22 @@ use Ramsey\Uuid\UuidInterface;
 #[GraphQL\Entity(typeName: 'typeTest', description: 'Type test')]
 #[GraphQL\Entity(group: 'DataTypesTest')]
 #[GraphQL\Entity(group: 'CustomTypeTest')]
+#[GraphQL\Entity(group: 'BetweenTypeContainerTest')]
+
 #[ORM\Entity]
 class TypeTest
 {
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
+    #[GraphQL\Field(group: 'BetweenTypeContainerTest')]
     #[ORM\Column(type: 'integer', nullable: false)]
     private int $testInt;
+
+    #[GraphQL\Field]
+    #[GraphQL\Field(group: 'DataTypesTest')]
+    #[GraphQL\Field(group: 'BetweenTypeContainerTest', excludeFilters: [Filters::EQ])]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private int $testInt2;
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]

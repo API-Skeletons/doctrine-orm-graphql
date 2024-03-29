@@ -16,7 +16,7 @@ use function strtolower;
 /**
  * Used in many places to create a container of types and services
  */
-abstract class AbstractContainer implements ContainerInterface
+abstract class Container implements ContainerInterface
 {
     /** @var mixed[] */
     protected array $register = [];

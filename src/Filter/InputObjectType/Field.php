@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
@@ -22,7 +22,7 @@ class Field extends InputObjectType
 {
     /** @param Filters[] $allowedFilters */
     public function __construct(
-        TypeManager $typeManager,
+        TypeContainer $typeContainer,
         ScalarType|ListOfType $type,
         array $allowedFilters,
     ) {
@@ -47,16 +47,15 @@ class Field extends InputObjectType
             // Between is a special case filter.
             // To avoid creating a new Between type for each field,
             // check if the Between type exists and reuse it.
-            if (! ($fields[$filter->value]['type'] instanceof Between)) {
+            if (! $fields[$filter->value]['type'] instanceof Between) {
                 continue;
             }
 
-            if ($typeManager->has('Between_' . $type->name())) {
-                $fields[$filter->value]['type'] = $typeManager->get('Between_' . $type->name());
+            if ($typeContainer->has('Between_' . $type->name())) {
+                $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
             } else {
-                $betweenType = new Between($type);
-                $typeManager->set('Between_' . $type->name(), $betweenType);
-                $fields[$filter->value]['type'] = $betweenType;
+                $typeContainer->set('Between_' . $type->name(), new Between($type));
+                $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
             }
         }
 

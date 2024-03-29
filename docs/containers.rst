@@ -4,31 +4,31 @@ Containers
 
 Internal to the classes used in this library, PSR-11 containers are used.
 You can set values in the containers using ``container->set($id, $value);``.
-If a value already exists for the ``$id`` it will be overwritten.
+**If a value already exists for the ``$id`` it will be overwritten.**
 
 Containers will execute any ``Closure`` found when getting from itself and pass
 the container to the closure as the only argument.  This provides a basic
-method for using factories.  Once a factory has executed, the result will
+method for factories.  Once a factory has executed, the result will
 replace the factory so later requests will just get the composed object.
 
 There are two containers you should be aware of if you intened to extend this
 library.
 
-Type Manager
-============
+Type Container
+==============
 
-The ``TypeManager`` stores all the GraphQL types created or
+The ``TypeContainer`` stores all the GraphQL types created or
 used in the library.  If you want to specify your own type for a field you'll
 need to add your custom type to the container.
 
   .. code-block:: php
 
     use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
     use GraphQL\Type\Definition\Type;
 
     $driver = new Driver($this->getEntityManager());
-    $driver->get(TypeManager::class)
+    $driver->get(TypeContainer::class)
         ->set('customtype', fn() => Type::string());
 
 
@@ -42,23 +42,23 @@ type to the type manager.
 
   .. code-block:: php
 
-    $driver->get(TypeManager::class)
+    $driver->get(TypeContainer::class)
         ->set('timestamp', fn() => new Type\Timestamp());
 
 
-Hydrator Factory
-================
+Hydrator Container
+==================
 
-The ``HydratorFactory`` stores hydrator strategies,
+The ``HydratorContainer`` stores hydrator strategies,
 filter classes, naming strategy classes, and all the generated hydrators.
 
   .. code-block:: php
 
     use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-    use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
 
     $driver = new Driver($this->getEntityManager());
-    $driver->get(HydratorFactory::class)
+    $driver->get(HydratorContainer::class)
         ->set('customstrategy', fn() => new CustomStrategy());
 
 

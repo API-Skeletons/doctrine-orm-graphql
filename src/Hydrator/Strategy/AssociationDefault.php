@@ -10,7 +10,7 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
  * Take no action on an association.  This class exists to
  * differentiate associations inside generated config.
  */
-class AssociationDefault extends AbstractCollectionStrategy implements
+class AssociationDefault extends Collection implements
     StrategyInterface
 {
     public function extract(mixed $value, object|null $object = null): mixed

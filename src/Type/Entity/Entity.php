@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use ArrayObject;
 use Closure;
 use Doctrine\ORM\EntityManager;
@@ -42,28 +42,28 @@ class Entity
     protected Config $config;
     protected FilterFactory $filterFactory;
     protected EntityManager $entityManager;
-    protected EntityTypeManager $entityTypeManager;
+    protected EntityTypeContainer $entityTypeContainer;
     protected EventDispatcher $eventDispatcher;
     protected FieldResolver $fieldResolver;
     protected ObjectType|null $objectType = null;
-    protected HydratorFactory $hydratorFactory;
+    protected HydratorContainer $hydratorFactory;
     protected ResolveCollectionFactory $collectionFactory;
-    protected TypeManager $typeManager;
+    protected TypeContainer $typeContainer;
 
     /** @param mixed[] $params */
-    public function __construct(AbstractContainer $container, string $typeName)
+    public function __construct(Container $container, string $typeName)
     {
         assert($container instanceof Driver);
 
-        $this->collectionFactory = $container->get(ResolveCollectionFactory::class);
-        $this->config            = $container->get(Config::class);
-        $this->entityManager     = $container->get(EntityManager::class);
-        $this->entityTypeManager = $container->get(EntityTypeManager::class);
-        $this->eventDispatcher   = $container->get(EventDispatcher::class);
-        $this->fieldResolver     = $container->get(FieldResolver::class);
-        $this->filterFactory     = $container->get(FilterFactory::class);
-        $this->hydratorFactory   = $container->get(HydratorFactory::class);
-        $this->typeManager       = $container->get(TypeManager::class);
+        $this->collectionFactory   = $container->get(ResolveCollectionFactory::class);
+        $this->config              = $container->get(Config::class);
+        $this->entityManager       = $container->get(EntityManager::class);
+        $this->entityTypeContainer = $container->get(EntityTypeContainer::class);
+        $this->eventDispatcher     = $container->get(EventDispatcher::class);
+        $this->fieldResolver       = $container->get(FieldResolver::class);
+        $this->filterFactory       = $container->get(FilterFactory::class);
+        $this->hydratorFactory     = $container->get(HydratorContainer::class);
+        $this->typeContainer       = $container->get(TypeContainer::class);
 
         if (! isset($container->get('metadata')[$typeName])) {
             throw new Error(
@@ -108,7 +108,7 @@ class Entity
     public function getObjectType(): ObjectType
     {
         // The result of this function is cached in the objectType property.
-        // Entity object types are not stored in the TypeManager
+        // Entity object types are not stored in the TypeContainer
         if ($this->objectType) {
             return $this->objectType;
         }
@@ -161,7 +161,7 @@ class Entity
             }
 
             $fields[$fieldName] = [
-                'type' => $this->typeManager
+                'type' => $this->typeContainer
                     ->get($this->getmetadata()['fields'][$fieldName]['type']),
                 'description' => $this->metadata['fields'][$fieldName]['description'],
             ];
@@ -188,7 +188,7 @@ class Entity
             ) {
                 $targetEntity             = $associationMetadata['targetEntity'];
                 $fields[$associationName] = function () use ($targetEntity) {
-                    $entity = $this->entityTypeManager->get($targetEntity);
+                    $entity = $this->entityTypeContainer->get($targetEntity);
 
                     return [
                         'type' => $entity->getObjectType(),
@@ -202,11 +202,11 @@ class Entity
             // Collections
             $targetEntity             = $associationMetadata['targetEntity'];
             $fields[$associationName] = function () use ($targetEntity, $associationName) {
-                $entity    = $this->entityTypeManager->get($targetEntity);
+                $entity    = $this->entityTypeContainer->get($targetEntity);
                 $shortName = $this->getTypeName() . '_' . ucwords($associationName);
 
                 return [
-                    'type' => $this->typeManager->build(
+                    'type' => $this->typeContainer->build(
                         Connection::class,
                         $shortName,
                         $entity->getObjectType(),
@@ -218,7 +218,7 @@ class Entity
                             $associationName,
                             $this->metadata['fields'][$associationName],
                         ),
-                        'pagination' => $this->typeManager->get('pagination'),
+                        'pagination' => $this->typeContainer->get('pagination'),
                     ],
                     'description' => $this->metadata['fields'][$associationName]['description'],
                     'resolve' => $this->collectionFactory->get($entity),

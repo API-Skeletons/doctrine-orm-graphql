@@ -93,11 +93,11 @@ Using Types
 You may use any of the above types freely such as a blob for an
 input type.
 
-To use a type you must fetch it from the TypeManager.
+To use a type you must fetch it from the TypeContainer.
 
 .. code-block:: php
 
-    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 
     $schema = new Schema([
         'mutation' => new ObjectType([
@@ -128,11 +128,11 @@ Custom Types
 If your schema has a ``timestamp`` type, that data type is not suppored
 by this library.  But adding the type is just a matter of creating a
 new Timestamp type extending ``GraphQL\Type\Definition\ScalarType`` then adding
-the type to the type manager.
+the type to the type container.
 
   .. code-block:: php
 
-     $driver->get(TypeManager::class)
+     $driver->get(TypeContainer::class)
          ->set('timestamp', fn() => new Timestamp());
 
 

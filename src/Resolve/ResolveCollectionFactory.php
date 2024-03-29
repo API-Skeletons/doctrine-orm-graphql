@@ -8,7 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use ArrayObject;
 use Closure;
 use Doctrine\Common\Collections\Collection;
@@ -32,7 +32,7 @@ class ResolveCollectionFactory
         protected EntityManager $entityManager,
         protected Config $config,
         protected FieldResolver $fieldResolver,
-        protected TypeManager $typeManager,
+        protected TypeContainer $typeContainer,
         protected EventDispatcher $eventDispatcher,
         protected ArrayObject $metadata,
     ) {

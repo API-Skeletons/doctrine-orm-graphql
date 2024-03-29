@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Collection as DoctrineCollection;
 use Doctrine\Inflector\Inflector;
 use Doctrine\Inflector\InflectorFactory;
 use Doctrine\Laminas\Hydrator\Strategy\CollectionStrategyInterface;
@@ -24,7 +24,7 @@ use function sprintf;
  *
  * @codeCoverageIgnore
  */
-abstract class AbstractCollectionStrategy implements CollectionStrategyInterface
+abstract class Collection implements CollectionStrategyInterface
 {
     private string|null $collectionName = null;
 
@@ -102,11 +102,11 @@ abstract class AbstractCollectionStrategy implements CollectionStrategyInterface
     /**
      * Return the collection by value (using the public API)
      *
-     * @return Collection<array-key,object>
+     * @return DoctrineCollection<array-key,object>
      *
      * @throws InvalidArgumentException
      */
-    protected function getCollectionFromObjectByValue(): Collection
+    protected function getCollectionFromObjectByValue(): DoctrineCollection
     {
         $object = $this->getObject();
         $getter = 'get' . $this->getInflector()->classify($this->getCollectionName());
@@ -134,11 +134,11 @@ abstract class AbstractCollectionStrategy implements CollectionStrategyInterface
     /**
      * Return the collection by reference (not using the public API)
      *
-     * @return Collection<array-key,object>
+     * @return DoctrineCollection<array-key,object>
      *
      * @throws InvalidArgumentException|ReflectionException
      */
-    protected function getCollectionFromObjectByReference(): Collection
+    protected function getCollectionFromObjectByReference(): DoctrineCollection
     {
         $object       = $this->getObject();
         $refl         = $this->getClassMetadata()->getReflectionClass();

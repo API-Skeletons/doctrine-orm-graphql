@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Input;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Doctrine\ORM\EntityManager;
 use Exception;
 use GraphQL\Error\Error;
@@ -22,13 +21,13 @@ use function uniqid;
 /**
  * Create an input object type for a mutation
  */
-class InputFactory extends AbstractContainer
+class InputFactory
 {
     public function __construct(
         protected Config $config,
         protected EntityManager $entityManager,
-        protected EntityTypeManager $entityTypeManager,
-        protected TypeManager $typeManager,
+        protected EntityTypeContainer $entityTypeContainer,
+        protected TypeContainer $typeContainer,
     ) {
     }
 
@@ -43,7 +42,7 @@ class InputFactory extends AbstractContainer
     public function get(string $id, array $requiredFields = [], array $optionalFields = []): InputObjectType
     {
         $fields       = [];
-        $targetEntity = $this->entityTypeManager->get($id);
+        $targetEntity = $this->entityTypeContainer->get($id);
 
         if (! count($requiredFields) && ! count($optionalFields)) {
             $this->addAllFieldsAsRequired($targetEntity, $fields);
@@ -87,7 +86,7 @@ class InputFactory extends AbstractContainer
             $fields[$fieldName] = new InputObjectField([
                 'name' => $fieldName,
                 'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
-                'type' => $this->typeManager->get($targetEntity->getMetadata()['fields'][$fieldName]['type']),
+                'type' => $this->typeContainer->get($targetEntity->getMetadata()['fields'][$fieldName]['type']),
             ]);
         }
     }
@@ -118,7 +117,7 @@ class InputFactory extends AbstractContainer
             $fields[$fieldName] = new InputObjectField([
                 'name' => $fieldName,
                 'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
-                'type' => Type::nonNull($this->typeManager->get(
+                'type' => Type::nonNull($this->typeContainer->get(
                     $targetEntity->getMetadata()['fields'][$fieldName]['type'],
                 )),
             ]);
@@ -141,7 +140,7 @@ class InputFactory extends AbstractContainer
             $fields[$fieldName] = new InputObjectField([
                 'name' => $fieldName,
                 'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
-                'type' => Type::nonNull($this->typeManager->get($targetEntity->getMetadata()['fields'][$fieldName]['type'])),
+                'type' => Type::nonNull($this->typeContainer->get($targetEntity->getMetadata()['fields'][$fieldName]['type'])),
             ]);
         }
     }
