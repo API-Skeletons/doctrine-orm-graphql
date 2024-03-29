@@ -47,16 +47,15 @@ class Field extends InputObjectType
             // Between is a special case filter.
             // To avoid creating a new Between type for each field,
             // check if the Between type exists and reuse it.
-            if (! ($fields[$filter->value]['type'] instanceof Between)) {
+            if (! $fields[$filter->value]['type'] instanceof Between) {
                 continue;
             }
 
             if ($typeContainer->has('Between_' . $type->name())) {
                 $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
             } else {
-                $betweenType = new Between($type);
-                $typeContainer->set('Between_' . $type->name(), $betweenType);
-                $fields[$filter->value]['type'] = $betweenType;
+                $typeContainer->set('Between_' . $type->name(), new Between($type));
+                $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
             }
         }
 
