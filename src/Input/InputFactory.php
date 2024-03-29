@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Input;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
@@ -22,7 +21,7 @@ use function uniqid;
 /**
  * Create an input object type for a mutation
  */
-class InputFactory extends AbstractContainer
+class InputFactory
 {
     public function __construct(
         protected Config $config,

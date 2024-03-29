@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Filter\Password;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\Laminas\Hydrator\DoctrineObject;
@@ -23,7 +23,7 @@ use function in_array;
  * This factory is used in the Metadata\Entity class to create a hydrator
  * for the current entity
  */
-class HydratorContainer extends AbstractContainer
+class HydratorContainer extends Container
 {
     public function __construct(
         protected EntityManager $entityManager,

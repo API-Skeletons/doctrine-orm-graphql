@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use GraphQL\Type\Definition\Type;
 
 /**
  * This class manages all GraphQL types
  */
-class TypeContainer extends AbstractContainer
+class TypeContainer extends Container
 {
     public function __construct()
     {

@@ -10,5 +10,5 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 interface Buildable
 {
     /** @param mixed[] $params */
-    public function __construct(AbstractContainer $container, string $typeName, array $params);
+    public function __construct(Container $container, string $typeName, array $params);
 }

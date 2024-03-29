@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
@@ -51,7 +51,7 @@ class Entity
     protected TypeContainer $typeContainer;
 
     /** @param mixed[] $params */
-    public function __construct(AbstractContainer $container, string $typeName)
+    public function __construct(Container $container, string $typeName)
     {
         assert($container instanceof Driver);
 

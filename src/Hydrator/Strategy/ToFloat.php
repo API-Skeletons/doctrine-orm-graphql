@@ -13,7 +13,7 @@ use function floatval;
  *
  * @returns float
  */
-class ToFloat extends AbstractCollectionStrategy implements
+class ToFloat extends CollectionStrategy implements
     StrategyInterface
 {
     /** @param mixed|null $object */

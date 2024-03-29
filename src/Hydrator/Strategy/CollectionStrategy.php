@@ -24,7 +24,7 @@ use function sprintf;
  *
  * @codeCoverageIgnore
  */
-abstract class AbstractCollectionStrategy implements CollectionStrategyInterface
+abstract class CollectionStrategy implements CollectionStrategyInterface
 {
     private string|null $collectionName = null;
 

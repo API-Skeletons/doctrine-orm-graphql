@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 
 use function assert;
@@ -14,10 +14,10 @@ use function strtolower;
  * This class is used to manage the Entity classes
  * It does not manage GraphQL types
  */
-class EntityTypeContainer extends AbstractContainer
+class EntityTypeContainer extends Container
 {
     public function __construct(
-        protected AbstractContainer $container,
+        protected Container $container,
     ) {
         assert($container instanceof Driver);
     }

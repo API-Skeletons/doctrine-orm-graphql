@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\AbstractContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Buildable;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -18,7 +18,7 @@ class Node extends ObjectType implements
     Buildable
 {
     /** @param mixed[] $params */
-    public function __construct(AbstractContainer $container, string $typeName, array $params)
+    public function __construct(Container $container, string $typeName, array $params)
     {
         assert($params[0] instanceof ObjectType);
 

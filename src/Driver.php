@@ -9,7 +9,7 @@ use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
 
-class Driver extends AbstractContainer
+class Driver extends Container
 {
     use Services;
 

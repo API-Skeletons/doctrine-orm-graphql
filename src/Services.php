@@ -46,11 +46,11 @@ trait Services
             )
             ->set(
                 Type\Entity\EntityTypeContainer::class,
-                static fn (AbstractContainer $container) => new Type\Entity\EntityTypeContainer($container),
+                static fn (Container $container) => new Type\Entity\EntityTypeContainer($container),
             )
             ->set(
                 'metadata',
-                static function (AbstractContainer $container) use ($metadata) {
+                static function (Container $container) use ($metadata) {
                     return (new Metadata\MetadataFactory(
                         $metadata,
                         $container->get(EntityManager::class),
@@ -62,7 +62,7 @@ trait Services
             )
             ->set(
                 Metadata\GlobalEnable::class,
-                static function (AbstractContainer $container) {
+                static function (Container $container) {
                     return new Metadata\GlobalEnable(
                         $container->get(EntityManager::class),
                         $container->get(Config::class),
@@ -72,7 +72,7 @@ trait Services
             )
             ->set(
                 Resolve\FieldResolver::class,
-                static function (AbstractContainer $container) {
+                static function (Container $container) {
                     return new Resolve\FieldResolver(
                         $container->get(Config::class),
                         $container->get(Type\Entity\EntityTypeContainer::class),
@@ -81,7 +81,7 @@ trait Services
             )
             ->set(
                 Resolve\ResolveCollectionFactory::class,
-                static function (AbstractContainer $container) {
+                static function (Container $container) {
                     return new Resolve\ResolveCollectionFactory(
                         $container->get(EntityManager::class),
                         $container->get(Config::class),
@@ -94,7 +94,7 @@ trait Services
             )
             ->set(
                 Resolve\ResolveEntityFactory::class,
-                static function (AbstractContainer $container) {
+                static function (Container $container) {
                     return new Resolve\ResolveEntityFactory(
                         $container->get(Config::class),
                         $container->get(EntityManager::class),
@@ -105,7 +105,7 @@ trait Services
             )
             ->set(
                 Filter\FilterFactory::class,
-                static function (AbstractContainer $container) {
+                static function (Container $container) {
                     return new Filter\FilterFactory(
                         $container->get(Config::class),
                         $container->get(EntityManager::class),
@@ -116,7 +116,7 @@ trait Services
             )
             ->set(
                 Hydrator\HydratorContainer::class,
-                static function (AbstractContainer $container) {
+                static function (Container $container) {
                     return new Hydrator\HydratorContainer(
                         $container->get(EntityManager::class),
                         $container->get(Type\Entity\EntityTypeContainer::class),
@@ -125,7 +125,7 @@ trait Services
             )
             ->set(
                 Input\InputFactory::class,
-                static function (AbstractContainer $container) {
+                static function (Container $container) {
                     return new Input\InputFactory(
                         $container->get(Config::class),
                         $container->get(EntityManager::class),
