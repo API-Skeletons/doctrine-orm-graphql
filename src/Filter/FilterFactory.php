@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Association;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
@@ -118,10 +119,16 @@ class FilterFactory
                 continue;
             }
 
-            $graphQLType = $this->typeManager
+            $type = $this->typeManager
                 ->get($entityMetadata['fields'][$fieldName]['type']);
 
-            if (! $graphQLType instanceof ScalarType) {
+            // Custom types may hit this condition
+            if (! $type instanceof ScalarType) {
+                continue;
+            }
+
+            // Skip Blob fields
+            if ($type->name() === 'Blob') {
                 continue;
             }
 
@@ -139,21 +146,24 @@ class FilterFactory
                 );
             }
 
+            // Remove filters that are not allowed for this field type
+            $filteredFilters = $this->filterFiltersByType($allowedFilters, $type);
+
             // ScalarType field filters are named by their field type
             // and a hash of the allowed filters
-            $filterTypeName = 'Filters_' . $graphQLType->name . '_' . md5(serialize($allowedFilters));
+            $filterTypeName = 'Filters_' . $type->name() . '_' . md5(serialize($filteredFilters));
 
             if ($this->typeManager->has($filterTypeName)) {
-                $type = $this->typeManager->get($filterTypeName);
+                $fieldType = $this->typeManager->get($filterTypeName);
             } else {
-                $type = new Field($this->typeManager, $typeName, $fieldName, $graphQLType, $allowedFilters);
-                $this->typeManager->set($filterTypeName, $type);
+                $fieldType = new Field($this->typeManager, $type, $filteredFilters);
+                $this->typeManager->set($filterTypeName, $fieldType);
             }
 
             $fields[$fieldName] = [
                 'name'        => $fieldName,
-                'type'        => $type,
-                'description' => 'Filters for ' . $fieldName,
+                'type'        => $fieldType,
+                'description' => $type->name() . ' Filters',
             ];
         }
 
@@ -198,20 +208,99 @@ class FilterFactory
             $filterTypeName = 'Filters_ID_' . md5(serialize($allowedFilters));
 
             if ($this->typeManager->has($filterTypeName)) {
-                $type = $this->typeManager->get($filterTypeName);
+                $associationType = $this->typeManager->get($filterTypeName);
             } else {
-                $type = new Association($this->typeManager, $typeName, $associationName, Type::id(), [Filters::EQ]);
-                $this->typeManager->set($filterTypeName, $type);
+                $associationType = new Association($this->typeManager, Type::id(), [Filters::EQ]);
+                $this->typeManager->set($filterTypeName, $associationType);
             }
 
             // eq filter is for association id from parent entity
             $fields[$associationName] = [
                 'name' => $associationName,
-                'type' => $type,
-                'description' => 'Filters for ' . $associationName,
+                'type' => $associationType,
+                'description' => 'Association Filters',
             ];
         }
 
         return $fields;
+    }
+
+    /**
+     * Filter the allowed filters based on the field type
+     *
+     * @param Filters[] $filters
+     *
+     * @return Filters[]
+     */
+    protected function filterFiltersByType(array $filters, ScalarType $type): array
+    {
+        $filterCollection = new ArrayCollection($filters);
+
+        // Numbers
+        if (
+            in_array($type->name(), [
+                'Float',
+                'ID',
+                'Int',
+                'Integer',
+            ])
+        ) {
+            $filterCollection->removeElement(Filters::CONTAINS);
+            $filterCollection->removeElement(Filters::STARTSWITH);
+            $filterCollection->removeElement(Filters::ENDSWITH);
+
+            return $filterCollection->toArray();
+        }
+
+        // Booleans
+        if ($type->name() === 'Boolean') {
+            $filterCollection->removeElement(Filters::LT);
+            $filterCollection->removeElement(Filters::LTE);
+            $filterCollection->removeElement(Filters::GT);
+            $filterCollection->removeElement(Filters::GTE);
+            $filterCollection->removeElement(Filters::BETWEEN);
+            $filterCollection->removeElement(Filters::CONTAINS);
+            $filterCollection->removeElement(Filters::STARTSWITH);
+            $filterCollection->removeElement(Filters::ENDSWITH);
+
+            return $filterCollection->toArray();
+        }
+
+        // Strings
+        if (
+            in_array($type->name(), [
+                'String',
+                'Text',
+            ])
+        ) {
+            $filterCollection->removeElement(Filters::LT);
+            $filterCollection->removeElement(Filters::LTE);
+            $filterCollection->removeElement(Filters::GT);
+            $filterCollection->removeElement(Filters::GTE);
+            $filterCollection->removeElement(Filters::BETWEEN);
+
+            return $filterCollection->toArray();
+        }
+
+        // Dates and times
+        if (
+            in_array($type->name(), [
+                'Date',
+                'DateTime',
+                'DateTimeImmutable',
+                'DateTimeTZ',
+                'DateTimeTZImmutable',
+                'Time',
+                'TimeImmutable',
+            ])
+        ) {
+            $filterCollection->removeElement(Filters::CONTAINS);
+            $filterCollection->removeElement(Filters::STARTSWITH);
+            $filterCollection->removeElement(Filters::ENDSWITH);
+
+            return $filterCollection->toArray();
+        }
+
+        return $filterCollection->toArray();
     }
 }
