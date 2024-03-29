@@ -47,28 +47,28 @@ class ConfigExcludeFiltersTest extends AbstractTest
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "Filters_String_b26f464f97a76891491eafa1573acb24".', $error->getMessage());
+            $this->assertEquals('Field "eq" is not defined by type "Filters_String_0812311810b0ba1d34247150620b78b0".', $error->getMessage());
         }
 
         $query  = '{ artists (filter: { name: { neq: "Grateful Dead" } } ) { edges { node { name } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "neq" is not defined by type "Filters_String_b26f464f97a76891491eafa1573acb24".', $error->getMessage());
+            $this->assertEquals('Field "neq" is not defined by type "Filters_String_0812311810b0ba1d34247150620b78b0".', $error->getMessage());
         }
 
         $query  = '{ artists { edges { node { performances ( filter: {venue: { neq: "test"} } ) { edges { node { venue } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "neq" is not defined by type "Filters_String_b26f464f97a76891491eafa1573acb24".', $error->getMessage());
+            $this->assertEquals('Field "neq" is not defined by type "Filters_String_0812311810b0ba1d34247150620b78b0".', $error->getMessage());
         }
 
         $query  = '{ artists { edges { node { performances ( filter: {venue: { contains: "test" } } ) { edges { node { venue } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "contains" is not defined by type "Filters_String_b26f464f97a76891491eafa1573acb24". Did you mean "notin"?', $error->getMessage());
+            $this->assertEquals('Field "contains" is not defined by type "Filters_String_0812311810b0ba1d34247150620b78b0". Did you mean "notin"?', $error->getMessage());
         }
     }
 }

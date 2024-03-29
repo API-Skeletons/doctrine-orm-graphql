@@ -23,8 +23,6 @@ class Field extends InputObjectType
     /** @param Filters[] $allowedFilters */
     public function __construct(
         TypeManager $typeManager,
-        string $typeName,
-        string $fieldName,
         ScalarType|ListOfType $type,
         array $allowedFilters,
     ) {
@@ -38,6 +36,7 @@ class Field extends InputObjectType
                 'description' => $filter->description(),
             ];
 
+            // Custom types may hit this condition
             // @codeCoverageIgnoreStart
             if (! $type instanceof ScalarType) {
                 continue;
@@ -45,23 +44,23 @@ class Field extends InputObjectType
 
             // @codeCoverageIgnoreEnd
 
+            // Between is a special case filter.
+            // To avoid creating a new Between type for each field,
+            // check if the Between type exists and reuse it.
             if (! ($fields[$filter->value]['type'] instanceof Between)) {
                 continue;
             }
 
-            // Between is a special case filter.
-            // To avoid creating a new Between type for each field,
-            // check if the Between type exists and reuse it.
-            if ($typeManager->has('Between_' . $type->name)) {
-                $fields[$filter->value]['type'] = $typeManager->get('Between_' . $type->name);
+            if ($typeManager->has('Between_' . $type->name())) {
+                $fields[$filter->value]['type'] = $typeManager->get('Between_' . $type->name());
             } else {
                 $betweenType = new Between($type);
-                $typeManager->set('Between_' . $type->name, $betweenType);
+                $typeManager->set('Between_' . $type->name(), $betweenType);
                 $fields[$filter->value]['type'] = $betweenType;
             }
         }
 
-        $typeName = $type instanceof ScalarType ? $type->name : uniqid();
+        $typeName = $type instanceof ScalarType ? $type->name() : uniqid();
 
         // ScalarType field filters are named by their field type
         // and a hash of the allowed filters
