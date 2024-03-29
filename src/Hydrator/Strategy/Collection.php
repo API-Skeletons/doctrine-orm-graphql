@@ -102,7 +102,7 @@ abstract class Collection implements CollectionStrategyInterface
     /**
      * Return the collection by value (using the public API)
      *
-     * @return Collection<array-key,object>
+     * @return DoctrineCollection<array-key,object>
      *
      * @throws InvalidArgumentException
      */
