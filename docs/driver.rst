@@ -69,12 +69,12 @@ type()
 This function returns GraphQL types for all Doctrine types, any custom types,
 and Doctrine entity types.
 
-There are two type managers:  ``TypeManager`` and ``EntityTypeManager``.
+There are two type managers:  ``TypeContainer`` and ``EntityTypeContainer``.
 Types from each of these managers are returned from this `type()` function.
 
-See `types <types.html>`_ for details on custom types and using the ``TypeManager``.
+See `types <types.html>`_ for details on custom types and using the ``TypeContainer``.
 
-The ``EntityTypeManager`` is used only for Doctrine entities and is populated
+The ``EntityTypeContainer`` is used only for Doctrine entities and is populated
 though the `metadata <metadata.html>`_.  This class is used internally for generating
 ``ObjectType``s for entities.
 

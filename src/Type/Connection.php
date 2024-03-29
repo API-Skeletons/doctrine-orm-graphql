@@ -12,7 +12,7 @@ use GraphQL\Type\Definition\Type;
 use function assert;
 
 /**
- * This type is built within the TypeManager
+ * This type is built within the TypeContainer
  */
 class Connection extends ObjectType implements
     Buildable

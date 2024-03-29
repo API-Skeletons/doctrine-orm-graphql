@@ -6,7 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorFactory;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\NamingStrategy\CustomNamingStrategy;
@@ -21,7 +21,7 @@ class NamingStrategyTest extends AbstractTest
         $config = new Config(['group' => 'NamingStrategyTest']);
 
         $driver = new Driver($this->getEntityManager(), $config);
-        $driver->get(HydratorFactory::class)
+        $driver->get(HydratorContainer::class)
             ->set(CustomNamingStrategy::class, new CustomNamingStrategy());
 
         $schema = new Schema([

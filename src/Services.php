@@ -41,12 +41,12 @@ trait Services
                 static fn () => new EventDispatcher(),
             )
             ->set(
-                Type\TypeManager::class,
-                static fn () => new Type\TypeManager(),
+                Type\TypeContainer::class,
+                static fn () => new Type\TypeContainer(),
             )
             ->set(
-                Type\Entity\EntityTypeManager::class,
-                static fn (AbstractContainer $container) => new Type\Entity\EntityTypeManager($container),
+                Type\Entity\EntityTypeContainer::class,
+                static fn (AbstractContainer $container) => new Type\Entity\EntityTypeContainer($container),
             )
             ->set(
                 'metadata',
@@ -75,7 +75,7 @@ trait Services
                 static function (AbstractContainer $container) {
                     return new Resolve\FieldResolver(
                         $container->get(Config::class),
-                        $container->get(Type\Entity\EntityTypeManager::class),
+                        $container->get(Type\Entity\EntityTypeContainer::class),
                     );
                 },
             )
@@ -86,7 +86,7 @@ trait Services
                         $container->get(EntityManager::class),
                         $container->get(Config::class),
                         $container->get(Resolve\FieldResolver::class),
-                        $container->get(Type\TypeManager::class),
+                        $container->get(Type\TypeContainer::class),
                         $container->get(EventDispatcher::class),
                         $container->get('metadata'),
                     );
@@ -109,17 +109,17 @@ trait Services
                     return new Filter\FilterFactory(
                         $container->get(Config::class),
                         $container->get(EntityManager::class),
-                        $container->get(Type\TypeManager::class),
+                        $container->get(Type\TypeContainer::class),
                         $container->get(EventDispatcher::class),
                     );
                 },
             )
             ->set(
-                Hydrator\HydratorFactory::class,
+                Hydrator\HydratorContainer::class,
                 static function (AbstractContainer $container) {
-                    return new Hydrator\HydratorFactory(
+                    return new Hydrator\HydratorContainer(
                         $container->get(EntityManager::class),
-                        $container->get(Type\Entity\EntityTypeManager::class),
+                        $container->get(Type\Entity\EntityTypeContainer::class),
                     );
                 },
             )
@@ -129,8 +129,8 @@ trait Services
                     return new Input\InputFactory(
                         $container->get(Config::class),
                         $container->get(EntityManager::class),
-                        $container->get(Type\Entity\EntityTypeManager::class),
-                        $container->get(Type\TypeManager::class),
+                        $container->get(Type\Entity\EntityTypeContainer::class),
+                        $container->get(Type\TypeContainer::class),
                     );
                 },
             );

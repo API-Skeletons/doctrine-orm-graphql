@@ -7,8 +7,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
@@ -37,14 +37,14 @@ class DriverTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager());
 
-        $entityTypeManager = $driver->get(EntityTypeManager::class);
+        $entityTypeContainer = $driver->get(EntityTypeContainer::class);
 
         $this->assertInstanceOf(Driver::class, $driver);
         $this->assertInstanceOf(ArrayObject::class, $driver->get('metadata'));
-        $this->assertInstanceOf(Entity::class, $entityTypeManager->get(User::class));
-        $this->assertInstanceOf(Entity::class, $entityTypeManager->get(Artist::class));
-        $this->assertInstanceOf(Entity::class, $entityTypeManager->get(Performance::class));
-        $this->assertInstanceOf(Entity::class, $entityTypeManager->get(Recording::class));
+        $this->assertInstanceOf(Entity::class, $entityTypeContainer->get(User::class));
+        $this->assertInstanceOf(Entity::class, $entityTypeContainer->get(Artist::class));
+        $this->assertInstanceOf(Entity::class, $entityTypeContainer->get(Performance::class));
+        $this->assertInstanceOf(Entity::class, $entityTypeContainer->get(Recording::class));
     }
 
     public function testCreateDriverWithConfig(): void
@@ -70,13 +70,13 @@ class DriverTest extends AbstractTest
             'limit' => 1000,
         ]);
 
-        $driver            = new Driver($this->getEntityManager(), $config);
-        $entityTypeManager = $driver->get(EntityTypeManager::class);
+        $driver              = new Driver($this->getEntityManager(), $config);
+        $entityTypeContainer = $driver->get(EntityTypeContainer::class);
 
-        $this->assertInstanceOf(Entity::class, $entityTypeManager->get(User::class));
+        $this->assertInstanceOf(Entity::class, $entityTypeContainer->get(User::class));
 
         $this->expectException(Error::class);
-        $this->assertInstanceOf(Entity::class, $entityTypeManager->get(Artist::class));
+        $this->assertInstanceOf(Entity::class, $entityTypeContainer->get(Artist::class));
     }
 
     /**
@@ -177,7 +177,7 @@ class DriverTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager());
 
-        $driver->get(TypeManager::class)
+        $driver->get(TypeContainer::class)
             ->set('custom', static fn () => Type::boolean());
 
         $this->assertInstanceOf(BooleanType::class, $driver->type('custom'));

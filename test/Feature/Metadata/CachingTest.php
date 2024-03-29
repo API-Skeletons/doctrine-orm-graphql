@@ -7,7 +7,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
@@ -24,7 +24,7 @@ class CachingTest extends AbstractTest
         unset($driver);
 
         $driver = new Driver($this->getEntityManager(), null, $metadata->getArrayCopy());
-        $this->assertInstanceOf(Entity::class, $driver->get(EntityTypeManager::class)->get(User::class));
+        $this->assertInstanceOf(Entity::class, $driver->get(EntityTypeContainer::class)->get(User::class));
     }
 
     public function testStaticMetadata(): void
@@ -65,9 +65,9 @@ class CachingTest extends AbstractTest
         $this->assertEquals($generatedMetadata, $metadata);
         $this->assertEquals($generatedMetadata, $driver->get('metadata')->getArrayCopy());
 
-        $this->assertInstanceOf(Entity::class, $driver->get(EntityTypeManager::class)->get(User::class));
+        $this->assertInstanceOf(Entity::class, $driver->get(EntityTypeContainer::class)->get(User::class));
 
         $this->expectException(Error::class);
-        $this->assertInstanceOf(Entity::class, $driver->get(EntityTypeManager::class)->get(Artist::class));
+        $this->assertInstanceOf(Entity::class, $driver->get(EntityTypeContainer::class)->get(Artist::class));
     }
 }

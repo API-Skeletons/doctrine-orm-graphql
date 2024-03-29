@@ -6,7 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
 use GraphQL\GraphQL;
@@ -20,7 +20,7 @@ class FiltersTypeCollisionTest extends AbstractTest
         $driver1 = new Driver($this->getEntityManager());
         $driver2 = new Driver($this->getEntityManager(), new Config(['group' => 'ExcludeFiltersTest']));
 
-        $driver2->set(TypeManager::class, $driver1->get(TypeManager::class));
+        $driver2->set(TypeContainer::class, $driver1->get(TypeContainer::class));
 
         $schema = new Schema([
             'query' => new ObjectType([
@@ -85,14 +85,14 @@ class FiltersTypeCollisionTest extends AbstractTest
         $data = $result->toArray()['data'];
 
         $this->assertEquals($data['one']['edges'][0]['node']['id'], $data['two']['edges'][0]['node']['id']);
-        $this->assertSame($driver1->get(TypeManager::class), $driver2->get(TypeManager::class));
+        $this->assertSame($driver1->get(TypeContainer::class), $driver2->get(TypeContainer::class));
         $this->assertSame(
-            $driver1->get(TypeManager::class)->get('pageinfo'),
-            $driver2->get(TypeManager::class)->get('pageinfo'),
+            $driver1->get(TypeContainer::class)->get('pageinfo'),
+            $driver2->get(TypeContainer::class)->get('pageinfo'),
         );
         $this->assertSame(
-            $driver1->get(TypeManager::class)->get('pagination'),
-            $driver2->get(TypeManager::class)->get('pagination'),
+            $driver1->get(TypeContainer::class)->get('pagination'),
+            $driver2->get(TypeContainer::class)->get('pagination'),
         );
     }
 }

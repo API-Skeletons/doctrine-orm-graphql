@@ -14,7 +14,7 @@ use function strtolower;
  * This class is used to manage the Entity classes
  * It does not manage GraphQL types
  */
-class EntityTypeManager extends AbstractContainer
+class EntityTypeContainer extends AbstractContainer
 {
     public function __construct(
         protected AbstractContainer $container,

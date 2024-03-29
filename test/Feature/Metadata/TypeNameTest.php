@@ -6,7 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use GraphQL\GraphQL;
@@ -38,7 +38,7 @@ class TypeNameTest extends AbstractTest
             ]),
         ]);
 
-        $artistObject = $driver->get(EntityTypeManager::class)->get(Artist::class);
+        $artistObject = $driver->get(EntityTypeContainer::class)->get(Artist::class);
 
         $this->assertEquals('Artist_unittest', $artistObject->getTypeName());
     }

@@ -6,7 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeManager;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use GraphQL\GraphQL;
@@ -21,7 +21,7 @@ class CustomTypeTest extends AbstractTest
     public function testCustomFieldType(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'CustomTypeTest']));
-        $driver->get(TypeManager::class)->set('customtype', static fn () => Type::string());
+        $driver->get(TypeContainer::class)->set('customtype', static fn () => Type::string());
 
         $schema = new Schema([
             'query' => new ObjectType([
