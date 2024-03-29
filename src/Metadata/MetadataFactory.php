@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common\MetadataFactory as CommonMetadataFactory;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -21,7 +22,7 @@ use function count;
 /**
  * Build metadata for entities
  */
-class MetadataFactory extends AbstractMetadataFactory
+class MetadataFactory extends CommonMetadataFactory
 {
     public function __construct(
         protected ArrayObject $metadata,

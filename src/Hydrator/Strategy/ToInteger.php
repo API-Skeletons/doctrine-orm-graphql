@@ -13,7 +13,7 @@ use function intval;
  *
  * @returns integer
  */
-class ToInteger extends CollectionStrategy implements
+class ToInteger extends Collection implements
     StrategyInterface
 {
     public function extract(mixed $value, object|null $object = null): mixed

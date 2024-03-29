@@ -7,6 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common\MetadataFactory;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use League\Event\EventDispatcher;
@@ -16,7 +17,7 @@ use function in_array;
 /**
  * Build metadata for all entities
  */
-final class GlobalEnable extends AbstractMetadataFactory
+final class GlobalEnable extends MetadataFactory
 {
     private ArrayObject $metadata;
 

@@ -11,7 +11,7 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
  *
  * @returns float
  */
-class ToBoolean extends CollectionStrategy implements
+class ToBoolean extends Collection implements
     StrategyInterface
 {
     public function extract(mixed $value, object|null $object = null): bool|null

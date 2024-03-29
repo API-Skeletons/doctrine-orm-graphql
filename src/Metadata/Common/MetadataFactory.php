@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
@@ -17,7 +17,7 @@ use function substr;
  * This ancestor class contains functions common to the MetadataFactory
  * and GlobalEnable
  */
-abstract class AbstractMetadataFactory
+abstract class MetadataFactory
 {
     protected Config $config;
 
