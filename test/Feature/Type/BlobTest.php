@@ -28,7 +28,7 @@ class BlobTest extends AbstractTest
     {
         $blobType = new Blob();
 
-        $file = file_get_contents(__DIR__ . '/../../../banner.png');
+        $file = file_get_contents(__DIR__ . '/../../../docs/banner.png');
 
         $encoded = base64_encode($file);
         $result  = $blobType->parseValue($encoded);
