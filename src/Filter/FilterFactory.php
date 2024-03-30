@@ -245,12 +245,7 @@ class FilterFactory
             $filterCollection->removeElement(Filters::CONTAINS);
             $filterCollection->removeElement(Filters::STARTSWITH);
             $filterCollection->removeElement(Filters::ENDSWITH);
-
-            return $filterCollection->toArray();
-        }
-
-        // Booleans
-        if ($type->name() === 'Boolean') {
+        } elseif ($type->name() === 'Boolean') {
             $filterCollection->removeElement(Filters::LT);
             $filterCollection->removeElement(Filters::LTE);
             $filterCollection->removeElement(Filters::GT);
@@ -259,12 +254,7 @@ class FilterFactory
             $filterCollection->removeElement(Filters::CONTAINS);
             $filterCollection->removeElement(Filters::STARTSWITH);
             $filterCollection->removeElement(Filters::ENDSWITH);
-
-            return $filterCollection->toArray();
-        }
-
-        // Strings
-        if (
+        } elseif (
             in_array($type->name(), [
                 'String',
                 'Text',
@@ -275,12 +265,7 @@ class FilterFactory
             $filterCollection->removeElement(Filters::GT);
             $filterCollection->removeElement(Filters::GTE);
             $filterCollection->removeElement(Filters::BETWEEN);
-
-            return $filterCollection->toArray();
-        }
-
-        // Dates and times
-        if (
+        } elseif (
             in_array($type->name(), [
                 'Date',
                 'DateTime',
@@ -294,8 +279,6 @@ class FilterFactory
             $filterCollection->removeElement(Filters::CONTAINS);
             $filterCollection->removeElement(Filters::STARTSWITH);
             $filterCollection->removeElement(Filters::ENDSWITH);
-
-            return $filterCollection->toArray();
         }
 
         return $filterCollection->toArray();
