@@ -1,34 +1,46 @@
 <p align="center">
     <img src="https://placehold.co/10x10/337ab7/337ab7.png" width="100%" height="15px">
-    <img src="https://raw.githubusercontent.com/API-Skeletons/doctrine-orm-graphql/master/banner.png" width="450px">
+    <img src="https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/docs/banner.png" width="450px">
 </p>
+
 
 GraphQL Type Driver for Doctrine ORM
 ====================================
 
 [![Build Status](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml?query=branch%3Amain)
 [![Code Coverage](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main/graphs/badge.svg)](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/?branch=main)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/badges/quality-score.png?b=10.1.x)](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/?branch=10.1.x)
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%2b-blue)](https://img.shields.io/badge/PHP-8.1%2b-blue)
 [![Total Downloads](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/downloads)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
-* 2024-02-24 - Support for ORM version 3
-* 2023-12-12 - New version 9.0 is released dropping support for PHP 8.0
+This library provides a GraphQL driver for Doctrine ORM for use with the [webonyx/graphql-php](https://github.com/webonyx/graphql-php) library.  It **does not** try to redefine how that excellent library [webonyx/graphql-php](https://github.com/webonyx/graphql-php) operates.  Instead, it creates types to be used within the framework that library provides.
 
-This library provides a GraphQL driver for Doctrine ORM version 2 for use with [webonyx/graphql-php](https://github.com/webonyx/graphql-php).
-Configuration is available from simple to verbose.  Multiple configurations for multiple drivers are supported.
 
-This library **does not** try to redefine how the excellent library [webonyx/graphql-php](https://github.com/webonyx/graphql-php) operates.  Instead, it creates types to be used within the framework that library provides.
+Installation
+------------
 
-Please read the [detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/).
+Via composer:
 
-For an working implementation see https://graphql.lcdb.org
+```bash
+composer require api-skeletons/doctrine-orm-graphql
+```
 
-For an example application see [https://github.com/lcdborg/graphql.lcdb.org](https://github.com/lcdborg/graphql.lcdb.org)
 
-Library Highlights
-------------------
+Documentation
+-------------
+
+Full documentation is available at https://doctrine-orm-graphql.apiskeletons.dev or in the [docs](https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/docs directory.
+
+
+Examples
+--------
+
+For an working implementation see https://graphql.lcdb.org and the corresonding application at https://github.com/lcdborg/graphql.lcdb.org.
+
+
+Features
+--------
 
 * [PHP 8 Attributes](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html) for configuration
 * [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html)
@@ -39,14 +51,6 @@ Library Highlights
 * Uses the [Doctrine Laminas Hydrator](https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.1/index.html) for extraction by value or by reference
 * Conforms to the [Doctrine Coding Standard](https://www.doctrine-project.org/projects/doctrine-coding-standard/en/9.0/index.html)
 
-Installation
-------------
-
-Run the following to install this library using [Composer](https://getcomposer.org/):
-
-```bash
-composer require api-skeletons/doctrine-orm-graphql
-```
 
 Quick Start
 -----------
@@ -196,8 +200,8 @@ $result = GraphQL::executeQuery(
 $output = $result->toArray();
 ```
 
-Filtering
----------
+Filters
+-------
 
 For every enabled field and association, filters are available for querying.
 
@@ -235,7 +239,7 @@ Example
 }
 ```
 
-Each field has their own set of filters.  Most fields have the following:
+Each field has their own set of filters.  Based on the field type, some or all of the following filters are available:
 
 * eq - Equals.
 * neq - Not equals.
@@ -253,14 +257,13 @@ Each field has their own set of filters.  Most fields have the following:
 
 You may [exclude any filter](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html#entity) from any entity, association, or globally.
 
+
 Events
 ------
 
 ### Query Builder
 
-You may modify the query builder used to resolve any connection by subscribing to events.
-Each connection may have a unique event name.  `Entity::class . '.queryBuilder'` is recommended.
-Pass as the second parameter to `$driver->resolve()`.
+You may modify the query builder used to resolve any connection by subscribing to events.  Each connection may have a unique event name.  `Entity::class . '.queryBuilder'` is recommended.  Pass as the second parameter to `$driver->resolve()`.
 
 ```php
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
@@ -368,7 +371,7 @@ $driver->get(EventDispatcher::class)->subscribeTo(
 );
 ```
 
-Further Reading
----------------
+License
+-------
 
-Please read the [detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/).
+See [LICENSE](https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/LICENSE).
