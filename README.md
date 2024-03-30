@@ -42,14 +42,11 @@ For an working implementation see https://graphql.lcdb.org and the corresonding 
 Features
 --------
 
-* [PHP 8 Attributes](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html) for configuration
-* [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html)
 * Supports all [Doctrine Types](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/types.html#data-type-mappings) and allows custom types
 * Pagination with the [GraphQL Complete Connection Model](https://graphql.org/learn/pagination/#complete-connection-model)
-* Supports [filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
+* [Filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
 * [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries, entity types and more
-* Uses the [Doctrine Laminas Hydrator](https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.1/index.html) for extraction by value or by reference
-* Conforms to the [Doctrine Coding Standard](https://www.doctrine-project.org/projects/doctrine-coding-standard/en/9.0/index.html)
+* [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html)
 
 
 Quick Start
