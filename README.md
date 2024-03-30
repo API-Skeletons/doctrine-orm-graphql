@@ -1,6 +1,6 @@
 <p align="center">
     <img src="https://placehold.co/10x10/337ab7/337ab7.png" width="100%" height="15px">
-    <img src="https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/docs/banner.png" width="450px">
+    <img src="https://raw.githubusercontent.com/api-skeletons/doctrine-orm-graphql/master/docs/banner.png" width="450px">
 </p>
 
 
