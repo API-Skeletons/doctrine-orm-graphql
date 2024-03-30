@@ -212,7 +212,7 @@ abstract class AbstractTest extends TestCase
             ->setTestTimeImmutable($immutableDateTime)
             ->setTestGuid(Uuid::uuid4()->toString())
             ->setTestUuid(Uuid::uuid4())
-            ->setTestBlob(file_get_contents(__DIR__ . '/../banner.png'));
+            ->setTestBlob(file_get_contents(__DIR__ . '/../docs/banner.png'));
         $this->entityManager->persist($typeTest);
 
         $this->entityManager->flush();

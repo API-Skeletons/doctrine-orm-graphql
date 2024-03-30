@@ -28,7 +28,7 @@ class BlobTest extends AbstractTest
     {
         $blobType = new Blob();
 
-        $file = file_get_contents(__DIR__ . '/../../../banner.png');
+        $file = file_get_contents(__DIR__ . '/../../../docs/banner.png');
 
         $encoded = base64_encode($file);
         $result  = $blobType->parseValue($encoded);
@@ -67,7 +67,7 @@ class BlobTest extends AbstractTest
     {
         $blobType = new Blob();
 
-        $file = file_get_contents(__DIR__ . '/../../../banner.png');
+        $file = file_get_contents(__DIR__ . '/../../../docs/banner.png');
 
         $encoded = base64_encode($file);
         $result  = $blobType->serialize($file);
@@ -108,7 +108,7 @@ class BlobTest extends AbstractTest
         $data = $result->toArray()['data'];
 
         $file    = base64_decode($data['typetest']['edges'][0]['node']['testBlob']);
-        $control = file_get_contents(__DIR__ . '/../../../banner.png');
+        $control = file_get_contents(__DIR__ . '/../../../docs/banner.png');
 
         $this->assertEquals($file, $control);
 
@@ -129,7 +129,7 @@ class BlobTest extends AbstractTest
                             'blob' => $driver->type('blob'),
                         ],
                         'resolve' => function ($root, array $args, $context, ResolveInfo $info) use ($driver) {
-                            $control = file_get_contents(__DIR__ . '/../../../banner.png');
+                            $control = file_get_contents(__DIR__ . '/../../../docs/banner.png');
 
                             $this->assertEquals($control, $args['blob']);
 
@@ -151,7 +151,7 @@ class BlobTest extends AbstractTest
         $result = GraphQL::executeQuery(
             schema: $schema,
             source: $query,
-            variableValues: ['blob' => base64_encode(file_get_contents(__DIR__ . '/../../../banner.png'))],
+            variableValues: ['blob' => base64_encode(file_get_contents(__DIR__ . '/../../../docs/banner.png'))],
             operationName: 'TestBlob',
         );
 
