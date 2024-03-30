@@ -371,7 +371,15 @@ $driver->get(EventDispatcher::class)->subscribeTo(
 );
 ```
 
+
+History
+-------
+
+The roots of this project go back to May 2018 with https://github.com/API-Skeletons/zf-doctrine-graphql; written for Zend Framework 2.  It was migrated to the framework agnostic https://packagist.org/packages/api-skeletons/doctrine-graphql but the name of that repository was incorrect because it did not specify ORM only.  So this repository was created and the others were abandoned.
+
+
 License
 -------
 
 See [LICENSE](https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/LICENSE).
+
