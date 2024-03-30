@@ -4,6 +4,7 @@ GraphQL Type Driver for Doctrine ORM
 
 .. image:: banner.png
    :align: center
+   :scale: 25 %
 
 This is the documentation for
 `API-Skeletons/doctrine-orm-graphql <https://github.com/API-Skeletons/doctrine-orm-graphql>`_

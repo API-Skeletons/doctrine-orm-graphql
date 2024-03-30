@@ -14,7 +14,7 @@ GraphQL Type Driver for Doctrine ORM
 [![Total Downloads](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/downloads)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
-This library provides a GraphQL driver for Doctrine ORM for use with the [webonyx/graphql-php](https://github.com/webonyx/graphql-php) library.  It **does not** try to redefine how that excellent library [webonyx/graphql-php](https://github.com/webonyx/graphql-php) operates.  Instead, it creates types to be used within the framework that library provides.
+This library provides a GraphQL driver for Doctrine ORM for use with the [webonyx/graphql-php](https://github.com/webonyx/graphql-php) library.  It **does not** try to redefine how that excellent library operates.  Instead, it creates types to be used within the framework that library provides.
 
 
 Installation
@@ -30,7 +30,7 @@ composer require api-skeletons/doctrine-orm-graphql
 Documentation
 -------------
 
-Full documentation is available at https://doctrine-orm-graphql.apiskeletons.dev or in the [docs](https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/docs directory.
+Full documentation is available at https://doctrine-orm-graphql.apiskeletons.dev or in the [docs](https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/docs) directory.
 
 
 Examples
