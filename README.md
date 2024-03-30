@@ -200,6 +200,7 @@ $result = GraphQL::executeQuery(
 $output = $result->toArray();
 ```
 
+
 Filters
 -------
 
@@ -256,120 +257,6 @@ Each field has their own set of filters.  Based on the field type, some or all o
 * contains - A like query.
 
 You may [exclude any filter](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html#entity) from any entity, association, or globally.
-
-
-Events
-------
-
-### Query Builder
-
-You may modify the query builder used to resolve any connection by subscribing to events.  Each connection may have a unique event name.  `Entity::class . '.queryBuilder'` is recommended.  Pass as the second parameter to `$driver->resolve()`.
-
-```php
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
-use App\ORM\Entity\Artist;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Schema;
-use League\Event\EventDispatcher;
-
-$schema = new Schema([
-    'query' => new ObjectType([
-        'name' => 'query',
-        'fields' => [
-            'artists' => [
-                'type' => $driver->connection(Artist::class),
-                'args' => [
-                    'filter' => $driver->filter(Artist::class),
-                    'pagination' => $driver->pagination(),
-                ],
-                'resolve' => $driver->resolve(Artist::class, Artist::class . '.queryBuilder'),
-            ],
-        ],
-  ]),
-]);
-
-$driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.queryBuilder',
-    function(QueryBuilder $event) {
-        $event->getQueryBuilder()
-            ->innerJoin('entity.user', 'user')
-            ->andWhere($event->getQueryBuilder()->expr()->eq('user.id', ':userId'))
-            ->setParameter('userId', currentUser()->getId())
-            ;
-    }
-);
-```
-
-### Association Criteria
-
-You may modify the criteria object used to filter associations.  For instance, if you use soft
-deletes then you would want to filter out deleted rows from an association.
-
-```php
-use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria;
-use App\ORM\Entity\Artist;
-use League\Event\EventDispatcher;
-
-#[GraphQL\Entity]
-class Artist
-{
-    #[GraphQL\Field]
-    public $id;
-
-    #[GraphQL\Field]
-    public $name;
-
-    #[GraphQL\Association(filterCriteriaEventName: self::class . '.performances.filterCriteria')]
-    public $performances;
-}
-
-// Add a listener to your driver
-$driver->get(EventDispatcher::class)->subscribeTo(
-    Artist::class . '.performances.filterCriteria',
-    function (Criteria $event): void {
-        $event->getCriteria()->andWhere(
-            $event->getCriteria()->expr()->eq('isDeleted', false)
-        );
-    },
-);
-```
-
-### Entity ObjectType Definition
-
-You may modify the array used to define an entity type before it is created. This can be used for generated data and the like.
-You must attach to events before defining your GraphQL schema.  See the [detailed documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/events.html#modify-an-entity-definition) for details.
-
-```php
-use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
-use App\ORM\Entity\Artist;
-use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\Type;
-use League\Event\EventDispatcher;
-
-$driver = new Driver($entityManager);
-
-$driver->get(EventDispatcher::class)->subscribeTo(
-    Artist::class . '.definition',
-    static function (EntityDefinition $event): void {
-        $definition = $event->getDefinition();
-
-        // In order to modify the fields you must resovle the closure
-        $fields = $definition['fields']();
-
-        // Add a custom field to show the name without a prefix of 'The'
-        $fields['nameUnprefix'] = [
-            'type' => Type::string(),
-            'description' => 'A computed dynamically added field',
-            'resolve' => static function ($objectValue, array $args, $context, ResolveInfo $info): mixed {
-                return trim(str_replace('The', '', $objectValue->getName()));
-            },
-        ];
-
-        $definition['fields'] = $fields;
-    }
-);
-```
 
 
 History
