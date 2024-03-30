@@ -85,8 +85,8 @@ class FilterFactory
             });
         }
 
-        $fields = $this->addFields($targetEntity, $typeName, $allowedFilters);
-        $fields = array_merge($fields, $this->addAssociations($targetEntity, $typeName, $allowedFilters));
+        $fields = $this->addFields($targetEntity, $allowedFilters);
+        $fields = array_merge($fields, $this->addAssociations($targetEntity, $allowedFilters));
 
         $inputObject = new GraphQLInputObjectType([
             'name' => $typeName,
@@ -106,7 +106,7 @@ class FilterFactory
      *
      * @return array<string, mixed[]>
      */
-    protected function addFields(Entity $targetEntity, string $typeName, array $allowedFilters): array
+    protected function addFields(Entity $targetEntity, array $allowedFilters): array
     {
         $fields = [];
 
@@ -178,7 +178,7 @@ class FilterFactory
      *
      * @return array<string, mixed[]>
      */
-    protected function addAssociations(Entity $targetEntity, string $typeName, array $allowedFilters): array
+    protected function addAssociations(Entity $targetEntity, array $allowedFilters): array
     {
         $fields = [];
 
@@ -207,17 +207,14 @@ class FilterFactory
 
             $filterTypeName = 'Filters_ID_' . md5(serialize($allowedFilters));
 
-            if ($this->typeContainer->has($filterTypeName)) {
-                $associationType = $this->typeContainer->get($filterTypeName);
-            } else {
-                $associationType = new Association($this->typeContainer, Type::id(), [Filters::EQ]);
-                $this->typeContainer->set($filterTypeName, $associationType);
+            if (! $this->typeContainer->has($filterTypeName)) {
+                $this->typeContainer->set($filterTypeName, new Association($this->typeContainer, Type::id(), [Filters::EQ]));
             }
 
             // eq filter is for association id from parent entity
             $fields[$associationName] = [
                 'name' => $associationName,
-                'type' => $associationType,
+                'type' => $this->typeContainer->get($filterTypeName),
                 'description' => 'Association Filters',
             ];
         }
@@ -248,12 +245,7 @@ class FilterFactory
             $filterCollection->removeElement(Filters::CONTAINS);
             $filterCollection->removeElement(Filters::STARTSWITH);
             $filterCollection->removeElement(Filters::ENDSWITH);
-
-            return $filterCollection->toArray();
-        }
-
-        // Booleans
-        if ($type->name() === 'Boolean') {
+        } elseif ($type->name() === 'Boolean') {
             $filterCollection->removeElement(Filters::LT);
             $filterCollection->removeElement(Filters::LTE);
             $filterCollection->removeElement(Filters::GT);
@@ -262,12 +254,7 @@ class FilterFactory
             $filterCollection->removeElement(Filters::CONTAINS);
             $filterCollection->removeElement(Filters::STARTSWITH);
             $filterCollection->removeElement(Filters::ENDSWITH);
-
-            return $filterCollection->toArray();
-        }
-
-        // Strings
-        if (
+        } elseif (
             in_array($type->name(), [
                 'String',
                 'Text',
@@ -278,12 +265,7 @@ class FilterFactory
             $filterCollection->removeElement(Filters::GT);
             $filterCollection->removeElement(Filters::GTE);
             $filterCollection->removeElement(Filters::BETWEEN);
-
-            return $filterCollection->toArray();
-        }
-
-        // Dates and times
-        if (
+        } elseif (
             in_array($type->name(), [
                 'Date',
                 'DateTime',
@@ -297,8 +279,6 @@ class FilterFactory
             $filterCollection->removeElement(Filters::CONTAINS);
             $filterCollection->removeElement(Filters::STARTSWITH);
             $filterCollection->removeElement(Filters::ENDSWITH);
-
-            return $filterCollection->toArray();
         }
 
         return $filterCollection->toArray();

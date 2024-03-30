@@ -51,12 +51,11 @@ class Field extends InputObjectType
                 continue;
             }
 
-            if ($typeContainer->has('Between_' . $type->name())) {
-                $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
-            } else {
+            if (! $typeContainer->has('Between_' . $type->name())) {
                 $typeContainer->set('Between_' . $type->name(), new Between($type));
-                $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
             }
+
+            $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
         }
 
         $typeName = $type instanceof ScalarType ? $type->name() : uniqid();

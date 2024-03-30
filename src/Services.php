@@ -36,14 +36,8 @@ trait Services
                     return $config;
                 },
             )
-            ->set(
-                EventDispatcher::class,
-                static fn () => new EventDispatcher(),
-            )
-            ->set(
-                Type\TypeContainer::class,
-                static fn () => new Type\TypeContainer(),
-            )
+            ->set(EventDispatcher::class, static fn () => new EventDispatcher())
+            ->set(Type\TypeContainer::class, static fn () => new Type\TypeContainer())
             ->set(
                 Type\Entity\EntityTypeContainer::class,
                 static fn (Container $container) => new Type\Entity\EntityTypeContainer($container),
