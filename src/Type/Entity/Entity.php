@@ -187,7 +187,7 @@ class Entity
                 continue;
             }
 
-            $fields[$fieldName] = [
+            $fields[$this->getAliasMap()[$fieldName] ?? $fieldName] = [
                 'type' => $this->typeContainer
                     ->get($this->getmetadata()['fields'][$fieldName]['type']),
                 'description' => $this->metadata['fields'][$fieldName]['description'],
@@ -227,8 +227,9 @@ class Entity
             }
 
             // Collections
-            $targetEntity             = $associationMetadata['targetEntity'];
-            $fields[$associationName] = function () use ($targetEntity, $associationName) {
+            $targetEntity = $associationMetadata['targetEntity'];
+
+            $fields[$this->getAliasMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName) {
                 $entity    = $this->entityTypeContainer->get($targetEntity);
                 $shortName = $this->getTypeName() . '_' . ucwords($associationName);
 
