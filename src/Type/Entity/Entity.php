@@ -19,6 +19,7 @@ use Closure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
+use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ObjectType;
 use Laminas\Hydrator\HydratorInterface;
@@ -98,6 +99,32 @@ class Entity
     public function getEntityClass(): string
     {
         return $this->metadata['entityClass'];
+    }
+
+    /**
+     * An alias map is used to alias fields and associations using a
+     * naming strategy in the hydrator
+     *
+     * @return array<string, string>
+     */
+    public function getAliasMap(): array
+    {
+        $aliasMap = [];
+
+        foreach ($this->metadata['fields'] as $fieldName => $fieldMetadata) {
+            if (! isset($fieldMetadata['alias'])) {
+                continue;
+            }
+
+            // Don't allow duplicate aliases
+            if (isset($aliasMap[$fieldName])) {
+                throw new Exception('Duplicate alias found for field ' . $fieldName);
+            }
+
+            $aliasMap[$fieldName] = $fieldMetadata['alias'];
+        }
+
+        return $aliasMap;
     }
 
     /**
