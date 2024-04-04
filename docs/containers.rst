@@ -11,7 +11,7 @@ the container to the closure as the only argument.  This provides a basic
 method for factories.  Once a factory has executed, the result will
 replace the factory so later requests will just get the composed object.
 
-There are two containers you should be aware of if you intened to extend this
+There are two containers you should be aware of if you intend to extend this
 library.
 
 Type Container
@@ -33,7 +33,7 @@ need to add your custom type to the container.
 
 
 Custom Types
-============
+------------
 
 For instance, if your schema has a ``timestamp`` type, that data type is not suppored
 by default in this library.  But adding the type is just a matter of creating a

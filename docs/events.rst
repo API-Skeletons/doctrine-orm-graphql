@@ -8,7 +8,7 @@ A PSR-14 event dispatcher is included for handling events.
 Query Builder Event
 ===================
 
-Each top level connection uses a Doctrine QueryBuilder object.  This QueryBuilder
+Each top level ``connection`` uses a Doctrine QueryBuilder object.  This QueryBuilder
 object may be modified to filter the data for the logged in user and such.
 For instance, this can be used as a security layer and can be used to make
 customizations to QueryBuilder objects.  QueryBuilders are built then
@@ -17,11 +17,10 @@ QueryBuilder to apply your security.
 
 Event names are passed as a second parameter to a ``$driver->resolve()``.
 
-You may specify an event name to resolve a connection.  Only this event will
-fire when the QueryBuilder is created.  The default 'filter.querybuilder' will
-not fire.
+You may specify an event name to resolve a ``connection``.  Only this event will
+fire when the QueryBuilder is created.
 
-In the code below the custom event ``Artist::class . '.queryBuilder'`` will fire:
+In the code below, the custom event ``Artist::class . '.queryBuilder'`` will fire:
 
 .. code-block:: php
 
@@ -46,7 +45,7 @@ In the code below the custom event ``Artist::class . '.queryBuilder'`` will fire
   ]);
 
 To listen for this event and add filtering, such as filtering for the context
-user, create at least one listener.  You may add multiple listeners.
+user, create a listener.
 
 .. code-block:: php
 
@@ -63,7 +62,7 @@ user, create at least one listener.  You may add multiple listeners.
       }
   );
 
-The ``FilterQueryBuilder`` event has one function in addition to getters for
+The ``QueryBuilder`` event has one function in addition to getters for
 all resolve parameters:
 
 * ``getQueryBuilder`` - Will return a query builder with the user specified
@@ -73,7 +72,7 @@ all resolve parameters:
 Criteria Event
 ==============
 
-When an association is resolved from an entity or another association you may
+When an association is resolved from an entity or another association, you may
 listen to the Criteria Event to add additional criteria for filtering
 the association if you assigned an event name in the attributes.
 
@@ -107,7 +106,7 @@ the association if you assigned an event name in the attributes.
       },
   );
 
-The ``FilterQueryBuilder`` event has one function in addition to getters for
+The ``Criteria`` event has one function in addition to getters for
 all resolve parameters:
 
 * ``getCriteria`` - Will return a Criteria object with the user specified
@@ -163,14 +162,14 @@ The ``EntityDefinition`` event has one function:
   QueryBuilder event above.
 
 A clever use of this event is to add a new field for related data and specify
-a custom FilterQueryBuilder event in the ``$driver->resolve()`` function.
+a custom QueryBuilder event in the ``$driver->resolve()`` function.
 
 
 Manually change the Metadata
 ============================
 
 You may modify the metadata directly when built.  This event must be subscribed
-to immediatly after creating the driver. See `Metadata documentation <metadata.html>`_.
+to immediately after creating the driver. See `Metadata documentation <metadata.html>`_.
 
 This event is named ``'metadata.build'``.
 

@@ -6,10 +6,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Filter\Password;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToBoolean;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\NamingStrategy\CustomNamingStrategy;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -19,8 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[GraphQL\Entity(description: 'User', typeName: 'user')]
 #[GraphQL\Entity(description: 'User', typeName: 'user', group: 'testNonDefaultGroup')]
-#[GraphQL\Entity(description: 'User', typeName: 'user', group: 'testPasswordFilter', hydratorFilters: ['password' => ['filter' => Password::class]])]
-#[GraphQL\Entity(group: 'NamingStrategyTest', hydratorNamingStrategy: CustomNamingStrategy::class)]
+#[GraphQL\Entity(description: 'User', typeName: 'user', group: 'testPasswordFilter')]
 #[GraphQL\Entity(group: 'CustomFieldStrategyTest')]
 #[GraphQL\Entity(group: 'InputFactoryTest')]
 #[GraphQL\Entity(group: 'StaticMetadata')]
@@ -30,7 +27,6 @@ class User
     #[GraphQL\Field(description: 'User name')]
     #[GraphQL\Field(description: 'User name', group: 'testNonDefaultGroup')]
     #[GraphQL\Field(description: 'User name', group: 'testPasswordFilter')]
-    #[GraphQL\Field(group: 'NamingStrategyTest')]
     #[GraphQL\Field(group: 'CustomFieldStrategyTest', hydratorStrategy: ToBoolean::class)]
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'StaticMetadata')]
@@ -38,7 +34,6 @@ class User
     private string $name;
 
     #[GraphQL\Field(description: 'User email')]
-    #[GraphQL\Field(group: 'NamingStrategyTest')]
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[ORM\Column(type: 'string', nullable: false)]
     private string $email;

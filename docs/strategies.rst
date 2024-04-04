@@ -3,7 +3,7 @@ Hydrator Strategies
 ===================
 
 Some hydrator strategies are supplied with this library.  You may also add your own hydrator
-strategies if you desire.
+strategies.
 
 All strategies are in the namespace ``ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy``
 

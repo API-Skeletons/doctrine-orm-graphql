@@ -3,11 +3,11 @@ About
 =====
 
 Authored by Tom H Anderson <tom.h.anderson@gmail.com> of
-`API Skeletons <https://apiskeletons.com>`_
-and a member of the `Doctrine Maintainers <https://www.doctrine-project.org/team/maintainers.html>`_.
+`API Skeletons <https://apiskeletons.com>`_,
+a member of the `Doctrine Maintainers <https://www.doctrine-project.org/team/maintainers.html>`_.
 
 This project provides a Doctrine ORM Driver to be used with
-`GraphQL <https://github.com/webonyx/graphql-php>`_ for PHP.
+`GraphQL for PHP<https://github.com/webonyx/graphql-php>`_.
 
 You may choose which entities, fields, and associations in your object manager
 are available for querying through GraphQL.  Filtering is provided for

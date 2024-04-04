@@ -2,8 +2,8 @@
 The Driver class
 ================
 
-The Driver class is the gateway to much of the funcitonality of this library.
-It has many options and top-level functions detailed here.
+The Driver class is the gateway to much of the functionality of this library.
+It has many options and top-level functions are detailed here.
 
 Functions
 =========
@@ -133,7 +133,7 @@ to
 globalEnable
 ------------
 
-When set to true all fields and all associations will be
+When set to true, all fields and all associations will be
 enabled.  This is best used as a development setting when
 the entities are subject to change.  Really.
 
