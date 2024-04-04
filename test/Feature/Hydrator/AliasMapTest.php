@@ -12,8 +12,10 @@ use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
+use Throwable;
 
 use function count;
+use function print_r;
 
 /**
  * This test uses aliases for fields and associations
@@ -71,5 +73,16 @@ class AliasMapTest extends AbstractTest
 
         $this->assertEquals(1, count($output['data']['artist']['edges']));
         $this->assertEquals(1, count($output['data']['artist']['edges'][0]['node']['gigs']['edges']));
+    }
+
+    public function testDuplicateAliasOnSameEntity(): void
+    {
+        $this->expectException(Throwable::class);
+
+        $config = new Config(['group' => 'AliasMapDuplicate']);
+        $driver = new Driver($this->getEntityManager(), $config);
+
+        $artistEntityType = $driver->get(EntityTypeContainer::class)->get(Artist::class);
+        print_r($artistEntityType->getAliasMap());
     }
 }

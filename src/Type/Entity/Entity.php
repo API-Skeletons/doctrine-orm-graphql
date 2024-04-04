@@ -118,7 +118,7 @@ class Entity
             }
 
             // Don't allow duplicate aliases
-            if (isset($aliasMap[$fieldName])) {
+            if (in_array($fieldMetadata['alias'], $aliasMap)) {
                 throw new Exception('Duplicate alias found for field ' . $fieldName);
             }
 
