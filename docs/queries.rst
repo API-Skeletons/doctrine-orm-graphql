@@ -8,7 +8,7 @@ against an implementation of this repository.
 Queries are not special to this repository.  The format of queries are
 exactly what GraphQL is spec'd out to be.
 
-Pagination of collections supports
+Pagination of ``collections`` supports
 `GraphQL's Complete Connection Model <https://graphql.org/learn/pagination/#complete-connection-model>`_.
 
 An example query:
@@ -70,7 +70,6 @@ Provided Filters::
     endswith   -  Strings only. A like query from the end of the value `like '%value'`
     isnull     -  If `true` return results where the field is null.
     sort       -  Sort the result by this field.  Value is 'asc' or 'desc'
-
 
 The format for using these filters is:
 

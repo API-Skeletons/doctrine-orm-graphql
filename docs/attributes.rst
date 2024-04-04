@@ -28,7 +28,7 @@ A slightly complicated example:
       public $name;
 
       #[GraphQL\Association(excludeCriteria: ['contains', 'neq'])]
-      #[GraphQL\Association(group: 'admin')]
+      #[GraphQL\Association(group: 'admin', alias: 'shows')]
       public $performances;
   }
 
@@ -46,16 +46,16 @@ Optional parameters are:
 
     #[GraphQL\Entity(excludeCriteria: ['contains', 'startswith', 'endswith'])]
 
-* ``group`` - You can have multiple GraphQL configurations organzied by
-  ``group``.  Only one ``Entity`` attribute per group is allowed.
+* ``group`` - You may have multiple GraphQL configurations organzied by
+  ``group``.
 * ``includeFilters`` - An array of filters to include from available
-  filters for all fields and associations in the entity.  ``includeCriteria``
-  and ``excludeCriteria`` are mutually exclusive within one attribute.
+  filters for all fields and associations in the entity.  ``includeFilters``
+  and ``excludeFilters`` are mutually exclusive.
 * ``limit`` - A hard limit for all queries on this entity.  Use this
   to prevent abuse of GraphQL.  Defaults to global config ``limit``.
-* ``typeName`` - A name to reference the type internal to GraphQL.
+* ``typeName`` - A name to reference the type for GraphQL.
 
-The following parameters are specific to the interal hydrator used to extract
+The following parameters are specific to the hydrator used to extract
 data from Doctrine entities.  The hydrator library is
 `doctrine-laminas-hydrator <https://github.com/doctrine/doctrine-laminas-hydrator>`_
 
@@ -65,12 +65,6 @@ data from Doctrine entities.  The hydrator library is
   will reflect the entities and extract the values from the properties.
   More information here:
   `By Value and By Reference <https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.0/by-value-by-reference.html#by-value-and-by-reference>`_
-* ``hydratorFilters`` - Default is null.  An array of filters to apply to the
-  hydrator.  In practice these should not be necessary because if you want to
-  filter fields just don't include them in the attribute group.
-  Filter classes must exist in the HydratorFactory container.  See `containers <containers.html>`_
-* ``namingStrategy`` - Default is null.  You may set a naming strategy class.
-  Class must exist in the HydratorFactory container.  See `containers <containers.html>`_
 
 
 Field
@@ -84,13 +78,13 @@ in your graph. Optional parameters are:
 * ``excludeFilters`` - An array of filters to exclude from available
   filters for this field.  Combined with ``excludeFilters`` of the entity.
 * ``group`` - You can have multiple GraphQL configurations organzied by
-  ``group``.  Only one ``Field`` attribute per group is allowed.
+  ``group``.
 * ``includeFilters`` - An array of filters to include from available
   filters for the field.  ``includeFilters``
-  and ``excludeFilters`` are mutually exclusive within one attribute.
+  and ``excludeFilters`` are mutually exclusive.
 * ``hydratorStrategy`` - A custom hydrator strategy class.
   Class must be injected into the HydratorFactory container.  See `strategies <strategies.html>`_ and `containers <containers.html>`_
-* ``type`` - Used for overriding the GraphQL type used for the field.
+* ``type`` - Override the GraphQL type name for the field.
   The custom type must be injected into the TypeContainer
   See `containers <containers.html>`_
 
@@ -114,7 +108,7 @@ Association
 
 Used on any type of association including one to one, one to many, many to one,
 etc.  Associations which are to one types will just include the entity they are
-associated with.  Associations of the to many variety will be filterable.
+associated with.  Associations of the to many variety will become connections.
 
 * ``alias`` - An alias to use as the GraphQL field name.
 * ``description`` - A description of the ``Association``.
@@ -129,10 +123,10 @@ associated with.  Associations of the to many variety will be filterable.
   Additional filters can be added to the criteria.  An example of this use is for
   associations with soft deletes.
 * ``group`` - You can have multiple GraphQL configurations organzied by
-  ``group``.  Only one ``Association`` attribute per group is allowed.
+  ``group``.
 * ``includeFilters`` - An array of filters to include from available
   filters for all fields in the association.  ``includeFilters``
-  and ``excludeFilters`` are mutually exclusive within one attribute.
+  and ``excludeFilters`` are mutually exclusive.
 * ``limit`` - A limit for subqueries.  This value overrides the Entity configured
   limit.
 * ``hydratorStrategy`` - A custom hydrator strategy class.

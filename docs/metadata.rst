@@ -3,12 +3,11 @@ Metadata
 ========
 
 This library uses metadata that can be modified with the
-`BuildMetadata event <events.html>`_.  See the
-`metadata caching test <https://github.com/API-Skeletons/doctrine-graphql/blob/main/test/Feature/Metadata/CachingTest.php>`_
-for examples.  Modifying the metadata is an advanced feature.
+`BuildMetadata event <events.html>`_.
+Modifying the metadata is an advanced feature.
 
 The metadata is an array with a key for each enabled entity class name.
-See this [unit test](https://github.com/API-Skeletons/doctrine-orm-graphql/blob/main/test/Feature/Metadata/CachingTest.php#L30)
+See this [unit test](https://github.com/API-Skeletons/doctrine-orm-graphql/blob/main/test/Feature/Metadata/CachingTest.php)
 
 Caching Metadata
 ================

@@ -7,14 +7,13 @@ appropriate associations throughout.  Support for ad-hoc joins between
 entities is not supported (but you can use the EntityDefinition event
 in combination with the FilterQueryBuilder event to add a new field to
 a Type with such ad-hoc support).  Your Doctrine metadata must contain all the
-associations.  This requriement relates to the very basics of working in
+associations.  This requirement relates to the very basics of working in
 Doctrine.
 
 There are some `config options <driver.html#config>`_ available but they are
 all optional.
 
-The first step is to add attributes to your entities.  Attributes are a
-feature of PHP 8.0 which act like annotations but are built into the language.
+The first step is to add attributes to your entities.
 Attributes are stored in the namespace
 ``ApiSkeletons\Doctrine\ORM\GraphQL\Attribute`` and there are attributes for
 ``Entity``, ``Field``, and ``Association``.  Use the appropriate attribute on
@@ -34,7 +33,7 @@ each element you want to be queryable from GraphQL.
       private $name;
   }
 
-That's the minimum configuration requried.  Next, create your driver using your
+That's the minimum configuration required.  Next, create your driver using your
 entity manager
 
 .. code-block:: php
@@ -44,7 +43,7 @@ entity manager
   $driver = new Driver($entityManager);
 
 The next step is configuring your GraphQL schema.  In this section we'll create
-types for the entity, the filter for the entity, and the resolver.
+types for the entity, filters for the entity, and the a resolver.
 
 .. code-block:: php
 
@@ -68,7 +67,7 @@ types for the entity, the filter for the entity, and the resolver.
       ]),
   ]);
 
-Now, using the schema, you can start making GraphqL queries
+Now, using the schema, you can start making GraphQL queries
 
 .. code-block:: php
 
@@ -152,7 +151,7 @@ attributes, a query of performances is now possible:
 
 Keep reading to learn how to create multiple attribute groups, extract entities
 by reference or by value, cache attribute metadata, enable custom types,
-add documentation to every attribute, and more.
+add documentation to every attribute, use aliases, and more.
 
 
 .. role:: raw-html(raw)
