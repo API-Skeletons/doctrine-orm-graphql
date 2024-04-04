@@ -37,7 +37,6 @@ class EntityTest extends AbstractTest
         $metadata = $entity->getMetadata();
 
         $this->assertEquals(1, $metadata['byValue']);
-        $this->assertEquals(null, $metadata['hydratorNamingStrategy']);
 
         $this->assertEquals(
             ToInteger::class,
@@ -55,8 +54,6 @@ class EntityTest extends AbstractTest
             AssociationDefault::class,
             $metadata['fields']['users']['hydratorStrategy'],
         );
-
-        $this->assertEquals([], $metadata['hydratorFilters']);
 
         $this->assertEquals('Entity Test Recordings', $metadata['description']);
         $this->assertEquals('Entity Test ID', $metadata['fields']['id']['description']);

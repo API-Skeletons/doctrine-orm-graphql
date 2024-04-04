@@ -38,8 +38,6 @@ class CachingTest extends AbstractTest
                 'byValue' => true,
                 'limit' => 0,
                 'description' => '',
-                'hydratorNamingStrategy' => null,
-                'hydratorFilters' => [],
                 'excludeFilters' => [],
                 'typeName' => 'ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_User_StaticMetadata',
                 'fields' => [

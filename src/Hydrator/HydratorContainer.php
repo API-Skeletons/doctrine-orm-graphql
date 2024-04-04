@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Filter\Password;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\Laminas\Hydrator\DoctrineObject;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
-use Laminas\Hydrator\Filter;
 use Laminas\Hydrator\NamingStrategy\MapNamingStrategy;
 use Laminas\Hydrator\Strategy\StrategyInterface;
 
@@ -34,43 +32,28 @@ class HydratorContainer extends Container
             ->set(Strategy\FieldDefault::class, new Strategy\FieldDefault())
             ->set(Strategy\ToBoolean::class, new Strategy\ToBoolean())
             ->set(Strategy\ToFloat::class, new Strategy\ToFloat())
-            ->set(Strategy\ToInteger::class, new Strategy\ToInteger())
-            ->set(Password::class, new Password());
+            ->set(Strategy\ToInteger::class, new Strategy\ToInteger());
     }
 
     /** @throws Error */
     public function get(string $id): mixed
     {
-        // Custom hydrators should already be registered
         if ($this->has($id)) {
             return parent::get($id);
         }
 
         $entity   = $this->entityTypeContainer->get($id);
-        $config   = $entity->getMetadata();
-        $hydrator = new DoctrineObject($this->entityManager, $config['byValue']);
+        $metadata = $entity->getMetadata();
+        $hydrator = new DoctrineObject($this->entityManager, $metadata['byValue']);
 
         // Create field strategy and assign to hydrator
-        foreach ($config['fields'] as $fieldName => $fieldMetadata) {
+        foreach ($metadata['fields'] as $fieldName => $fieldMetadata) {
             assert(
                 in_array(StrategyInterface::class, class_implements($fieldMetadata['hydratorStrategy'])),
                 'Strategy must implement ' . StrategyInterface::class,
             );
 
             $hydrator->addStrategy($fieldName, $this->get($fieldMetadata['hydratorStrategy']));
-        }
-
-        // Create filters and assign to hydrator
-        foreach ($config['hydratorFilters'] as $name => $filterConfig) {
-            // Default filters to AND
-            $condition   = $filterConfig['condition'] ?? Filter\FilterComposite::CONDITION_AND;
-            $filterClass = $filterConfig['filter'];
-            assert(
-                in_array(Filter\FilterInterface::class, class_implements($filterClass)),
-                'Filter must implement ' . StrategyInterface::class,
-            );
-
-            $hydrator->addFilter($name, $this->get($filterClass), $condition);
         }
 
         // Create naming strategy for aliases and assign to hydrator

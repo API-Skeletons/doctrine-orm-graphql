@@ -107,9 +107,7 @@ class MetadataFactory extends CommonMetadataFactory
                 'entityClass' => $reflectionClass->getName(),
                 'byValue' => $this->config->getGlobalByValue() ?? $instance->getByValue(),
                 'limit' => $instance->getLimit(),
-                'hydratorNamingStrategy' => $instance->getHydratorNamingStrategy(),
                 'fields' => [],
-                'hydratorFilters' => $instance->getHydratorFilters(),
                 'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                 'description' => $instance->getDescription(),
                 'typeName' => $instance->getTypeName()
