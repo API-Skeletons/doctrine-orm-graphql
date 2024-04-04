@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\GlobalEnable;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use League\Event\EventDispatcher;
@@ -81,6 +82,7 @@ trait Services
                         $container->get(Config::class),
                         $container->get(Resolve\FieldResolver::class),
                         $container->get(Type\TypeContainer::class),
+                        $container->get(EntityTypeContainer::class),
                         $container->get(EventDispatcher::class),
                         $container->get('metadata'),
                     );

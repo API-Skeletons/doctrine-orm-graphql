@@ -21,14 +21,25 @@ class Field
      */
     public function __construct(
         protected string $group = 'default',
-        protected string|null $hydratorStrategy = null,
+        protected string|null $alias = null,
         protected string|null $description = null,
         protected string|null $type = null,
+        protected string|null $hydratorStrategy = null,
         array $excludeFilters = [],
         array $includeFilters = [],
     ) {
         $this->includeFilters = $includeFilters;
         $this->excludeFilters = $excludeFilters;
+    }
+
+    public function getAlias(): string|null
+    {
+        return $this->alias;
+    }
+
+    public function getDescription(): string|null
+    {
+        return $this->description;
     }
 
     public function getGroup(): string
@@ -39,11 +50,6 @@ class Field
     public function getHydratorStrategy(): string|null
     {
         return $this->hydratorStrategy;
-    }
-
-    public function getDescription(): string|null
-    {
-        return $this->description;
     }
 
     public function getType(): string|null

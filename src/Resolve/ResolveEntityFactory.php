@@ -43,7 +43,7 @@ class ResolveEntityFactory
                 ->from($entityClass, 'entity');
 
             if (isset($args['filter'])) {
-                $queryBuilderFilter->apply($args['filter'], $queryBuilder);
+                $queryBuilderFilter->apply($args['filter'], $queryBuilder, $entity);
             }
 
             return $this->buildPagination(

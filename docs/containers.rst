@@ -49,8 +49,8 @@ type to the type manager.
 Hydrator Container
 ==================
 
-The ``HydratorContainer`` stores hydrator strategies,
-filter classes, naming strategy classes, and all the generated hydrators.
+The ``HydratorContainer`` stores hydrator strategies and all the generated hydrators.
+Custom HydratorStrategies can be added to the container.
 
   .. code-block:: php
 

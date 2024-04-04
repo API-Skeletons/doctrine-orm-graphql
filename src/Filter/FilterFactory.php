@@ -160,8 +160,10 @@ class FilterFactory
                 $this->typeContainer->set($filterTypeName, $fieldType);
             }
 
-            $fields[$fieldName] = [
-                'name'        => $fieldName,
+            $alias = $targetEntity->getAliasMap()[$fieldName] ?? null;
+
+            $fields[$alias ?? $fieldName] = [
+                'name'        => $alias ?? $fieldName,
                 'type'        => $fieldType,
                 'description' => $type->name() . ' Filters',
             ];

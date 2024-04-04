@@ -23,6 +23,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'CriteriaEvent')]
 #[GraphQL\Entity(group: 'AttributeLimit')]
 #[GraphQL\Entity(group: 'LimitTest', limit: 2)]
+#[GraphQL\Entity(group: 'AliasMap', limit: 1)]
+#[GraphQL\Entity(group: 'AliasMapDuplicate', limit: 1)]
+
 #[ORM\Entity]
 class Artist
 {
@@ -36,6 +39,9 @@ class Artist
     #[GraphQL\Field(group: 'CriteriaEvent')]
     #[GraphQL\Field(group: 'LimitTest')]
     #[GraphQL\Field(group: 'AttributeLimit')]
+    #[GraphQL\Field(group: 'AliasMap', alias: 'title')]
+    #[GraphQL\Field(group: 'AliasMapDuplicate', alias: 'duplicate')]
+
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
 
@@ -45,6 +51,8 @@ class Artist
     #[GraphQL\Field(group: 'CriteriaEvent')]
     #[GraphQL\Field(group: 'LimitTest')]
     #[GraphQL\Field(group: 'AttributeLimit')]
+    #[GraphQL\Field(group: 'AliasMapDuplicate', alias: 'duplicate')]
+
     #[ORM\Id]
     #[ORM\Column(type: 'bigint')]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -61,6 +69,7 @@ class Artist
     #[GraphQL\Association(group: 'CriteriaEvent', criteriaEventName: self::class . '.performances.criteria')]
     #[GraphQL\Association(group: 'LimitTest')]
     #[GraphQL\Association(group: 'AttributeLimit', limit: 3)]
+    #[GraphQL\Association(group: 'AliasMap', alias: 'gigs')]
 
     #[ORM\OneToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance', mappedBy: 'artist')]
     private Collection $performances;

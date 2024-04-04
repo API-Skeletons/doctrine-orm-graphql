@@ -8,6 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use ArrayObject;
 use Closure;
@@ -19,9 +20,11 @@ use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
 
+use function array_flip;
 use function base64_decode;
 use function base64_encode;
 use function count;
+use function in_array;
 
 /**
  * Build a resolver for collections
@@ -33,6 +36,7 @@ class ResolveCollectionFactory
         protected Config $config,
         protected FieldResolver $fieldResolver,
         protected TypeContainer $typeContainer,
+        protected EntityTypeContainer $entityTypeContainer,
         protected EventDispatcher $eventDispatcher,
         protected ArrayObject $metadata,
     ) {
@@ -40,24 +44,31 @@ class ResolveCollectionFactory
 
     public function get(Entity $entity): Closure
     {
-        return function ($source, array $args, $context, ResolveInfo $info) {
+        return function ($source, array $args, $context, ResolveInfo $info) use ($entity) {
             $fieldResolver = $this->fieldResolver;
             $collection    = $fieldResolver($source, $args, $context, $info);
 
             $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
             $entityClassName               = $defaultProxyClassNameResolver->getClass($source);
 
+            // If an alias map exists, check for an alias
+            $targetCollectionName = $info->fieldName;
+            if (in_array($info->fieldName, $this->entityTypeContainer->get($entityClassName)->getAliasMap())) {
+                $targetCollectionName = array_flip($this->entityTypeContainer
+                    ->get($entityClassName)->getAliasMap())[$info->fieldName] ?? $info->fieldName;
+            }
+
             $targetClassName = (string) $this->entityManager->getMetadataFactory()
                 ->getMetadataFor($entityClassName)
-                ->getAssociationTargetClass($info->fieldName);
+                ->getAssociationTargetClass($targetCollectionName);
 
             return $this->buildPagination(
                 $entityClassName,
                 $targetClassName,
                 $args['pagination'] ?? [],
                 $collection,
-                $this->buildCriteria($args['filter'] ?? []),
-                $this->metadata[$entityClassName]['fields'][$info->fieldName]['criteriaEventName'],
+                $this->buildCriteria($args['filter'] ?? [], $entity),
+                $this->metadata[$entityClassName]['fields'][$targetCollectionName]['criteriaEventName'],
                 $source,
                 $args,
                 $context,
@@ -67,12 +78,15 @@ class ResolveCollectionFactory
     }
 
     /** @param mixed[] $filter */
-    protected function buildCriteria(array $filter): Criteria
+    protected function buildCriteria(array $filter, Entity $entity): Criteria
     {
         $orderBy  = [];
         $criteria = Criteria::create();
 
         foreach ($filter as $field => $filters) {
+            // Resolve aliases
+            $field = array_flip($entity->getAliasMap())[$field] ?? $field;
+
             foreach ($filters as $filter => $value) {
                 switch (Filters::from($filter)) {
                     case Filters::ISNULL:

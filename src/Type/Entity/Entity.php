@@ -19,12 +19,14 @@ use Closure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
+use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ObjectType;
 use Laminas\Hydrator\HydratorInterface;
 use League\Event\EventDispatcher;
 
 use function array_keys;
+use function array_merge;
 use function assert;
 use function in_array;
 use function ksort;
@@ -101,6 +103,32 @@ class Entity
     }
 
     /**
+     * An alias map is used to alias fields and associations using a
+     * naming strategy in the hydrator
+     *
+     * @return array<string, string>
+     */
+    public function getAliasMap(): array
+    {
+        $aliasMap = [];
+
+        foreach ($this->metadata['fields'] as $fieldName => $fieldMetadata) {
+            if (! isset($fieldMetadata['alias'])) {
+                continue;
+            }
+
+            // Don't allow duplicate aliases
+            if (in_array($fieldMetadata['alias'], $aliasMap)) {
+                throw new Exception('Duplicate alias found for field ' . $fieldName);
+            }
+
+            $aliasMap[$fieldName] = $fieldMetadata['alias'];
+        }
+
+        return $aliasMap;
+    }
+
+    /**
      * Build the type for the current entity
      *
      * @throws MappingException
@@ -113,10 +141,8 @@ class Entity
             return $this->objectType;
         }
 
-        $fields = [];
-
-        $this->addFields($fields);
-        $this->addAssociations($fields);
+        $fields = $this->addFields();
+        $fields = array_merge($fields, $this->addAssociations());
 
         /** @var ArrayObject<'description'|'fields'|'name'|'resolveField', mixed> $arrayObject */
         $arrayObject = new ArrayObject([
@@ -150,9 +176,11 @@ class Entity
         return $this->objectType;
     }
 
-    /** @param array<int, mixed[]> $fields */
-    protected function addFields(array &$fields): void
+    /** @return array<string, mixed> */
+    protected function addFields(): array
     {
+        $fields = [];
+
         $classMetadata = $this->entityManager->getClassMetadata($this->getEntityClass());
 
         foreach ($classMetadata->getFieldNames() as $fieldName) {
@@ -160,17 +188,21 @@ class Entity
                 continue;
             }
 
-            $fields[$fieldName] = [
+            $fields[$this->getAliasMap()[$fieldName] ?? $fieldName] = [
                 'type' => $this->typeContainer
                     ->get($this->getmetadata()['fields'][$fieldName]['type']),
                 'description' => $this->metadata['fields'][$fieldName]['description'],
             ];
         }
+
+        return $fields;
     }
 
-    /** @param array<int, mixed[]> $fields */
-    protected function addAssociations(array &$fields): void
+    /** @return array<string, mixed> */
+    protected function addAssociations(): array
     {
+        $fields = [];
+
         $classMetadata = $this->entityManager->getClassMetadata($this->getEntityClass());
 
         foreach ($classMetadata->getAssociationNames() as $associationName) {
@@ -200,8 +232,9 @@ class Entity
             }
 
             // Collections
-            $targetEntity             = $associationMetadata['targetEntity'];
-            $fields[$associationName] = function () use ($targetEntity, $associationName) {
+            $targetEntity = $associationMetadata['targetEntity'];
+
+            $fields[$this->getAliasMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName) {
                 $entity    = $this->entityTypeContainer->get($targetEntity);
                 $shortName = $this->getTypeName() . '_' . ucwords($associationName);
 
@@ -225,5 +258,7 @@ class Entity
                 ];
             };
         }
+
+        return $fields;
     }
 }

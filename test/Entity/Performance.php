@@ -33,6 +33,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'CriteriaEvent')]
 #[GraphQL\Entity(group: 'LimitTest')]
 #[GraphQL\Entity(group: 'AttributeLimit')]
+#[GraphQL\Entity(group: 'AliasMap')]
+
 #[ORM\Entity]
 class Performance
 {
@@ -41,6 +43,7 @@ class Performance
     #[GraphQL\Field(group: 'IncludeFiltersTest')]
     #[GraphQL\Field(group: 'CriteriaEvent')]
     #[GraphQL\Field(group: 'AttributeLimit')]
+
     #[ORM\Column(type: 'string', nullable: true)]
     private string|null $venue = null;
 
@@ -51,6 +54,7 @@ class Performance
         Filters::NEQ,
     ])]
     #[GraphQL\Field(group: 'AttributeLimit')]
+
     #[ORM\Column(type: 'string', nullable: true)]
     private string|null $city = null;
 
@@ -64,6 +68,8 @@ class Performance
 
     #[GraphQL\Field(description: 'Performance date')]
     #[GraphQL\Field(group: 'LimitTest')]
+    #[GraphQL\Field(group: 'AliasMap', alias: 'date')]
+
     #[ORM\Column(type: 'datetime', nullable: false)]
     private DateTime $performanceDate;
 
@@ -72,6 +78,8 @@ class Performance
     #[GraphQL\Field(group: 'IncludeFiltersTest')]
     #[GraphQL\Field(group: 'LimitTest')]
     #[GraphQL\Field(group: 'AttributeLimit')]
+    #[GraphQL\Field(group: 'AliasMap', alias: 'key')]
+
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -80,11 +88,13 @@ class Performance
     /** @var Collection<id, Recording> */
     #[GraphQL\Association(description: 'Recordings by artist')]
     #[GraphQL\Association(group: 'IncludeFiltersTest', includeFilters: [Filters::CONTAINS])]
+
     #[ORM\OneToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording', mappedBy: 'performance')]
     private Collection $recordings;
 
     #[GraphQL\Association(description: 'Artist entity')]
     #[ORM\ManyToOne(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist', inversedBy: 'performances')]
+
     #[ORM\JoinColumn(name: 'artist_id', referencedColumnName: 'id', nullable: false)]
     private Artist $artist;
 
