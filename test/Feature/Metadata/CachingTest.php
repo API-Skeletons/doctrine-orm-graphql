@@ -44,12 +44,14 @@ class CachingTest extends AbstractTest
                 'typeName' => 'ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_User_StaticMetadata',
                 'fields' => [
                     'name' => [
+                        'alias' => null,
                         'description' => null,
                         'type' => 'string',
                         'hydratorStrategy' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault',
                         'excludeFilters' => [],
                     ],
                     'recordings' => [
+                        'alias' => null,
                         'limit' => null,
                         'description' => null,
                         'criteriaEventName' => null,

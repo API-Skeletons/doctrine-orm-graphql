@@ -147,6 +147,7 @@ class MetadataFactory extends CommonMetadataFactory
                 $fieldInstance = $instance;
 
                 $fieldMetadata = [
+                    'alias' => $instance->getAlias(),
                     'description' => $instance->getDescription(),
                     'type' => $instance->getType() ?? $entityClassMetadata->getTypeOfField($fieldName),
                     'hydratorStrategy' => $instance->getHydratorStrategy() ??
@@ -192,6 +193,7 @@ class MetadataFactory extends CommonMetadataFactory
                 $associationInstance = $instance;
 
                 $associationMetadata = [
+                    'alias' => $instance->getAlias(),
                     'limit' => $instance->getLimit(),
                     'description' => $instance->getDescription(),
                     'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),

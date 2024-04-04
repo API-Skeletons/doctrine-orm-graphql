@@ -22,8 +22,6 @@ class AliasMapTest extends AbstractTest
 {
     public function testAliasMap(): void
     {
-        $this->markTestSkipped('This test is not yet implemented');
-
         $config = new Config(['group' => 'AliasMap']);
 
         $driver = new Driver($this->getEntityManager(), $config);
@@ -71,5 +69,6 @@ class AliasMapTest extends AbstractTest
         $output = $result->toArray();
 
         $this->assertEquals(1, count($output['data']['artist']['edges']));
+        $this->assertEquals(5, count($output['data']['artist']['edges'][0]['node']['gigs']['edges']));
     }
 }

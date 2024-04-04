@@ -21,7 +21,7 @@ class Association
      */
     public function __construct(
         protected string $group = 'default',
-        protected string $alias = '',
+        protected string|null $alias = null,
         protected string|null $description = null,
         protected int|null $limit = null,
         protected string|null $criteriaEventName = null,
@@ -33,7 +33,7 @@ class Association
         $this->excludeFilters = $excludeFilters;
     }
 
-    public function getAlias(): string
+    public function getAlias(): string|null
     {
         return $this->alias;
     }
