@@ -12,8 +12,6 @@ use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
 use Laminas\Hydrator\Filter;
 use Laminas\Hydrator\NamingStrategy\MapNamingStrategy;
-use Laminas\Hydrator\NamingStrategy\NamingStrategyEnabledInterface;
-use Laminas\Hydrator\NamingStrategy\NamingStrategyInterface;
 use Laminas\Hydrator\Strategy\StrategyInterface;
 
 use function assert;

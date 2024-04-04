@@ -176,7 +176,7 @@ class Entity
         return $this->objectType;
     }
 
-    /** @return array<int, mixed[]> $fields */
+    /** @return array<string, mixed> */
     protected function addFields(): array
     {
         $fields = [];
@@ -198,7 +198,7 @@ class Entity
         return $fields;
     }
 
-    /** @return array<int, mixed[]> $fields */
+    /** @return array<string, mixed> */
     protected function addAssociations(): array
     {
         $fields = [];
