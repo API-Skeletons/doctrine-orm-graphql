@@ -41,6 +41,8 @@ class Entity
 {
     /** @var mixed[]  */
     protected array $metadata;
+    /** @var array<string, string> */
+    protected array|null $aliasMap = null;
     protected Config $config;
     protected FilterFactory $filterFactory;
     protected EntityManager $entityManager;
@@ -110,7 +112,11 @@ class Entity
      */
     public function getAliasMap(): array
     {
-        $aliasMap = [];
+        if ($this->aliasMap !== null) {
+            return $this->aliasMap;
+        }
+
+        $this->aliasMap = [];
 
         foreach ($this->metadata['fields'] as $fieldName => $fieldMetadata) {
             if (! isset($fieldMetadata['alias'])) {
@@ -118,14 +124,14 @@ class Entity
             }
 
             // Don't allow duplicate aliases
-            if (in_array($fieldMetadata['alias'], $aliasMap)) {
+            if (in_array($fieldMetadata['alias'], $this->aliasMap)) {
                 throw new Exception('Duplicate alias found for field ' . $fieldName);
             }
 
-            $aliasMap[$fieldName] = $fieldMetadata['alias'];
+            $this->aliasMap[$fieldName] = $fieldMetadata['alias'];
         }
 
-        return $aliasMap;
+        return $this->aliasMap;
     }
 
     /**
