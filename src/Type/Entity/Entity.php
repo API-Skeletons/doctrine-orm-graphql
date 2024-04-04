@@ -26,6 +26,7 @@ use Laminas\Hydrator\HydratorInterface;
 use League\Event\EventDispatcher;
 
 use function array_keys;
+use function array_merge;
 use function assert;
 use function in_array;
 use function ksort;
@@ -140,10 +141,8 @@ class Entity
             return $this->objectType;
         }
 
-        $fields = [];
-
-        $this->addFields($fields);
-        $this->addAssociations($fields);
+        $fields = $this->addFields();
+        $fields = array_merge($fields, $this->addAssociations());
 
         /** @var ArrayObject<'description'|'fields'|'name'|'resolveField', mixed> $arrayObject */
         $arrayObject = new ArrayObject([
@@ -177,9 +176,11 @@ class Entity
         return $this->objectType;
     }
 
-    /** @param array<int, mixed[]> $fields */
-    protected function addFields(array &$fields): void
+    /** @return array<int, mixed[]> $fields */
+    protected function addFields(): array
     {
+        $fields = [];
+
         $classMetadata = $this->entityManager->getClassMetadata($this->getEntityClass());
 
         foreach ($classMetadata->getFieldNames() as $fieldName) {
@@ -193,11 +194,15 @@ class Entity
                 'description' => $this->metadata['fields'][$fieldName]['description'],
             ];
         }
+
+        return $fields;
     }
 
-    /** @param array<int, mixed[]> $fields */
-    protected function addAssociations(array &$fields): void
+    /** @return array<int, mixed[]> $fields */
+    protected function addAssociations(): array
     {
+        $fields = [];
+
         $classMetadata = $this->entityManager->getClassMetadata($this->getEntityClass());
 
         foreach ($classMetadata->getAssociationNames() as $associationName) {
@@ -253,5 +258,7 @@ class Entity
                 ];
             };
         }
+
+        return $fields;
     }
 }
