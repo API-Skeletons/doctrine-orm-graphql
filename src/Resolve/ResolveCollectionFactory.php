@@ -44,7 +44,7 @@ class ResolveCollectionFactory
 
     public function get(Entity $entity): Closure
     {
-        return function ($source, array $args, $context, ResolveInfo $info) {
+        return function ($source, array $args, $context, ResolveInfo $info) use ($entity) {
             $fieldResolver = $this->fieldResolver;
             $collection    = $fieldResolver($source, $args, $context, $info);
 
@@ -67,7 +67,7 @@ class ResolveCollectionFactory
                 $targetClassName,
                 $args['pagination'] ?? [],
                 $collection,
-                $this->buildCriteria($args['filter'] ?? []),
+                $this->buildCriteria($args['filter'] ?? [], $entity),
                 $this->metadata[$entityClassName]['fields'][$targetCollectionName]['criteriaEventName'],
                 $source,
                 $args,
@@ -78,12 +78,15 @@ class ResolveCollectionFactory
     }
 
     /** @param mixed[] $filter */
-    protected function buildCriteria(array $filter): Criteria
+    protected function buildCriteria(array $filter, Entity $entity): Criteria
     {
         $orderBy  = [];
         $criteria = Criteria::create();
 
         foreach ($filter as $field => $filters) {
+            // Resolve aliases
+            $field = array_flip($entity->getAliasMap())[$field] ?? $field;
+
             foreach ($filters as $filter => $value) {
                 switch (Filters::from($filter)) {
                     case Filters::ISNULL:

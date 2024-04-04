@@ -45,13 +45,14 @@ class AliasMapTest extends AbstractTest
             ]),
         ]);
 
+        // This query tests aliases and filter names
         $query = '
           {
-            artist {
+            artist (filter: {title: {eq: "Grateful Dead"}}) {
               edges {
                 node {
                   title
-                  gigs {
+                  gigs (filter: {key: {eq: 3}}) {
                     edges {
                       node {
                         key
@@ -69,6 +70,6 @@ class AliasMapTest extends AbstractTest
         $output = $result->toArray();
 
         $this->assertEquals(1, count($output['data']['artist']['edges']));
-        $this->assertEquals(5, count($output['data']['artist']['edges'][0]['node']['gigs']['edges']));
+        $this->assertEquals(1, count($output['data']['artist']['edges'][0]['node']['gigs']['edges']));
     }
 }

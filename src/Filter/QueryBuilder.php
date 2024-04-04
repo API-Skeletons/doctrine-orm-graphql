@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 
+use function array_flip;
 use function method_exists;
 use function uniqid;
 
@@ -23,18 +25,20 @@ class QueryBuilder
     public function apply(
         array $filterTypes,
         DoctrineQueryBuilder $queryBuilder,
-        string $alias = 'entity',
+        Entity $entity,
     ): void {
         foreach ($filterTypes as $field => $filters) {
-            $entityField = $alias . '.' . $field;
+            // Resolve aliases
+            $field             = array_flip($entity->getAliasMap())[$field] ?? $field;
+            $queryBuilderField = 'entity.' . $field;
 
             foreach ($filters as $filter => $value) {
                 $filter = Filters::from($filter);
 
                 if (method_exists($this, $filter->value) === false) {
-                    $this->default($filter, $entityField, $value, $queryBuilder);
+                    $this->default($filter, $queryBuilderField, $value, $queryBuilder);
                 } else {
-                    $this->{$filter->value}($entityField, $value, $queryBuilder);
+                    $this->{$filter->value}($queryBuilderField, $value, $queryBuilder);
                 }
             }
         }
