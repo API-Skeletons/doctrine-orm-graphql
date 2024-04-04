@@ -21,15 +21,21 @@ class Association
      */
     public function __construct(
         protected string $group = 'default',
-        protected string|null $hydratorStrategy = null,
+        protected string $alias = '',
         protected string|null $description = null,
+        protected int|null $limit = null,
+        protected string|null $criteriaEventName = null,
+        protected string|null $hydratorStrategy = null,
         array $excludeFilters = [],
         array $includeFilters = [],
-        protected string|null $criteriaEventName = null,
-        protected int|null $limit = null,
     ) {
         $this->includeFilters = $includeFilters;
         $this->excludeFilters = $excludeFilters;
+    }
+
+    public function getAlias(): string
+    {
+        return $this->alias;
     }
 
     public function getLimit(): int|null
