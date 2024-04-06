@@ -150,6 +150,62 @@ class InputFactoryTest extends AbstractTest
         $this->assertEquals('inputTest', $output['data']['testInput']['name']);
     }
 
+    public function testInputWithAliasedRequiredField(): void
+    {
+        $config = new Config(['group' => 'InputFactoryAliasTest']);
+
+        $driver = new Driver($this->getEntityManager(), $config);
+
+        $schema = new Schema([
+            'mutation' => new ObjectType([
+                'name' => 'mutation',
+                'fields' => [
+                    'testInputAlias' => [
+                        'type' => $driver->type(User::class),
+                        'args' => [
+                            'id' => Type::nonNull(Type::id()),
+                            'input' => Type::nonNull($driver->input(User::class, ['name'])),
+                        ],
+                        'resolve' => static function ($root, $args) use ($driver): User {
+                            $user = $driver->get(EntityManager::class)
+                                ->getRepository(User::class)
+                                ->find($args['id']);
+
+                            $user->setName($args['input']['nameAlias']);
+                            $driver->get(EntityManager::class)->flush();
+
+                            return $user;
+                        },
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query = 'mutation TestInputAlias($id: ID!, $nameAlias: String!) {
+            testInputAlias(id: $id, input: { nameAlias: $nameAlias }) {
+                id
+                nameAlias
+            }
+        }';
+
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['id' => 1, 'nameAlias' => 'inputAliasTest'],
+            operationName: 'TestInputAlias',
+        );
+
+        $output = $result->toArray();
+
+        $this->getEntityManager()->clear();
+        $user = $this->getEntityManager()->getRepository(User::class)
+            ->find(1);
+
+        $this->assertEquals('inputAliasTest', $user->getName());
+        $this->assertEquals(1, $output['data']['testInputAlias']['id']);
+        $this->assertEquals('inputAliasTest', $output['data']['testInputAlias']['nameAlias']);
+    }
+
     public function testInputExcludesIdentifier(): void
     {
         $config = new Config(['group' => 'InputFactoryTest']);
@@ -233,6 +289,55 @@ class InputFactoryTest extends AbstractTest
         $this->assertEquals('inputTest', $user->getName());
         $this->assertEquals(1, $output['data']['testInput']['id']);
         $this->assertEquals('inputTest', $output['data']['testInput']['name']);
+    }
+
+    public function testInputWithAliasedOptionalField(): void
+    {
+        $config = new Config(['group' => 'InputFactoryAliasTest']);
+
+        $driver = new Driver($this->getEntityManager(), $config);
+
+        $schema = new Schema([
+            'mutation' => new ObjectType([
+                'name' => 'mutation',
+                'fields' => [
+                    'testInputAlias' => [
+                        'type' => $driver->type(User::class),
+                        'args' => [
+                            'id' => Type::nonNull(Type::id()),
+                            'input' => Type::nonNull($driver->input(User::class, [], ['name'])),
+                        ],
+                        'resolve' => function ($root, $args): User {
+                            $user = $this->getEntityManager()->getRepository(User::class)
+                                ->find($args['id']);
+
+                            $user->setName($args['input']['nameAlias']);
+                            $this->getEntityManager()->flush();
+
+                            return $user;
+                        },
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query = 'mutation {
+            testInputAlias(id: 1, input: { nameAlias: "inputAliasTest" }) {
+                id
+                nameAlias
+            }
+        }';
+
+        $result = GraphQL::executeQuery($schema, $query);
+        $output = $result->toArray();
+
+        $this->getEntityManager()->clear();
+        $user = $this->getEntityManager()->getRepository(User::class)
+            ->find(1);
+
+        $this->assertEquals('inputAliasTest', $user->getName());
+        $this->assertEquals(1, $output['data']['testInputAlias']['id']);
+        $this->assertEquals('inputAliasTest', $output['data']['testInputAlias']['nameAlias']);
     }
 
     public function testInputWithAllFieldsRequired(): void
