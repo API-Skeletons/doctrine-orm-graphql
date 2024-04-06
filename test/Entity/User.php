@@ -20,6 +20,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(description: 'User', typeName: 'user', group: 'testPasswordFilter')]
 #[GraphQL\Entity(group: 'CustomFieldStrategyTest')]
 #[GraphQL\Entity(group: 'InputFactoryTest')]
+#[GraphQL\Entity(group: 'InputFactoryAliasTest')]
 #[GraphQL\Entity(group: 'StaticMetadata')]
 #[ORM\Entity]
 class User
@@ -29,24 +30,32 @@ class User
     #[GraphQL\Field(description: 'User name', group: 'testPasswordFilter')]
     #[GraphQL\Field(group: 'CustomFieldStrategyTest', hydratorStrategy: ToBoolean::class)]
     #[GraphQL\Field(group: 'InputFactoryTest')]
+    #[GraphQL\Field(group: 'InputFactoryAliasTest', alias: 'nameAlias')]
     #[GraphQL\Field(group: 'StaticMetadata')]
+
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
 
     #[GraphQL\Field(description: 'User email')]
     #[GraphQL\Field(group: 'InputFactoryTest')]
+    #[GraphQL\Field(group: 'InputFactoryAliasTest')]
+
     #[ORM\Column(type: 'string', nullable: false)]
     private string $email;
 
     #[GraphQL\Field(description: 'User password')]
     #[GraphQL\Field(description: 'User password', group: 'testPasswordFilter')]
+
     #[GraphQL\Field(group: 'InputFactoryTest')]
+    #[GraphQL\Field(group: 'InputFactoryAliasTest')]
     #[ORM\Column(type: 'string', nullable: false)]
     private string $password;
 
     #[GraphQL\Field(description: 'Primary key')]
     #[GraphQL\Field(description: 'Primary key', group: 'testNonDefaultGroup')]
     #[GraphQL\Field(group: 'InputFactoryTest')]
+    #[GraphQL\Field(group: 'InputFactoryAliasTest')]
+
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue(strategy: 'AUTO')]

@@ -83,8 +83,10 @@ class InputFactory
                 throw new Exception('Identifier ' . $fieldName . ' is an invalid input.');
             }
 
-            $fields[$fieldName] = new InputObjectField([
-                'name' => $fieldName,
+            $alias = $targetEntity->getAliasMap()[$fieldName] ?? null;
+
+            $fields[$alias ?? $fieldName] = new InputObjectField([
+                'name' => $alias ?? $fieldName,
                 'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
                 'type' => $this->typeContainer->get($targetEntity->getMetadata()['fields'][$fieldName]['type']),
             ]);
@@ -114,8 +116,10 @@ class InputFactory
                 throw new Exception('Identifier ' . $fieldName . ' is an invalid input.');
             }
 
-            $fields[$fieldName] = new InputObjectField([
-                'name' => $fieldName,
+            $alias = $targetEntity->getAliasMap()[$fieldName] ?? null;
+
+            $fields[$alias ?? $fieldName] = new InputObjectField([
+                'name' => $alias ?? $fieldName,
                 'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
                 'type' => Type::nonNull($this->typeContainer->get(
                     $targetEntity->getMetadata()['fields'][$fieldName]['type'],
@@ -137,8 +141,10 @@ class InputFactory
                 continue;
             }
 
-            $fields[$fieldName] = new InputObjectField([
-                'name' => $fieldName,
+            $alias = $targetEntity->getAliasMap()[$fieldName] ?? null;
+
+            $fields[$alias ?? $fieldName] = new InputObjectField([
+                'name' => $alias ?? $fieldName,
                 'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
                 'type' => Type::nonNull($this->typeContainer->get($targetEntity->getMetadata()['fields'][$fieldName]['type'])),
             ]);
