@@ -36,7 +36,7 @@ Full documentation is available at https://doctrine-orm-graphql.apiskeletons.dev
 Examples
 --------
 
-The `ldog stack`, Laravel, Doctrine ORM, and GraphQL uses this library:  https://ldog.apiskeletons.dev
+The **LDOG Stack**: Laravel, Doctrine ORM, and GraphQL uses this library:  https://ldog.apiskeletons.dev
 
 For an working implementation see https://graphql.lcdb.org and the corresonding application at https://github.com/lcdborg/graphql.lcdb.org.
 
