@@ -6,14 +6,12 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
 use Doctrine\Common\Collections\Criteria as DoctrineCriteria;
 use GraphQL\Type\Definition\ResolveInfo;
-use League\Event\HasEventName;
 
 /**
  * This event is dispatched when a Doctrine Criteria is created.
  * Define an event using the Association::$criteriaEventName
  */
-class Criteria implements
-    HasEventName
+class Criteria
 {
     /** @param mixed[] $args */
     public function __construct(

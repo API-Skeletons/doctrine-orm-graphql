@@ -6,13 +6,11 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use GraphQL\Type\Definition\ResolveInfo;
-use League\Event\HasEventName;
 
 /**
  * This event is fired when the QueryBuilder is created for an entity
  */
-class QueryBuilder implements
-    HasEventName
+class QueryBuilder
 {
     /**
      * @param string[] $entityAliasMap

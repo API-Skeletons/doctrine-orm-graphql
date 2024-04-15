@@ -14,7 +14,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use GraphQL\Type\Definition\ResolveInfo;
-use League\Event\EventDispatcher;
+use League\Event\Emitter as EventDispatcher;
 
 use function base64_decode;
 use function base64_encode;
@@ -101,9 +101,12 @@ class ResolveEntityFactory
         /**
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
+         *
+         * @psalm-suppress TooManyArguments
          */
         if ($eventName) {
-            $this->eventDispatcher->dispatch(
+            $this->eventDispatcher->emit(
+                $eventName,
                 new QueryBuilderEvent(
                     $queryBuilder,
                     $eventName,

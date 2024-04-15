@@ -2,9 +2,6 @@
 Events
 ======
 
-A PSR-14 event dispatcher is included for handling events.
-
-
 Query Builder Event
 ===================
 
@@ -50,10 +47,11 @@ user, create a listener.
 .. code-block:: php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
+  use League\Event\Event;
   use League\Event\EventDispatcher;
 
-  $driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.queryBuilder',
-      function(QueryBuilder $event) {
+  $driver->get(Emitter::class)->addListener(Artist::class . '.queryBuilder',
+      function(Event $leagueEvent, QueryBuilder $event) {
           $event->getQueryBuilder()
               ->innerJoin('entity.user', 'user') // The default entity alias is always `entity`
               ->andWhere($event->getQueryBuilder()->expr()->eq('user.id', ':userId'))
@@ -81,6 +79,7 @@ the association if you assigned an event name in the attributes.
   use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria;
   use App\ORM\Entity\Artist;
+  use League\Event\Event;
   use League\Event\EventDispatcher;
 
   #[GraphQL\Entity]
@@ -97,9 +96,9 @@ the association if you assigned an event name in the attributes.
   }
 
   // Add a listener to your driver
-  $driver->get(EventDispatcher::class)->subscribeTo(
+  $driver->get(Emitter::class)->addListener(
       Artist::class . '.performances.criteria',
-      function (Criteria $event): void {
+      function (Event $leagueEvent, Criteria $event): void {
           $event->getCriteria()->andWhere(
               $event->getCriteria()->expr()->eq('isDeleted', false)
           );
@@ -129,13 +128,14 @@ name cannot be modified.
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
   use App\ORM\Entity\Artist;
   use GraphQL\Type\Definition\ResolveInfo;
+  use League\Event\Event;
   use League\Event\EventDispatcher;
 
   $driver = new Driver($entityManager);
 
-  $driver->get(EventDispatcher::class)->subscribeTo(
+  $driver->get(Emitter::class)->addListener(
       Artist::class . '.definition',
-      static function (EntityDefinition $event): void {
+      static function (Event $leagueEvent, EntityDefinition $event): void {
           $definition = $event->getDefinition();
 
           // In order to modify the fields you must resolve the closure
@@ -178,13 +178,14 @@ This event is named ``'metadata.build'``.
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
   use App\ORM\Entity\Performance;
+  use League\Event\Event;
   use League\Event\EventDispatcher;
 
   $driver = new Driver($entityManager);
 
-  $driver->get(EventDispatcher::class)->subscribeTo(
+  $driver->get(Emitter::class)->addListener(
       'metadata.build',
-      static function (Metadata $event): void {
+      static function (Event $leagueEvent, Metadata $event): void {
           $metadata = $event->getMetadata();
 
           $metadata[Performance::class]['limit'] = 100;

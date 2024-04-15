@@ -9,7 +9,8 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ArrayObject;
-use League\Event\EventDispatcher;
+use League\Event\Emitter;
+use League\Event\Event;
 
 /**
  * This test uses both EventDefinition and QueryBuidlerTest to add a new
@@ -23,12 +24,12 @@ class BuildMetadataTest extends AbstractTest
 
         $driver = new Driver($this->getEntityManager());
 
-        $driver->get(EventDispatcher::class)->subscribeTo(
+        $driver->get(Emitter::class)->addListener(
             'metadata.build',
-            static function (Metadata $event) use ($test): void {
+            static function (Event $leagueEvent, Metadata $event) use ($test): void {
                 $metadata = $event->getMetadata();
 
-                $test->assertEquals('metadata.build', $event->eventName());
+                $test->assertEquals('metadata.build', $leagueEvent->getName());
                 $test->assertInstanceOf(ArrayObject::class, $event->getMetadata());
                 $test->assertEquals(0, $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit']);
 
@@ -48,12 +49,12 @@ class BuildMetadataTest extends AbstractTest
 
         $driver = new Driver($this->getEntityManager(), new Config(['globalEnable' => true]));
 
-        $driver->get(EventDispatcher::class)->subscribeTo(
+        $driver->get(Emitter::class)->addListener(
             'metadata.build',
-            static function (Metadata $event) use ($test): void {
+            static function (Event $leagueEvent, Metadata $event) use ($test): void {
                 $metadata = $event->getMetadata();
 
-                $test->assertEquals('metadata.build', $event->eventName());
+                $test->assertEquals('metadata.build', $leagueEvent->getName());
                 $test->assertInstanceOf(ArrayObject::class, $event->getMetadata());
                 $test->assertEquals(0, $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit']);
 
