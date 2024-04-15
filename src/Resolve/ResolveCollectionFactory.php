@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
@@ -18,7 +19,6 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\PersistentCollection;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use GraphQL\Type\Definition\ResolveInfo;
-use League\Event\Emitter as EventDispatcher;
 
 use function array_flip;
 use function base64_decode;
@@ -166,7 +166,7 @@ class ResolveCollectionFactory
          * @psalm-suppress TooManyArguments
          */
         if ($criteriaEventName) {
-            $this->eventDispatcher->emit(
+            $this->eventDispatcher->dispatch(
                 $criteriaEventName,
                 new CriteriaEvent(
                     $criteria,

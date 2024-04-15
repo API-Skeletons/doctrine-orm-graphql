@@ -8,6 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
@@ -23,7 +24,6 @@ use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ObjectType;
 use Laminas\Hydrator\HydratorInterface;
-use League\Event\Emitter as EventDispatcher;
 
 use function array_keys;
 use function array_merge;
@@ -163,7 +163,7 @@ class Entity
          *
          * @psalm-suppress TooManyArguments
          */
-        $this->eventDispatcher->emit(
+        $this->eventDispatcher->dispatch(
             $this->getEntityClass() . '.definition',
             new EntityDefinition($arrayObject, $this->getEntityClass() . '.definition'),
         );

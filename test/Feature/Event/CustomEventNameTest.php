@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
@@ -12,7 +13,6 @@ use Doctrine\ORM\QueryBuilder;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
-use League\Event\Emitter as EventDispatcher;
 use League\Event\Event;
 
 class CustomEventNameTest extends AbstractTest
@@ -20,7 +20,7 @@ class CustomEventNameTest extends AbstractTest
     public function testEvent(): void
     {
         $driver = new Driver($this->getEntityManager());
-        $driver->get(EventDispatcher::class)->addListener(
+        $driver->get(EventDispatcher::class)->subscribeTo(
             'custom.test',
             function (Event $leagueEvent, QueryBuilderEvent $event): void {
                 $this->assertInstanceOf(QueryBuilder::class, $event->getQueryBuilder());

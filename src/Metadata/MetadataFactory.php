@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
@@ -13,7 +14,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common\MetadataFactory as CommonM
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use League\Event\Emitter as EventDispatcher;
 use ReflectionClass;
 
 use function assert;
@@ -73,7 +73,7 @@ class MetadataFactory extends CommonMetadataFactory
          *
          * @psalm-suppress TooManyArguments
          */
-        $this->eventDispatcher->emit(
+        $this->eventDispatcher->dispatch(
             'metadata.build',
             new Metadata($this->metadata, 'metadata.build'),
         );

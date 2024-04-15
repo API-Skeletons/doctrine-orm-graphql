@@ -7,6 +7,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use Doctrine\Common\Collections\Criteria;
@@ -14,7 +15,6 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Schema;
-use League\Event\Emitter;
 use League\Event\Event;
 
 use function count;
@@ -25,7 +25,7 @@ class CriteriaTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'CriteriaEvent']));
 
-        $driver->get(Emitter::class)->addListener(
+        $driver->get(EventDispatcher::class)->subscribeTo(
             Artist::class . '.performances.criteria',
             function (Event $leagueEvent, CriteriaEvent $event): void {
                 $this->assertInstanceOf(Criteria::class, $event->getCriteria());
