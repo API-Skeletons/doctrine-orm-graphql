@@ -15,7 +15,6 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
-use League\Event\EventDispatcher;
 
 use function array_filter;
 use function array_keys;
@@ -39,7 +38,6 @@ class FilterFactory
         protected Config $config,
         protected EntityManager $entityManager,
         protected TypeContainer $typeContainer,
-        protected EventDispatcher $eventDispatcher,
     ) {
     }
 
