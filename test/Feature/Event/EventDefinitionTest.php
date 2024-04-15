@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use GraphQL\GraphQL;
@@ -13,7 +14,6 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
-use League\Event\Emitter as EventDispatcher;
 use League\Event\Event;
 
 use function str_replace;
@@ -25,7 +25,7 @@ class EventDefinitionTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager());
 
-        $driver->get(EventDispatcher::class)->addListener(
+        $driver->get(EventDispatcher::class)->subscribeTo(
             Artist::class . '.definition',
             static function (Event $leagueEvent, EntityDefinition $event): void {
                 $definition = $event->getDefinition();

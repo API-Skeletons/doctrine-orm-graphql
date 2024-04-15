@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\GlobalEnable;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use League\Event\Emitter;
@@ -37,11 +35,16 @@ trait Services
                     return $config;
                 },
             )
-            ->set(Emitter::class, static fn () => new Emitter())
             ->set(Type\TypeContainer::class, static fn () => new Type\TypeContainer())
             ->set(
                 Type\Entity\EntityTypeContainer::class,
                 static fn (Container $container) => new Type\Entity\EntityTypeContainer($container),
+            )
+            ->set(
+                Event\EventDispatcher::class,
+                static fn (Container $container) => new Event\EventDispatcher(
+                    new Emitter(),
+                ),
             )
             ->set(
                 'metadata',
@@ -50,8 +53,8 @@ trait Services
                         $metadata,
                         $container->get(EntityManager::class),
                         $container->get(Config::class),
-                        $container->get(GlobalEnable::class),
-                        $container->get(Emitter::class),
+                        $container->get(Metadata\GlobalEnable::class),
+                        $container->get(Event\EventDispatcher::class),
                     ))();
                 },
             )
@@ -61,7 +64,7 @@ trait Services
                     return new Metadata\GlobalEnable(
                         $container->get(EntityManager::class),
                         $container->get(Config::class),
-                        $container->get(Emitter::class),
+                        $container->get(Event\EventDispatcher::class),
                     );
                 },
             )
@@ -82,8 +85,8 @@ trait Services
                         $container->get(Config::class),
                         $container->get(Resolve\FieldResolver::class),
                         $container->get(Type\TypeContainer::class),
-                        $container->get(EntityTypeContainer::class),
-                        $container->get(Emitter::class),
+                        $container->get(Type\Entity\EntityTypeContainer::class),
+                        $container->get(Event\EventDispatcher::class),
                         $container->get('metadata'),
                     );
                 },
@@ -94,7 +97,7 @@ trait Services
                     return new Resolve\ResolveEntityFactory(
                         $container->get(Config::class),
                         $container->get(EntityManager::class),
-                        $container->get(Emitter::class),
+                        $container->get(Event\EventDispatcher::class),
                         $container->get('metadata'),
                     );
                 },

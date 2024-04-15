@@ -7,6 +7,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToInteger;
@@ -16,7 +17,6 @@ use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ArrayObject;
-use League\Event\Emitter as EventDispatcher;
 use League\Event\Event;
 
 use function array_keys;
@@ -75,7 +75,7 @@ class EntityTest extends AbstractTest
         $driver = new Driver($this->getEntityManager(), $config);
 
         // Fields are only sorted after this event is fired
-        $driver->get(EventDispatcher::class)->addListener(
+        $driver->get(EventDispatcher::class)->subscribeTo(
             User::class . '.definition',
             static function (Event $leagueEvent, EntityDefinition $event) use ($unsortedFields): void {
                 $fields = $event->getDefinition()['fields']();

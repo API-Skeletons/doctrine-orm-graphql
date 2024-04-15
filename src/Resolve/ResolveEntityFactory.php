@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
@@ -14,7 +15,6 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use GraphQL\Type\Definition\ResolveInfo;
-use League\Event\Emitter as EventDispatcher;
 
 use function base64_decode;
 use function base64_encode;
@@ -101,11 +101,9 @@ class ResolveEntityFactory
         /**
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
-         *
-         * @psalm-suppress TooManyArguments
          */
         if ($eventName) {
-            $this->eventDispatcher->emit(
+            $this->eventDispatcher->dispatch(
                 $eventName,
                 new QueryBuilderEvent(
                     $queryBuilder,
