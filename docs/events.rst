@@ -46,11 +46,11 @@ user, create a listener.
 
 .. code-block:: php
 
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
   use League\Event\Event;
-  use League\Event\EventDispatcher;
 
-  $driver->get(Emitter::class)->addListener(Artist::class . '.queryBuilder',
+  $driver->get(EventDispatcher::class)->subscribeTo(Artist::class . '.queryBuilder',
       function(Event $leagueEvent, QueryBuilder $event) {
           $event->getQueryBuilder()
               ->innerJoin('entity.user', 'user') // The default entity alias is always `entity`
@@ -78,9 +78,9 @@ the association if you assigned an event name in the attributes.
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
   use App\ORM\Entity\Artist;
   use League\Event\Event;
-  use League\Event\EventDispatcher;
 
   #[GraphQL\Entity]
   class Artist
@@ -96,7 +96,7 @@ the association if you assigned an event name in the attributes.
   }
 
   // Add a listener to your driver
-  $driver->get(Emitter::class)->addListener(
+  $driver->get(EventDispatcher::class)->subscribeTo(
       Artist::class . '.performances.criteria',
       function (Event $leagueEvent, Criteria $event): void {
           $event->getCriteria()->andWhere(
@@ -126,6 +126,7 @@ name cannot be modified.
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
   use App\ORM\Entity\Artist;
   use GraphQL\Type\Definition\ResolveInfo;
   use League\Event\Event;
@@ -133,7 +134,7 @@ name cannot be modified.
 
   $driver = new Driver($entityManager);
 
-  $driver->get(Emitter::class)->addListener(
+  $driver->get(EventDispatcher::class)->subscribeTo(
       Artist::class . '.definition',
       static function (Event $leagueEvent, EntityDefinition $event): void {
           $definition = $event->getDefinition();
@@ -176,14 +177,14 @@ This event is named ``'metadata.build'``.
 .. code-block:: php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EventDispatcher;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
   use App\ORM\Entity\Performance;
   use League\Event\Event;
-  use League\Event\EventDispatcher;
 
   $driver = new Driver($entityManager);
 
-  $driver->get(Emitter::class)->addListener(
+  $driver->get(EventDispatcher::class)->subscribeTo(
       'metadata.build',
       static function (Event $leagueEvent, Metadata $event): void {
           $metadata = $event->getMetadata();
