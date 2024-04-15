@@ -19,6 +19,11 @@ class EventDispatcher
     ) {
     }
 
+    /**
+     * Emit an event
+     *
+     * @psalm-suppress TooManyArguments
+     */
     public function dispatch(string $event, mixed $payload = null): void
     {
         $this->eventDispatcher->emit($event, $payload);

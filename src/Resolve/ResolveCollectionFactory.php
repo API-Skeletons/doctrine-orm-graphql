@@ -162,8 +162,6 @@ class ResolveCollectionFactory
 
         /**
          * Fire the event dispatcher using the passed event name.
-         *
-         * @psalm-suppress TooManyArguments
          */
         if ($criteriaEventName) {
             $this->eventDispatcher->dispatch(

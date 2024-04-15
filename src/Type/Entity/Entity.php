@@ -160,8 +160,6 @@ class Entity
 
         /**
          * Dispatch event to allow modifications to the ObjectType definition
-         *
-         * @psalm-suppress TooManyArguments
          */
         $this->eventDispatcher->dispatch(
             $this->getEntityClass() . '.definition',

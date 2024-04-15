@@ -53,8 +53,6 @@ final class GlobalEnable extends MetadataFactory
 
         /**
          * Fire the metadata.build event
-         *
-         * @psalm-suppress TooManyArguments
          */
         $this->eventDispatcher->dispatch(
             'metadata.build',

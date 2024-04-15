@@ -70,8 +70,6 @@ class MetadataFactory extends CommonMetadataFactory
 
         /**
          * Fire the metadata.build event
-         *
-         * @psalm-suppress TooManyArguments
          */
         $this->eventDispatcher->dispatch(
             'metadata.build',
