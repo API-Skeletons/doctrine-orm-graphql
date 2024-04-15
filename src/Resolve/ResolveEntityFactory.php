@@ -101,6 +101,8 @@ class ResolveEntityFactory
         /**
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
+         *
+         * @psalm-suppress TooManyArguments
          */
         if ($eventName) {
             $this->eventDispatcher->emit(

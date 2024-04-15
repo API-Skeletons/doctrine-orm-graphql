@@ -15,7 +15,8 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
-use League\Event\EventDispatcher;
+use League\Event\Emitter as EventDispatcher;
+use League\Event\Event;
 
 use function count;
 use function uniqid;
@@ -30,9 +31,9 @@ class EntityFilterTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager());
 
-        $driver->get(EventDispatcher::class)->subscribeTo(
+        $driver->get(EventDispatcher::class)->addListener(
             Artist::class . '.definition',
-            static function (EntityDefinition $event): void {
+            static function (Event $leagueEvent, EntityDefinition $event): void {
                 $definition = $event->getDefinition();
 
                 // In order to modify the fields you must resovle the closure
@@ -51,9 +52,9 @@ class EntityFilterTest extends AbstractTest
             },
         );
 
-        $driver->get(EventDispatcher::class)->subscribeTo(
+        $driver->get(EventDispatcher::class)->addListener(
             Artist::class . '.filterQueryBuilder',
-            static function (QueryBuilder $event): void {
+            static function (Event $leagueEvent, QueryBuilder $event): void {
                 if (! isset($event->getArgs()['moreFilters']['performanceCount_gte'])) {
                     return;
                 }

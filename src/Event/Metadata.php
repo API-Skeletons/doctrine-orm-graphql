@@ -8,7 +8,7 @@ use ArrayObject;
 
 /**
     use League\Event\HasEventName;
-*/
+ */
 
 /**
  * This event is fired when the metadta is created

@@ -13,7 +13,8 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
-use League\Event\EventDispatcher;
+use League\Event\Emitter as EventDispatcher;
+use League\Event\Event;
 
 /**
  * Use the resolve argument of $args on the FilterQueryBuilder object to filter the query builder
@@ -23,9 +24,9 @@ class FilterQueryBuilderWithAdditionalArgsTest extends AbstractTest
     public function testEvent(): void
     {
         $driver = new Driver($this->getEntityManager());
-        $driver->get(EventDispatcher::class)->subscribeTo(
+        $driver->get(EventDispatcher::class)->addListener(
             'artist.querybuilder',
-            function (QueryBuilder $event): void {
+            function (Event $leagueEvent, QueryBuilder $event): void {
                 $event->getQueryBuilder()
                     ->andWhere($event->getQueryBuilder()->expr()->eq('entity.id', $event->getArgs()['id']));
 

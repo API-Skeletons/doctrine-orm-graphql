@@ -68,7 +68,11 @@ class MetadataFactory extends CommonMetadataFactory
             $this->buildMetadataForAssociations($reflectionClass);
         }
 
-        // Fire the metadata.build event
+        /**
+         * Fire the metadata.build event
+         *
+         * @psalm-suppress TooManyArguments
+         */
         $this->emitter->emit(
             'metadata.build',
             new Metadata($this->metadata, 'metadata.build'),

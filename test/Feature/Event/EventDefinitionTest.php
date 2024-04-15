@@ -13,7 +13,8 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
-use League\Event\EventDispatcher;
+use League\Event\Emitter as EventDispatcher;
+use League\Event\Event;
 
 use function str_replace;
 use function trim;
@@ -24,9 +25,9 @@ class EventDefinitionTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager());
 
-        $driver->get(EventDispatcher::class)->subscribeTo(
+        $driver->get(EventDispatcher::class)->addListener(
             Artist::class . '.definition',
-            static function (EntityDefinition $event): void {
+            static function (Event $leagueEvent, EntityDefinition $event): void {
                 $definition = $event->getDefinition();
 
                 // In order to modify the fields you must resovle the closure

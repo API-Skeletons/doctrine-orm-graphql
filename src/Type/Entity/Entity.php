@@ -23,7 +23,7 @@ use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ObjectType;
 use Laminas\Hydrator\HydratorInterface;
-use League\Event\EventDispatcher;
+use League\Event\Emitter;
 
 use function array_keys;
 use function array_merge;
@@ -47,7 +47,7 @@ class Entity
     protected FilterFactory $filterFactory;
     protected EntityManager $entityManager;
     protected EntityTypeContainer $entityTypeContainer;
-    protected EventDispatcher $eventDispatcher;
+    protected Emitter $eventDispatcher;
     protected FieldResolver $fieldResolver;
     protected ObjectType|null $objectType = null;
     protected HydratorContainer $hydratorFactory;
@@ -63,7 +63,7 @@ class Entity
         $this->config              = $container->get(Config::class);
         $this->entityManager       = $container->get(EntityManager::class);
         $this->entityTypeContainer = $container->get(EntityTypeContainer::class);
-        $this->eventDispatcher     = $container->get(EventDispatcher::class);
+        $this->eventDispatcher     = $container->get(Emitter::class);
         $this->fieldResolver       = $container->get(FieldResolver::class);
         $this->filterFactory       = $container->get(FilterFactory::class);
         $this->hydratorFactory     = $container->get(HydratorContainer::class);
@@ -160,8 +160,11 @@ class Entity
 
         /**
          * Dispatch event to allow modifications to the ObjectType definition
+         *
+         * @psalm-suppress TooManyArguments
          */
-        $this->eventDispatcher->dispatch(
+        $this->eventDispatcher->emit(
+            $this->getEntityClass() . '.definition',
             new EntityDefinition($arrayObject, $this->getEntityClass() . '.definition'),
         );
 

@@ -12,16 +12,17 @@ use Doctrine\ORM\QueryBuilder;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
-use League\Event\EventDispatcher;
+use League\Event\Emitter as EventDispatcher;
+use League\Event\Event;
 
 class CustomEventNameTest extends AbstractTest
 {
     public function testEvent(): void
     {
         $driver = new Driver($this->getEntityManager());
-        $driver->get(EventDispatcher::class)->subscribeTo(
+        $driver->get(EventDispatcher::class)->addListener(
             'custom.test',
-            function (QueryBuilderEvent $event): void {
+            function (Event $leagueEvent, QueryBuilderEvent $event): void {
                 $this->assertInstanceOf(QueryBuilder::class, $event->getQueryBuilder());
             },
         );

@@ -14,7 +14,8 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Schema;
-use League\Event\EventDispatcher;
+use League\Event\Emitter;
+use League\Event\Event;
 
 use function count;
 
@@ -24,9 +25,9 @@ class CriteriaTest extends AbstractTest
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'CriteriaEvent']));
 
-        $driver->get(EventDispatcher::class)->subscribeTo(
+        $driver->get(Emitter::class)->addListener(
             Artist::class . '.performances.criteria',
-            function (CriteriaEvent $event): void {
+            function (Event $leagueEvent, CriteriaEvent $event): void {
                 $this->assertInstanceOf(Criteria::class, $event->getCriteria());
 
                 $event->getCriteria()->andWhere(

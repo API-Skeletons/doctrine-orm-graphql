@@ -12,7 +12,8 @@ use Doctrine\ORM\QueryBuilder;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
-use League\Event\EventDispatcher;
+use League\Event\Emitter as EventDispatcher;
+use League\Event\Event;
 
 use function array_keys;
 use function reset;
@@ -22,9 +23,9 @@ class FilterQueryBuilderTest extends AbstractTest
     public function testEvent(): void
     {
         $driver = new Driver($this->getEntityManager());
-        $driver->get(EventDispatcher::class)->subscribeTo(
+        $driver->get(EventDispatcher::class)->addListener(
             'artist.querybuilder',
-            function (QueryBuilderEvent $event): void {
+            function (Event $leagueEvent, QueryBuilderEvent $event): void {
                 $this->assertInstanceOf(QueryBuilder::class, $event->getQueryBuilder());
 
                 $entityAliasMap     = $event->getEntityAliasMap();
