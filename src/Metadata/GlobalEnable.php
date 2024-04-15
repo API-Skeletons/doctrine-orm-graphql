@@ -10,7 +10,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common\MetadataFactory;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
-use League\Event\Emitter;
+use League\Event\Emitter as EventDispatcher;
 
 use function in_array;
 
@@ -24,7 +24,7 @@ final class GlobalEnable extends MetadataFactory
     public function __construct(
         private EntityManager $entityManager,
         protected Config $config,
-        protected Emitter $emitter,
+        protected EventDispatcher $eventDispatcher,
     ) {
         $this->metadata = new ArrayObject();
     }
@@ -56,7 +56,7 @@ final class GlobalEnable extends MetadataFactory
          *
          * @psalm-suppress TooManyArguments
          */
-        $this->emitter->emit(
+        $this->eventDispatcher->emit(
             'metadata.build',
             new Metadata($this->metadata, 'metadata.build'),
         );

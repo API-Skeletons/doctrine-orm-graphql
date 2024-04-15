@@ -13,7 +13,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common\MetadataFactory as CommonM
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use League\Event\Emitter;
+use League\Event\Emitter as EventDispatcher;
 use ReflectionClass;
 
 use function assert;
@@ -29,7 +29,7 @@ class MetadataFactory extends CommonMetadataFactory
         protected EntityManager $entityManager,
         protected Config $config,
         protected GlobalEnable $globalEnable,
-        protected Emitter $emitter,
+        protected EventDispatcher $eventDispatcher,
     ) {
     }
 
@@ -73,7 +73,7 @@ class MetadataFactory extends CommonMetadataFactory
          *
          * @psalm-suppress TooManyArguments
          */
-        $this->emitter->emit(
+        $this->eventDispatcher->emit(
             'metadata.build',
             new Metadata($this->metadata, 'metadata.build'),
         );

@@ -18,7 +18,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\PersistentCollection;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use GraphQL\Type\Definition\ResolveInfo;
-use League\Event\Emitter;
+use League\Event\Emitter as EventDispatcher;
 
 use function array_flip;
 use function base64_decode;
@@ -37,7 +37,7 @@ class ResolveCollectionFactory
         protected FieldResolver $fieldResolver,
         protected TypeContainer $typeContainer,
         protected EntityTypeContainer $entityTypeContainer,
-        protected Emitter $eventDispatcher,
+        protected EventDispatcher $eventDispatcher,
         protected ArrayObject $metadata,
     ) {
     }
