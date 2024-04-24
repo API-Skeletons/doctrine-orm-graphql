@@ -2,6 +2,10 @@
 Events
 ======
 
+There are two versions, 10 and 11, of this library which support different event
+manager versions.  See `Versions and Event Manager Support <versions.html>`_ for
+more information.
+
 Query Builder Event
 ===================
 
