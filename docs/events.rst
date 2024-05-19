@@ -9,19 +9,18 @@ more information.
 Query Builder Event
 ===================
 
-Each top level ``connection`` uses a Doctrine QueryBuilder object.  This QueryBuilder
-object may be modified to filter the data for the logged in user and such.
-For instance, this can be used as a security layer and can be used to make
-customizations to QueryBuilder objects.  QueryBuilders are built then
+Each ``connection`` may listen for a ``QueryBuilder`` event.
+The event has a ``getQueryBuilder()`` method to retrieve the Doctrine QueryBuilder object before it is executed.
+The Doctrine QueryBuilder object may be modified to filter the data for the logged in user and such.
+
+This can be used as a security layer and can be used to make
+customizations to ``QueryBuilder`` objects.  QueryBuilders are built then
 triggered through an event.  Listen to this event and modify the passed
 QueryBuilder to apply your security.
 
 Event names are passed as a second parameter to a ``$driver->resolve()``.
 
-You may specify an event name to resolve a ``connection``.  Only this event will
-fire when the QueryBuilder is created.
-
-In the code below, the custom event ``Artist::class . '.queryBuilder'`` will fire:
+In the code below, the event ``Artist::class . '.queryBuilder'`` will fire:
 
 .. code-block:: php
 
@@ -39,7 +38,10 @@ In the code below, the custom event ``Artist::class . '.queryBuilder'`` will fir
                 'args' => [
                     'filter' => $driver->filter(Artist::class),
                 ],
-                'resolve' => $driver->resolve(Artist::class, Artist::class . '.queryBuilder'),
+                'resolve' => $driver->resolve(
+                    Artist::class, 
+                    Artist::class . '.queryBuilder',
+                ),
             ],
         ],
     ]),

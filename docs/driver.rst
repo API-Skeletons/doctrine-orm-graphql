@@ -69,14 +69,13 @@ type()
 This function returns GraphQL types for all Doctrine types, any custom types,
 and Doctrine entity types.
 
-There are two type managers:  ``TypeContainer`` and ``EntityTypeContainer``.
-Types from each of these managers are returned from this `type()` function.
+There are two type containers:  ``TypeContainer`` and ``EntityTypeContainer``.
+Types from each of these containers are returned from this `type()` function.
 
 See `types <types.html>`_ for details on custom types and using the ``TypeContainer``.
 
 The ``EntityTypeContainer`` is used only for Doctrine entities and is populated
-though the `metadata <metadata.html>`_.  This class is used internally for generating
-``ObjectType``s for entities.
+though the `metadata <metadata.html>`_.  This class is used internally for generating ``ObjectType`` types for entities.
 
 Though a ``connection`` is a type, it is not
 available through this function.  Use the ``connection`` function of the Driver.
@@ -141,7 +140,7 @@ the entities are subject to change.  Really.
 ignoreFields
 ------------
 
-When ``globalEnable`` is set to true, this array of field and associations names
+When ``globalEnable`` is set to true, this array of field and association names
 will be excluded from the schema.  For instance ``['password']`` is a good choice
 to ignore globally.
 
@@ -175,9 +174,11 @@ useHydratorCache
 
 When set to true hydrator results will be cached for
 the duration of the request thereby saving multiple extracts for
-the same entity.  **Default is ``false``**.
+the same entity.  Default is ``false``
 
-Creating a ``Driver`` with all config options:
+
+Creating a ``Driver`` with all config options
+---------------------------------------------
 
 .. code-block:: php
 

@@ -8,7 +8,7 @@ Filters for Scalar Queries
 ==========================
 
 The ``$driver->filter(Entity::class)`` filter may be used outside of a
-collection query.  For instance, to create a Doctrine query for the average
+connection.  For instance, to create a Doctrine query for the average
 of a field you can construct your query like this:
 
 .. code-block:: php
