@@ -69,7 +69,7 @@ type()
 This function returns GraphQL types for all Doctrine types, any custom types,
 and Doctrine entity types.
 
-There are two type continers:  ``TypeContainer`` and ``EntityTypeContainer``.
+There are two type containers:  ``TypeContainer`` and ``EntityTypeContainer``.
 Types from each of these containers are returned from this `type()` function.
 
 See `types <types.html>`_ for details on custom types and using the ``TypeContainer``.
