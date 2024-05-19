@@ -7,7 +7,8 @@ This library uses metadata that can be modified with the
 Modifying the metadata is an advanced feature.
 
 The metadata is an array with a key for each enabled entity class name.
-See this [unit test](https://github.com/API-Skeletons/doctrine-orm-graphql/blob/main/test/Feature/Metadata/CachingTest.php)
+See this unit test
+https://github.com/API-Skeletons/doctrine-orm-graphql/blob/10.2.x/test/Feature/Metadata/CachingTest.php
 
 Caching Metadata
 ================

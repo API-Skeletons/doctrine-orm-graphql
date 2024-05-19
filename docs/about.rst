@@ -4,7 +4,7 @@ About
 
 Authored by Tom H Anderson <tom.h.anderson@gmail.com> of
 `API Skeletons <https://apiskeletons.com>`_,
-a member of the `Doctrine Maintainers <https://www.doctrine-project.org/team/maintainers.html>`_.
+a member of the Doctrine maintainers.
 
 This project provides a Doctrine ORM Driver to be used with
 `GraphQL for PHP<https://github.com/webonyx/graphql-php>`_.

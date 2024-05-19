@@ -8,7 +8,7 @@ Modify an Entity Definition
 ---------------------------
 
 You may modify the array used to define an entity type before it is created.
-This can be used for computed data.  You must attach to an event
+This can be used for computed data.  You must attach a listener
 before defining your GraphQL schema.
 
 Events of this type are named ``Entity::class . '.definition'`` and the event
@@ -54,6 +54,7 @@ name cannot be modified.
               },
           ];
 
+          // Assign modified fields array to the ArrayObject
           $definition['fields'] = $fields;
       }
   );
@@ -62,8 +63,8 @@ A query for this computed field:
 
 .. code-block:: graphql
 
-  query artistQueryWithComputedField {
-    artist {
+  query ArtistQueryWithComputedField($id: Int!)  {
+    artist(id: $id) {
       id
       name
       performanceCount
