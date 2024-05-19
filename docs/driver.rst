@@ -40,7 +40,7 @@ in combination with the ``resolve`` and ``pagination`` functions, implements the
 filter()
 --------
 
-Based on the attribute configuration of an entity, this funciton adds a
+Based on the attribute configuration of an entity, this function adds a
 ``filter`` argument to a connection.  See `filters <queries.html>`_ for a list of
 available filters per field.  The args field must be ``filter``.
 
