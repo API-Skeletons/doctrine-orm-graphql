@@ -7,7 +7,7 @@ Authored by Tom H Anderson <tom.h.anderson@gmail.com> of
 a member of the Doctrine maintainers.
 
 This project provides a Doctrine ORM Driver to be used with
-`GraphQL for PHP<https://github.com/webonyx/graphql-php>`_.
+`GraphQL for PHP <https://github.com/webonyx/graphql-php>`_.
 
 You may choose which entities, fields, and associations in your object manager
 are available for querying through GraphQL.  Filtering is provided for
