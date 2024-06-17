@@ -43,7 +43,7 @@ entity manager
   $driver = new Driver($entityManager);
 
 The next step is configuring your GraphQL schema.  In this section we'll create
-types for the entity, filters for the entity, and the a resolver.
+a connection for the entity, filters for the entity, and a resolver.
 
 .. code-block:: php
 
