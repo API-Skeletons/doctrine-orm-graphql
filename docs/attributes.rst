@@ -13,7 +13,8 @@ A slightly complicated example:
 
 .. code-block:: php
 
-  use ApiSkeletons\Doctrine\GraphQL\Attribute as GraphQL
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 
   #[GraphQL\Entity(description: 'Artist data', typeName: 'Artist')]
   #[GraphQL\Entity(group: 'admin', description: 'Artist data for admins')]
@@ -23,11 +24,11 @@ A slightly complicated example:
       #[GraphQL\Field(group: 'admin')]
       public $id;
 
-      #[GraphQL\Field(description: 'Artist name', excludeCriteria: ['startswith'])]
+      #[GraphQL\Field(description: 'Artist name', excludeFilters: [Filters::STARTSWITH])]
       #[GraphQL\Field(group: 'admin')]
       public $name;
 
-      #[GraphQL\Association(excludeCriteria: ['contains', 'neq'])]
+      #[GraphQL\Association(excludeFilters: [Filters::CONTAINS, Filters::NEQ])]
       #[GraphQL\Association(group: 'admin', alias: 'shows')]
       public $performances;
   }
@@ -43,8 +44,10 @@ Optional parameters are:
 * ``excludeFilters`` - An array of Filters to exclude from available
   filters for all fields and associations in the entity.  For instance, to
   exclude filters that use a ``like`` database query, set the following::
+    
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 
-    #[GraphQL\Entity(excludeCriteria: ['contains', 'startswith', 'endswith'])]
+    #[GraphQL\Entity(excludeFilters: [Filters::CONTAINS, Filters::STARTSWITH, Filters::ENDSWITH])]
 
 * ``group`` - You may have multiple GraphQL configurations organzied by
   ``group``.
@@ -117,7 +120,9 @@ associated with.  Associations of the to many variety will become connections.
   associations.  For instance, to exclude filters that use a ``like`` database
   query, set the following::
 
-    #[GraphQL\Association(excludeCriteria: ['contains', 'startswith', 'endswith'])]
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+
+    #[GraphQL\Association(excludeFilters: [Filters::CONTAINS, Filters::STARTSWITH, Filters::ENDSWITH])]
 
 * ``criteriaEventName`` - An event to fire when resolving this collection.
   Additional filters can be added to the criteria.  An example of this use is for
