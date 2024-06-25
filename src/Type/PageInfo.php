@@ -15,13 +15,6 @@ class PageInfo extends ObjectType
     public function __construct()
     {
         $configuration = [
-            /**
-             * Because you may create multiple drivers and assign types to the
-             * schema from each, there would be a name collision if this object
-             * used only the name `PageInfo` as defined in section 2.1.2 of the
-             * GraphQL spec:ification.
-             * https://relay.dev/graphql/connections.htm#sec-Connection-Types.Fields.PageInfo
-             */
             'name' => 'PageInfo',
             'description' => 'Page information',
             'fields' => [
