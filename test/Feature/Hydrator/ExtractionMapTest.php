@@ -20,17 +20,17 @@ use function print_r;
 /**
  * This test uses aliases for fields and associations
  */
-class AliasMapTest extends AbstractTest
+class ExtractionMapTest extends AbstractTest
 {
-    public function testAliasMap(): void
+    public function testExtractionMap(): void
     {
-        $config = new Config(['group' => 'AliasMap']);
+        $config = new Config(['group' => 'ExtractionMap']);
 
         $driver = new Driver($this->getEntityManager(), $config);
 
         $artistEntityType = $driver->get(EntityTypeContainer::class)->get(Artist::class);
 
-        $this->assertIsArray($artistEntityType->getAliasMap());
+        $this->assertIsArray($artistEntityType->getExtractionMap());
 
         $schema = new Schema([
             'query' => new ObjectType([
@@ -79,10 +79,10 @@ class AliasMapTest extends AbstractTest
     {
         $this->expectException(Throwable::class);
 
-        $config = new Config(['group' => 'AliasMapDuplicate']);
+        $config = new Config(['group' => 'ExtractionMapDuplicate']);
         $driver = new Driver($this->getEntityManager(), $config);
 
         $artistEntityType = $driver->get(EntityTypeContainer::class)->get(Artist::class);
-        print_r($artistEntityType->getAliasMap());
+        print_r($artistEntityType->getExtractionMap());
     }
 }

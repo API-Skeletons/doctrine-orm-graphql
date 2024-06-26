@@ -26,12 +26,6 @@ class FilterQueryBuilderTest extends AbstractTest
             'artist.querybuilder',
             function (QueryBuilderEvent $event): void {
                 $this->assertInstanceOf(QueryBuilder::class, $event->getQueryBuilder());
-
-                $entityAliasMap     = $event->getEntityAliasMap();
-                $entityAliasMapKeys = array_keys($event->getEntityAliasMap());
-
-                $this->assertEquals(Artist::class, reset($entityAliasMap));
-                $this->assertEquals('entity', reset($entityAliasMapKeys));
             },
         );
 

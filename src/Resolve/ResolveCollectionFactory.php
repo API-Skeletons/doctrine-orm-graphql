@@ -53,9 +53,9 @@ class ResolveCollectionFactory
 
             // If an alias map exists, check for an alias
             $targetCollectionName = $info->fieldName;
-            if (in_array($info->fieldName, $this->entityTypeContainer->get($entityClassName)->getAliasMap())) {
+            if (in_array($info->fieldName, $this->entityTypeContainer->get($entityClassName)->getExtractionMap())) {
                 $targetCollectionName = array_flip($this->entityTypeContainer
-                    ->get($entityClassName)->getAliasMap())[$info->fieldName] ?? $info->fieldName;
+                    ->get($entityClassName)->getExtractionMap())[$info->fieldName] ?? $info->fieldName;
             }
 
             $targetClassName = (string) $this->entityManager->getMetadataFactory()
@@ -85,7 +85,7 @@ class ResolveCollectionFactory
 
         foreach ($filter as $field => $filters) {
             // Resolve aliases
-            $field = array_flip($entity->getAliasMap())[$field] ?? $field;
+            $field = array_flip($entity->getExtractionMap())[$field] ?? $field;
 
             foreach ($filters as $filter => $value) {
                 switch (Filters::from($filter)) {

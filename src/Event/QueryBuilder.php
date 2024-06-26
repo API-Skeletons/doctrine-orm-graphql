@@ -14,10 +14,7 @@ use League\Event\HasEventName;
 class QueryBuilder implements
     HasEventName
 {
-    /**
-     * @param string[] $entityAliasMap
-     * @param mixed[]  $args
-     */
+    /** @param mixed[] $args */
     public function __construct(
         protected DoctrineQueryBuilder $queryBuilder,
         protected string $eventName,

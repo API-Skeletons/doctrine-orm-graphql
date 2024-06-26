@@ -160,7 +160,7 @@ class FilterFactory
                 $this->typeContainer->set($filterTypeName, $fieldType);
             }
 
-            $alias = $targetEntity->getAliasMap()[$fieldName] ?? null;
+            $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
 
             $fields[$alias ?? $fieldName] = [
                 'name'        => $alias ?? $fieldName,
