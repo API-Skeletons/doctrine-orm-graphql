@@ -28,6 +28,7 @@ use League\Event\EventDispatcher;
 use function array_keys;
 use function array_merge;
 use function assert;
+use function count;
 use function in_array;
 use function ksort;
 use function ucwords;
@@ -42,7 +43,7 @@ class Entity
     /** @var mixed[]  */
     protected array $metadata;
     /** @var array<string, string> */
-    protected array|null $extractionMap = null;
+    protected array $extractionMap = [];
     protected Config $config;
     protected FilterFactory $filterFactory;
     protected EntityManager $entityManager;
@@ -112,11 +113,9 @@ class Entity
      */
     public function getExtractionMap(): array
     {
-        if ($this->extractionMap !== null) {
+        if (count($this->extractionMap)) {
             return $this->extractionMap;
         }
-
-        $this->extractionMap = [];
 
         foreach ($this->metadata['fields'] as $fieldName => $fieldMetadata) {
             if (! isset($fieldMetadata['alias'])) {
