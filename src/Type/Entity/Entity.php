@@ -42,7 +42,7 @@ class Entity
     /** @var mixed[]  */
     protected array $metadata;
     /** @var array<string, string> */
-    protected array|null $extractionMap = null;
+    protected array $extractionMap = [];
     protected Config $config;
     protected FilterFactory $filterFactory;
     protected EntityManager $entityManager;
@@ -112,11 +112,9 @@ class Entity
      */
     public function getExtractionMap(): array
     {
-        if ($this->extractionMap !== null) {
+        if ($this->extractionMap) {
             return $this->extractionMap;
         }
-
-        $this->extractionMap = [];
 
         foreach ($this->metadata['fields'] as $fieldName => $fieldMetadata) {
             if (! isset($fieldMetadata['alias'])) {
