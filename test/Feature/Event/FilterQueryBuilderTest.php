@@ -14,9 +14,6 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use League\Event\EventDispatcher;
 
-use function array_keys;
-use function reset;
-
 class FilterQueryBuilderTest extends AbstractTest
 {
     public function testEvent(): void
