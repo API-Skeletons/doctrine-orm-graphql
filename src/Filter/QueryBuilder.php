@@ -29,7 +29,7 @@ class QueryBuilder
     ): void {
         foreach ($filterTypes as $field => $filters) {
             // Resolve aliases
-            $field             = array_flip($entity->getAliasMap())[$field] ?? $field;
+            $field             = array_flip($entity->getExtractionMap())[$field] ?? $field;
             $queryBuilderField = 'entity.' . $field;
 
             foreach ($filters as $filter => $value) {

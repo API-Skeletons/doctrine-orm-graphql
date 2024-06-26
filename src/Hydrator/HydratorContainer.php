@@ -57,8 +57,10 @@ class HydratorContainer extends Container
         }
 
         // Create naming strategy for aliases and assign to hydrator
-        if ($entity->getAliasMap()) {
-            $hydrator->setNamingStrategy(MapNamingStrategy::createFromExtractionMap($entity->getAliasMap()));
+        if ($entity->getExtractionMap()) {
+            $hydrator->setNamingStrategy(
+                MapNamingStrategy::createFromExtractionMap($entity->getExtractionMap()),
+            );
         }
 
         $this->set($id, $hydrator);

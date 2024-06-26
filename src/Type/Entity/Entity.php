@@ -42,7 +42,7 @@ class Entity
     /** @var mixed[]  */
     protected array $metadata;
     /** @var array<string, string> */
-    protected array|null $aliasMap = null;
+    protected array|null $extractionMap = null;
     protected Config $config;
     protected FilterFactory $filterFactory;
     protected EntityManager $entityManager;
@@ -105,18 +105,18 @@ class Entity
     }
 
     /**
-     * An alias map is used to alias fields and associations using a
+     * An extraction map is used to alias fields and associations using a
      * naming strategy in the hydrator
      *
      * @return array<string, string>
      */
-    public function getAliasMap(): array
+    public function getExtractionMap(): array
     {
-        if ($this->aliasMap !== null) {
-            return $this->aliasMap;
+        if ($this->extractionMap !== null) {
+            return $this->extractionMap;
         }
 
-        $this->aliasMap = [];
+        $this->extractionMap = [];
 
         foreach ($this->metadata['fields'] as $fieldName => $fieldMetadata) {
             if (! isset($fieldMetadata['alias'])) {
@@ -124,14 +124,14 @@ class Entity
             }
 
             // Don't allow duplicate aliases
-            if (in_array($fieldMetadata['alias'], $this->aliasMap)) {
+            if (in_array($fieldMetadata['alias'], $this->extractionMap)) {
                 throw new Exception('Duplicate alias found for field ' . $fieldName);
             }
 
-            $this->aliasMap[$fieldName] = $fieldMetadata['alias'];
+            $this->extractionMap[$fieldName] = $fieldMetadata['alias'];
         }
 
-        return $this->aliasMap;
+        return $this->extractionMap;
     }
 
     /**
@@ -194,7 +194,7 @@ class Entity
                 continue;
             }
 
-            $fields[$this->getAliasMap()[$fieldName] ?? $fieldName] = [
+            $fields[$this->getExtractionMap()[$fieldName] ?? $fieldName] = [
                 'type' => $this->typeContainer
                     ->get($this->getmetadata()['fields'][$fieldName]['type']),
                 'description' => $this->metadata['fields'][$fieldName]['description'],
@@ -240,7 +240,7 @@ class Entity
             // Collections
             $targetEntity = $associationMetadata['targetEntity'];
 
-            $fields[$this->getAliasMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName) {
+            $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName) {
                 $entity    = $this->entityTypeContainer->get($targetEntity);
                 $shortName = $this->getTypeName() . '_' . ucwords($associationName);
 

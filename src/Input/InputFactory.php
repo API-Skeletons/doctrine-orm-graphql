@@ -83,7 +83,7 @@ class InputFactory
                 throw new Exception('Identifier ' . $fieldName . ' is an invalid input.');
             }
 
-            $alias = $targetEntity->getAliasMap()[$fieldName] ?? null;
+            $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
                 'name' => $alias ?? $fieldName,
@@ -116,7 +116,7 @@ class InputFactory
                 throw new Exception('Identifier ' . $fieldName . ' is an invalid input.');
             }
 
-            $alias = $targetEntity->getAliasMap()[$fieldName] ?? null;
+            $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
                 'name' => $alias ?? $fieldName,
@@ -141,7 +141,7 @@ class InputFactory
                 continue;
             }
 
-            $alias = $targetEntity->getAliasMap()[$fieldName] ?? null;
+            $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
                 'name' => $alias ?? $fieldName,
