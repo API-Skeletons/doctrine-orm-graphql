@@ -28,6 +28,7 @@ use League\Event\EventDispatcher;
 use function array_keys;
 use function array_merge;
 use function assert;
+use function count;
 use function in_array;
 use function ksort;
 use function ucwords;
@@ -112,7 +113,7 @@ class Entity
      */
     public function getExtractionMap(): array
     {
-        if ($this->extractionMap) {
+        if (count($this->extractionMap)) {
             return $this->extractionMap;
         }
 
