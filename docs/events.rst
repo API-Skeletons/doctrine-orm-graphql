@@ -39,7 +39,7 @@ In the code below, the event ``Artist::class . '.queryBuilder'`` will fire:
                     'filter' => $driver->filter(Artist::class),
                 ],
                 'resolve' => $driver->resolve(
-                    Artist::class, 
+                    Artist::class,
                     Artist::class . '.queryBuilder',
                 ),
             ],
@@ -95,7 +95,7 @@ the association if you assigned an event name in the attributes.
       #[GraphQL\Field]
       public $name;
 
-      #[GraphQL\Association(filterCriteriaEventName: self::class . '.performances.criteria')]
+      #[GraphQL\Association(criteriaEventName: self::class . '.performances.criteria')]
       public $performances;
   }
 
