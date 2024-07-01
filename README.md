@@ -57,7 +57,7 @@ Features
 * Pagination with the [GraphQL Complete Connection Model](https://graphql.org/learn/pagination/#complete-connection-model)
 * [Filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
 * [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries, entity types and more
-* [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html)
+* [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#group)
 
 
 Quick Start
