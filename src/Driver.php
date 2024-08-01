@@ -91,4 +91,21 @@ class Driver extends Container
     {
         return $this->get(Input\InputFactory::class)->get($entityClass, $requiredFields, $optionalFields);
     }
+
+    /**
+     * Return an array defining a GraphQL endpoint.
+     *
+     * @return mixed[]
+     */
+    public function completeConnection(string $id, string|null $eventName = null): array
+    {
+        return [
+            'type' => $this->connection($id),
+            'args' => [
+                'filter' => $this->filter($id),
+                'pagination' => $this->pagination(),
+            ],
+            'resolve' => $this->resolve($id, $eventName),
+        ];
+    }
 }

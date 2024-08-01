@@ -192,4 +192,28 @@ class DriverTest extends AbstractTest
 
         $this->assertInstanceOf(BooleanType::class, $driver->type('custom'));
     }
+
+    public function testCompleteConnection(): void
+    {
+        $driver = new Driver($this->getEntityManager());
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artist' => $driver->completeConnection(Artist::class),
+                ],
+            ]),
+        ]);
+
+        $query = '{
+            artist (filter: { name: { contains: "dead" } })
+                { edges { node { id name performances { edges { node { venue recordings { edges { node { source } } } } } } } } }
+        }';
+
+        $result = GraphQL::executeQuery($schema, $query);
+        $output = $result->toArray();
+
+        $this->assertEquals('Grateful Dead', $output['data']['artist']['edges'][0]['node']['name']);
+    }
 }
