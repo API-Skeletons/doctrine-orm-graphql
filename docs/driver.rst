@@ -8,6 +8,31 @@ It has many options and top-level functions are detailed here.
 Functions
 =========
 
+completeConnection()
+--------------------
+
+This is a short cut to using connection(), pagination(), resolve(), and filter().
+There are two parameters:
+
+1. Doctrine entity class name, required,
+2. queryBuilderEvent name, optional.
+
+  .. code-block:: php
+
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+
+    $driver = new Driver($this->getEntityManager());
+
+    $schema = new Schema([
+        'query' => new ObjectType([
+            'name' => 'query',
+            'fields' => [
+                'artists' => $driver->completeConnection(Artist::class),
+            ],
+        ]),
+    ]);
+
+
 connection(), pagination(), and resolve()
 -----------------------------------------
 

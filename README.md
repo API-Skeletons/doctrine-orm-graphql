@@ -113,14 +113,7 @@ $schema = new Schema([
     'query' => new ObjectType([
         'name' => 'query',
         'fields' => [
-            'artists' => [
-                'type' => $driver->connection(Artist::class),
-                'args' => [
-                    'filter' => $driver->filter(Artist::class),
-                    'pagination' => $driver->pagination(),
-                ],
-                'resolve' => $driver->resolve(Artist::class),
-            ],
+            'artists' => $driver->completeConnection(Artist::class),
         ],
     ]),
     'mutation' => new ObjectType([
@@ -218,23 +211,23 @@ Example
 
 ```gql
 {
-  artists ( 
-    filter: { 
-      name: { 
-        contains: "Dead" 
-      } 
-    } 
+  artists (
+    filter: {
+      name: {
+        contains: "Dead"
+      }
+    }
   ) {
     edges {
       node {
         id
         name
-        performances ( 
-          filter: { 
-            venue: { 
-              eq: "The Fillmore" 
-            } 
-          } 
+        performances (
+          filter: {
+            venue: {
+              eq: "The Fillmore"
+            }
+          }
         ) {
           edges {
             node {
