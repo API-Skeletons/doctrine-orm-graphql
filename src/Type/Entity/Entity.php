@@ -56,7 +56,7 @@ class Entity
     protected TypeContainer $typeContainer;
 
     /** @param mixed[] $params */
-    public function __construct(Container $container, string $typeName)
+    public function __construct(Container $container, string $typeName, private string|null $eventName = null)
     {
         assert($container instanceof Driver);
 
@@ -72,7 +72,7 @@ class Entity
 
         if (! isset($container->get('metadata')[$typeName])) {
             throw new Error(
-                'Entity ' . $typeName . ' is not mapped in the metadata',
+                'Entity ' . $typeName . ' is not mapped in the GraphQL metadata',
             );
         }
 
@@ -149,9 +149,14 @@ class Entity
         $fields = $this->addFields();
         $fields = array_merge($fields, $this->addAssociations());
 
+        $typeName = $this->getTypeName();
+        if ($this->eventName) {
+            $typeName .= '.' . $this->eventName;
+        }
+
         /** @var ArrayObject<'description'|'fields'|'name'|'resolveField', mixed> $arrayObject */
         $arrayObject = new ArrayObject([
-            'name' => $this->getTypeName(),
+            'name' => $typeName,
             'description' => $this->getDescription(),
             'fields' => static fn () => $fields,
             'resolveField' => $this->fieldResolver,
@@ -161,7 +166,7 @@ class Entity
          * Dispatch event to allow modifications to the ObjectType definition
          */
         $this->eventDispatcher->dispatch(
-            new EntityDefinition($arrayObject, $this->getEntityClass() . '.definition'),
+            new EntityDefinition($arrayObject, $this->eventName ??= $this->getEntityClass() . '.definition'),
         );
 
         /**

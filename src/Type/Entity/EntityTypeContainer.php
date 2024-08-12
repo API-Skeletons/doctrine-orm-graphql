@@ -33,15 +33,16 @@ class EntityTypeContainer extends Container
     /**
      * Create and return an Entity object
      */
-    public function get(string $id): mixed
+    public function get(string $id, string|null $eventName = null): mixed
     {
-        $key = strtolower($id);
+        // Allow for entities with a custom eventName
+        $key = strtolower($id . ($eventName ? '.' . $eventName : ''));
 
         if (isset($this->register[$key])) {
             return $this->register[$key];
         }
 
-        $this->set($key, new Entity($this->container, $id));
+        $this->set($key, new Entity($this->container, $id, $eventName));
 
         return $this->register[$key];
     }

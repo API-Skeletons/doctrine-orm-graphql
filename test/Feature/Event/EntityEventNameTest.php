@@ -21,17 +21,16 @@ use function count;
 use function uniqid;
 
 /**
- * This test uses both EventDefinition and QueryBuilderTest to add a new
- * field to an entity type and filter it.
+ * This tests custom event names when creating entity types
  */
-class EntityFilterTest extends AbstractTest
+class EntityEventNameTest extends AbstractTest
 {
     public function testEvent(): void
     {
         $driver = new Driver($this->getEntityManager());
 
         $driver->get(EventDispatcher::class)->subscribeTo(
-            Artist::class . '.definition',
+            Artist::class . '.customDefinitionEventName',
             static function (EntityDefinition $event): void {
                 $definition = $event->getDefinition();
 
@@ -73,7 +72,10 @@ class EntityFilterTest extends AbstractTest
                 'name' => 'query',
                 'fields' => [
                     'artists' => [
-                        'type' => $driver->connection(Artist::class),
+                        'type' => $driver->connection(
+                            Artist::class,
+                            Artist::class . '.customDefinitionEventName',
+                        ),
                         'args' => [
                             'filter' => $driver->filter(Artist::class),
                             'moreFilters' => new InputObjectType([

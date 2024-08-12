@@ -19,9 +19,9 @@ class Driver extends Container
      *
      * @throws Error
      */
-    public function connection(string $id): ObjectType
+    public function connection(string $id, string|null $eventName = null): ObjectType
     {
-        $objectType = $this->type($id);
+        $objectType = $this->type($id, $eventName);
 
         return $this->get(Type\TypeContainer::class)
             ->build(Type\Connection::class, $objectType->name, $objectType);
@@ -32,11 +32,11 @@ class Driver extends Container
      *
      * @throws Error
      */
-    public function type(string $id): mixed
+    public function type(string $id, string|null $eventName = null): mixed
     {
         $entityTypeContainer = $this->get(Type\Entity\EntityTypeContainer::class);
         if ($entityTypeContainer->has($id)) {
-            return $entityTypeContainer->get($id)->getObjectType();
+            return $entityTypeContainer->get($id, $eventName)->getObjectType();
         }
 
         $typeContainer = $this->get(Type\TypeContainer::class);
@@ -97,15 +97,18 @@ class Driver extends Container
      *
      * @return mixed[]
      */
-    public function completeConnection(string $id, string|null $eventName = null): array
-    {
+    public function completeConnection(
+        string $id,
+        string|null $entityDefinitionEventName = null,
+        string|null $resolveEventName = null,
+    ): array {
         return [
-            'type' => $this->connection($id),
+            'type' => $this->connection($id, $entityDefinitionEventName),
             'args' => [
                 'filter' => $this->filter($id),
                 'pagination' => $this->pagination(),
             ],
-            'resolve' => $this->resolve($id, $eventName),
+            'resolve' => $this->resolve($id, $resolveEventName),
         ];
     }
 }
