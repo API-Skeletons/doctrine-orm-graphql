@@ -17,7 +17,7 @@ If you need to install ``league/oauth2-server`` and ``api-skeletons/doctrine-orm
 you must use version 11 of this library.
 
 If you do not need to install ``league/oauth2-server`` and ``api-skeletons/doctrine-orm-graphql`` in the
-same project, you should use version 10 of this library.
+same project, you should use version 12 of this library.
 
 
 .. role:: raw-html(raw)
