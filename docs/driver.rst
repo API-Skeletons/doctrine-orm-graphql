@@ -12,10 +12,11 @@ completeConnection()
 --------------------
 
 This is a short cut to using connection(), pagination(), resolve(), and filter().
-There are two parameters:
+There are three parameters:
 
 1. Doctrine entity class name, required,
-2. queryBuilderEvent name, optional.
+2. entityDefinitionEvent name, optional.
+3. queryBuilderEvent name, optional.
 
   .. code-block:: php
 
@@ -39,6 +40,9 @@ connection(), pagination(), and resolve()
 The ``connection`` function returns a wrapper for an entity type.  This wrapper,
 in combination with the ``resolve`` and ``pagination`` functions, implements the
 `GraphQL Complete Connection Model <https://graphql.org/learn/pagination/#complete-connection-model>`_.
+You may pass a second parameter to the ``connection`` function to specify the
+custom event name to fire for the entity definition event.
+
 
   .. code-block:: php
 

@@ -123,8 +123,11 @@ You may modify the array used to define an entity type before it is created.
 This can be used for generated data and the like.  You must attach to events
 before defining your GraphQL schema.
 
-Events of this type are named ``Entity::class . '.definition'`` and the event
-name cannot be modified.
+Default Event Name
+------------------
+
+The default name for this event is ``Entity::class . '.definition'``.  All entity
+types for ``Entity::class`` will be affected by this event.
 
 .. code-block:: php
 
@@ -166,6 +169,20 @@ The ``EntityDefinition`` event has one function:
 
 A clever use of this event is to add a new field for related data and specify
 a custom QueryBuilder event in the ``$driver->resolve()`` function.
+
+
+Custom Event Name
+-----------------
+
+You may specify a custom event name for a specific entity type.  This is useful
+to create one-off entity objects that need special handling.  For instance, if you
+want to append a field to an entity for only a single query but not globally for
+all instances of the entity class.
+
+.. code-block:: php
+
+    $driver->type(Entity::class, Entity::class . '.entityDefinitionEvent');
+
 
 
 Manually change the Metadata
