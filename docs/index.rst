@@ -29,6 +29,7 @@ you'll see, there's a lot of customizable power built in too.
     types
     computed-fields
     events
+    extending-entity-types
     containers
     metadata
     strategies
