@@ -18,20 +18,22 @@ use function count;
 trait ExcludeFilters
 {
     /** @var Filters[] */
-    private array $includeFilters = [];
+    private readonly array $includeFilters;
 
     /** @var Filters[] */
-    private array $excludeFilters = [];
+    private readonly array $excludeFilters;
 
     /** @return Filters[] */
     public function getExcludeFilters(): array
     {
+        $filters = [];
+
         if (count($this->includeFilters) && count($this->excludeFilters)) {
             throw new Exception('includeFilters and excludeFilters are mutually exclusive.');
         }
 
         if (count($this->includeFilters)) {
-            $this->excludeFilters = array_udiff(
+            $filters = array_udiff(
                 Filters::cases(),
                 $this->includeFilters,
                 static function (Filters $a1, Filters $a2) {
@@ -39,7 +41,7 @@ trait ExcludeFilters
                 },
             );
         } elseif (count($this->excludeFilters)) {
-            $this->excludeFilters = array_uintersect(
+            $filters = array_uintersect(
                 Filters::cases(),
                 $this->excludeFilters,
                 static function (Filters $a1, Filters $a2) {
@@ -48,6 +50,6 @@ trait ExcludeFilters
             );
         }
 
-        return $this->excludeFilters;
+        return $filters;
     }
 }
