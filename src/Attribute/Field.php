@@ -11,7 +11,7 @@ use Attribute;
  * Attribute to describe a field for GraphQL
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
-final class Field
+final readonly class Field
 {
     use ExcludeFilters;
 

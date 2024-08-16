@@ -11,7 +11,7 @@ use Attribute;
  * Attribute to define an entity for GraphQL
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
-final class Entity
+final readonly class Entity
 {
     use ExcludeFilters;
 
