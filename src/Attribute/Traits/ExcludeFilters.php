@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
+namespace ApiSkeletons\Doctrine\ORM\GraphQL\Attribute\Traits;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use Exception;
