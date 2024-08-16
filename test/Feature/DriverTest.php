@@ -216,4 +216,14 @@ class DriverTest extends AbstractTest
 
         $this->assertEquals('Grateful Dead', $output['data']['artist']['edges'][0]['node']['name']);
     }
+
+    public function testCustomEntityIsRegisteredAsAType(): void
+    {
+        $driver = new Driver($this->getEntityManager());
+
+        $control = $driver->type(Artist::class, 'custom');
+        $test    = $driver->type(Artist::class, 'custom');
+
+        $this->assertSame($control, $test);
+    }
 }
