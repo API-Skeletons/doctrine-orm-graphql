@@ -20,11 +20,11 @@ final readonly class Entity
      * @param Filters[] $includeFilters
      */
     public function __construct(
-        private string $group = 'default',
-        private bool $byValue = true,
-        private int $limit = 0,
-        private string|null $description = null,
-        private string|null $typeName = null,
+        private readonly string $group = 'default',
+        private readonly bool $byValue = true,
+        private readonly int $limit = 0,
+        private readonly string|null $description = null,
+        private readonly string|null $typeName = null,
         array $excludeFilters = [],
         array $includeFilters = [],
     ) {

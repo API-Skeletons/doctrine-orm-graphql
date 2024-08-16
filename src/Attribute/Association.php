@@ -20,12 +20,12 @@ final readonly class Association
      * @param Filters[] $includeFilters
      */
     public function __construct(
-        private string $group = 'default',
-        private string|null $alias = null,
-        private string|null $description = null,
-        private int|null $limit = null,
-        private string|null $criteriaEventName = null,
-        private string|null $hydratorStrategy = null,
+        private readonly string $group = 'default',
+        private readonly string|null $alias = null,
+        private readonly string|null $description = null,
+        private readonly int|null $limit = null,
+        private readonly string|null $criteriaEventName = null,
+        private readonly string|null $hydratorStrategy = null,
         array $excludeFilters = [],
         array $includeFilters = [],
     ) {
