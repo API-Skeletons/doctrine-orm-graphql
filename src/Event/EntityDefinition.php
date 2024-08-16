@@ -15,8 +15,8 @@ class EntityDefinition implements
 {
     /** @param ArrayObject $definition<'description'|'fields'|'name'|'resolveField', mixed> */
     public function __construct(
-        protected ArrayObject $definition,
-        protected string $eventName,
+        protected readonly ArrayObject $definition,
+        protected readonly string $eventName,
     ) {
     }
 

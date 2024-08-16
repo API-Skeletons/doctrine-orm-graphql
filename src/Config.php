@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+use InvalidArgumentException;
+
+use function array_merge;
+use function property_exists;
 
 /**
  * This class is used for setting parameters when
@@ -17,7 +21,7 @@ class Config
      *             configurations within the same application or
      *             even within the same group of entities and Object Manager.
      */
-    protected string $group = 'default';
+    protected readonly string $group;
 
     /**
      * @var string|null The group is usually suffixed to GraphQL type names.
@@ -26,27 +30,27 @@ class Config
      *                  Be warned, using the same groupSuffix with two different
      *                  groups can cause collisions.
      */
-    protected string|null $groupSuffix = null;
+    protected readonly string|null $groupSuffix;
 
     /**
      * @var bool When set to true hydrator results will be cached for the
      *           duration of the request thereby saving multiple extracts for
      *           the same entity.
      */
-    protected bool $useHydratorCache = false;
+    protected readonly bool $useHydratorCache;
 
     /** @var int A hard limit for fetching any collection within the schema */
-    protected int $limit = 1000;
+    protected readonly int $limit;
 
     /**
      * @var bool When set to true all fields and all associations will be
      *           enabled.  This is best used as a development setting when
      *           the entities are subject to change.
      */
-    protected bool $globalEnable = false;
+    protected readonly bool $globalEnable;
 
     /** @var string[] An array of field names to ignore when using globalEnable. */
-    protected array $ignoreFields = [];
+    protected readonly array $ignoreFields;
 
     /**
      * @var bool|null When set to true, all entities will be extracted by value
@@ -54,46 +58,53 @@ class Config
      *                all hydrators will extract by reference.  This overrides
      *                per-entity attribute configuration.
      */
-    protected bool|null $globalByValue = null;
+    protected readonly bool|null $globalByValue;
 
     /**
      * @var string|null When set, the entityPrefix will be removed from each
      *                  type name.  This simplifies type names and makes reading
      *                  the GraphQL documentation easier.
      */
-    protected string|null $entityPrefix = null;
+    protected readonly string|null $entityPrefix;
 
     /**
      * @var bool|null When set to true entity fields will be
      *                sorted alphabetically
      */
-    protected bool|null $sortFields = null;
+    protected readonly bool|null $sortFields;
 
     /**
      * @var Filters[] An array of filters to exclude from
      *                available filters for all fields and
      *                associations in every entity
      */
-    protected array $excludeFilters = [];
+    protected readonly array $excludeFilters;
 
     /** @param mixed[] $config */
     public function __construct(array $config = [])
     {
-        /**
-         * Dynamic setters will fail for invalid settings and allow for
-         * validation of field types through setters
-         */
-        foreach ($config as $setting => $value) {
-            $setter = 'set' . $setting;
-            $this->$setter($value);
+        $default = [
+            'group' => 'default',
+            'groupSuffix' => null,
+            'useHydratorCache' => false,
+            'limit' => 1000,
+            'globalEnable' => false,
+            'ignoreFields' => [],
+            'globalByValue' => null,
+            'entityPrefix' => null,
+            'sortFields' => null,
+            'excludeFilters' => [],
+        ];
+
+        $mergedConfig = array_merge($default, $config);
+
+        foreach ($mergedConfig as $field => $value) {
+            if (! property_exists($this, $field)) {
+                throw new InvalidArgumentException('Invalid configuration setting: ' . $field);
+            }
+
+            $this->$field = $value;
         }
-    }
-
-    protected function setGroup(string $group): self
-    {
-        $this->group = $group;
-
-        return $this;
     }
 
     public function getGroup(): string
@@ -101,23 +112,9 @@ class Config
         return $this->group;
     }
 
-    protected function setGroupSuffix(string|null $groupSuffix): self
-    {
-        $this->groupSuffix = $groupSuffix;
-
-        return $this;
-    }
-
     public function getGroupSuffix(): string|null
     {
         return $this->groupSuffix;
-    }
-
-    protected function setUseHydratorCache(bool $useHydratorCache): self
-    {
-        $this->useHydratorCache = $useHydratorCache;
-
-        return $this;
     }
 
     public function getUseHydratorCache(): bool
@@ -125,36 +122,14 @@ class Config
         return $this->useHydratorCache;
     }
 
-    protected function setLimit(int $limit): self
-    {
-        $this->limit = $limit;
-
-        return $this;
-    }
-
     public function getLimit(): int
     {
         return $this->limit;
     }
 
-    protected function setGlobalEnable(bool $globalEnable): self
-    {
-        $this->globalEnable = $globalEnable;
-
-        return $this;
-    }
-
     public function getGlobalEnable(): bool
     {
         return $this->globalEnable;
-    }
-
-    /** @param string[] $ignoreFields */
-    protected function setIgnoreFields(array $ignoreFields): self
-    {
-        $this->ignoreFields = $ignoreFields;
-
-        return $this;
     }
 
     /** @return string[] */
@@ -163,23 +138,9 @@ class Config
         return $this->ignoreFields;
     }
 
-    protected function setGlobalByValue(bool|null $globalByValue): self
-    {
-        $this->globalByValue = $globalByValue;
-
-        return $this;
-    }
-
     public function getGlobalByValue(): bool|null
     {
         return $this->globalByValue;
-    }
-
-    protected function setEntityPrefix(string|null $entityPrefix): self
-    {
-        $this->entityPrefix = $entityPrefix;
-
-        return $this;
     }
 
     public function getEntityPrefix(): string|null
@@ -187,24 +148,9 @@ class Config
         return $this->entityPrefix;
     }
 
-    public function setSortFields(bool|null $sortFields): self
-    {
-        $this->sortFields = $sortFields;
-
-        return $this;
-    }
-
     public function getSortFields(): bool|null
     {
         return $this->sortFields;
-    }
-
-    /** @param Filters[] $excludeFilters */
-    public function setExcludeFilters(array $excludeFilters): self
-    {
-        $this->excludeFilters = $excludeFilters;
-
-        return $this;
     }
 
     /** @return Filters[] */

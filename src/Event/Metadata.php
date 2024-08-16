@@ -14,8 +14,8 @@ class Metadata implements
     HasEventName
 {
     public function __construct(
-        protected ArrayObject $metadata,
-        protected string $eventName,
+        protected readonly ArrayObject $metadata,
+        protected readonly string $eventName,
     ) {
     }
 
