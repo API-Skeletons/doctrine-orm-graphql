@@ -44,7 +44,7 @@ class Performance
     #[GraphQL\Field(group: 'CriteriaEvent')]
     #[GraphQL\Field(group: 'AttributeLimit')]
 
-    #[ORM\Column(type: "string", nullable: true)]
+    #[ORM\Column(type: 'string', nullable: true)]
     private string|null $venue = null;
 
     #[GraphQL\Field(description: 'City name')]
@@ -55,7 +55,7 @@ class Performance
     ])]
     #[GraphQL\Field(group: 'AttributeLimit')]
 
-    #[ORM\Column(type: "string", nullable: true)]
+    #[ORM\Column(type: 'string', nullable: true)]
     private string|null $city = null;
 
     #[GraphQL\Field(description: 'State name')]
@@ -63,14 +63,14 @@ class Performance
     #[GraphQL\Field(group: 'IncludeFiltersTest', excludeFilters: [
         Filters::EQ,
     ])]
-    #[ORM\Column(type: "string", nullable: true)]
+    #[ORM\Column(type: 'string', nullable: true)]
     private string|null $state = null;
 
     #[GraphQL\Field(description: 'Performance date')]
     #[GraphQL\Field(group: 'LimitTest')]
     #[GraphQL\Field(group: 'ExtractionMap', alias: 'date')]
 
-    #[ORM\Column(type: "datetime", nullable: false)]
+    #[ORM\Column(type: 'datetime', nullable: false)]
     private DateTime $performanceDate;
 
     #[GraphQL\Field(description: 'Primary key')]
@@ -81,23 +81,27 @@ class Performance
     #[GraphQL\Field(group: 'ExtractionMap', alias: 'key')]
 
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    #[ORM\GeneratedValue(strategy: "AUTO")]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
     /** @var Collection<id, Recording> */
     #[GraphQL\Association(description: 'Recordings by artist')]
     #[GraphQL\Association(group: 'IncludeFiltersTest', includeFilters: [Filters::CONTAINS])]
 
-    #[ORM\OneToMany(targetEntity: \ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording::class,
-            mappedBy: "performance")]
+    #[ORM\OneToMany(
+        targetEntity: Recording::class,
+        mappedBy: 'performance',
+    )]
     private Collection $recordings;
 
     #[GraphQL\Association(description: 'Artist entity')]
-    #[ORM\ManyToOne(targetEntity: \ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist::class,
-            inversedBy: "performances")]
+    #[ORM\ManyToOne(
+        targetEntity: Artist::class,
+        inversedBy: 'performances',
+    )]
 
-    #[ORM\JoinColumn(name: "artist_id", referencedColumnName: "id", nullable: false)]
+    #[ORM\JoinColumn(name: 'artist_id', referencedColumnName: 'id', nullable: false)]
     private Artist $artist;
 
     /**

@@ -33,14 +33,14 @@ class User
     #[GraphQL\Field(group: 'InputFactoryAliasTest', alias: 'nameAlias')]
     #[GraphQL\Field(group: 'StaticMetadata')]
 
-    #[ORM\Column(type: "string", nullable: false)]
+    #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
 
     #[GraphQL\Field(description: 'User email')]
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'InputFactoryAliasTest')]
 
-    #[ORM\Column(type: "string", nullable: false)]
+    #[ORM\Column(type: 'string', nullable: false)]
     private string $email;
 
     #[GraphQL\Field(description: 'User password')]
@@ -48,7 +48,7 @@ class User
 
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'InputFactoryAliasTest')]
-    #[ORM\Column(type: "string", nullable: false)]
+    #[ORM\Column(type: 'string', nullable: false)]
     private string $password;
 
     #[GraphQL\Field(description: 'Primary key')]
@@ -57,19 +57,21 @@ class User
     #[GraphQL\Field(group: 'InputFactoryAliasTest')]
 
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    #[ORM\GeneratedValue(strategy: "AUTO")]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
     /** @var Collection<id, Recording> */
     #[GraphQL\Association(description: 'Recordings')]
     #[GraphQL\Association(group: 'CustomFieldStrategyTest', hydratorStrategy: AssociationDefault::class)]
     #[GraphQL\Association(group: 'StaticMetadata', excludeFilters: [Filters::EQ])]
-    #[ORM\ManyToMany(targetEntity: \ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording::class,
-            inversedBy: "users")]
-    #[ORM\JoinTable(name: "RecordingToUser")]
-    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id", nullable: false)]
-    #[ORM\InverseJoinColumn(name: "recording_id", referencedColumnName: "id", nullable: false)]
+    #[ORM\ManyToMany(
+        targetEntity: Recording::class,
+        inversedBy: 'users',
+    )]
+    #[ORM\JoinTable(name: 'RecordingToUser')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\InverseJoinColumn(name: 'recording_id', referencedColumnName: 'id', nullable: false)]
     private Collection $recordings;
 
     /**

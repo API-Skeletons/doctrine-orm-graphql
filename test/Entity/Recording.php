@@ -23,27 +23,29 @@ class Recording
     #[GraphQL\Field(description: 'Entity Test Source', group: 'entityTest')]
     #[GraphQL\Field(group: 'CustomFieldStrategyTest')]
     #[GraphQL\Field(group: 'IncludeFiltersTest')]
-    #[ORM\Column(type: "text", nullable: false)]
+    #[ORM\Column(type: 'text', nullable: false)]
     private string $source;
 
     #[GraphQL\Field(description: 'Primary key')]
     #[GraphQL\Field(description: 'Entity Test ID', group: 'entityTest')]
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    #[ORM\GeneratedValue(strategy: "AUTO")]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
     #[GraphQL\Association(description: 'Performance entity')]
     #[GraphQL\Association(description: 'Entity Test Performance', group: 'entityTest')]
-    #[ORM\ManyToOne(targetEntity: \ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance::class,
-            inversedBy: "recordings")]
-    #[ORM\JoinColumn(name: "performance_id", referencedColumnName: "id", nullable: false)]
+    #[ORM\ManyToOne(
+        targetEntity: Performance::class,
+        inversedBy: 'recordings',
+    )]
+    #[ORM\JoinColumn(name: 'performance_id', referencedColumnName: 'id', nullable: false)]
     private Performance $performance;
 
     /** @var Collection<id, User> */
     #[GraphQL\Association(description: 'Users')]
     #[GraphQL\Association(description: 'Entity Test Users', group: 'entityTest')]
-    #[ORM\ManyToMany(targetEntity: \ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User::class, mappedBy: "recordings")]
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'recordings')]
     private Collection $users;
 
     /**

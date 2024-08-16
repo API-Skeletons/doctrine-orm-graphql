@@ -42,7 +42,7 @@ class Artist
     #[GraphQL\Field(group: 'ExtractionMap', alias: 'title')]
     #[GraphQL\Field(group: 'ExtractionMapDuplicate', alias: 'duplicate')]
 
-    #[ORM\Column(type: "string", nullable: false)]
+    #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
 
     #[GraphQL\Field(description: 'Primary key')]
@@ -54,8 +54,8 @@ class Artist
     #[GraphQL\Field(group: 'ExtractionMapDuplicate', alias: 'duplicate')]
 
     #[ORM\Id]
-    #[ORM\Column(type: "bigint")]
-    #[ORM\GeneratedValue(strategy: "AUTO")]
+    #[ORM\Column(type: 'bigint')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
     /** @var Collection<id, Performance> */
@@ -71,8 +71,10 @@ class Artist
     #[GraphQL\Association(group: 'AttributeLimit', limit: 3)]
     #[GraphQL\Association(group: 'ExtractionMap', alias: 'gigs')]
 
-    #[ORM\OneToMany(targetEntity: \ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance::class,
-            mappedBy: "artist")]
+    #[ORM\OneToMany(
+        targetEntity: Performance::class,
+        mappedBy: 'artist',
+    )]
     private Collection $performances;
 
     /**
