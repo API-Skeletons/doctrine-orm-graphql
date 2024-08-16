@@ -19,7 +19,7 @@ use function substr;
  */
 abstract class MetadataFactory
 {
-    protected Config $config;
+    protected readonly Config $config;
 
     protected function getDefaultStrategy(string|null $fieldType): string
     {

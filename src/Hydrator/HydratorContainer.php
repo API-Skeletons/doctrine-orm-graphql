@@ -23,8 +23,8 @@ use function in_array;
 class HydratorContainer extends Container
 {
     public function __construct(
-        protected EntityManager $entityManager,
-        protected EntityTypeContainer $entityTypeContainer,
+        protected readonly EntityManager $entityManager,
+        protected readonly EntityTypeContainer $entityTypeContainer,
     ) {
         // Register default strategies
         $this

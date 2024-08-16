@@ -16,7 +16,7 @@ use function uniqid;
  */
 class Between extends InputObjectType
 {
-    public function __construct(ScalarType|ListOfType $type)
+    public function __construct(readonly ScalarType|ListOfType $type)
     {
         $name = $type instanceof ScalarType ? $type->name() : uniqid();
 

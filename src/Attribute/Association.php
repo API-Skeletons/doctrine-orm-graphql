@@ -26,11 +26,9 @@ final class Association
         private readonly int|null $limit = null,
         private readonly string|null $criteriaEventName = null,
         private readonly string|null $hydratorStrategy = null,
-        array $excludeFilters = [],
-        array $includeFilters = [],
+        private readonly array $excludeFilters = [],
+        private readonly array $includeFilters = [],
     ) {
-        $this->includeFilters = $includeFilters;
-        $this->excludeFilters = $excludeFilters;
     }
 
     public function getAlias(): string|null

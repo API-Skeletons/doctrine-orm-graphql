@@ -22,9 +22,9 @@ final class GlobalEnable extends MetadataFactory
     private ArrayObject $metadata;
 
     public function __construct(
-        private EntityManager $entityManager,
-        protected Config $config,
-        protected EventDispatcher $eventDispatcher,
+        protected readonly EntityManager $entityManager,
+        protected readonly Config $config,
+        protected readonly EventDispatcher $eventDispatcher,
     ) {
         $this->metadata = new ArrayObject();
     }

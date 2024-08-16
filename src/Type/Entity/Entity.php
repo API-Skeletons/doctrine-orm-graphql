@@ -43,32 +43,35 @@ class Entity
     /** @var mixed[]  */
     protected array $metadata;
     /** @var array<string, string> */
-    protected array $extractionMap = [];
-    protected Config $config;
-    protected FilterFactory $filterFactory;
-    protected EntityManager $entityManager;
-    protected EntityTypeContainer $entityTypeContainer;
-    protected EventDispatcher $eventDispatcher;
-    protected FieldResolver $fieldResolver;
+    protected array $extractionMap        = [];
     protected ObjectType|null $objectType = null;
-    protected HydratorContainer $hydratorFactory;
-    protected ResolveCollectionFactory $collectionFactory;
-    protected TypeContainer $typeContainer;
+    protected readonly Config $config;
+    protected readonly EntityManager $entityManager;
+    protected readonly EntityTypeContainer $entityTypeContainer;
+    protected readonly EventDispatcher $eventDispatcher;
+    protected readonly FieldResolver $fieldResolver;
+    protected readonly FilterFactory $filterFactory;
+    protected readonly HydratorContainer $hydratorContainer;
+    protected readonly ResolveCollectionFactory $resolveCollectionFactory;
+    protected readonly TypeContainer $typeContainer;
 
     /** @param mixed[] $params */
-    public function __construct(Container $container, string $typeName, private string|null $eventName = null)
-    {
+    public function __construct(
+        Container $container,
+        string $typeName,
+        private string|null $eventName = null,
+    ) {
         assert($container instanceof Driver);
 
-        $this->collectionFactory   = $container->get(ResolveCollectionFactory::class);
-        $this->config              = $container->get(Config::class);
-        $this->entityManager       = $container->get(EntityManager::class);
-        $this->entityTypeContainer = $container->get(EntityTypeContainer::class);
-        $this->eventDispatcher     = $container->get(EventDispatcher::class);
-        $this->fieldResolver       = $container->get(FieldResolver::class);
-        $this->filterFactory       = $container->get(FilterFactory::class);
-        $this->hydratorFactory     = $container->get(HydratorContainer::class);
-        $this->typeContainer       = $container->get(TypeContainer::class);
+        $this->config                   = $container->get(Config::class);
+        $this->entityManager            = $container->get(EntityManager::class);
+        $this->entityTypeContainer      = $container->get(EntityTypeContainer::class);
+        $this->eventDispatcher          = $container->get(EventDispatcher::class);
+        $this->fieldResolver            = $container->get(FieldResolver::class);
+        $this->filterFactory            = $container->get(FilterFactory::class);
+        $this->hydratorContainer        = $container->get(HydratorContainer::class);
+        $this->resolveCollectionFactory = $container->get(ResolveCollectionFactory::class);
+        $this->typeContainer            = $container->get(TypeContainer::class);
 
         if (! isset($container->get('metadata')[$typeName])) {
             throw new Error(
@@ -81,7 +84,7 @@ class Entity
 
     public function getHydrator(): HydratorInterface
     {
-        return $this->hydratorFactory->get($this->getEntityClass());
+        return $this->hydratorContainer->get($this->getEntityClass());
     }
 
     public function getTypeName(): string
@@ -264,7 +267,7 @@ class Entity
                         'pagination' => $this->typeContainer->get('pagination'),
                     ],
                     'description' => $this->metadata['fields'][$associationName]['description'],
-                    'resolve' => $this->collectionFactory->get($entity),
+                    'resolve' => $this->resolveCollectionFactory->get($entity),
                 ];
             };
         }
