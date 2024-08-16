@@ -11,7 +11,7 @@ use Attribute;
  * Attribute to describe an association for GraphQL
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
-class Association
+final class Association
 {
     use ExcludeFilters;
 
