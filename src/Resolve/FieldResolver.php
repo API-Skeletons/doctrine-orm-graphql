@@ -36,7 +36,7 @@ class FieldResolver
     public function __invoke(mixed $source, mixed $args, mixed $context, ResolveInfo $info): mixed
     {
         assert(is_object($source), 'A non-object was passed to the FieldResolver.  '
-            . 'Verify you\'re wrapping your Doctrine GraohQL type() call in a connection.');
+            . 'Verify you\'re wrapping your Doctrine GraphQL type() call in a connection.');
 
         $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
 
