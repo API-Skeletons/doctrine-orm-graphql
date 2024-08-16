@@ -16,12 +16,12 @@ class QueryBuilder implements
 {
     /** @param mixed[] $args */
     public function __construct(
-        protected DoctrineQueryBuilder $queryBuilder,
-        protected string $eventName,
-        protected mixed $objectValue,
-        protected array $args,
-        protected mixed $context,
-        protected ResolveInfo $info,
+        protected readonly DoctrineQueryBuilder $queryBuilder,
+        protected readonly string $eventName,
+        protected readonly mixed $objectValue,
+        protected readonly array $args,
+        protected readonly mixed $context,
+        protected readonly ResolveInfo $info,
     ) {
     }
 

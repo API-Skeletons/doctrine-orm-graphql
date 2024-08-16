@@ -17,12 +17,12 @@ class Criteria implements
 {
     /** @param mixed[] $args */
     public function __construct(
-        protected DoctrineCriteria $criteria,
-        protected string $eventName,
-        protected mixed $objectValue,
-        protected array $args,
-        protected mixed $context,
-        protected ResolveInfo $info,
+        protected readonly DoctrineCriteria $criteria,
+        protected readonly string $eventName,
+        protected readonly mixed $objectValue,
+        protected readonly array $args,
+        protected readonly mixed $context,
+        protected readonly ResolveInfo $info,
     ) {
     }
 
