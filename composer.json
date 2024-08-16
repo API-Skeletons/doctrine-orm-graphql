@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "doctrine/orm": "^2.18 || ^3.0",
         "doctrine/doctrine-laminas-hydrator": "^3.2",
         "webonyx/graphql-php": "^v15.0",
