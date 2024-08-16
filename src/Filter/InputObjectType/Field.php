@@ -22,9 +22,9 @@ class Field extends InputObjectType
 {
     /** @param Filters[] $allowedFilters */
     public function __construct(
-        TypeContainer $typeContainer,
-        ScalarType|ListOfType $type,
-        array $allowedFilters,
+        readonly TypeContainer $typeContainer,
+        readonly ScalarType|ListOfType $type,
+        readonly array $allowedFilters,
     ) {
         /** @var array<string, array> $fields */
         $fields = [];

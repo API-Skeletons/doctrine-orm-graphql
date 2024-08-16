@@ -25,11 +25,9 @@ final class Field
         private readonly string|null $description = null,
         private readonly string|null $type = null,
         private readonly string|null $hydratorStrategy = null,
-        array $excludeFilters = [],
-        array $includeFilters = [],
+        private readonly array $excludeFilters = [],
+        private readonly array $includeFilters = [],
     ) {
-        $this->includeFilters = $includeFilters;
-        $this->excludeFilters = $excludeFilters;
     }
 
     public function getAlias(): string|null

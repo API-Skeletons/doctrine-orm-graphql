@@ -27,8 +27,8 @@ class FieldResolver
     private array $extractValues = [];
 
     public function __construct(
-        protected Config $config,
-        protected EntityTypeContainer $entityTypeContainer,
+        protected readonly Config $config,
+        protected readonly EntityTypeContainer $entityTypeContainer,
     ) {
     }
 

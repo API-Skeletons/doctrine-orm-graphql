@@ -32,13 +32,13 @@ use function in_array;
 class ResolveCollectionFactory
 {
     public function __construct(
-        protected EntityManager $entityManager,
-        protected Config $config,
-        protected FieldResolver $fieldResolver,
-        protected TypeContainer $typeContainer,
-        protected EntityTypeContainer $entityTypeContainer,
-        protected EventDispatcher $eventDispatcher,
-        protected ArrayObject $metadata,
+        protected readonly EntityManager $entityManager,
+        protected readonly Config $config,
+        protected readonly FieldResolver $fieldResolver,
+        protected readonly TypeContainer $typeContainer,
+        protected readonly EntityTypeContainer $entityTypeContainer,
+        protected readonly EventDispatcher $eventDispatcher,
+        protected readonly ArrayObject $metadata,
     ) {
     }
 

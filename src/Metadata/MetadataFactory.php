@@ -26,10 +26,10 @@ class MetadataFactory extends CommonMetadataFactory
 {
     public function __construct(
         protected ArrayObject $metadata,
-        protected EntityManager $entityManager,
-        protected Config $config,
-        protected GlobalEnable $globalEnable,
-        protected EventDispatcher $eventDispatcher,
+        protected readonly EntityManager $entityManager,
+        protected readonly Config $config,
+        protected readonly GlobalEnable $globalEnable,
+        protected readonly EventDispatcher $eventDispatcher,
     ) {
     }
 

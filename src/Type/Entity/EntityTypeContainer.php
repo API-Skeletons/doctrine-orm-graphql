@@ -17,7 +17,7 @@ use function strtolower;
 class EntityTypeContainer extends Container
 {
     public function __construct(
-        protected Container $container,
+        protected readonly Container $container,
     ) {
         assert($container instanceof Driver);
     }

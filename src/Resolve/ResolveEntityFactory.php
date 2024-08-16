@@ -25,10 +25,10 @@ use function base64_encode;
 class ResolveEntityFactory
 {
     public function __construct(
-        protected Config $config,
-        protected EntityManager $entityManager,
-        protected EventDispatcher $eventDispatcher,
-        protected ArrayObject $metadata,
+        protected readonly Config $config,
+        protected readonly EntityManager $entityManager,
+        protected readonly EventDispatcher $eventDispatcher,
+        protected readonly ArrayObject $metadata,
     ) {
     }
 

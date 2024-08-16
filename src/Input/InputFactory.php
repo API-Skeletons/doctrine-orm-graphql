@@ -24,10 +24,10 @@ use function uniqid;
 class InputFactory
 {
     public function __construct(
-        protected Config $config,
-        protected EntityManager $entityManager,
-        protected EntityTypeContainer $entityTypeContainer,
-        protected TypeContainer $typeContainer,
+        protected readonly Config $config,
+        protected readonly EntityManager $entityManager,
+        protected readonly EntityTypeContainer $entityTypeContainer,
+        protected readonly TypeContainer $typeContainer,
     ) {
     }
 

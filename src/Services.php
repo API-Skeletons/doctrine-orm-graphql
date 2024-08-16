@@ -17,13 +17,13 @@ use League\Event\EventDispatcher;
  */
 trait Services
 {
-    /** @param mixed[] $metadata */
+    /** @param mixed[] $metadataArray */
     public function __construct(
-        EntityManager $entityManager,
-        Config|null $config = null,
-        array $metadata = [],
+        readonly EntityManager $entityManager,
+        readonly Config|null $config = null,
+        readonly array $metadataArray = [],
     ) {
-        $metadata = new ArrayObject($metadata);
+        $metadata = new ArrayObject($metadataArray);
 
         $this
             ->set(EntityManager::class, $entityManager)

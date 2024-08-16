@@ -25,11 +25,9 @@ final class Entity
         private readonly int $limit = 0,
         private readonly string|null $description = null,
         private readonly string|null $typeName = null,
-        array $excludeFilters = [],
-        array $includeFilters = [],
+        private readonly array $excludeFilters = [],
+        private readonly array $includeFilters = [],
     ) {
-        $this->includeFilters = $includeFilters;
-        $this->excludeFilters = $excludeFilters;
     }
 
     public function getGroup(): string|null

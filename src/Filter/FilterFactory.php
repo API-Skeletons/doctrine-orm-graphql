@@ -36,10 +36,10 @@ use const SORT_REGULAR;
 class FilterFactory
 {
     public function __construct(
-        protected Config $config,
-        protected EntityManager $entityManager,
-        protected TypeContainer $typeContainer,
-        protected EventDispatcher $eventDispatcher,
+        protected readonly Config $config,
+        protected readonly EntityManager $entityManager,
+        protected readonly TypeContainer $typeContainer,
+        protected readonly EventDispatcher $eventDispatcher,
     ) {
     }
 
