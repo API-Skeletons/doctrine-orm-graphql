@@ -28,11 +28,11 @@ class HydratorContainer extends Container
     ) {
         // Register default strategies
         $this
-            ->set(Strategy\AssociationDefault::class, new Strategy\AssociationDefault())
-            ->set(Strategy\FieldDefault::class, new Strategy\FieldDefault())
-            ->set(Strategy\ToBoolean::class, new Strategy\ToBoolean())
-            ->set(Strategy\ToFloat::class, new Strategy\ToFloat())
-            ->set(Strategy\ToInteger::class, new Strategy\ToInteger());
+            ->set(Strategy\AssociationDefault::class, static fn () => new Strategy\AssociationDefault())
+            ->set(Strategy\FieldDefault::class, static fn () => new Strategy\FieldDefault())
+            ->set(Strategy\ToBoolean::class, static fn () => new Strategy\ToBoolean())
+            ->set(Strategy\ToFloat::class, static fn () => new Strategy\ToFloat())
+            ->set(Strategy\ToInteger::class, static fn () => new Strategy\ToInteger());
     }
 
     /** @throws Error */
