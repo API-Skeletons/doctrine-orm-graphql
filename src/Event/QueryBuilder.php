@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Traits\MagicGetter;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\HasEventName;
@@ -11,9 +12,11 @@ use League\Event\HasEventName;
 /**
  * This event is fired when the QueryBuilder is created for an entity
  */
-class QueryBuilder implements
+readonly class QueryBuilder implements
     HasEventName
 {
+    use MagicGetter;
+
     /** @param mixed[] $args */
     public function __construct(
         protected DoctrineQueryBuilder $queryBuilder,
@@ -28,31 +31,5 @@ class QueryBuilder implements
     public function eventName(): string
     {
         return $this->eventName;
-    }
-
-    public function getQueryBuilder(): DoctrineQueryBuilder
-    {
-        return $this->queryBuilder;
-    }
-
-    public function getObjectValue(): mixed
-    {
-        return $this->objectValue;
-    }
-
-    /** @return mixed[] */
-    public function getArgs(): array
-    {
-        return $this->args;
-    }
-
-    public function getContext(): mixed
-    {
-        return $this->context;
-    }
-
-    public function getInfo(): ResolveInfo
-    {
-        return $this->info;
     }
 }

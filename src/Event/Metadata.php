@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Traits\MagicGetter;
 use ArrayObject;
 use League\Event\HasEventName;
 
 /**
  * This event is fired when the metadta is created
  */
-class Metadata implements
+readonly class Metadata implements
     HasEventName
 {
+    use MagicGetter;
+
     public function __construct(
         protected ArrayObject $metadata,
         protected string $eventName,
@@ -22,10 +25,5 @@ class Metadata implements
     public function eventName(): string
     {
         return $this->eventName;
-    }
-
-    public function getMetadata(): ArrayObject
-    {
-        return $this->metadata;
     }
 }
