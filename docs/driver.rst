@@ -202,7 +202,7 @@ useHydratorCache
 ----------------
 
 When set to true hydrator results will be cached for
-the duration of the request thereby saving multiple extracts for
+the duration of the request thereby saving possible multiple extracts for
 the same entity.  Default is ``false``
 
 
