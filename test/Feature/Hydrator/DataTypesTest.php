@@ -48,7 +48,6 @@ class DataTypesTest extends AbstractTest
                         testArray
                         testBigint
                         testDecimal
-                        testGuid
                         testJson
                         testSimpleArray
                         testSmallInt

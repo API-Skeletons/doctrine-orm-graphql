@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<skipper version="3.3.5.1818" mvc="Without MVC" orm="Doctrine2" name="api-skeletons/doctrine-graphql" uuid="25d2b513-c6b7-4071-9ada-7c48f127f426">
-  <module name="\GraphQL Type Driver for Doctrine ORM" local-name="GraphQL Type Driver for Doctrine ORM" namespace="\ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity" local-namespace="\ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity" export-format="Doctrine2PhpAttributes" export-path="Entity2" uuid="d5f257f8-d854-4bae-a05d-1ed8673c7eb5">
+<skipper version="3.3.7.1828" mvc="Without MVC" orm="Doctrine2" name="api-skeletons/doctrine-graphql" uuid="25d2b513-c6b7-4071-9ada-7c48f127f426">
+  <module name="\GraphQL Type Driver for Doctrine ORM" local-name="GraphQL Type Driver for Doctrine ORM" namespace="\ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity" local-namespace="\ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity" export-format="Doctrine2PhpAttributes" export-path="Entity" uuid="d5f257f8-d854-4bae-a05d-1ed8673c7eb5">
     <entity name="\ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist" local-name="Artist" namespace="\ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity" uuid="10de66e4-a8b3-44a9-a6d0-a9fd28338fe2">
       <field name="id" type="bigint" required="true" unique="true" primary="true" auto-increment="true" uuid="9d8eb724-b4f3-414c-9d1a-48bd61008f33"/>
       <field name="name" type="string" required="true" uuid="b5bf5f02-5032-4637-9d89-af0c6748d4fc"/>
@@ -57,13 +57,11 @@
       <field name="testDateTimeTZ" type="datetimetz" required="true" uuid="76b8ed50-5f23-4ab3-8ff8-2df7cf75b1f9"/>
       <field name="testDateTimeTZImmutable" type="datetimetz_immutable" required="true" uuid="1c371482-28d8-4f0b-af0b-e85dfbe87985"/>
       <field name="testDecimal" type="decimal" required="true" uuid="4f9a79a2-1c8e-4cde-8912-316b3bfc5aec"/>
-      <field name="testGuid" type="guid" required="true" uuid="c39eb567-2943-4bb3-b78f-99dca8c9f0a7"/>
       <field name="testJson" type="json" required="true" uuid="70d73e7b-12e3-4053-8403-a5b463b5ad7d"/>
       <field name="testSimpleArray" type="simple_array" required="true" uuid="58f99f3e-3768-46b0-899e-a811c306aa7a"/>
       <field name="testSmallInt" type="smallint" required="true" uuid="3e059077-1378-465f-bb10-ac770cb7c43d"/>
       <field name="testTime" type="time" required="true" uuid="896263ba-5b4b-4e2f-b14d-29d4ae9aea26"/>
       <field name="testTimeImmutable" type="time_immutable" required="true" uuid="669be252-2f24-4b79-a6c8-f0f99ceafd8d"/>
-      <field name="testUuid" type="uuid" required="true" uuid="110b84cf-8291-4a08-a470-db240e123d6b"/>
       <field name="testBlob" type="blob" required="true" uuid="fa94834b-903c-40bf-b112-bb28f4fa5bbd"/>
     </entity>
     <comment caption="Author" description="Tom H Anderson&#10;API Skeletons&#10;&lt;contact@apiskeletons.com&gt;" uuid="0e4ff410-5025-42fd-89ae-0d05319ab49b"/>

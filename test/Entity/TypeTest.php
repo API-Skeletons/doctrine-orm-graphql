@@ -8,7 +8,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\UuidInterface;
 
 /**
  * TypeTest
@@ -26,120 +25,114 @@ class TypeTest
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[GraphQL\Field(group: 'BetweenTypeContainerTest')]
-    #[ORM\Column(type: 'integer', nullable: false)]
+    #[ORM\Column(type: "integer", nullable: false)]
     private int $testInt;
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[GraphQL\Field(group: 'BetweenTypeContainerTest', excludeFilters: [Filters::EQ])]
-    #[ORM\Column(type: 'integer', nullable: true)]
     private int $testInt2;
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'datetime', nullable: false)]
+    #[ORM\Column(type: "datetime", nullable: false)]
     private DateTime $testDateTime;
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[GraphQL\Field(group: 'CustomTypeTest', type: 'customType')]
-    #[ORM\Column(type: 'float', nullable: false)]
+    #[ORM\Column(type: "float", nullable: false)]
     private float $testFloat;
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'boolean', nullable: false)]
+    #[ORM\Column(type: "boolean", nullable: false)]
     private bool $testBool;
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'text', nullable: false)]
+    #[ORM\Column(type: "text", nullable: false)]
     private string $testText;
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[ORM\Id]
-    #[ORM\Column(type: 'bigint')]
-    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\Column(type: "bigint")]
+    #[ORM\GeneratedValue(strategy: "AUTO")]
     private int $id;
 
     /** @var mixed[] */
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'array', nullable: false)]
+    #[ORM\Column(type: "array", nullable: false)]
     private array $testArray = [];
 
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'bigint', nullable: false)]
+    #[ORM\Column(type: "bigint", nullable: false)]
     private string $testBigint;
 
     /**
      * @var DateTimeImmutable
      */
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'date_immutable', nullable: false)]
+    #[ORM\Column(type: "date_immutable", nullable: false)]
     private $testDateImmutable;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'date', nullable: false)]
+    #[ORM\Column(type: "date", nullable: false)]
     private DateTime $testDate;
 
     /**
      * @var DateTimeImmutable
      */
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'datetime_immutable', nullable: false)]
+    #[ORM\Column(type: "datetime_immutable", nullable: false)]
     private $testDateTimeImmutable;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'datetimetz', nullable: false)]
+    #[ORM\Column(type: "datetimetz", nullable: false)]
     private DateTime $testDateTimeTZ;
 
     /**
      * @var DateTimeImmutable
      */
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'datetimetz_immutable', nullable: false)]
+    #[ORM\Column(type: "datetimetz_immutable", nullable: false)]
     private $testDateTimeTZImmutable;
 
     /**
      * @var DateTimeImmutable
      */
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'time_immutable', nullable: false)]
+    #[ORM\Column(type: "time_immutable", nullable: false)]
     private $testTimeImmutable;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'time', nullable: false)]
+    #[ORM\Column(type: "time", nullable: false)]
     private DateTime $testTime;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: "decimal", nullable: false)]
     private float $testDecimal;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'guid', nullable: false)]
     private string $testGuid;
 
     /** @var mixed[] */
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'json', nullable: false)]
+    #[ORM\Column(type: "json", nullable: false)]
     private array $testJson;
 
     /** @var string[] */
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'simple_array', nullable: false)]
+    #[ORM\Column(type: "simple_array", nullable: false)]
     private array $testSimpleArray;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'smallint', nullable: false)]
+    #[ORM\Column(type: "smallint", nullable: false)]
     private int $testSmallInt;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'uuid', nullable: false)]
-    private UuidInterface $testUuid;
-
-    #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: 'blob', nullable: false)]
+    #[ORM\Column(type: "blob", nullable: false)]
     private mixed $testBlob;
 
     public function getTestBigint(): mixed
@@ -414,18 +407,6 @@ class TypeTest
     public function getId(): int
     {
         return $this->id;
-    }
-
-    public function getTestUuid(): UuidInterface
-    {
-        return $this->testUuid;
-    }
-
-    public function setTestUuid(UuidInterface $uuid): self
-    {
-        $this->testUuid = $uuid;
-
-        return $this;
     }
 
     public function getTestBlob(): mixed
