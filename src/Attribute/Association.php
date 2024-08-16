@@ -20,12 +20,12 @@ final class Association
      * @param Filters[] $includeFilters
      */
     public function __construct(
-        protected string $group = 'default',
-        protected string|null $alias = null,
-        protected string|null $description = null,
-        protected int|null $limit = null,
-        protected string|null $criteriaEventName = null,
-        protected string|null $hydratorStrategy = null,
+        private string $group = 'default',
+        private string|null $alias = null,
+        private string|null $description = null,
+        private int|null $limit = null,
+        private string|null $criteriaEventName = null,
+        private string|null $hydratorStrategy = null,
         array $excludeFilters = [],
         array $includeFilters = [],
     ) {

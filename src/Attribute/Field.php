@@ -20,11 +20,11 @@ final class Field
      * @param Filters[] $includeFilters
      */
     public function __construct(
-        protected string $group = 'default',
-        protected string|null $alias = null,
-        protected string|null $description = null,
-        protected string|null $type = null,
-        protected string|null $hydratorStrategy = null,
+        private string $group = 'default',
+        private string|null $alias = null,
+        private string|null $description = null,
+        private string|null $type = null,
+        private string|null $hydratorStrategy = null,
         array $excludeFilters = [],
         array $includeFilters = [],
     ) {

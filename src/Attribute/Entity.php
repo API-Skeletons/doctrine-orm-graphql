@@ -20,10 +20,10 @@ final class Entity
      * @param Filters[] $includeFilters
      */
     public function __construct(
-        protected string $group = 'default',
-        protected bool $byValue = true,
-        protected int $limit = 0,
-        protected string|null $description = null,
+        private string $group = 'default',
+        private bool $byValue = true,
+        private int $limit = 0,
+        private string|null $description = null,
         private string|null $typeName = null,
         array $excludeFilters = [],
         array $includeFilters = [],
