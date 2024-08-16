@@ -89,11 +89,17 @@ class Performance
     #[GraphQL\Association(description: 'Recordings by artist')]
     #[GraphQL\Association(group: 'IncludeFiltersTest', includeFilters: [Filters::CONTAINS])]
 
-    #[ORM\OneToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording', mappedBy: 'performance')]
+    #[ORM\OneToMany(
+        targetEntity: Recording::class,
+        mappedBy: 'performance',
+    )]
     private Collection $recordings;
 
     #[GraphQL\Association(description: 'Artist entity')]
-    #[ORM\ManyToOne(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist', inversedBy: 'performances')]
+    #[ORM\ManyToOne(
+        targetEntity: Artist::class,
+        inversedBy: 'performances',
+    )]
 
     #[ORM\JoinColumn(name: 'artist_id', referencedColumnName: 'id', nullable: false)]
     private Artist $artist;

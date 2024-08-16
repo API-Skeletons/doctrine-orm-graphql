@@ -65,7 +65,10 @@ class User
     #[GraphQL\Association(description: 'Recordings')]
     #[GraphQL\Association(group: 'CustomFieldStrategyTest', hydratorStrategy: AssociationDefault::class)]
     #[GraphQL\Association(group: 'StaticMetadata', excludeFilters: [Filters::EQ])]
-    #[ORM\ManyToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording', inversedBy: 'users')]
+    #[ORM\ManyToMany(
+        targetEntity: Recording::class,
+        inversedBy: 'users',
+    )]
     #[ORM\JoinTable(name: 'RecordingToUser')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     #[ORM\InverseJoinColumn(name: 'recording_id', referencedColumnName: 'id', nullable: false)]

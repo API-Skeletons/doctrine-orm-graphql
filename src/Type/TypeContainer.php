@@ -27,7 +27,6 @@ class TypeContainer extends Container
             ->set('text', static fn () => Type::string())
             ->set('array', static fn () => Type::listOf(Type::string()))
             ->set('simple_array', static fn () => Type::listOf(Type::string()))
-            ->set('guid', static fn () => Type::string())
             ->set('json', static fn () => new Json())
             ->set('date', static fn () => new Date())
             ->set('datetime', static fn () => new DateTime())
@@ -39,7 +38,6 @@ class TypeContainer extends Container
             ->set('time_immutable', static fn () => new TimeImmutable())
             ->set('pageinfo', static fn () => new PageInfo())
             ->set('pagination', static fn () => new Pagination())
-            ->set('uuid', static fn () => new Uuid())
             ->set('blob', static fn () => new Blob());
     }
 }

@@ -71,7 +71,10 @@ class Artist
     #[GraphQL\Association(group: 'AttributeLimit', limit: 3)]
     #[GraphQL\Association(group: 'ExtractionMap', alias: 'gigs')]
 
-    #[ORM\OneToMany(targetEntity: 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance', mappedBy: 'artist')]
+    #[ORM\OneToMany(
+        targetEntity: Performance::class,
+        mappedBy: 'artist',
+    )]
     private Collection $performances;
 
     /**
