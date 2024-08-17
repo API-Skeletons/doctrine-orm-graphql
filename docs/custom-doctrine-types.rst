@@ -9,6 +9,7 @@ you must create a custom type GraphQL scalar type and add it to the
 This example implements a Uuid type for ``ramsey/uuid-doctrine``.
 
   .. code-block:: php
+
     use GraphQL\Error\Error;
     use GraphQL\Language\AST\Node as ASTNode;
     use GraphQL\Language\AST\StringValueNode;
