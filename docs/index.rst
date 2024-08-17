@@ -34,6 +34,7 @@ you'll see, there's a lot of customizable power built in too.
     metadata
     strategies
     tips
+    custom-doctrine-types
     versions
     upgrade
     about
