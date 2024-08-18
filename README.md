@@ -36,8 +36,8 @@ Full documentation is available at https://doctrine-orm-graphql.apiskeletons.dev
 Versions
 --------
 
-* 12.0.x - Supports [league/event](https://github.com/thephpleague/event) version 3.0 and is PSR-14 compliant
-* 11.0.x - Supports [league/event](https://github.com/thephpleague/event) version 2.2
+* 12.x - Supports [league/event](https://github.com/thephpleague/event) version 3.0 and is PSR-14 compliant
+* 11.x - Supports [league/event](https://github.com/thephpleague/event) version 2.2
 
 More information [in the documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/versions.html).
 
