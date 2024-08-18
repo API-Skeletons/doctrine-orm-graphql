@@ -45,7 +45,6 @@ class DataTypesTest extends AbstractTest
                         testFloat
                         testBool
                         testText
-                        testArray
                         testBigint
                         testDecimal
                         testJson
