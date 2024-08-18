@@ -25,7 +25,6 @@ class TypeContainer extends Container
             ->set('bigint', static fn () => Type::string())
             ->set('string', static fn () => Type::string())
             ->set('text', static fn () => Type::string())
-            ->set('array', static fn () => Type::listOf(Type::string()))
             ->set('simple_array', static fn () => Type::listOf(Type::string()))
             ->set('json', static fn () => new Json())
             ->set('date', static fn () => new Date())

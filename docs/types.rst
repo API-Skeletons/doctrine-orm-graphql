@@ -18,9 +18,6 @@ Data Type Mappings
    * - GraphQL and Doctrine
      - PHP
      - Javascript
-   * - array
-     - array of strings
-     - array of strings
    * - bigint
      - string
      - integer or string

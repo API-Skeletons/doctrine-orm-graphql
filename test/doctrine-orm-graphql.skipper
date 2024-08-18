@@ -46,17 +46,26 @@
       <field name="id" type="bigint" required="true" unique="true" primary="true" auto-increment="true" uuid="7251363b-9632-45c9-be50-31ba60aa59ab"/>
       <field name="testInt" type="integer" required="true" uuid="91d5ac37-41cd-4522-816f-5c6fa7ae739b"/>
       <field name="testDateTime" type="datetime" required="true" uuid="b4803515-698a-4528-a92c-e5e953e3dbb9"/>
-      <field name="testFloat" type="float" required="true" uuid="2614b5af-4f1e-4ceb-a0d9-006dc7dc861e"/>
+      <field name="testFloat" type="float" required="true" uuid="2614b5af-4f1e-4ceb-a0d9-006dc7dc861e">
+        <orm-attributes>
+          <attribute name="scale">5</attribute>
+          <attribute name="precision">8</attribute>
+        </orm-attributes>
+      </field>
       <field name="testBool" type="boolean" required="true" uuid="25733635-da4c-47ff-91d9-89e62c1479c0"/>
       <field name="testText" type="text" required="true" uuid="91a00ff4-54db-49d0-8e9f-63105943cc75"/>
-      <field name="testArray" type="array" required="true" uuid="233c305b-3219-418c-b48b-0d3d2aff6b90"/>
       <field name="testBigint" type="bigint" required="true" uuid="3a2f1362-52d6-42d4-9d5a-57ce1736ba8e"/>
       <field name="testDate" type="date" required="true" uuid="fd6a69aa-945d-496d-95d2-6cd646aa42cf"/>
       <field name="testDateImmutable" type="date_immutable" required="true" uuid="75288b75-dbe8-4eac-bef0-5b8a1a05459c"/>
       <field name="testDateTimeImmutable" type="datetime_immutable" required="true" uuid="ee77aa83-cab9-4698-a690-627e0479ac1f"/>
       <field name="testDateTimeTZ" type="datetimetz" required="true" uuid="76b8ed50-5f23-4ab3-8ff8-2df7cf75b1f9"/>
       <field name="testDateTimeTZImmutable" type="datetimetz_immutable" required="true" uuid="1c371482-28d8-4f0b-af0b-e85dfbe87985"/>
-      <field name="testDecimal" type="decimal" required="true" uuid="4f9a79a2-1c8e-4cde-8912-316b3bfc5aec"/>
+      <field name="testDecimal" type="decimal" required="true" uuid="4f9a79a2-1c8e-4cde-8912-316b3bfc5aec">
+        <orm-attributes>
+          <attribute name="precision">8</attribute>
+          <attribute name="scale">5</attribute>
+        </orm-attributes>
+      </field>
       <field name="testJson" type="json" required="true" uuid="70d73e7b-12e3-4053-8403-a5b463b5ad7d"/>
       <field name="testSimpleArray" type="simple_array" required="true" uuid="58f99f3e-3768-46b0-899e-a811c306aa7a"/>
       <field name="testSmallInt" type="smallint" required="true" uuid="3e059077-1378-465f-bb10-ac770cb7c43d"/>

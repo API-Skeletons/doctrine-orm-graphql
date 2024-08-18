@@ -41,7 +41,7 @@ class TypeTest
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[GraphQL\Field(group: 'CustomTypeTest', type: 'customType')]
-    #[ORM\Column(type: "float", nullable: false)]
+    #[ORM\Column(type: "float", nullable: false, scale: 5, precision: 8)]
     private float $testFloat;
 
     #[GraphQL\Field]
@@ -63,7 +63,6 @@ class TypeTest
 
     /** @var mixed[] */
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: "array", nullable: false)]
     private array $testArray = [];
 
     #[GraphQL\Field(group: 'DataTypesTest')]
@@ -111,7 +110,7 @@ class TypeTest
     private DateTime $testTime;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[ORM\Column(type: "decimal", nullable: false)]
+    #[ORM\Column(type: "decimal", nullable: false, precision: 8, scale: 5)]
     private float $testDecimal;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
