@@ -87,8 +87,6 @@ Using Types
 You may use any of the above types freely such as a blob for an
 input type.
 
-To use a type you must fetch it from the TypeContainer.
-
 .. code-block:: php
 
     use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
@@ -115,6 +113,7 @@ To use a type you must fetch it from the TypeContainer.
             ],
         ]),
     ]);
+
 
 Custom Types
 ============

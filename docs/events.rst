@@ -131,10 +131,10 @@ The ``EntityDefinition`` event is dispatched when an entity type is created.
 The default name for this event is ``Entity::class . '.definition'``.  All entity
 types for ``Entity::class`` will be affected by this event.
 
-The ``$driver->type()`` method takes an optional event name parameter.
-When it is called with an event name, the event will be replace the default
+The ``$driver->type()`` method takes a second, optional, event name parameter.
+When it is called with an event name, the event will replace the default
 ``Entity::class . '.definition'`` dispatched when the
-entity type is created and the type name in GraphQL will be the entity name
+entity type is created.  The type name in GraphQL will be the entity name
 with the event name appended.
 
 .. code-block:: php

@@ -3,7 +3,7 @@ Custom Doctrine Types
 =====================
 
 To implement non-standard Doctrine types as GraphQL types,
-you must create a custom type GraphQL scalar type and add it to the
+you must implement ``GraphQL\Type\Definition\ScalarType`` and add it to the
 ``TypeContainer``.
 
 This example implements a Uuid type for ``ramsey/uuid-doctrine``.
