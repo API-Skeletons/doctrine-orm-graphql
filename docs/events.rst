@@ -123,11 +123,19 @@ You may modify the array used to define an entity type before it is created.
 This can be used for generated data and the like.  You must attach to events
 before defining your GraphQL schema.
 
-Default Event Name
-------------------
+There are two ways to extend an entity type.  You can extend an entity
+by listening to the ``EntityDefinition`` event.  You can extend an entity
+by creating a new entity type by using a custom event name to replace the default.
 
+The ``EntityDefinition`` event is dispatched when an entity type is created.
 The default name for this event is ``Entity::class . '.definition'``.  All entity
 types for ``Entity::class`` will be affected by this event.
+
+The ``$driver->type()`` method takes an optional event name parameter.
+When it is called with an event name, the event will be replace the default
+``Entity::class . '.definition'`` dispatched when the
+entity type is created and the type name in GraphQL will be the entity name
+with the event name appended.
 
 .. code-block:: php
 
@@ -174,9 +182,9 @@ a custom QueryBuilder event in the ``$driver->resolve()`` function.
 Custom Event Name
 -----------------
 
-You may specify a custom event name for a specific entity type.  This is useful
+You may specify a custom event name for a an entity type.  This is useful
 to create one-off entity objects that need special handling.  For instance, if you
-want to append a field to an entity for only a single query but not globally for
+want to append a field to an entity for only a single query, but not globally for
 all instances of the entity class.
 
 .. code-block:: php
