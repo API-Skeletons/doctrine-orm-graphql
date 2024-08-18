@@ -170,7 +170,6 @@ abstract class AbstractTest extends TestCase
             ->setTestFloat(3.14159265)
             ->setTestInt(12345)
             ->setTestText('Now is the time for all good men')
-            ->setTestArray(['test', 'doctrine', 'array'])
             ->setTestBigint('1234567890123')
             ->setTestDateTimeImmutable($immutableDateTime)
             ->setTestDate(new DateTime(date('Y-m-d')))
