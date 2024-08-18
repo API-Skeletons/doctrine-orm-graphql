@@ -61,10 +61,6 @@ class TypeTest
     #[ORM\GeneratedValue(strategy: "AUTO")]
     private int $id;
 
-    /** @var mixed[] */
-    #[GraphQL\Field(group: 'DataTypesTest')]
-    private array $testArray = [];
-
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[ORM\Column(type: "bigint", nullable: false)]
     private string $testBigint;
@@ -290,25 +286,6 @@ class TypeTest
         return $this;
     }
 
-    /**
-     * @param mixed[] $value
-     *
-     * @return $this
-     */
-    public function setTestArray(array $value): self
-    {
-        $this->testArray = $value;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed[]|null
-     */
-    public function getTestArray(): ?array
-    {
-        return $this->testArray;
-    }
 
     /**
      * Set testInt.
