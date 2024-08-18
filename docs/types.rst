@@ -54,9 +54,6 @@ Data Type Mappings
    * - float
      - float
      - float
-   * - guid
-     - string
-     - string
    * - int & integer
      - integer
      - integer
@@ -81,9 +78,6 @@ Data Type Mappings
    * - time_immutable
      - DateTimeImmutable
      - string as H:i:s or H:i:s.u
-   * - uuid
-     - Ramsey\\Uuid\\UuidInterface
-     - string
 
 See also `Doctrine Mapping Types <https://www.doctrine-project.org/projects/doctrine-orm/en/2.16/reference/basic-mapping.html#doctrine-mapping-types>`_.
 
