@@ -5,10 +5,8 @@ Just The Basics
 You will need a Doctrine object manager with entities configured with
 appropriate associations throughout.  Support for ad-hoc joins between
 entities is not supported (but you can use the EntityDefinition event
-in combination with the FilterQueryBuilder event to add a new field to
-a Type with such ad-hoc support).  Your Doctrine metadata must contain all the
-associations.  This requirement relates to the very basics of working in
-Doctrine.
+to add a custom type to an entity type).
+Your Doctrine metadata will map the associations in GraphQL.  
 
 There are some `config options <driver.html#config>`_ available but they are
 all optional.
@@ -42,7 +40,7 @@ entity manager
 
   $driver = new Driver($entityManager);
 
-The next step is configuring your GraphQL schema.  In this section we'll create
+Then configure your GraphQL schema.  In this section we'll create
 a connection for the entity, filters for the entity, and a resolver.
 
 .. code-block:: php
@@ -89,7 +87,7 @@ Now, using the schema, you can start making GraphQL queries
   $result = GraphQL::executeQuery($schema, $query);
 
 If you want to add an association you must set attributes on the target entity.
-In the following example the Artist entity has a one-to-many relationship with
+In the following example, the Artist entity has a one-to-many relationship with
 Performance and we want to make deeper queries from Artist to Performance.
 
 .. code-block:: php
@@ -150,8 +148,8 @@ attributes, a query of performances is now possible:
   $result = GraphQL::executeQuery($schema, $query);
 
 Keep reading to learn how to create multiple attribute groups, extract entities
-by reference or by value, cache attribute metadata, enable custom types,
-add documentation to every attribute, use aliases, and more.
+by reference or by value, cache attribute metadata, implement custom types,
+alias fields, and more.
 
 
 .. role:: raw-html(raw)
