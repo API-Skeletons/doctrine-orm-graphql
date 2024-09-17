@@ -153,7 +153,9 @@ A complete query for all pagination data:
   }
 
 Cursors are included with each edge.  A cursor is a base64 encoded
-offset from the beginning of the result set.
+offset from the beginning of the result set.  ``base64_encode('0');`` is 
+``MA==`` to use when creating a paginated query.
+
 
 Two pairs of parameters work with the query:
 
