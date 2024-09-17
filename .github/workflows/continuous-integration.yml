@@ -56,10 +56,10 @@ jobs:
         run: "vendor/bin/phpunit --coverage-clover=coverage.xml"
 
       - name: "Upload coverage file"
-        uses: "actions/upload-artifact@v4"
+        uses: "codecov/codecov-action@v4"
         with:
           name: "phpunit-${{ matrix.php-version }}-${{ matrix.dependencies }}-${{ matrix.dbal-version }}.coverage"
-          path: "coverage.xml"
+          files: "./coverage.xml"
 
   upload_coverage:
     name: "Upload coverage to Codecov"
