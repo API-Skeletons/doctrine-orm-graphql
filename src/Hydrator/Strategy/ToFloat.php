@@ -16,7 +16,6 @@ use function floatval;
 class ToFloat extends Collection implements
     StrategyInterface
 {
-    /** @param mixed|null $object */
     public function extract(mixed $value, object|null $object = null): mixed
     {
         if ($value === null) {
