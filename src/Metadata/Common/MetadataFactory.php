@@ -81,5 +81,9 @@ abstract class MetadataFactory
         return $entityClass;
     }
 
+    /**
+     * Because the Config class is not available in this class,
+     * this method must be implemented in the child class
+     */
     abstract protected function getConfig(): Config;
 }
