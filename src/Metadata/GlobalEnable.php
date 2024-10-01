@@ -29,7 +29,7 @@ final class GlobalEnable extends MetadataFactory
         $this->metadata = new ArrayObject();
     }
 
-    /** @param string[] $entityClasses */
+    /** @param class-string[] $entityClasses */
     public function __invoke(array $entityClasses): ArrayObject
     {
         foreach ($entityClasses as $entityClass) {
@@ -58,6 +58,7 @@ final class GlobalEnable extends MetadataFactory
         return $this->metadata;
     }
 
+    /** @param class-string $entityClass */
     private function buildFieldMetadata(string $entityClass): void
     {
         $entityClassMetadata = $this->entityManager->getMetadataFactory()->getMetadataFor($entityClass);
@@ -76,6 +77,7 @@ final class GlobalEnable extends MetadataFactory
         }
     }
 
+    /** @param class-string $entityClass */
     private function buildAssociationMetadata(string $entityClass): void
     {
         $entityClassMetadata = $this->entityManager->getMetadataFactory()->getMetadataFor($entityClass);

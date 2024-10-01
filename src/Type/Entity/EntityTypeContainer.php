@@ -44,6 +44,6 @@ class EntityTypeContainer extends Container
 
         $this->set($key, new Entity($this->container, $id, $eventName));
 
-        return $this->register[$key];
+        return $this->get($id, $eventName);
     }
 }
