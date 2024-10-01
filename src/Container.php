@@ -62,7 +62,6 @@ abstract class Container implements ContainerInterface
      * it must implement the Buildable interface.
      *
      * @param class-string $className
-     * @param mixed[]      $params
      *
      * @throws Error
      * @throws ReflectionException

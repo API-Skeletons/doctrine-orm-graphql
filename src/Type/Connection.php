@@ -18,7 +18,7 @@ class Connection extends ObjectType implements
     Buildable
 {
     /** @param mixed[] $params */
-    public function __construct(Container $container, string $typeName, array $params)
+    public function __construct(Container $container, string $typeName, mixed $params)
     {
         assert($params[0] instanceof ObjectType);
         $objectType = $params[0];

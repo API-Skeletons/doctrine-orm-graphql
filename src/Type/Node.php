@@ -18,7 +18,7 @@ class Node extends ObjectType implements
     Buildable
 {
     /** @param mixed[] $params */
-    public function __construct(Container $container, string $typeName, array $params)
+    public function __construct(Container $container, string $typeName, mixed $params)
     {
         assert($container instanceof TypeContainer);
         assert($params[0] instanceof ObjectType);
