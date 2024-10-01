@@ -55,7 +55,7 @@ class FilterFactory
         array|null $associationMetadata = null,
     ): GraphQLInputObjectType {
         $typeName = $owningEntity ?
-            'Filter_' . $owningEntity->getTypeName() . '_' . ucwords($associationName)
+            'Filter_' . $owningEntity->getTypeName() . '_' . ucwords((string) $associationName)
             : 'Filter_' . $targetEntity->getTypeName();
 
         if ($this->typeContainer->has($typeName)) {

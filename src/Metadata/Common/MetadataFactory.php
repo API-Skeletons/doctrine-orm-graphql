@@ -41,6 +41,8 @@ abstract class MetadataFactory
 
     /**
      * Compute the GraphQL type name
+     *
+     * @param class-string $entityClass
      */
     protected function getTypeName(string $entityClass): string
     {
@@ -49,16 +51,20 @@ abstract class MetadataFactory
 
     /**
      * Strip the configured entityPrefix from the type name
+     *
+     * @param class-string $entityClass
      */
     protected function stripEntityPrefix(string $entityClass): string
     {
+        $entityClassWithPrefix = $entityClass;
+
         if ($this->config->getEntityPrefix() !== null) {
-            if (strpos($entityClass, $this->config->getEntityPrefix()) === 0) {
-                $entityClass = substr($entityClass, strlen($this->config->getEntityPrefix()));
+            if (strpos($entityClass, (string) $this->config->getEntityPrefix()) === 0) {
+                $entityClassWithPrefix = substr($entityClass, strlen((string) $this->config->getEntityPrefix()));
             }
         }
 
-        return str_replace('\\', '_', $entityClass);
+        return str_replace('\\', '_', $entityClassWithPrefix);
     }
 
     /**

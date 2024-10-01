@@ -42,7 +42,7 @@
         "test": [
             "vendor/bin/parallel-lint ./src/ ./test",
             "vendor/bin/phpcs",
-            "vendor/bin/psalm", 
+            "vendor/bin/psalm",
             "vendor/bin/phpunit"
         ],
         "coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html=coverage"

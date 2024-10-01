@@ -103,6 +103,7 @@ class Entity
         return $this->metadata;
     }
 
+    /** @return class-string */
     public function getEntityClass(): string
     {
         return $this->metadata['entityClass'];

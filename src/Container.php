@@ -61,21 +61,23 @@ abstract class Container implements ContainerInterface
      * because it relies on the entity object type.  To create a custom buildable object type
      * it must implement the Buildable interface.
      *
-     * @param mixed[] $params
+     * @param class-string $className
+     * @param mixed[]      $params
      *
      * @throws Error
      * @throws ReflectionException
      */
-    public function build(string $typeClassName, string $typeName, mixed ...$params): mixed
+    public function build(string $className, string $typeName, mixed ...$params): mixed
     {
         if ($this->has($typeName)) {
             return $this->get($typeName);
         }
 
-        assert((new ReflectionClass($typeClassName))->implementsInterface(Buildable::class));
+        $reflectionClass = new ReflectionClass($className);
+        assert($reflectionClass->implementsInterface(Buildable::class));
 
         return $this
-            ->set($typeName, new $typeClassName($this, $typeName, $params))
+            ->set($typeName, new $className($this, $typeName, $params))
             ->get($typeName);
     }
 }
