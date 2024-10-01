@@ -20,6 +20,7 @@ class Node extends ObjectType implements
     /** @param mixed[] $params */
     public function __construct(Container $container, string $typeName, array $params)
     {
+        assert($container instanceof TypeContainer);
         assert($params[0] instanceof ObjectType);
 
         $configuration = [
