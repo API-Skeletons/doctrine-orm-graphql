@@ -55,7 +55,6 @@ class Entity
     protected readonly ResolveCollectionFactory $resolveCollectionFactory;
     protected readonly TypeContainer $typeContainer;
 
-    /** @param mixed[] $params */
     public function __construct(
         Container $container,
         string $typeName,

@@ -101,8 +101,7 @@ class FilterFactory
     /**
      * Add each field filters
      *
-     * @param Filters[]                          $allowedFilters
-     * @param array<int, GraphQLInputObjectType> $fields
+     * @param Filters[] $allowedFilters
      *
      * @return array<string, mixed[]>
      */
@@ -175,8 +174,7 @@ class FilterFactory
     /**
      * Some relationships have an `eq` filter for the id
      *
-     * @param Filters[]                          $allowedFilters
-     * @param array<int, GraphQLInputObjectType> $fields
+     * @param Filters[] $allowedFilters
      *
      * @return array<string, mixed[]>
      */
