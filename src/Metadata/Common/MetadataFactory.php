@@ -19,8 +19,6 @@ use function substr;
  */
 abstract class MetadataFactory
 {
-    protected readonly Config $config;
-
     protected function getDefaultStrategy(string|null $fieldType): string
     {
         // Set default strategy based on field type
@@ -58,9 +56,9 @@ abstract class MetadataFactory
     {
         $entityClassWithPrefix = $entityClass;
 
-        if ($this->config->getEntityPrefix() !== null) {
-            if (strpos($entityClass, (string) $this->config->getEntityPrefix()) === 0) {
-                $entityClassWithPrefix = substr($entityClass, strlen((string) $this->config->getEntityPrefix()));
+        if ($this->getConfig()->getEntityPrefix() !== null) {
+            if (strpos($entityClass, (string) $this->getConfig()->getEntityPrefix()) === 0) {
+                $entityClassWithPrefix = substr($entityClass, strlen((string) $this->getConfig()->getEntityPrefix()));
             }
         }
 
@@ -72,14 +70,16 @@ abstract class MetadataFactory
      */
     protected function appendGroupSuffix(string $entityClass): string
     {
-        if ($this->config->getGroupSuffix() !== null) {
-            if ($this->config->getGroupSuffix()) {
-                $entityClass .= '_' . $this->config->getGroupSuffix();
+        if ($this->getConfig()->getGroupSuffix() !== null) {
+            if ($this->getConfig()->getGroupSuffix()) {
+                $entityClass .= '_' . $this->getConfig()->getGroupSuffix();
             }
         } else {
-            $entityClass .= '_' . $this->config->getGroup();
+            $entityClass .= '_' . $this->getConfig()->getGroup();
         }
 
         return $entityClass;
     }
+
+    abstract protected function getConfig(): Config;
 }

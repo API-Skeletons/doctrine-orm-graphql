@@ -23,7 +23,8 @@
         "phpunit/phpunit": "^9.6",
         "vimeo/psalm": "^5.4",
         "symfony/cache": "^5.3||^6.2",
-        "php-parallel-lint/php-parallel-lint": "^1.3.2"
+        "php-parallel-lint/php-parallel-lint": "^1.3.2",
+        "phpstan/phpstan": "^1.12"
     },
     "suggest": {
         "ramsey/uuid-doctrine": "Support for an UUID Doctrine type"
@@ -43,6 +44,7 @@
             "vendor/bin/parallel-lint ./src/ ./test",
             "vendor/bin/phpcs",
             "vendor/bin/psalm",
+            "vendor/bin/phpstan analyze src --level=0",
             "vendor/bin/phpunit"
         ],
         "coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html=coverage"
