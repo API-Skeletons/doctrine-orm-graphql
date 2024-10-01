@@ -96,4 +96,9 @@ final class GlobalEnable extends MetadataFactory
             ];
         }
     }
+
+    protected function getConfig(): Config
+    {
+        return $this->config;
+    }
 }

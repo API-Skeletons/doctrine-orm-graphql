@@ -204,4 +204,9 @@ class MetadataFactory extends CommonMetadataFactory
             }
         }
     }
+
+    protected function getConfig(): Config
+    {
+        return $this->config;
+    }
 }

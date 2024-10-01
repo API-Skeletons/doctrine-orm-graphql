@@ -102,9 +102,19 @@ class Config
             if (! property_exists($this, $field)) {
                 throw new InvalidArgumentException('Invalid configuration setting: ' . $field);
             }
-
-            $this->$field = $value;
         }
+
+        // Assigning properties explicitly is phpstan friendly
+        $this->group            = $mergedConfig['group'];
+        $this->groupSuffix      = $mergedConfig['groupSuffix'];
+        $this->useHydratorCache = $mergedConfig['useHydratorCache'];
+        $this->limit            = $mergedConfig['limit'];
+        $this->globalEnable     = $mergedConfig['globalEnable'];
+        $this->ignoreFields     = $mergedConfig['ignoreFields'];
+        $this->globalByValue    = $mergedConfig['globalByValue'];
+        $this->entityPrefix     = $mergedConfig['entityPrefix'];
+        $this->sortFields       = $mergedConfig['sortFields'];
+        $this->excludeFilters   = $mergedConfig['excludeFilters'];
     }
 
     public function getGroup(): string
