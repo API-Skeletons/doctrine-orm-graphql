@@ -7,12 +7,12 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
+use Doctrine\Persistence\Proxy;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 
 use function assert;
 use function is_object;
-use function method_exists;
 use function spl_object_hash;
 
 /**
@@ -40,10 +40,8 @@ class FieldResolver
             . 'Verify you\'re wrapping your Doctrine GraphQL type() call in a connection.');
 
         // Proxy objects cannot hydrate by reference without loading
-        if (method_exists($source, '__load')) {
-            // @codeCoverageIgnoreStart
+        if ($source instanceof Proxy) {
             $source->__load();
-            // @codeCoverageIgnoreEnd
         }
 
         $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
