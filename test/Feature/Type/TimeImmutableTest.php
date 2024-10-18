@@ -89,7 +89,6 @@ class TimeImmutableTest extends AbstractTest
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
-        print_r($data);die();
 
         $this->assertEquals(1, count($data['typetest']['edges']));
         $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);

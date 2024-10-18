@@ -22,7 +22,7 @@ class TimeImmutable extends ScalarType
     public string|null $description = 'The `Time` scalar type represents time data.'
     . 'The format is e.g. 24 hour:minutes:seconds';
 
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTime|false
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -31,16 +31,7 @@ class TimeImmutable extends ScalarType
 
         // @codeCoverageIgnoreEnd
 
-        if (! preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])(\.\d{1,6})?$/', $valueNode->value)) {
-            throw new Error('Time ' . $valueNode->value . ' format does not match H:i:s.u e.g. 13:34:40.867530');
-        }
-
-        // If time does not have milliseconds, parse without
-        if (preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])$/', $valueNode->value)) {
-            return PHPDateTime::createFromFormat('H:i:s', $valueNode->value);
-        }
-
-        return PHPDateTime::createFromFormat('H:i:s.u', $valueNode->value);
+        return $valueNode->value;
     }
 
     public function parseValue(mixed $value): PHPDateTime|false
