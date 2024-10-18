@@ -28,15 +28,8 @@ class Json extends ScalarType
             throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
+        return $valueNode->value;
         // @codeCoverageIgnoreEnd
-
-        $data = json_decode($valueNode->value, true);
-
-        if (! $data) {
-            throw new Error('Could not parse JSON data');
-        }
-
-        return $data;
     }
 
     /**
