@@ -21,7 +21,7 @@ class Date extends ScalarType
     public string|null $description = 'The `Date` scalar type represents datetime data.'
     . 'The format is e.g. 2004-02-12.';
 
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): DateTime|null
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -30,7 +30,11 @@ class Date extends ScalarType
 
         // @codeCoverageIgnoreEnd
 
-        return $valueNode->value;
+        if (! preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $valueNode->value)) {
+            throw new Error('Date format does not match Y-m-d e.g. 2004-02-12.');
+        }
+
+        return DateTime::createFromFormat(DateTime::ATOM, $valueNode->value . 'T00:00:00+00:00');
     }
 
     public function parseValue(mixed $value): DateTime

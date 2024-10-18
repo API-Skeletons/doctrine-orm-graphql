@@ -21,7 +21,7 @@ class DateTimeImmutable extends ScalarType
     public string|null $description = 'The `datetime_immutable` scalar type represents datetime data.'
     . 'The format is ISO-8601 e.g. 2004-02-12T15:19:21+00:00';
 
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTimeImmutable|null
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -30,7 +30,17 @@ class DateTimeImmutable extends ScalarType
 
         // @codeCoverageIgnoreEnd
 
-        return $valueNode->value;
+        if (! $valueNode->value) {
+            return null;
+        }
+
+        $data = PHPDateTimeImmutable::createFromFormat(PHPDateTimeImmutable::ATOM, $valueNode->value);
+
+        if ($data === false) {
+            throw new Error('datetime format does not match ISO 8601.');
+        }
+
+        return $data;
     }
 
     public function parseValue(mixed $value): PHPDateTimeImmutable
