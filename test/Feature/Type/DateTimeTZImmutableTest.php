@@ -12,6 +12,7 @@ use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use DateTime;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
+use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
@@ -42,6 +43,26 @@ class DateTimeTZImmutableTest extends AbstractTest
 
         $dateType = new DateTimeType();
         $result   = $dateType->parseValue('03/01/2020');
+    }
+
+    public function testParseLiteralNull(): void
+    {
+        $dateTimeType = new DateTimeType();
+        $node         = new StringValueNode([]);
+        $node->value  = '';
+        $result       = $dateTimeType->parseLiteral($node);
+
+        $this->AssertNull($result);
+    }
+
+    public function testParseLiteralInvalid(): void
+    {
+        $this->expectException(Error::class);
+
+        $dateTimeType = new DateTimeType();
+        $node         = new StringValueNode([]);
+        $node->value  = '03/01/2020';
+        $result       = $dateTimeType->parseLiteral($node);
     }
 
     public function testBetween(): void
