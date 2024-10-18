@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
+use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
 use function base64_decode;
@@ -23,7 +24,14 @@ class Blob extends ScalarType
 
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
-        throw new Error('Blob fields cannot be parsed literally.', $valueNode);
+        // @codeCoverageIgnoreStart
+        if (! $valueNode instanceof StringValueNode) {
+            throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
+        }
+
+        // @codeCoverageIgnoreEnd
+
+        return $this->parseValue($valueNode->value);
     }
 
     public function parseValue(mixed $value): mixed
