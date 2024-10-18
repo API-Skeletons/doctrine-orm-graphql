@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
+use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
 use function base64_decode;
@@ -21,9 +22,22 @@ class Blob extends ScalarType
 {
     public string|null $description = 'A binary file base64 encoded.';
 
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): mixed
     {
-        throw new Error('Blob fields are not searchable', $valueNode);
+        // @codeCoverageIgnoreStart
+        if (! $valueNode instanceof StringValueNode) {
+            throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
+        }
+
+        // @codeCoverageIgnoreEnd
+
+        $data = base64_decode($valueNode->value, true);
+
+        if ($data === false) {
+            throw new Error('Blob field contains non-base64 encoded characters');
+        }
+
+        return $data;
     }
 
     public function parseValue(mixed $value): mixed

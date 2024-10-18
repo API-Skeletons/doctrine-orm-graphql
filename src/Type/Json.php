@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
+use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
 use function is_string;
@@ -22,7 +23,20 @@ class Json extends ScalarType
 
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
-        throw new Error('JSON fields are not searchable', $valueNode);
+        // @codeCoverageIgnoreStart
+        if (! $valueNode instanceof StringValueNode) {
+            throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
+        }
+
+        // @codeCoverageIgnoreEnd
+
+        $data = json_decode($valueNode->value, true);
+
+        if (! $data) {
+            throw new Error('Could not parse JSON data');
+        }
+
+        return $data;
     }
 
     /**
