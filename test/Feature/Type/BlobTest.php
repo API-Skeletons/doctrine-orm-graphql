@@ -55,12 +55,15 @@ class BlobTest extends AbstractTest
 
     public function testParseLiteral(): void
     {
-        $this->expectException(Error::class);
+        $jsonType = new Blob();
+        $file     = file_get_contents(__DIR__ . '/../../../docs/banner.png');
+        $encoded  = base64_encode($file);
 
-        $jsonType    = new Blob();
         $node        = new StringValueNode([]);
-        $node->value = 'search string';
+        $node->value = $encoded;
         $result      = $jsonType->parseLiteral($node);
+
+        $this->assertEquals($file, $result);
     }
 
     public function testSerialize(): void
