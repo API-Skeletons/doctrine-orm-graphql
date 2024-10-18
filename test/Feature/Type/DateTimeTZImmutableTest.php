@@ -45,16 +45,6 @@ class DateTimeTZImmutableTest extends AbstractTest
         $result   = $dateType->parseValue('03/01/2020');
     }
 
-    public function testParseLiteralNull(): void
-    {
-        $dateTimeType = new DateTimeType();
-        $node         = new StringValueNode([]);
-        $node->value  = '';
-        $result       = $dateTimeType->parseLiteral($node);
-
-        $this->AssertNull($result);
-    }
-
     public function testParseLiteralInvalid(): void
     {
         $this->expectException(Error::class);

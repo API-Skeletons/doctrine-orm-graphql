@@ -21,7 +21,7 @@ class DateTimeTZ extends ScalarType
     public string|null $description = 'The `datetimetz` scalar type represents datetime data.'
     . 'The format is ISO-8601 e.g. 2004-02-12T15:19:21+00:00.';
 
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTimeTZ|null
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTimeTZ
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -30,17 +30,7 @@ class DateTimeTZ extends ScalarType
 
         // @codeCoverageIgnoreEnd
 
-        if (! $valueNode->value) {
-            return null;
-        }
-
-        $data = PHPDateTimeTZ::createFromFormat(PHPDateTimeTZ::ATOM, $valueNode->value);
-
-        if ($data === false) {
-            throw new Error('datetimetz format does not match ISO 8601.');
-        }
-
-        return $data;
+        return $this->parseValue($valueNode->value);
     }
 
     public function parseValue(mixed $value): PHPDateTimeTZ
