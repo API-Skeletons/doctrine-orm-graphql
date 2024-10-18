@@ -37,7 +37,7 @@ class DateTimeTZImmutable extends ScalarType
         $data = PHPDateTimeTZImmutable::createFromFormat(PHPDateTimeTZImmutable::ATOM, $valueNode->value);
 
         if ($data === false) {
-            throw new Error('datetimetz_immutable format does not match ISO 8601.');
+            throw new Error('datetimetz_immutable format does not match ISO 8601.  ' . $valueNode->value);
         }
 
         return $data;
