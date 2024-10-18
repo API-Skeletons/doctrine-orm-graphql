@@ -21,7 +21,7 @@ class DateTime extends ScalarType
     public string|null $description = 'The `datetime` scalar type represents datetime data.'
     . 'The format is ISO-8601 e.g. 2004-02-12T15:19:21+00:00.';
 
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTime|null
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTime
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -30,17 +30,7 @@ class DateTime extends ScalarType
 
         // @codeCoverageIgnoreEnd
 
-        if (! $valueNode->value) {
-            return null;
-        }
-
-        $data = PHPDateTime::createFromFormat(PHPDateTime::ATOM, $valueNode->value);
-
-        if ($data === false) {
-            throw new Error('datetime format does not match ISO 8601.');
-        }
-
-        return $data;
+        return $this->parseValue($valueNode->value);
     }
 
     public function parseValue(mixed $value): PHPDateTime

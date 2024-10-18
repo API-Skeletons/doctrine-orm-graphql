@@ -21,7 +21,7 @@ class DateTimeTZImmutable extends ScalarType
     public string|null $description = 'The `datetimetz_immutable` scalar type represents datetime data.'
     . 'The format is ISO-8601 e.g. 2004-02-12T15:19:21+00:00';
 
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTimeTZImmutable|null
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTimeTZImmutable
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -30,20 +30,10 @@ class DateTimeTZImmutable extends ScalarType
 
         // @codeCoverageIgnoreEnd
 
-        if (! $valueNode->value) {
-            return null;
-        }
-
-        $data = PHPDateTimeTZImmutable::createFromFormat(PHPDateTimeTZImmutable::ATOM, $valueNode->value);
-
-        if ($data === false) {
-            throw new Error('datetimetz_immutable format does not match ISO 8601.  ' . $valueNode->value);
-        }
-
-        return $data;
+        return $this->parseValue($valueNode->value);
     }
 
-    public function parseValue(mixed $value): PHPDateTimeTZImmutable|false
+    public function parseValue(mixed $value): PHPDateTimeTZImmutable
     {
         if (! is_string($value)) {
             throw new Error('datetimetz_immutable is not a string: ' . $value);
