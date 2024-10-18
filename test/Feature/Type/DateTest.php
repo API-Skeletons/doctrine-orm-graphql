@@ -157,4 +157,46 @@ class DateTest extends AbstractTest
         $this->assertEquals(1, count($data['typetest']['edges']));
         $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
     }
+
+    public function testInvalidLiteralValue(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'typetest' => [
+                        'type' => $driver->connection(TypeTest::class),
+                        'args' => [
+                            'filter' => $driver->filter(TypeTest::class),
+                        ],
+                        'resolve' => $driver->resolve(TypeTest::class),
+                    ],
+                ],
+            ]),
+        ]);
+
+        $now    = (new PHPDateTime())->format('Y-m-d');
+        $query  = '
+          {
+            typetest (
+              filter: {
+                testDate: {
+                  between: { from: "22-08-06" to: "' . $now . '" }
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                  testDateImmutable
+                }
+              }
+            }
+          }
+        ';
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $this->assertEquals('Date format does not match Y-m-d e.g. 2004-02-12.', $result->toArray()['errors'][0]['message']);
+    }
 }
