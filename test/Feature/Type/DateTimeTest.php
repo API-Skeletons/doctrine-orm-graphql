@@ -6,7 +6,6 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Blob;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateTime as DateTimeType;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;

@@ -64,6 +64,7 @@ class DateTimeImmutableTest extends AbstractTest
         $node->value  = 'invalid';
         $result       = $dateTimeType->parseLiteral($node);
     }
+
     public function testBetween(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));
