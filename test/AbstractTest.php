@@ -177,7 +177,7 @@ abstract class AbstractTest extends TestCase
             ->setTestDateTimeTZ(new DateTime())
             ->setTestDateTimeTZImmutable($immutableDateTime)
             ->setTestDecimal(314.15)
-            ->setTestJson(['to' => 'json', ['test' => 'testing']])
+            ->setTestJson(['to' => 'json', 'embedded' => ['test' => 'testing']])
             ->setTestSimpleArray(['one', 'two', 'three'])
             ->setTestSmallInt(123)
             ->setTestTime(new DateTime('2022-08-07T20:10:15.123456'))
