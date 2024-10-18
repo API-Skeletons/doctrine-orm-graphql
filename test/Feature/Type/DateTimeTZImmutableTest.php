@@ -62,8 +62,11 @@ class DateTimeTZImmutableTest extends AbstractTest
             ]),
         ]);
 
-        $now    = (new DateTime())->format('Y-m-d');
-        $query  = '{ typetest ( filter: { testDateTimeTZImmutable: { between: { from: "2022-08-06" to: "' . $now . '" } } } ) { edges { node { id testDateTimeTZImmutable } } } }';
+        $now    = (new DateTime())->format('Y-m-d\TH:i:s\Z');
+        $query  = '{
+          typetest ( filter: {
+            testDateTimeTZImmutable: { between: { from: "2022-08-06T00:00:00Z" to: "' . $now . '" } }
+          } ) { edges { node { id testDateTimeTZImmutable } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];

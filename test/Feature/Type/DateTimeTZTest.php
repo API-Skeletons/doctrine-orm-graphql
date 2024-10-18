@@ -60,8 +60,8 @@ class DateTimeTZTest extends AbstractTest
             ]),
         ]);
 
-        $now    = (new DateTime())->format('Y-m-d');
-        $query  = '{ typetest ( filter: { testDateTimeTZ: { between: { from: "2022-08-06" to: "' . $now . '" } } } ) { edges { node { id testDateTimeTZ } } } }';
+        $now    = (new DateTime())->format('Y-m-d\TH:i:s\Z');
+        $query  = '{ typetest ( filter: { testDateTimeTZ: { between: { from: "2022-08-06T00:00:00Z" to: "' . $now . '" } } } ) { edges { node { id testDateTimeTZ } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
