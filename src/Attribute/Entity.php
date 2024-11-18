@@ -30,7 +30,7 @@ final class Entity
     ) {
     }
 
-    public function getGroup(): string|null
+    public function getGroup(): string
     {
         return $this->group;
     }
