@@ -59,8 +59,8 @@ class InputFactory
     }
 
     /**
-     * @param string[]                     $optionalFields
-     * @param array<int, InputObjectField> $fields
+     * @param string[]                            $optionalFields
+     * @param array<int|string, InputObjectField> $fields
      */
     protected function addOptionalFields(
         mixed $targetEntity,
@@ -94,8 +94,8 @@ class InputFactory
     }
 
     /**
-     * @param string[]                     $requiredFields
-     * @param array<int, InputObjectField> $fields
+     * @param string[]                            $requiredFields
+     * @param array<int|string, InputObjectField> $fields
      */
     protected function addRequiredFields(
         mixed $targetEntity,
@@ -128,7 +128,7 @@ class InputFactory
         }
     }
 
-    /** @param array<int, InputObjectField> $fields */
+    /** @param array<int|string, InputObjectField> $fields */
     protected function addAllFieldsAsRequired(mixed $targetEntity, array &$fields): void
     {
         foreach ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->getFieldNames() as $fieldName) {
