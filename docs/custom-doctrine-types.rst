@@ -33,7 +33,7 @@ This example implements a Uuid type for ``ramsey/uuid-doctrine``.
                 throw new Error('Query error: Uuid can only parse strings got: ' . $valueNode->kind, $valueNode);
             }
 
-            return $valueNode->value;
+            return $this->parseValue($valueNode->value);
         }
 
         public function parseValue(mixed $value): UuidInterface|null
