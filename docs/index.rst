@@ -13,7 +13,13 @@ This project builds GraphQL types, filters, and resolvers for Doctrine entities.
 entities, fields, and associations are available for querying via GraphQL,
 PHP attributes are used.
 
-The goal of this project is to make creating GraphQL types very simple, but as
+Other GraphQL libraries for Doctrine ORM are available.
+Some of these such as `overblog/graphql-bundle <https://github.com/overblog/GraphQLBundle/tree/master>`_
+and `API Platform <https://api-platform.com/>`_ are integrations into frameworks.  But all of these libraries
+use the same underlying library, `webonyx/graphql-php <https://github.com/webonyx/graphql-php>`_ and that library
+has its own way of doing things.  This library is a driver for that library and together they are framework agnostic.
+
+The goal of this project is to make creating GraphQL types simple and uncomplicated, but as
 you'll see, there's a lot of customizable power built in too.
 
 .. toctree::
@@ -33,6 +39,7 @@ you'll see, there's a lot of customizable power built in too.
     containers
     metadata
     strategies
+    type-inheritance
     tips
     custom-doctrine-types
     versions
