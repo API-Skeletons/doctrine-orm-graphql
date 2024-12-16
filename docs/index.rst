@@ -39,7 +39,6 @@ you'll see, there's a lot of customizable power built in too.
     containers
     metadata
     strategies
-    type-inheritance
     tips
     custom-doctrine-types
     versions
