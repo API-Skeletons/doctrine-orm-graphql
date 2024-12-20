@@ -168,6 +168,7 @@ class ResolveCollectionFactory
                 new CriteriaEvent(
                     $criteria,
                     $criteriaEventName,
+                    $collection,
                     ...$resolve,
                 ),
             );

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria as DoctrineCriteria;
+use Doctrine\ORM\PersistentCollection;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\HasEventName;
 
@@ -15,10 +17,14 @@ use League\Event\HasEventName;
 class Criteria implements
     HasEventName
 {
-    /** @param mixed[] $args */
+    /**
+     * @param PersistentCollection<array-key, mixed> $collection
+     * @param mixed[]                                $args
+     */
     public function __construct(
         protected readonly DoctrineCriteria $criteria,
         protected readonly string $eventName,
+        protected readonly Collection $collection,
         protected readonly mixed $objectValue,
         protected readonly array $args,
         protected readonly mixed $context,
@@ -34,6 +40,12 @@ class Criteria implements
     public function getCriteria(): DoctrineCriteria
     {
         return $this->criteria;
+    }
+
+    /** @return PersistentCollection<array-key, mixed> */
+    public function getCollection(): Collection
+    {
+        return $this->collection;
     }
 
     public function getObjectValue(): mixed
