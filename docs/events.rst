@@ -109,11 +109,13 @@ the association if you assigned an event name in the attributes.
       },
   );
 
-The ``Criteria`` event has one function in addition to getters for
+The ``Criteria`` event has two functions in addition to getters for
 all resolve parameters:
 
 * ``getCriteria`` - Will return a Criteria object with the user specified
   filters already applied.
+* ``getCollection`` - Will return the unfetched collection object.  This is useful
+  if you need to fetch the collection to apply additional criteria.
 
 
 Modify an Entity Definition

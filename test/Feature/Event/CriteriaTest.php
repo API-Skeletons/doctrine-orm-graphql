@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -33,6 +34,7 @@ class CriteriaTest extends AbstractTest
                     $event->getCriteria()->expr()->eq('venue', 'Delta Center'),
                 );
 
+                $this->assertInstanceOf(Collection::class, $event->getCollection());
                 $this->assertInstanceOf(Artist::class, $event->getObjectValue());
                 $this->assertEquals('contextTest', $event->getContext());
                 $this->assertIsArray($event->getArgs());
