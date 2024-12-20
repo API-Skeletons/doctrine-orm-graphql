@@ -79,6 +79,12 @@ When an association is resolved from an entity or another association, you may
 listen to the Criteria Event to add additional criteria for filtering
 the association if you assigned an event name in the attributes.
 
+Note that pagination limits are not applied to the Collection before this event
+is fired.  That way you can add additional criteria to the Collection before
+the limit is applied.  This is done by fetching the collection within the event
+and running additional filters on each element.  This is not the most efficient
+way to filter data, but it is the most flexible.
+
 .. code-block:: php
 
   use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;

@@ -22,8 +22,8 @@ class Criteria implements
      * @param mixed[]                                $args
      */
     public function __construct(
-        protected readonly DoctrineCriteria $criteria,
         protected readonly string $eventName,
+        protected readonly DoctrineCriteria $criteria,
         protected readonly Collection $collection,
         protected readonly mixed $objectValue,
         protected readonly array $args,

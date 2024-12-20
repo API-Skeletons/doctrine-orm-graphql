@@ -151,6 +151,21 @@ class ResolveCollectionFactory
 
         $itemCount = count($collection->matching($criteria));
 
+        /**
+         * Fire the event dispatcher using the passed event name.
+         */
+        if ($criteriaEventName) {
+            $this->eventDispatcher->dispatch(
+                new CriteriaEvent(
+                    $criteriaEventName,
+                    $criteria,
+                    $collection,
+                    ...$resolve,
+                ),
+            );
+        }
+
+        // Add offset and limit after Criteria event
         $offsetAndLimit = $this->calculateOffsetAndLimit($resolve[3]->fieldName, $entityClassName, $targetClassName, $paginationFields, $itemCount);
         if ($offsetAndLimit['offset']) {
             $criteria->setFirstResult($offsetAndLimit['offset']);
@@ -158,20 +173,6 @@ class ResolveCollectionFactory
 
         if ($offsetAndLimit['limit']) {
             $criteria->setMaxResults($offsetAndLimit['limit']);
-        }
-
-        /**
-         * Fire the event dispatcher using the passed event name.
-         */
-        if ($criteriaEventName) {
-            $this->eventDispatcher->dispatch(
-                new CriteriaEvent(
-                    $criteria,
-                    $criteriaEventName,
-                    $collection,
-                    ...$resolve,
-                ),
-            );
         }
 
         $edgesAndCursors = $this->buildEdgesAndCursors($collection->matching($criteria), $offsetAndLimit, $itemCount);
