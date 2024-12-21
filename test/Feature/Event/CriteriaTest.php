@@ -91,4 +91,77 @@ class CriteriaTest extends AbstractTest
             $data['artist']['edges'][0]['node']['performances']['edges'][0]['node']['venue'],
         );
     }
+
+    public function testEventFilterCollection(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'CriteriaEvent']));
+
+        $driver->get(EventDispatcher::class)->subscribeTo(
+            Artist::class . '.performances.criteria',
+            function (CriteriaEvent $event): void {
+                $this->assertInstanceOf(Criteria::class, $event->getCriteria());
+
+                $event->setCollection($event->getCollection()->filter(
+                    static function ($performance) {
+                        return $performance->getVenue() === 'Delta Center';
+                    },
+                ));
+
+                $this->assertInstanceOf(Collection::class, $event->getCollection());
+                $this->assertInstanceOf(Artist::class, $event->getObjectValue());
+                $this->assertEquals('contextTest', $event->getContext());
+                $this->assertIsArray($event->getArgs());
+                $this->assertInstanceOf(ResolveInfo::class, $event->getInfo());
+            },
+        );
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artist' => [
+                        'type' => $driver->connection(Artist::class),
+                        'args' => [
+                            'filter' => $driver->filter(Artist::class),
+                        ],
+                        'resolve' => $driver->resolve(Artist::class),
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query = '
+          query ($id: String!) {
+            artist (filter: { id: { eq: $id } } ) {
+              edges {
+                node {
+                  id
+                  name
+                  performances {
+                    edges {
+                      node {
+                        venue
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        }';
+
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['id' => '1'],
+            contextValue:  'contextTest',
+        );
+        $data   = $result->toArray()['data'];
+
+        $this->assertEquals(1, count($data['artist']['edges']));
+        $this->assertEquals(1, count($data['artist']['edges'][0]['node']['performances']));
+        $this->assertEquals(
+            'Delta Center',
+            $data['artist']['edges'][0]['node']['performances']['edges'][0]['node']['venue'],
+        );
+    }
 }
