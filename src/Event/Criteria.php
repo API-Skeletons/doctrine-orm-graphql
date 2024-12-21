@@ -24,7 +24,7 @@ class Criteria implements
     public function __construct(
         protected readonly string $eventName,
         protected readonly DoctrineCriteria $criteria,
-        protected readonly Collection $collection,
+        protected Collection $collection,
         protected readonly mixed $objectValue,
         protected readonly array $args,
         protected readonly mixed $context,
@@ -46,6 +46,12 @@ class Criteria implements
     public function getCollection(): Collection
     {
         return $this->collection;
+    }
+
+    /** @param Collection<array-key, mixed> $collection */
+    public function setCollection(Collection $collection): void
+    {
+        $this->collection = $collection;
     }
 
     public function getObjectValue(): mixed

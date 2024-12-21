@@ -80,10 +80,17 @@ listen to the Criteria Event to add additional criteria for filtering
 the association if you assigned an event name in the attributes.
 
 Note that pagination limits are not applied to the Collection before this event
-is fired.  That way you can add additional criteria to the Collection before
-the limit is applied.  This is done by fetching the collection within the event
+is fired.  That way you can add additional criteria to the Collection or filter
+the collection before the limit is applied.
+
+This is done by fetching the collection within the event
 and running additional filters on each element.  This is not the most efficient
 way to filter data, but it is the most flexible.
+
+Two methods are supported for filtering the collection.  You may add criteria
+to the Criteria object or you may fetch the collection and filter it directly.
+When you filter the collection directly you must use the setCollection method
+to update the collection on the event.
 
 .. code-block:: php
 
@@ -105,13 +112,25 @@ way to filter data, but it is the most flexible.
       public $performances;
   }
 
-  // Add a listener to your driver
+  // Add a listener to your driver to filter with a criteria object
   $driver->get(EventDispatcher::class)->subscribeTo(
       Artist::class . '.performances.criteria',
       function (Criteria $event): void {
           $event->getCriteria()->andWhere(
               $event->getCriteria()->expr()->eq('isDeleted', false)
           );
+      },
+  );
+
+  // Add a listener to your driver to filter with a collection filter
+  $driver->get(EventDispatcher::class)->subscribeTo(
+      Artist::class . '.performances.criteria',
+      function (Criteria $event): void {
+          $event->setCollection($event->getCollection()->filter(
+              static function ($performance) {
+                  return $performance->getIsDeleted() === false;
+              }
+          ));
       },
   );
 
@@ -122,7 +141,8 @@ all resolve parameters:
   filters already applied.
 * ``getCollection`` - Will return the unfetched collection object.  This is useful
   if you need to fetch the collection to apply additional criteria.
-
+* ``setCollection`` - Will set the collection object.  This is useful if you
+    need to filter the collection directly.
 
 Modify an Entity Definition
 ===========================

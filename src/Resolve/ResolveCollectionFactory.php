@@ -155,14 +155,15 @@ class ResolveCollectionFactory
          * Fire the event dispatcher using the passed event name.
          */
         if ($criteriaEventName) {
-            $this->eventDispatcher->dispatch(
-                new CriteriaEvent(
-                    $criteriaEventName,
-                    $criteria,
-                    $collection,
-                    ...$resolve,
-                ),
+            $event = new CriteriaEvent(
+                $criteriaEventName,
+                $criteria,
+                $collection,
+                ...$resolve,
             );
+
+            $this->eventDispatcher->dispatch($event);
+            $collection = $event->getCollection();
         }
 
         // Add offset and limit after Criteria event
