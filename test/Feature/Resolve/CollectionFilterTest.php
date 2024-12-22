@@ -28,14 +28,7 @@ class CollectionFilterTest extends AbstractTest
             'query' => new ObjectType([
                 'name' => 'query',
                 'fields' => [
-                    'artist' => [
-                        'type' => $driver->connection(Artist::class),
-                        'args' => [
-                            'filter' => $driver->filter(Artist::class),
-                            'pagination' => $driver->pagination(),
-                        ],
-                        'resolve' => $driver->resolve(Artist::class),
-                    ],
+                    'artist' => $driver->completeConnection(Artist::class),
                 ],
             ]),
         ]);

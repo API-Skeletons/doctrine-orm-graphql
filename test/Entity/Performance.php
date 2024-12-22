@@ -79,6 +79,7 @@ class Performance
     #[GraphQL\Field(group: 'LimitTest')]
     #[GraphQL\Field(group: 'AttributeLimit')]
     #[GraphQL\Field(group: 'ExtractionMap', alias: 'key')]
+    #[GraphQL\Field(group: 'CriteriaEvent')]
 
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
