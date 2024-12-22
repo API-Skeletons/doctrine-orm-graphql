@@ -144,7 +144,7 @@ all resolve parameters:
 * ``getCollection`` - Will return the unfetched collection object.  This is useful
   if you need to fetch the collection to apply additional criteria.
 * ``setCollection`` - Will set the collection object.  This is useful if you
-    need to filter the collection directly.
+  need to filter the collection directly.
 
 Modify an Entity Definition
 ===========================
