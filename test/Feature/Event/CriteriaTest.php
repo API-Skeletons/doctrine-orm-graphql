@@ -101,9 +101,11 @@ class CriteriaTest extends AbstractTest
             function (CriteriaEvent $event): void {
                 $this->assertInstanceOf(Criteria::class, $event->getCriteria());
 
-                $event->setCollection($event->getCollection()->filter(
+                $matchingCollection = $event->getCollection()->matching($event->getCriteria());
+                $event->setCollection($matchingCollection->filter(
                     static function ($performance) {
-                        return $performance->getVenue() === 'Delta Center';
+                        return $performance->getVenue() === 'Delta Center'
+                            || $performance->getVenue() === 'Soldier Field';
                     },
                 ));
 
@@ -137,9 +139,10 @@ class CriteriaTest extends AbstractTest
                 node {
                   id
                   name
-                  performances {
+                  performances (filter: { venue: { sort: "DESC" } } ) {
                     edges {
                       node {
+                        id
                         venue
                       }
                     }
@@ -160,8 +163,12 @@ class CriteriaTest extends AbstractTest
         $this->assertEquals(1, count($data['artist']['edges']));
         $this->assertEquals(1, count($data['artist']['edges'][0]['node']['performances']));
         $this->assertEquals(
-            'Delta Center',
+            'Soldier Field',
             $data['artist']['edges'][0]['node']['performances']['edges'][0]['node']['venue'],
+        );
+        $this->assertEquals(
+            'Delta Center',
+            $data['artist']['edges'][0]['node']['performances']['edges'][1]['node']['venue'],
         );
     }
 }

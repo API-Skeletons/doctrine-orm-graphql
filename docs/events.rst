@@ -128,7 +128,10 @@ Using the Criteria object is the most efficient way to filter the collection.
   $driver->get(EventDispatcher::class)->subscribeTo(
       Artist::class . '.performances.criteria',
       function (Criteria $event): void {
-          $event->setCollection($event->getCollection()->filter(
+          // Match the collection with the criteria FIRST
+          $matchingCollection = $event->getCollection()->matching($event->getCriteria());
+          // Then filter the collection
+          $event->setCollection($matchingCollection->filter(
               static function ($performance) {
                   return $performance->getIsDeleted() === false;
               }

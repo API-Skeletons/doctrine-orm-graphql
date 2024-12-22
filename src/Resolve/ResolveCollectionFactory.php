@@ -149,8 +149,6 @@ class ResolveCollectionFactory
             $paginationFields[$field] = (int) base64_decode($value, true);
         }
 
-        $itemCount = count($collection->matching($criteria));
-
         /**
          * Fire the event dispatcher using the passed event name.
          */
@@ -165,6 +163,8 @@ class ResolveCollectionFactory
             $this->eventDispatcher->dispatch($event);
             $collection = $event->getCollection();
         }
+
+        $itemCount = count($collection->matching($criteria));
 
         // Add offset and limit after Criteria event
         $offsetAndLimit = $this->calculateOffsetAndLimit($resolve[3]->fieldName, $entityClassName, $targetClassName, $paginationFields, $itemCount);
