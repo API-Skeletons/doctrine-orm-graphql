@@ -28,9 +28,9 @@ you'll see, there's a lot of customizable power built in too.
 
     install
     just-the-basics
+    queries
     attributes
     driver
-    queries
     mutations
     types
     computed-fields
