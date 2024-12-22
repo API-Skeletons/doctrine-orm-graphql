@@ -6,7 +6,7 @@ You will need a Doctrine object manager with entities configured with
 appropriate associations throughout.  Support for ad-hoc joins between
 entities is not supported (but you can use the EntityDefinition event
 to add a custom type to an entity type).
-Your Doctrine metadata will map the associations in GraphQL.  
+Your Doctrine metadata will map the associations in GraphQL.
 
 There are some `config options <driver.html#config>`_ available but they are
 all optional.
@@ -53,7 +53,7 @@ a connection for the entity, filters for the entity, and a resolver.
       'query' => new ObjectType([
           'name' => 'query',
           'fields' => [
-              'artist' => [
+              'artists' => [
                   'type' => $driver->connection(Artist::class),
                   'args' => [
                       'filter' => $driver->filter(Artist::class),
@@ -73,7 +73,7 @@ Now, using the schema, you can start making GraphQL queries
 
   $query = '
     {
-      artist {
+      artists {
         edges {
           node {
             id
@@ -126,7 +126,7 @@ attributes, a query of performances is now possible:
 
   $query = '
     {
-      artist {
+      artists {
         edges {
           node {
             id
@@ -147,9 +147,13 @@ attributes, a query of performances is now possible:
 
   $result = GraphQL::executeQuery($schema, $query);
 
-Keep reading to learn how to create multiple attribute groups, extract entities
-by reference or by value, cache attribute metadata, implement custom types,
-alias fields, and more.
+Keep reading to learn how to create
+`multiple attribute groups <driver.html#group>`_,
+`extract entities by reference or by value <driver.html#globalbyvalue>`_,
+`cache attribute metadata <metadata.html#caching-metadata>`_,
+`implement custom types <custom-doctrine-types.html>`_,
+`alias fields <attributes.html#field>`_,
+and more.
 
 
 .. role:: raw-html(raw)

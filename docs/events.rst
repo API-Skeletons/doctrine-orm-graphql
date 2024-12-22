@@ -77,10 +77,10 @@ Criteria Event
 
 When an association is resolved from an entity or another association, you may
 listen to the Criteria Event to add additional criteria for filtering
-the association if you assigned an event name in the attributes.
+the collection if you assign an event name in the attributes.
 
-Note that pagination limits are not applied to the Collection before this event
-is fired.  That way you can add additional criteria to the Collection or filter
+Note that pagination limits are not applied to the collection before this event
+is fired.  That way you can add additional criteria to the collection or filter
 the collection before the limit is applied.
 
 This is done by fetching the collection within the event
@@ -91,6 +91,8 @@ Two methods are supported for filtering the collection.  You may add criteria
 to the Criteria object or you may fetch the collection and filter it directly.
 When you filter the collection directly you must use the setCollection method
 to update the collection on the event.
+
+Using the Criteria object is the most efficient way to filter the collection.
 
 .. code-block:: php
 

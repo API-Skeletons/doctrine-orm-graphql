@@ -5,6 +5,29 @@ The Driver class
 The Driver class is the gateway to much of the functionality of this library.
 It has many options and top-level functions, detailed here.
 
+Creating a ``Driver`` with all config options
+---------------------------------------------
+
+.. code-block:: php
+
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+
+  $driver = new Driver($entityManager, new Config[
+      'entityPrefix' => 'App\\ORM\\Entity\\',
+      'group' => 'customGroup',
+      'groupSuffix' => 'customGroupSuffix',
+      'globalEnable' => true,
+      'ignoreFields' => ['password'],
+      'globalByValue' => true,
+      'limit' => 500,
+      'sortFields' => true,
+      'useHydratorCache' => true,
+      'excludeFilters' => [Filters::LIKE],
+  ]);
+
+
 Config
 ======
 
@@ -204,29 +227,6 @@ though the `metadata <metadata.html>`_.  This class is used internally for gener
 
 Though a ``connection`` is a type, it is not
 available through this function.  Use the ``connection`` function of the Driver.
-
-
-Creating a ``Driver`` with all config options
----------------------------------------------
-
-.. code-block:: php
-
-  use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-  use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-  use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
-
-  $driver = new Driver($entityManager, new Config[
-      'entityPrefix' => 'App\\ORM\\Entity\\',
-      'group' => 'customGroup',
-      'groupSuffix' => 'customGroupSuffix',
-      'globalEnable' => true,
-      'ignoreFields' => ['password'],
-      'globalByValue' => true,
-      'limit' => 500,
-      'sortFields' => true,
-      'useHydratorCache' => true,
-      'excludeFilters' => [Filters::LIKE],
-  ]);
 
 
 .. role:: raw-html(raw)
