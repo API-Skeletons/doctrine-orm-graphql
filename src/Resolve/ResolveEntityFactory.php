@@ -90,14 +90,6 @@ class ResolveEntityFactory
 
         $offsetAndLimit = $this->calculateOffsetAndLimit($entity, $paginationFields);
 
-        if ($offsetAndLimit['offset']) {
-            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
-        }
-
-        if ($offsetAndLimit['limit']) {
-            $queryBuilder->setMaxResults($offsetAndLimit['limit']);
-        }
-
         /**
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
@@ -105,11 +97,21 @@ class ResolveEntityFactory
         if ($eventName) {
             $this->eventDispatcher->dispatch(
                 new QueryBuilderEvent(
-                    $queryBuilder,
                     $eventName,
+                    $queryBuilder,
+                    (int) $offsetAndLimit['offset'],
+                    (int) $offsetAndLimit['limit'],
                     ...$resolve,
                 ),
             );
+        }
+
+        if ($offsetAndLimit['offset']) {
+            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
+        }
+
+        if ($offsetAndLimit['limit']) {
+            $queryBuilder->setMaxResults($offsetAndLimit['limit']);
         }
 
         $edgesAndCursors = $this->buildEdgesAndCursors($queryBuilder, $offsetAndLimit, $paginationFields);
