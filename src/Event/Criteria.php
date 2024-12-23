@@ -25,6 +25,8 @@ class Criteria implements
         protected readonly string $eventName,
         protected readonly DoctrineCriteria $criteria,
         protected Collection $collection,
+        protected readonly int $offset,
+        protected readonly int $limit,
         protected readonly mixed $objectValue,
         protected readonly array $args,
         protected readonly mixed $context,
@@ -52,6 +54,16 @@ class Criteria implements
     public function setCollection(Collection $collection): void
     {
         $this->collection = $collection;
+    }
+
+    public function getOffset(): int
+    {
+        return $this->offset;
+    }
+
+    public function getLimit(): int
+    {
+        return $this->limit;
     }
 
     public function getObjectValue(): mixed

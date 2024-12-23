@@ -16,8 +16,10 @@ class QueryBuilder implements
 {
     /** @param mixed[] $args */
     public function __construct(
-        protected readonly DoctrineQueryBuilder $queryBuilder,
         protected readonly string $eventName,
+        protected readonly DoctrineQueryBuilder $queryBuilder,
+        protected readonly int $offset,
+        protected readonly int $limit,
         protected readonly mixed $objectValue,
         protected readonly array $args,
         protected readonly mixed $context,
@@ -33,6 +35,16 @@ class QueryBuilder implements
     public function getQueryBuilder(): DoctrineQueryBuilder
     {
         return $this->queryBuilder;
+    }
+
+    public function getOffset(): int
+    {
+        return $this->offset;
+    }
+
+    public function getLimit(): int
+    {
+        return $this->limit;
     }
 
     public function getObjectValue(): mixed

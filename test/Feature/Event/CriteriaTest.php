@@ -94,7 +94,10 @@ class CriteriaTest extends AbstractTest
 
     public function testEventFilterCollection(): void
     {
-        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'CriteriaEvent']));
+        $driver = new Driver($this->getEntityManager(), new Config([
+            'group' => 'CriteriaEvent',
+            'limit' => 25,
+        ]));
 
         $driver->get(EventDispatcher::class)->subscribeTo(
             Artist::class . '.performances.criteria',
@@ -109,6 +112,8 @@ class CriteriaTest extends AbstractTest
                     },
                 ));
 
+                $this->assertEquals(0, $event->getOffset());
+                $this->assertEquals(25, $event->getLimit());
                 $this->assertInstanceOf(Collection::class, $event->getCollection());
                 $this->assertInstanceOf(Artist::class, $event->getObjectValue());
                 $this->assertEquals('contextTest', $event->getContext());

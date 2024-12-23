@@ -65,12 +65,19 @@ user, create a listener.
       }
   );
 
-The ``QueryBuilder`` event has one function in addition to getters for
+Functions of the  ``QueryBuilder`` event in addition to getters for
 all resolve parameters:
 
 * ``getQueryBuilder`` - Will return a query builder with the user specified
   filters already applied.
-
+* ``getOffset`` - Will return the offset for the query.  The QueryBuilder passed
+  to the event is not modified with the offset and limit yet.  So if you have a
+  large dataset and need to fetch it within the event, you may use this method
+  to get the offset.
+* ``getLimit`` - Will return the limit for the query.  The QueryBuilder passed
+  to the event is not modified with the offset and limit yet.  So if you have a
+  large dataset and need to fetch it within the event, you may use this method
+  to get the limit.
 
 Criteria Event
 ==============
@@ -148,6 +155,22 @@ all resolve parameters:
   if you need to fetch the collection to apply additional criteria.
 * ``setCollection`` - Will set the collection object.  This is useful if you
   need to filter the collection directly.
+* ``getOffset`` - Will return the projected offset for the collection.  The collection passed
+  to the event is not modified with the offset and limit yet.  So if you have a
+  large dataset and need to fetch it within the event, you may use this method
+  to get the expected offset.
+* ``getLimit`` - Will return the projectd limit for the collection.  The collection passed
+  to the event is not modified with the offset and limit yet.  So if you have a
+  large dataset and need to fetch it within the event, you may use this method
+  to get the expected limit.
+
+.. note::
+
+    The offset and limit is calculated before this event is fired and calculated
+    again after the event.  This is because the collection may be fetched and
+    filtered before the limit is applied.  The offset and limit are recalculated
+    after the event is fired to ensure the correct data is returned.
+
 
 Modify an Entity Definition
 ===========================

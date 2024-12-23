@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
@@ -18,11 +19,13 @@ class FilterQueryBuilderTest extends AbstractTest
 {
     public function testEvent(): void
     {
-        $driver = new Driver($this->getEntityManager());
+        $driver = new Driver($this->getEntityManager(), new Config(['limit' => 10]));
         $driver->get(EventDispatcher::class)->subscribeTo(
             'artist.querybuilder',
             function (QueryBuilderEvent $event): void {
                 $this->assertInstanceOf(QueryBuilder::class, $event->getQueryBuilder());
+                $this->assertEquals(0, $event->getOffset());
+                $this->assertEquals(10, $event->getLimit());
             },
         );
 
