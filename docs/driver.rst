@@ -6,7 +6,7 @@ The Driver class is the gateway to much of the functionality of this library.
 It has many options and top-level functions, detailed here.
 
 Creating a ``Driver`` with all config options
----------------------------------------------
+=============================================
 
 .. code-block:: php
 
