@@ -15,6 +15,12 @@ GraphQL Type Driver for Doctrine ORM
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%2b-blue)](https://img.shields.io/badge/PHP-8.1%2b-blue)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
+    GraphQL, with queries so neat,
+    Felt a longing, a database heat.
+    "I'd love," it would sigh,
+    "To be SQL, oh my!
+    With relations and joins, oh so sweet!"
+
 This library provides a GraphQL driver for Doctrine ORM for use with the [webonyx/graphql-php](https://github.com/webonyx/graphql-php) library.  
 It **does not** try to redefine how that excellent library operates.  Instead, it creates types to be used 
 within the framework that library provides.
@@ -24,6 +30,7 @@ Some of these such as [overblog/graphql-bundle](https://github.com/overblog/Grap
 and [API Platform](https://api-platform.com/) are integrations into frameworks.  But all of these libraries
 use the same underlying library, [webonyx/graphql-php](https://github.com/webonyx/graphql-php) and that library
 has its own way of doing things.  This library is a driver for that library and together they are framework agnostic.
+
 
 Installation
 ------------
