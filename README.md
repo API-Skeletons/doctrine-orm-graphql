@@ -15,7 +15,7 @@ GraphQL Type Driver for Doctrine ORM
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%2b-blue)](https://img.shields.io/badge/PHP-8.1%2b-blue)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
-    GraphQL, with queries so neat,
+    GraphQL, with types so neat,
     Felt a longing, a database heat.
     "I'd love," it would sigh,
     "To be SQL, oh my!
