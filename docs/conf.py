@@ -19,6 +19,9 @@ html_favicon = 'favicon.ico'
 
 exclude_patterns = ['_build']
 html_static_path = ['_static']
+html_css_files = [
+    'styles.css',
+]
 
 ##### Guzzle sphinx theme
 

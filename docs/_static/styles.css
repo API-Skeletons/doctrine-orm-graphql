@@ -1,0 +1,8 @@
+table {
+    width: 100%;
+    border-collapse: collapse; /* Optional: collapses borders for a cleaner look */
+}
+th, td {
+    border: 1px solid black; /* Optional: adds borders to cells */
+    padding: 5px; /* Optional: adds padding to cells */
+}
