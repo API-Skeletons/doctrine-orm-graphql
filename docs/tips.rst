@@ -64,6 +64,7 @@ Add the type and hydrator strategy to the field:
 Add the new type and hydrator strategy to the Driver:
 
 .. code-block:: php
+
    use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
    use App\GraphQL\Hydrator\Strategy\CsvString;
