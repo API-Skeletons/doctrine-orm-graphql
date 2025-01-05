@@ -29,13 +29,7 @@ class CustomTypeTest extends AbstractTest
             'query' => new ObjectType([
                 'name' => 'query',
                 'fields' => [
-                    'typeTest' => [
-                        'type' => $driver->connection(TypeTest::class),
-                        'args' => [
-                            'filter' => $driver->filter(TypeTest::class),
-                        ],
-                        'resolve' => $driver->resolve(TypeTest::class),
-                    ],
+                    'typeTest' => $driver->completeConnection(TypeTest::class),
                 ],
             ]),
         ]);
@@ -62,17 +56,17 @@ class CustomTypeTest extends AbstractTest
             'query' => new ObjectType([
                 'name' => 'query',
                 'fields' => [
-                    'typeTest' => $driver->completeConnection(TypeTest::class),
+                    'typetest' => $driver->completeConnection(TypeTest::class),
                 ],
             ]),
         ]);
 
-        $query  = '{ typeTest { edges { node { testText } } } }';
+        $query  = '{ typetest { edges { node { testText } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
 
-        $this->assertIsArray($data['typeTest']['edges'][0]['node']['testText']);
-        $this->assertCount(3, $data['typeTest']['edges'][0]['node']['testText']);
+        $this->assertIsArray($data['typetest']['edges'][0]['node']['testText']);
+        $this->assertCount(3, $data['typetest']['edges'][0]['node']['testText']);
     }
 }
