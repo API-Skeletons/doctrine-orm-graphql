@@ -23,13 +23,7 @@ class BetweenTest extends AbstractTest
             'query' => new ObjectType([
                 'name' => 'query',
                 'fields' => [
-                    'artist' => [
-                        'type' => $driver->type(TypeTest::class),
-                        'args' => [
-                            'filter' => $driver->filter(TypeTest::class),
-                        ],
-                        'resolve' => $driver->resolve(TypeTest::class),
-                    ],
+                    'typetest' => $driver->completeConnection(TypeTest::class),
                 ],
             ]),
         ]);

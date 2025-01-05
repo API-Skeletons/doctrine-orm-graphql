@@ -115,7 +115,7 @@ input type.
 Custom Types
 ============
 
-If your schema has a ``timestamp`` type, that data type is not suppored
+If your schema has a ``timestamp`` type, that data type is not supported
 by this library.  But adding the type is just a matter of creating a
 new Timestamp type extending ``GraphQL\Type\Definition\ScalarType`` then adding
 the type to the type container.
@@ -125,6 +125,7 @@ the type to the type container.
      $driver->get(TypeContainer::class)
          ->set('timestamp', fn() => new Timestamp());
 
+See also `Serve a CSV Field as a GraphQL Array <tips.html#serve-a-csv-field-as-a-graphql-array>`_.
 
 .. role:: raw-html(raw)
    :format: html

@@ -60,13 +60,7 @@ class DateTimeTZTest extends AbstractTest
             'query' => new ObjectType([
                 'name' => 'query',
                 'fields' => [
-                    'typetest' => [
-                        'type' => $driver->connection(TypeTest::class),
-                        'args' => [
-                            'filter' => $driver->filter(TypeTest::class),
-                        ],
-                        'resolve' => $driver->resolve(TypeTest::class),
-                    ],
+                    'typetest' => $driver->completeConnection(TypeTest::class),
                 ],
             ]),
         ]);
@@ -78,8 +72,5 @@ class DateTimeTZTest extends AbstractTest
         $data = $result->toArray()['data'];
 
         $this->assertTrue(true);
-
-// $this->assertEquals(1, count($data['typetest']['edges']));
-// $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
     }
 }

@@ -51,6 +51,8 @@ Create a new hydrator strategy
        }
    }
 
+Add the type and hydrator strategy to the field:
+
 .. code-block:: php
 
    use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;

@@ -22,14 +22,7 @@ class PageInfoTest extends AbstractTest
             'query' => new ObjectType([
                 'name' => 'query',
                 'fields' => [
-                    'performance' => [
-                        'type' => $driver->connection(Performance::class),
-                        'args' => [
-                            'filter' => $driver->filter(Performance::class),
-                            'pagination' => $driver->pagination(),
-                        ],
-                        'resolve' => $driver->resolve(Performance::class),
-                    ],
+                    'performance' => $driver->completeConnection(Performance::class),
                 ],
             ]),
         ]);
@@ -73,14 +66,7 @@ class PageInfoTest extends AbstractTest
             'query' => new ObjectType([
                 'name' => 'query',
                 'fields' => [
-                    'performance' => [
-                        'type' => $driver->connection(Performance::class),
-                        'args' => [
-                            'filter' => $driver->filter(Performance::class),
-                            'pagination' => $driver->pagination(),
-                        ],
-                        'resolve' => $driver->resolve(Performance::class),
-                    ],
+                    'performance' => $driver->completeConnection(Performance::class),
                 ],
             ]),
         ]);
@@ -113,14 +99,7 @@ class PageInfoTest extends AbstractTest
             'query' => new ObjectType([
                 'name' => 'query',
                 'fields' => [
-                    'performance' => [
-                        'type' => $driver->connection(Performance::class),
-                        'args' => [
-                            'filter' => $driver->filter(Performance::class),
-                            'pagination' => $driver->pagination(),
-                        ],
-                        'resolve' => $driver->resolve(Performance::class),
-                    ],
+                    'performance' => $driver->completeConnection(Performance::class),
                 ],
             ]),
         ]);
