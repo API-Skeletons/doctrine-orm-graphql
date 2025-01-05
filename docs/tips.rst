@@ -4,6 +4,72 @@ Tips and Tricks
 
 Here are tips for using this library in more edge-case ways.
 
+
+Serve a CSV Field as a GraphQL Array
+====================================
+
+If you have a field in your entity that is a CSV string and you want to
+convert it to a GraphQL array, you can use a custom hydrator strategy and custom type.
+
+Create a new hydrator strategy
+
+.. code-block:: php
+
+   namespace App\GraphQL\Hydrator\Strategy;
+
+   use Laminas\Hydrator\Strategy\StrategyInterface;
+
+   use function explode;
+   use function implode;
+
+   class CsvString implements
+       StrategyInterface
+   {
+       /** @return String[] */
+       public function extract(mixed $value, object|null $object = null): array
+       {
+           if (! $value) {
+               return [];
+           }
+
+           return explode(',', (string) $value);
+       }
+
+       /**
+        * StrategyInterface requires a hydrate method but this library does not
+        * perform hydration of data; just extraction.
+        *
+        * @param mixed[]|null $data
+        */
+       public function hydrate(mixed $value, array|null $data = null): mixed
+       {
+           if (! $value) {
+             return ;
+           }
+
+           return implode(',', $value);
+       }
+   }
+
+.. code-block:: php
+
+   use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+   use App\GraphQL\Hydrator\Strategy\CsvString;
+
+   #[GraphQL\Field(type: 'csvstring', hydratorStrategy: CsvString::class)]
+   public string $csvField;
+
+Add the new type and hydrator strategy to the Driver:
+
+.. code-block:: php
+   use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
+   use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
+   use App\GraphQL\Hydrator\Strategy\CsvString;
+
+   $driver->get(HydratorContainer::class)->set(CsvString::class, fn() => new CsvString());
+   $driver->get(TypeContainer::class)->set('csvstring', fn() => Type::listOf(Type::string()));
+
+
 Filters for Scalar Queries
 ==========================
 

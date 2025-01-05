@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\Strategy\CsvString;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -18,7 +19,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'DataTypesTest')]
 #[GraphQL\Entity(group: 'CustomTypeTest')]
 #[GraphQL\Entity(group: 'BetweenTypeContainerTest')]
-
+#[GraphQL\Entity(group: 'CustomTypeArray')]
 #[ORM\Entity]
 class TypeTest
 {
@@ -51,11 +52,13 @@ class TypeTest
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
+    #[GraphQL\Field(group: 'CustomTypeArray', type: 'csvstring', hydratorStrategy: CsvString::class)]
     #[ORM\Column(type: "text", nullable: false)]
     private string $testText;
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
+    #[GraphQL\Field(group: 'CustomTypeArray')]
     #[ORM\Id]
     #[ORM\Column(type: "bigint")]
     #[ORM\GeneratedValue(strategy: "AUTO")]
