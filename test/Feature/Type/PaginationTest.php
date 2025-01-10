@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -47,7 +48,62 @@ class PaginationTest extends AbstractTest
 
         $data = $result->toArray()['data'];
 
+        $this->assertEquals($data['performance']['pageInfo']['startCursor'], $data['performance']['edges'][0]['cursor']);
+        $this->assertEquals($data['performance']['pageInfo']['endCursor'], $data['performance']['edges'][1]['cursor']);
+
         $this->assertEquals(2, count($data['performance']['edges']));
+    }
+
+    public function testCollectionFirst(): void
+    {
+        $driver = new Driver($this->getEntityManager());
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artists' => $driver->completeConnection(Artist::class),
+                ],
+            ]),
+        ]);
+
+        $query  = '{
+            artists (pagination: { first: 1 }) {
+                edges {
+                    cursor
+                    node {
+                        id
+                        performances (pagination: { first: 2 }) {
+                            pageInfo {
+                                hasNextPage
+                                hasPreviousPage
+                                startCursor
+                                endCursor
+                            }
+                            edges {
+                                cursor
+                                node {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }';
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(
+            $data['artists']['edges'][0]['node']['performances']['pageInfo']['startCursor'],
+            $data['artists']['edges'][0]['node']['performances']['edges'][0]['cursor'],
+        );
+        $this->assertEquals(
+            $data['artists']['edges'][0]['node']['performances']['pageInfo']['endCursor'],
+            $data['artists']['edges'][0]['node']['performances']['edges'][1]['cursor'],
+        );
+
+        $this->assertEquals(2, count($data['artists']['edges'][0]['node']['performances']['edges']));
     }
 
     public function testAfter(): void

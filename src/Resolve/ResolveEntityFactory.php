@@ -170,8 +170,7 @@ class ResolveEntityFactory
             $index++;
         }
 
-        $endIndex       = $paginator->count() ? $paginator->count() - 1 : 0;
-        $cursors['end'] = base64_encode((string) $endIndex);
+        $cursors['end'] = $cursors['last'] ?? base64_encode((string) 0);
 
         return [
             'cursors'    => $cursors,

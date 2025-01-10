@@ -230,8 +230,7 @@ class ResolveCollectionFactory
             $index++;
         }
 
-        $endIndex       = $itemCount ? $itemCount - 1 : 0;
-        $cursors['end'] = base64_encode((string) $endIndex);
+        $cursors['end'] = $cursors['last'] ?? base64_encode('0');
 
         return [
             'cursors' => $cursors,
