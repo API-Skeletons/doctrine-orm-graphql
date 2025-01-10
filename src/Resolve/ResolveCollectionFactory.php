@@ -190,7 +190,7 @@ class ResolveCollectionFactory
             'edges' => $edgesAndCursors['edges'],
             'totalCount' => $itemCount,
             'pageInfo' => [
-                'endCursor' => $edgesAndCursors['cursors']['end'],
+                'endCursor' => $edgesAndCursors['cursors']['last'],
                 'startCursor' => $edgesAndCursors['cursors']['start'],
                 'hasNextPage' => $edgesAndCursors['cursors']['end'] !== $edgesAndCursors['cursors']['last'],
                 'hasPreviousPage' => $edgesAndCursors['cursors']['first'] !== null
@@ -230,7 +230,8 @@ class ResolveCollectionFactory
             $index++;
         }
 
-        $cursors['end'] = $cursors['last'] ?? base64_encode('0');
+        $endIndex       = $itemCount ? $itemCount - 1 : 0;
+        $cursors['end'] = base64_encode((string) $endIndex);
 
         return [
             'cursors' => $cursors,

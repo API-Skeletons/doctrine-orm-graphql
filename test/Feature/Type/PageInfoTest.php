@@ -66,13 +66,13 @@ class PageInfoTest extends AbstractTest
             'query' => new ObjectType([
                 'name' => 'query',
                 'fields' => [
-                    'performance' => $driver->completeConnection(Performance::class),
+                    'performances' => $driver->completeConnection(Performance::class),
                 ],
             ]),
         ]);
 
         $query  = '{
-            performance (pagination: { first: 2 }) {
+            performances (pagination: { first: 2 }) {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -88,8 +88,8 @@ class PageInfoTest extends AbstractTest
 
         $data = $result->toArray()['data'];
 
-        $this->assertTrue($data['performance']['pageInfo']['hasNextPage']);
-        $this->assertFalse($data['performance']['pageInfo']['hasPreviousPage']);
+        $this->assertTrue($data['performances']['pageInfo']['hasNextPage']);
+        $this->assertFalse($data['performances']['pageInfo']['hasPreviousPage']);
     }
 
     public function testPageInfoHasPreviousPage(): void

@@ -120,7 +120,7 @@ class ResolveEntityFactory
             'edges' => $edgesAndCursors['edges'],
             'totalCount' => $edgesAndCursors['totalCount'],
             'pageInfo' => [
-                'endCursor' => $edgesAndCursors['cursors']['end'],
+                'endCursor' => $edgesAndCursors['cursors']['last'],
                 'startCursor' => $edgesAndCursors['cursors']['start'],
                 'hasNextPage' => $edgesAndCursors['cursors']['end'] !== $edgesAndCursors['cursors']['last'],
                 'hasPreviousPage' => $edgesAndCursors['cursors']['first'] !== null
@@ -170,7 +170,8 @@ class ResolveEntityFactory
             $index++;
         }
 
-        $cursors['end'] = $cursors['last'] ?? base64_encode((string) 0);
+        $endIndex       = $paginator->count() ? $paginator->count() - 1 : 0;
+        $cursors['end'] = base64_encode((string) $endIndex);
 
         return [
             'cursors'    => $cursors,
