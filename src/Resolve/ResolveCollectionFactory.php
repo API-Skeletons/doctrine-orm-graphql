@@ -193,8 +193,7 @@ class ResolveCollectionFactory
                 'endCursor' => $edgesAndCursors['cursors']['last'],
                 'startCursor' => $edgesAndCursors['cursors']['start'],
                 'hasNextPage' => $edgesAndCursors['cursors']['end'] !== $edgesAndCursors['cursors']['last'],
-                'hasPreviousPage' => $edgesAndCursors['cursors']['first'] !== null
-                    && $edgesAndCursors['cursors']['start'] !== $edgesAndCursors['cursors']['first'],
+                'hasPreviousPage' => $edgesAndCursors['cursors']['start'] !== base64_encode((string) 0),
             ],
         ];
     }
@@ -215,6 +214,7 @@ class ResolveCollectionFactory
             'start' => base64_encode((string) 0),
         ];
 
+        $startCursor = null;
         foreach ($items as $item) {
             $cursors['last'] = base64_encode((string) ($index + $offsetAndLimit['offset']));
 
@@ -223,6 +223,10 @@ class ResolveCollectionFactory
                 'cursor' => $cursors['last'],
             ];
 
+            if (! $startCursor) {
+                $startCursor = $cursors['last'];
+            }
+
             if (! $cursors['first']) {
                 $cursors['first'] = $cursors['last'];
             }
@@ -230,8 +234,9 @@ class ResolveCollectionFactory
             $index++;
         }
 
-        $endIndex       = $itemCount ? $itemCount - 1 : 0;
-        $cursors['end'] = base64_encode((string) $endIndex);
+        $endIndex         = $itemCount ? $itemCount - 1 : 0;
+        $cursors['end']   = base64_encode((string) $endIndex);
+        $cursors['start'] = $startCursor ?? $cursors['start'];
 
         return [
             'cursors' => $cursors,
