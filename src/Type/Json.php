@@ -21,14 +21,14 @@ class Json extends ScalarType
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `json` scalar type represents json data.';
 
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): array|null
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
             throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
-        return $valueNode->value;
+        return $this->parseValue($valueNode->value);
         // @codeCoverageIgnoreEnd
     }
 
@@ -54,6 +54,12 @@ class Json extends ScalarType
 
     public function serialize(mixed $value): string|null
     {
-        return json_encode($value);
+        $return = json_encode($value);
+
+        if (! $return) {
+            return null;
+        }
+
+        return $return;
     }
 }
