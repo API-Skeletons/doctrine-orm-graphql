@@ -7,6 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 
+use GraphQL\Error\Error;
 use function array_flip;
 use function method_exists;
 use function uniqid;
@@ -17,6 +18,8 @@ use function uniqid;
  */
 class QueryBuilder
 {
+    private array $sortFields = [];
+
     /**
      * Add where clauses to a QueryBuilder based on the FilterType of the entity
      *
@@ -42,6 +45,8 @@ class QueryBuilder
                 }
             }
         }
+
+        $this->applySort($queryBuilder);
     }
 
     /**
@@ -84,7 +89,7 @@ class QueryBuilder
             ->setParameter($parameter, '%' . $value . '%');
     }
 
-    public function startsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
+    protected function startsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
     {
         $parameter = 'p' . uniqid();
         $queryBuilder
@@ -94,7 +99,7 @@ class QueryBuilder
             ->setParameter($parameter, $value . '%');
     }
 
-    public function endsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
+    protected function endsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
     {
         $parameter = 'p' . uniqid();
         $queryBuilder
@@ -104,7 +109,7 @@ class QueryBuilder
             ->setParameter($parameter, '%' . $value);
     }
 
-    public function isnull(string $field, bool $value, DoctrineQueryBuilder $queryBuilder): void
+    protected function isnull(string $field, bool $value, DoctrineQueryBuilder $queryBuilder): void
     {
         if ($value === true) {
             $queryBuilder->andWhere(
@@ -119,6 +124,56 @@ class QueryBuilder
 
     protected function sort(string $field, string $direction, DoctrineQueryBuilder $queryBuilder): void
     {
-        $queryBuilder->addOrderBy($field, $direction);
+        if (! isset($this->sortFields[$field])) {
+            $this->sortFields[$field] = [];
+        }
+
+        // This method is used to set the sort direction for a field
+        // It will be used to apply sorting later in the applySort method
+        $this->sortFields[$field]['direction'] = $direction;
+    }
+
+    protected function sortPriority(string $field, int $priority, DoctrineQueryBuilder $queryBuilder): void
+    {
+        if (! isset($this->sortFields[$field])) {
+            $this->sortFields[$field] = [];
+        }
+
+        // This method is used to set the sort priority for a field
+        // It will be used to apply sorting later in the applySort method
+        $this->sortFields[$field]['priority'] = $priority;
+    }
+
+    protected function applySort(DoctrineQueryBuilder $queryBuilder): void
+    {
+        // If no sort fields were added, do nothing
+        if (! $this->sortFields) {
+            return;
+        }
+
+        // Sort fields by priority if set, otherwise by field name
+        uasort($this->sortFields, function ($a, $b) {
+            if (isset($a['priority']) && isset($b['priority'])) {
+                return $a['priority'] <=> $b['priority'];
+            }
+            return strcmp(key($a), key($b));
+        });
+
+        $sortStrings = [];
+
+        foreach ($this->sortFields as $field => $sort) {
+            // If the direction is not set, default to 'ASC'
+            if (! isset($sort['direction'])) {
+                throw new Error(
+                    "Sort direction for field '$field' is not set but a sortPriority was. "
+                    . "Please use the 'sort' filter to set the direction."
+                );
+            }
+
+            $sortStrings[] = "$field " . $sort['direction'];
+        }
+
+        $sortString = implode(', ', $sortStrings);
+        $queryBuilder->addOrderBy($sortString);
     }
 }
