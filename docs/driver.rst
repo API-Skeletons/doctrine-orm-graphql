@@ -15,7 +15,7 @@ Creating a Driver with all config options
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 
-  $driver = new Driver($entityManager, new Config[
+  $driver = new Driver($entityManager, new Config([
       'entityPrefix' => 'App\\ORM\\Entity\\',
       'group' => 'customGroup',
       'groupSuffix' => 'customGroupSuffix',
