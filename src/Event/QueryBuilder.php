@@ -7,6 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\HasEventName;
+use Override;
 
 /**
  * This event is fired when the QueryBuilder is created for an entity
@@ -27,6 +28,7 @@ class QueryBuilder implements
     ) {
     }
 
+    #[Override]
     public function eventName(): string
     {
         return $this->eventName;

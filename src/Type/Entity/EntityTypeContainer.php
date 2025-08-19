@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use Override;
 
 use function assert;
 use function strtolower;
@@ -25,6 +26,7 @@ class EntityTypeContainer extends Container
     /**
      * Use the metadata to determine if the entity is available
      */
+    #[Override]
     public function has(string $id): bool
     {
         return isset($this->container->get('metadata')[$id]);
@@ -33,6 +35,7 @@ class EntityTypeContainer extends Container
     /**
      * Create and return an Entity object
      */
+    #[Override]
     public function get(string $id, string|null $eventName = null): mixed
     {
         // Allow for entities with a custom eventName

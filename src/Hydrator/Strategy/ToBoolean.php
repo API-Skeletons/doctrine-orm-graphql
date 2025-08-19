@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
 use Laminas\Hydrator\Strategy\StrategyInterface;
+use Override;
 
 /**
  * Transform a value into a php native boolean
@@ -14,6 +15,7 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
 class ToBoolean extends Collection implements
     StrategyInterface
 {
+    #[Override]
     public function extract(mixed $value, object|null $object = null): bool|null
     {
         if ($value === null) {
@@ -30,6 +32,7 @@ class ToBoolean extends Collection implements
      *
      * @codeCoverageIgnore
      */
+    #[Override]
     public function hydrate(mixed $value, array|null $data): bool|null
     {
         if ($value === null) {

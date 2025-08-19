@@ -9,6 +9,7 @@ use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
+use Override;
 
 use function is_string;
 use function preg_match;
@@ -22,6 +23,7 @@ class Time extends ScalarType
     public string|null $description = 'The `Time` scalar type represents time data.'
     . 'The format is e.g. 24 hour:minutes:seconds.microseconds';
 
+    #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string|null
     {
         // @codeCoverageIgnoreStart
@@ -37,6 +39,7 @@ class Time extends ScalarType
     /**
      * Parse H:i:s.u and H:i:s
      */
+    #[Override]
     public function parseValue(mixed $value): PHPDateTime
     {
         if (! is_string($value)) {
@@ -55,6 +58,7 @@ class Time extends ScalarType
         return PHPDateTime::createFromFormat('H:i:s.u', $value);
     }
 
+    #[Override]
     public function serialize(mixed $value): string|null
     {
         if ($value instanceof PHPDateTime) {

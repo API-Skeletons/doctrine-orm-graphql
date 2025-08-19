@@ -53,7 +53,8 @@ enum Filters: string
             self::NOTIN        => 'Not in the array of values',
             self::ISNULL       => 'Is null',
             self::SORT         => 'Sort by field. ASC or DESC.',
-            self::SORTPRIORITY => 'Specify the sort priority of a field.   Priorities are sorted lowest number first.  Sort must also be speciifed.',};
+            self::SORTPRIORITY => 'Specify the sort priority of a field.   Priorities are sorted lowest number first.  Sort must also be speciifed.',
+        };
     }
 
     /**

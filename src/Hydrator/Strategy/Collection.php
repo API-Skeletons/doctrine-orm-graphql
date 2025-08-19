@@ -12,6 +12,7 @@ use Doctrine\Laminas\Hydrator\Strategy\CollectionStrategyInterface;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use InvalidArgumentException;
 use LogicException;
+use Override;
 use ReflectionException;
 
 use function is_array;
@@ -39,11 +40,13 @@ abstract class Collection implements CollectionStrategyInterface
         $this->inflector = $inflector ?? InflectorFactory::create()->build();
     }
 
+    #[Override]
     public function setCollectionName(string $collectionName): void
     {
         $this->collectionName = $collectionName;
     }
 
+    #[Override]
     public function getCollectionName(): string
     {
         if ($this->collectionName === null) {
@@ -53,11 +56,13 @@ abstract class Collection implements CollectionStrategyInterface
         return $this->collectionName;
     }
 
+    #[Override]
     public function setClassMetadata(ClassMetadata $classMetadata): void
     {
         $this->metadata = $classMetadata;
     }
 
+    #[Override]
     public function getClassMetadata(): ClassMetadata
     {
         if ($this->metadata === null) {
@@ -67,11 +72,13 @@ abstract class Collection implements CollectionStrategyInterface
         return $this->metadata;
     }
 
+    #[Override]
     public function setObject(object $object): void
     {
         $this->object = $object;
     }
 
+    #[Override]
     public function getObject(): object
     {
         if ($this->object === null) {
@@ -89,6 +96,7 @@ abstract class Collection implements CollectionStrategyInterface
      *
      * @return mixed       Returns the value that should be extracted.
      */
+    #[Override]
     public function extract(mixed $value, object|null $object = null): mixed
     {
         return $value;

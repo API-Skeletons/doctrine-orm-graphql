@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
 use Closure;
 use GraphQL\Error\Error;
+use Override;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
@@ -21,12 +22,14 @@ abstract class Container implements ContainerInterface
     /** @var mixed[] */
     protected array $register = [];
 
+    #[Override]
     public function has(string $id): bool
     {
         return isset($this->register[strtolower($id)]);
     }
 
     /** @throws Error */
+    #[Override]
     public function get(string $id): mixed
     {
         $id = strtolower($id);

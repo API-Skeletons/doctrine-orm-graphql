@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Criteria as DoctrineCriteria;
 use Doctrine\ORM\PersistentCollection;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\HasEventName;
+use Override;
 
 /**
  * This event is dispatched when a Doctrine Criteria is created.
@@ -34,6 +35,7 @@ class Criteria implements
     ) {
     }
 
+    #[Override]
     public function eventName(): string
     {
         return $this->eventName;
