@@ -39,28 +39,28 @@ class ExcludeFiltersTest extends AbstractTest
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "Filters_String_a03586330c4e7326edac556450d913ee".', $error->getMessage());
+            $this->assertEquals('Field "eq" is not defined by type "Filters_String_d85f45158139644c1511e7f9d22d6068".', $error->getMessage());
         }
 
         $query  = '{ artists (filter: { name: { neq: "Grateful Dead" } } ) { edges { node { name } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "neq" is not defined by type "Filters_String_a03586330c4e7326edac556450d913ee".', $error->getMessage());
+            $this->assertEquals('Field "neq" is not defined by type "Filters_String_d85f45158139644c1511e7f9d22d6068".', $error->getMessage());
         }
 
         $query  = '{ artists { edges { node { performances ( filter: {venue: { neq: "test"} } ) { edges { node { venue } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "neq" is not defined by type "Filters_String_e55a7b533af3c46236f06d0fb99f08c6". Did you mean "eq"?', $error->getMessage());
+            $this->assertEquals('Field "neq" is not defined by type "Filters_String_3d2660e0d014aec30b0fc5d8fef65535". Did you mean "eq"?', $error->getMessage());
         }
 
         $query  = '{ artists { edges { node { performances ( filter: {venue: { contains: "test" } } ) { edges { node { venue } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "contains" is not defined by type "Filters_String_e55a7b533af3c46236f06d0fb99f08c6". Did you mean "notin"?', $error->getMessage());
+            $this->assertEquals('Field "contains" is not defined by type "Filters_String_3d2660e0d014aec30b0fc5d8fef65535". Did you mean "notin"?', $error->getMessage());
         }
     }
 }

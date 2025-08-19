@@ -11,7 +11,9 @@ use GraphQL\Error\Error;
 use function array_flip;
 use function implode;
 use function key;
+use function print_r;
 use function strcmp;
+use function strtoupper;
 use function uasort;
 use function uniqid;
 
@@ -70,6 +72,9 @@ class QueryBuilder
      */
     protected function default(Filters $filter, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
     {
+        /**
+         * psalm errors without proper filtering here
+         */
         switch ($filter) {
             case Filters::EQ:
             case Filters::NEQ:
@@ -81,12 +86,17 @@ class QueryBuilder
             case Filters::NOTIN:
                 break;
             case Filters::ISNULL:
-                $parameter = 'p' . uniqid();
-                $queryBuilder
-                    ->andWhere(
-                        $queryBuilder->expr()->{$filter->value}($field),
-                    )
-                    ->setParameter($parameter, $value);
+                if ($value) {
+                    $queryBuilder
+                        ->andWhere(
+                            $queryBuilder->expr()->isNull($field),
+                        );
+                } else {
+                    $queryBuilder
+                        ->andWhere(
+                            $queryBuilder->expr()->isNotNull($field),
+                        );
+                }
 
                 return;
 
@@ -170,7 +180,7 @@ class QueryBuilder
 
         // This method is used to set the sort direction for a field
         // It will be used to apply sorting later in the applySort method
-        $this->sortFields[$field]['direction'] = $direction;
+        $this->sortFields[$field]['direction'] = strtoupper($direction);
     }
 
     protected function sortPriority(string $field, int $priority, DoctrineQueryBuilder $queryBuilder): void
@@ -213,10 +223,7 @@ class QueryBuilder
                 );
             }
 
-            $sortStrings[] = $field . ' ' . $sort['direction'];
+            $queryBuilder->addOrderBy($field, $sort['direction']);
         }
-
-        $sortString = implode(', ', $sortStrings);
-        $queryBuilder->addOrderBy($sortString);
     }
 }

@@ -256,7 +256,7 @@ class EntityFilterTest extends AbstractTest
     /** @dataProvider schemaProvider */
     public function testsort(Schema $schema): void
     {
-        $query  = '{ performance ( filter: {artist: { eq: 1 } id: { sort: "desc" } } ) { edges { node { id } } } }';
+        $query  = '{ performance ( filter: {artist: { eq: 1 } id: { sort: "desc" sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
@@ -264,7 +264,7 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(5, count($data['performance']['edges']));
         $this->assertEquals(5, $data['performance']['edges'][0]['node']['id']);
 
-        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "asc" } } ) { edges { node { id } } } }';
+        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "asc" sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
@@ -272,7 +272,7 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(5, count($data['performance']['edges']));
         $this->assertEquals(5, $data['performance']['edges'][0]['node']['id']);
 
-        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "desc" } } ) { edges { node { id } } } }';
+        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "desc" sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
