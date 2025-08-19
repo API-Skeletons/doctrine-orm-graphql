@@ -222,7 +222,7 @@ class PaginationTest extends AbstractTest
         $data = $result->toArray()['data'];
 
         $this->assertEquals(2, count($data['performance']['edges']));
-        $this->assertEquals(8, $data['performance']['edges'][0]['node']['id']);
+        $this->assertEquals(9, $data['performance']['edges'][0]['node']['id']);
     }
 
     public function testBefore(): void
@@ -278,7 +278,7 @@ class PaginationTest extends AbstractTest
 
         $data = $result->toArray()['data'];
 
-        $this->assertEquals(9, count($data['performance']['edges']));
+        $this->assertEquals(10, count($data['performance']['edges']));
         $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
     }
 }

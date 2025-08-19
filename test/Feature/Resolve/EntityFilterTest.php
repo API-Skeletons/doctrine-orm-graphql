@@ -280,4 +280,16 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(5, count($data['performance']['edges']));
         $this->assertEquals(4, $data['performance']['edges'][0]['node']['id']);
     }
+
+    /** @dataProvider schemaProvider */
+    public function testsortpriority(Schema $schema): void
+    {
+        $query  = '{ performance ( filter: { id: { sort: "desc" sortPriority: 1 } } ) { edges { node { id } } } }';
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(10, count($data['performance']['edges']));
+        $this->assertEquals(10, $data['performance']['edges'][0]['node']['id']);
+    }
 }
