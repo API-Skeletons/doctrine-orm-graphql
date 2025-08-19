@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
 use Laminas\Hydrator\Strategy\StrategyInterface;
+use Override;
 
 /**
  * Return the same value
@@ -12,6 +13,7 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
 class FieldDefault extends Collection implements
     StrategyInterface
 {
+    #[Override]
     public function extract(mixed $value, object|null $object = null): mixed
     {
         return $value;
@@ -22,6 +24,7 @@ class FieldDefault extends Collection implements
      *
      * @codeCoverageIgnore
      */
+    #[Override]
     public function hydrate(mixed $value, array|null $data): mixed
     {
         return $value;

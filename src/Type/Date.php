@@ -9,6 +9,7 @@ use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
+use Override;
 
 use function is_string;
 use function preg_match;
@@ -21,6 +22,7 @@ class Date extends ScalarType
     public string|null $description = 'The `Date` scalar type represents datetime data.'
     . 'The format is e.g. 2004-02-12.';
 
+    #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): DateTime|null
     {
         // @codeCoverageIgnoreStart
@@ -33,6 +35,7 @@ class Date extends ScalarType
         return $this->parseValue($valueNode->value);
     }
 
+    #[Override]
     public function parseValue(mixed $value): DateTime
     {
         if (! is_string($value)) {
@@ -46,6 +49,7 @@ class Date extends ScalarType
         return DateTime::createFromFormat(DateTime::ATOM, $value . 'T00:00:00+00:00');
     }
 
+    #[Override]
     public function serialize(mixed $value): string|null
     {
         if (is_string($value)) {

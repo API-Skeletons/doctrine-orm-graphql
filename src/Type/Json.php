@@ -8,6 +8,7 @@ use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
+use Override;
 
 use function is_string;
 use function json_decode;
@@ -21,6 +22,7 @@ class Json extends ScalarType
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `json` scalar type represents json data.';
 
+    #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
         // @codeCoverageIgnoreStart
@@ -37,6 +39,7 @@ class Json extends ScalarType
      *
      * @throws Error
      */
+    #[Override]
     public function parseValue(mixed $value): array|null
     {
         if (! is_string($value)) {
@@ -52,7 +55,8 @@ class Json extends ScalarType
         return $data;
     }
 
-    public function serialize(mixed $value): string|null
+    #[Override]
+    public function serialize(mixed $value): false|string
     {
         return json_encode($value);
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
 use Laminas\Hydrator\Strategy\StrategyInterface;
+use Override;
 
 use function intval;
 
@@ -16,6 +17,7 @@ use function intval;
 class ToInteger extends Collection implements
     StrategyInterface
 {
+    #[Override]
     public function extract(mixed $value, object|null $object = null): mixed
     {
         if ($value === null) {
@@ -32,6 +34,7 @@ class ToInteger extends Collection implements
      *
      * @codeCoverageIgnore
      */
+    #[Override]
     public function hydrate(mixed $value, array|null $data): mixed
     {
         if ($value === null) {

@@ -6,10 +6,13 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
-
 use GraphQL\Error\Error;
+
 use function array_flip;
-use function method_exists;
+use function implode;
+use function key;
+use function strcmp;
+use function uasort;
 use function uniqid;
 
 /**
@@ -18,6 +21,7 @@ use function uniqid;
  */
 class QueryBuilder
 {
+    /** @var mixed[]  */
     private array $sortFields = [];
 
     /**
@@ -38,10 +42,22 @@ class QueryBuilder
             foreach ($filters as $filter => $value) {
                 $filter = Filters::from($filter);
 
-                if (method_exists($this, $filter->value) === false) {
-                    $this->default($filter, $queryBuilderField, $value, $queryBuilder);
-                } else {
-                    $this->{$filter->value}($queryBuilderField, $value, $queryBuilder);
+                switch ($filter) {
+                    case Filters::EQ:
+                    case Filters::NEQ:
+                    case Filters::GT:
+                    case Filters::GTE:
+                    case Filters::LT:
+                    case Filters::LTE:
+                    case Filters::IN:
+                    case Filters::NOTIN:
+                    case Filters::ISNULL:
+                        // These filters are handled by the default method
+                        $this->default($filter, $queryBuilderField, $value, $queryBuilder);
+                        break;
+                    default:
+                        $this->{$filter->value}($queryBuilderField, $value, $queryBuilder);
+                        break;
                 }
             }
         }
@@ -54,6 +70,30 @@ class QueryBuilder
      */
     protected function default(Filters $filter, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
     {
+        switch ($filter) {
+            case Filters::EQ:
+            case Filters::NEQ:
+            case Filters::GT:
+            case Filters::GTE:
+            case Filters::LT:
+            case Filters::LTE:
+            case Filters::IN:
+            case Filters::NOTIN:
+                break;
+            case Filters::ISNULL:
+                $parameter = 'p' . uniqid();
+                $queryBuilder
+                    ->andWhere(
+                        $queryBuilder->expr()->{$filter->value}($field),
+                    )
+                    ->setParameter($parameter, $value);
+
+                return;
+
+            default:
+                return;
+        }
+
         $parameter = 'p' . uniqid();
         $queryBuilder
             ->andWhere(
@@ -152,10 +192,11 @@ class QueryBuilder
         }
 
         // Sort fields by priority if set, otherwise by field name
-        uasort($this->sortFields, function ($a, $b) {
+        uasort($this->sortFields, static function ($a, $b) {
             if (isset($a['priority']) && isset($b['priority'])) {
                 return $a['priority'] <=> $b['priority'];
             }
+
             return strcmp(key($a), key($b));
         });
 
@@ -165,12 +206,14 @@ class QueryBuilder
             // If the direction is not set, default to 'ASC'
             if (! isset($sort['direction'])) {
                 throw new Error(
-                    "Sort direction for field '$field' is not set but a sortPriority was. "
-                    . "Please use the 'sort' filter to set the direction."
+                    "Sort direction for field '"
+                    . $field
+                    . "' is not set but a sortPriority was. "
+                    . "Please use the 'sort' filter to set the direction.",
                 );
             }
 
-            $sortStrings[] = "$field " . $sort['direction'];
+            $sortStrings[] = $field . ' ' . $sort['direction'];
         }
 
         $sortString = implode(', ', $sortStrings);

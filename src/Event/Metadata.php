@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
 use ArrayObject;
 use League\Event\HasEventName;
+use Override;
 
 /**
  * This event is fired when the metadta is created
@@ -19,6 +20,7 @@ class Metadata implements
     ) {
     }
 
+    #[Override]
     public function eventName(): string
     {
         return $this->eventName;
