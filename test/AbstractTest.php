@@ -109,6 +109,13 @@ abstract class AbstractTest extends TestCase
                     'city' => 'Big Cypress',
                     'state' => 'Florida',
                 ],
+                // A second performance at the same venue is needed to test
+                // sortPriority
+                '1997-11-14T00:00:00+00:00' => [
+                    'venue' => 'E Center',
+                    'city' => 'West Valley City',
+                    'state' => 'Utah',
+                ],
             ],
             'String Cheese Incident' => [
                 '2002-06-21T00:00:00+00:00' => [

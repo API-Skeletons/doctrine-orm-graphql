@@ -95,6 +95,9 @@ class EntityFilterTest extends AbstractTest
               moreFilters: {
                 performanceCount_gte: 3
               }
+              filter: {
+                name: { eq: "Grateful Dead" }
+              }
             ) {
               edges {
                 node {
