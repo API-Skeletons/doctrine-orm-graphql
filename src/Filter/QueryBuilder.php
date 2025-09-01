@@ -9,9 +9,8 @@ use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use GraphQL\Error\Error;
 
 use function array_flip;
-use function implode;
+use function in_array;
 use function key;
-use function print_r;
 use function strcmp;
 use function strtoupper;
 use function uasort;
@@ -44,23 +43,39 @@ class QueryBuilder
             foreach ($filters as $filter => $value) {
                 $filter = Filters::from($filter);
 
-                switch ($filter) {
-                    case Filters::EQ:
-                    case Filters::NEQ:
-                    case Filters::GT:
-                    case Filters::GTE:
-                    case Filters::LT:
-                    case Filters::LTE:
-                    case Filters::IN:
-                    case Filters::NOTIN:
-                    case Filters::ISNULL:
-                        // These filters are handled by the default method
-                        $this->default($filter, $queryBuilderField, $value, $queryBuilder);
-                        break;
-                    default:
-                        $this->{$filter->value}($queryBuilderField, $value, $queryBuilder);
-                        break;
+                if (
+                    in_array($filter, [
+                        Filters::EQ,
+                        Filters::NEQ,
+                        Filters::GT,
+                        Filters::GTE,
+                        Filters::LT,
+                        Filters::LTE,
+                        Filters::IN,
+                        Filters::NOTIN,
+                    ])
+                ) {
+                    $this->default($filter->value, $queryBuilderField, $value, $queryBuilder);
+                    continue;
                 }
+
+                if ($filter === Filters::ISNULL) {
+                    if ($value) {
+                        $queryBuilder
+                            ->andWhere(
+                                $queryBuilder->expr()->isNull($queryBuilderField),
+                            );
+                    } else {
+                        $queryBuilder
+                            ->andWhere(
+                                $queryBuilder->expr()->isNotNull($queryBuilderField),
+                            );
+                    }
+
+                    continue;
+                }
+
+                $this->{$filter->value}($queryBuilderField, $value, $queryBuilder);
             }
         }
 
@@ -70,44 +85,12 @@ class QueryBuilder
     /**
      * For filters that do not have a special method, use this method
      */
-    protected function default(Filters $filter, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
+    protected function default(string $filterValue, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
     {
-        /**
-         * psalm errors without proper filtering here
-         */
-        switch ($filter) {
-            case Filters::EQ:
-            case Filters::NEQ:
-            case Filters::GT:
-            case Filters::GTE:
-            case Filters::LT:
-            case Filters::LTE:
-            case Filters::IN:
-            case Filters::NOTIN:
-                break;
-            case Filters::ISNULL:
-                if ($value) {
-                    $queryBuilder
-                        ->andWhere(
-                            $queryBuilder->expr()->isNull($field),
-                        );
-                } else {
-                    $queryBuilder
-                        ->andWhere(
-                            $queryBuilder->expr()->isNotNull($field),
-                        );
-                }
-
-                return;
-
-            default:
-                return;
-        }
-
         $parameter = 'p' . uniqid();
         $queryBuilder
             ->andWhere(
-                $queryBuilder->expr()->{$filter->value}($field, ':' . $parameter),
+                $queryBuilder->expr()->$filterValue($field, ':' . $parameter),
             )
             ->setParameter($parameter, $value);
     }
