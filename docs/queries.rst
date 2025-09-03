@@ -56,20 +56,21 @@ specific to the entity they filter upon.
 
 Provided Filters::
 
-    eq         -  Equals; same as name: value.  DateTime not supported.  See Between.
-    neq        -  Not Equals
-    gt         -  Greater Than
-    lt         -  Less Than
-    gte        -  Greater Than or Equal To
-    lte        -  Less Than or Equal To
-    in         -  Filter for values in an array
-    notin      -  Filter for values not in an array
-    between    -  Filter between `from` and `to` values.  Good substitute for DateTime Equals.
-    contains   -  Strings only. Similar to a Like query as `like '%value%'`
-    startswith -  Strings only. A like query from the beginning of the value `like 'value%'`
-    endswith   -  Strings only. A like query from the end of the value `like '%value'`
-    isnull     -  If `true` return results where the field is null.
-    sort       -  Sort the result by this field.  Value is 'asc' or 'desc'
+    eq           -  Equals; same as name: value.  DateTime not supported.  See Between.
+    neq          -  Not Equals
+    gt           -  Greater Than
+    lt           -  Less Than
+    gte          -  Greater Than or Equal To
+    lte          -  Less Than or Equal To
+    in           -  Filter for values in an array
+    notin        -  Filter for values not in an array
+    between      -  Filter between `from` and `to` values.  Good substitute for DateTime Equals.
+    contains     -  Strings only. Similar to a Like query as `like '%value%'`
+    startswith   -  Strings only. A like query from the beginning of the value `like 'value%'`
+    endswith     -  Strings only. A like query from the end of the value `like '%value'`
+    isnull       -  If `true` return results where the field is null.
+    sort         -  Sort the result by this field.  Value is 'asc' or 'desc'
+    sortPriority -  Sort priority when multiple sort fields are used.  Value is an integer starting at 1.
 
 The format for using these filters is:
 
@@ -153,7 +154,7 @@ A complete query for all pagination data:
   }
 
 Cursors are included with each edge.  A cursor is a base64 encoded
-offset from the beginning of the result set.  ``base64_encode('0');`` is 
+offset from the beginning of the result set.  ``base64_encode('0');`` is
 ``MA==`` to use when creating a paginated query.
 
 

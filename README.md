@@ -271,6 +271,7 @@ Each field has their own set of filters.  Based on the field type, some or all o
 * startwith - A like query with a wildcard on the right side of the value.
 * endswith - A like query with a wildcard on the left side of the value.
 * contains - A like query.
+* sort & sortPriority - Sort the results by a field.  Use sortPriority to sort by multiple fields.
 
 You may [exclude any filter](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html#entity) from any entity, association, or globally.
 
