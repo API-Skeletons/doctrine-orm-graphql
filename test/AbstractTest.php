@@ -105,7 +105,7 @@ abstract class AbstractTest extends TestCase
                     'recordings' => ['AKG480 > Aerco preamp > SBM-1'],
                 ],
                 '1999-12-31T00:00:00+00:00' => [
-                    'venue' => null,
+                    'venue' => 'Big Cypress Seminole Indian Reservation',
                     'city' => 'Big Cypress',
                     'state' => 'Florida',
                 ],

@@ -60,18 +60,7 @@ class QueryBuilder
                 }
 
                 if ($filter === Filters::ISNULL) {
-                    if ($value) {
-                        $queryBuilder
-                            ->andWhere(
-                                $queryBuilder->expr()->isNull($queryBuilderField),
-                            );
-                    } else {
-                        $queryBuilder
-                            ->andWhere(
-                                $queryBuilder->expr()->isNotNull($queryBuilderField),
-                            );
-                    }
-
+                    $this->isnull($queryBuilderField, $value, $queryBuilder);
                     continue;
                 }
 

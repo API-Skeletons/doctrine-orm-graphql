@@ -352,6 +352,75 @@ class EntityFilterTest extends AbstractTest
     }
 
     /** @dataProvider schemaProvider */
+    public function testSortPriorityNoPriorityOneField(Schema $schema): void
+    {
+        /**
+         * This tests deprecation of not setting sortPriority when sort is set
+         */
+        $query = '
+          {
+            performance (
+              filter: {
+                artist: {
+                  eq: 2
+                }
+                venue: {
+                  sort: "asc"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        ';
+
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(7, $data['performance']['edges'][0]['node']['id']);
+    }
+
+    /** @dataProvider schemaProvider */
+    public function testSortPriorityNoPriorityTwoFields(Schema $schema): void
+    {
+        $query = '
+          {
+            performance (
+              filter: {
+                artist: {
+                  eq: 2
+                }
+                venue: {
+                  eq: "E Center"
+                  sort: "asc"
+                }
+                performanceDate: {
+                  sort: "asc"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        ';
+
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(8, $data['performance']['edges'][0]['node']['id']);
+    }
+
+    /** @dataProvider schemaProvider */
     public function testSortPriorityNoSort(Schema $schema): void
     {
         $query = '
