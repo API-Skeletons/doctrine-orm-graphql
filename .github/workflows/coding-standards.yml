@@ -62,5 +62,4 @@ jobs:
       - name: "Run PHP_CodeSniffer"
         run: |
           vendor/bin/phpcs --report-emacs --report-diff || true
-          vendor/bin/phpcs --no-colors --report=checkstyle | cs2pr
 
