@@ -9,12 +9,58 @@ on:
     branches:
       - "*.x"
       - "main"
+  workflow_call:
+    inputs:
+      php-version:
+        description: "The PHP version to use when running the job"
+        default: "8.3"
+        required: false
+        type: "string"
+      composer-root-version:
+        description: "The version of the package being tested, in case of circular dependencies."
+        required: false
+        type: "string"
+      composer-dependency-versions:
+        description: "whether the job should install the locked, highest, or lowest versions of Composer dependencies."
+        default: "highest"
+        required: false
+        type: "string"
+      composer-options:
+        description: "Additional flags for the composer install command."
+        default: "--prefer-dist"
+        required: false
+        type: "string"
 
 jobs:
   coding-standards:
-    name: "Coding Standards"
-    uses: "doctrine/.github/.github/workflows/coding-standards.yml@1.3.0"
-    with:
-      php-version: '8.3'
-      composer-options: '--prefer-dist --ignore-platform-req=php'
+    name: "Coding Standards (PHP: ${{ inputs.php-version }})"
+    runs-on: "ubuntu-22.04"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v5"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          ini-file: development
+          php-version: "${{ inputs.php-version }}"
+          tools: "cs2pr"
+
+      - name: "Set COMPOSER_ROOT_VERSION"
+        run: |
+          echo "COMPOSER_ROOT_VERSION=${{ inputs.composer-root-version }}" >> $GITHUB_ENV
+        if: "${{ inputs.composer-root-version }}"
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v3"
+        with:
+          dependency-versions: "${{ inputs.composer-dependency-versions }}"
+          composer-options: "${{ inputs.composer-options }}"
+
+      - name: "Run PHP_CodeSniffer"
+        run: |
+          vendor/bin/phpcs --report-emacs --report-diff || true
+          vendor/bin/phpcs --no-colors --report=checkstyle | cs2pr
 
