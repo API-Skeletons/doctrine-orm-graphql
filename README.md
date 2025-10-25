@@ -9,7 +9,7 @@ GraphQL Type Driver for Doctrine ORM
 
 [![Build Status](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml?query=branch%3Amain)
 [![Code Coverage](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main/graphs/badge.svg)](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/badges/quality-score.png?b=12.0.x)](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/?branch=12.0.x)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/badges/quality-score.png?b=12.4.x)](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/?branch=12.4.x)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%205-brightgreen.svg)](https://img.shields.io/badge/PHPStan-level%205-brightgreen.svg)
 [![psalm](https://img.shields.io/badge/psalm-level%204-brightgreen.svg)](https://img.shields.io/badge/psalm-level%204-brightgreen.svg)
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%2b-blue)](https://img.shields.io/badge/PHP-8.1%2b-blue)
