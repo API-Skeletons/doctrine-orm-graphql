@@ -7,8 +7,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateTimeTZ as DateTimeType;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use DateTime;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
@@ -16,7 +16,7 @@ use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
-class DateTimeTZTest extends AbstractTest
+class DateTimeTZTest extends TestCase
 {
     public function testParseValue(): void
     {

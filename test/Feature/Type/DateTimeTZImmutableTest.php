@@ -7,8 +7,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateTimeTZImmutable as DateTimeType;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use DateTime;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
@@ -18,7 +18,7 @@ use GraphQL\Type\Schema;
 
 use function count;
 
-class DateTimeTZImmutableTest extends AbstractTest
+class DateTimeTZImmutableTest extends TestCase
 {
     public function testParseValue(): void
     {

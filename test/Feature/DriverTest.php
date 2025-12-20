@@ -9,11 +9,11 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use ArrayObject;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
@@ -23,7 +23,7 @@ use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 use Psr\Container\ContainerInterface;
 
-class DriverTest extends AbstractTest
+class DriverTest extends TestCase
 {
     public function testGetInvalidService(): void
     {
@@ -49,7 +49,7 @@ class DriverTest extends AbstractTest
 
     public function testCreateDriverWithConfig(): void
     {
-        $container = $this->createMock(ContainerInterface::class);
+        $container = $this->createStub(ContainerInterface::class);
         $config    = new Config([
             'group' => 'default',
             'useHydratorCache' => true,

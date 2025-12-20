@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use InvalidArgumentException;
 
-class ConfigTest extends AbstractTest
+class ConfigTest extends TestCase
 {
     public function testInvalidConfig(): void
     {

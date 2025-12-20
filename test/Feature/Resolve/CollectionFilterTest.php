@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
@@ -14,7 +14,7 @@ use GraphQL\Type\Schema;
 use function base64_encode;
 use function count;
 
-class CollectionFilterTest extends AbstractTest
+class CollectionFilterTest extends TestCase
 {
     protected Schema $schema;
 

@@ -7,10 +7,10 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 
-class TypeContainerTest extends AbstractTest
+class TypeContainerTest extends TestCase
 {
     public function testBuild(): void
     {
