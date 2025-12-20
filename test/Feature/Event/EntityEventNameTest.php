@@ -7,8 +7,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
@@ -23,7 +23,7 @@ use function uniqid;
 /**
  * This tests custom event names when creating entity types
  */
-class EntityEventNameTest extends AbstractTest
+class EntityEventNameTest extends TestCase
 {
     public function testEvent(): void
     {

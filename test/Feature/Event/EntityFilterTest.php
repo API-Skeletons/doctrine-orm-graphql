@@ -7,8 +7,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
@@ -24,7 +24,7 @@ use function uniqid;
  * This test uses both EventDefinition and QueryBuilderTest to add a new
  * field to an entity type and filter it.
  */
-class EntityFilterTest extends AbstractTest
+class EntityFilterTest extends TestCase
 {
     public function testEvent(): void
     {

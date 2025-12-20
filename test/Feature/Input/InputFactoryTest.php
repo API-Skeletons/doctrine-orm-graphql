@@ -6,8 +6,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Input;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use Doctrine\ORM\EntityManager;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -15,7 +15,7 @@ use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 use Throwable;
 
-class InputFactoryTest extends AbstractTest
+class InputFactoryTest extends TestCase
 {
     /**
      * TypeNames for inputs was EntityType_Input but that has been changed to

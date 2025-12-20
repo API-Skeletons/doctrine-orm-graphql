@@ -7,8 +7,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Hydrator;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
@@ -20,7 +20,7 @@ use function print_r;
 /**
  * This test uses aliases for fields and associations
  */
-class ExtractionMapTest extends AbstractTest
+class ExtractionMapTest extends TestCase
 {
     public function testExtractionMap(): void
     {

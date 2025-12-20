@@ -6,8 +6,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
@@ -19,7 +19,7 @@ use GraphQL\Type\Schema;
  *
  * This test exists to test the filters for a collection
  */
-class CollectionFiltersTest extends AbstractTest
+class CollectionFiltersTest extends TestCase
 {
     public function testLiteralFilterValues(): void
     {

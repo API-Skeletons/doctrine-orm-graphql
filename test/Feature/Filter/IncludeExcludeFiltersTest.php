@@ -6,13 +6,13 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use Throwable;
 
-class IncludeExcludeFiltersTest extends AbstractTest
+class IncludeExcludeFiltersTest extends TestCase
 {
     public function testIncludeExcludeFilters(): void
     {

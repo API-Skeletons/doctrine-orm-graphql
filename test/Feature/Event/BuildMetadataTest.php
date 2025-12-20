@@ -7,7 +7,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use ArrayObject;
 use League\Event\EventDispatcher;
 
@@ -15,7 +15,7 @@ use League\Event\EventDispatcher;
  * This test uses both EventDefinition and QueryBuidlerTest to add a new
  * field to an entity type and filter it.
  */
-class BuildMetadataTest extends AbstractTest
+class BuildMetadataTest extends TestCase
 {
     public function testEvent(): void
     {

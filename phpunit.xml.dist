@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" colors="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <coverage>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" colors="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.5/phpunit.xsd">
+  <testsuites>
+    <testsuite name="GraphQL">
+      <directory>./test</directory>
+      <exclude>test/Entity/TypeTest.php</exclude>
+    </testsuite>
+  </testsuites>
+  <php>
+    <ini name="memory_limit" value="-1"/>
+  </php>
+  <source>
     <include>
       <directory suffix=".php">./src</directory>
       <directory suffix=".php">./config</directory>
@@ -8,13 +17,5 @@
     <exclude>
       <directory>./vendor</directory>
     </exclude>
-  </coverage>
-  <testsuites>
-    <testsuite name="GraphQL">
-      <directory>./test</directory>
-    </testsuite>
-  </testsuites>
-  <php>
-    <ini name="memory_limit" value="-1"/>
-  </php>
+  </source>
 </phpunit>

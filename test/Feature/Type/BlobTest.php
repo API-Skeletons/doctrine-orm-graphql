@@ -7,8 +7,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Blob;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
@@ -22,7 +22,7 @@ use function base64_encode;
 use function count;
 use function file_get_contents;
 
-class BlobTest extends AbstractTest
+class BlobTest extends TestCase
 {
     public function testParseValue(): void
     {
