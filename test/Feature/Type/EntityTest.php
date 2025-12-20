@@ -12,9 +12,9 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToInteger;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use ArrayObject;
 use League\Event\EventDispatcher;
 
@@ -22,7 +22,7 @@ use function array_keys;
 use function array_values;
 use function sort;
 
-class EntityTest extends AbstractTest
+class EntityTest extends TestCase
 {
     public function testEntityMetadata(): void
     {

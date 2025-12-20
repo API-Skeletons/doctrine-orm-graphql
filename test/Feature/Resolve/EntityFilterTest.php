@@ -5,51 +5,53 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function count;
 
-class EntityFilterTest extends AbstractTest
+class EntityFilterTest extends TestCase
 {
     /** @var Schema[] */
     private array $schemas = [];
 
     /** @return Schema[] */
-    public function schemaProvider(): array
+    public static function schemaProvider(): array
     {
-        parent::setUp();
+        return [
+            'dynamic case' => [
+                static function () {
+                    $driver = new Driver(self::$entityManager);
 
-        $schemas = [];
-
-        $driver    = new Driver($this->getEntityManager());
-        $schemas[] = [
-            new Schema([
-                'query' => new ObjectType([
-                    'name' => 'query',
-                    'fields' => [
-                        'performance' => [
-                            'type' => $driver->connection(Performance::class),
-                            'args' => [
-                                'filter' => $driver->filter(Performance::class),
-                                'pagination' => $driver->pagination(),
+                    return new Schema([
+                        'query' => new ObjectType([
+                            'name' => 'query',
+                            'fields' => [
+                                'performance' => [
+                                    'type' => $driver->connection(Performance::class),
+                                    'args' => [
+                                        'filter' => $driver->filter(Performance::class),
+                                        'pagination' => $driver->pagination(),
+                                    ],
+                                    'resolve' => $driver->resolve(Performance::class),
+                                ],
                             ],
-                            'resolve' => $driver->resolve(Performance::class),
-                        ],
-                    ],
-                ]),
-            ]),
+                        ]),
+                    ]);
+                },
+            ],
         ];
-
-        return $schemas;
     }
 
-    /** @dataProvider schemaProvider */
-    public function testeq(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testeq(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {id: { eq: 2 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -59,9 +61,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(2, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testneq(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testneq(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {artist: { eq: 1 } id: { neq: 2 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -71,9 +75,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testlt(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testlt(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: { artist: { eq: 1 } id: { lt: 2 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -83,9 +89,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testlte(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testlte(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: { artist: { eq: 1 } id: { lte: 2 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -95,9 +103,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testgt(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testgt(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: { artist: { eq: 1 } id: { gt: 2 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -107,9 +117,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(3, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testgte(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testgte(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {artist: { eq: 1 } id: { gte: 2 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -119,9 +131,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(2, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testisnull(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testisnull(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { isnull: true } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -131,9 +145,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(5, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testisnotnull(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testisnotnull(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { isnull: false } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -143,9 +159,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testbetween(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testbetween(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '
           query DateTimeBetweenTest ($from: DateTime!, $to: DateTime!)
           {
@@ -193,9 +211,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(2, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testcontains(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testcontains(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: { artist: { eq: 1 } venue: { contains: "ill" } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -205,9 +225,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(2, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function teststartswith(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function teststartswith(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { startswith: "Soldier" } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -217,9 +239,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(4, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testendswith(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testendswith(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { endswith: "University" } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -229,9 +253,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(3, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testin(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testin(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {artist: { eq: 1 } id: { in: [1,2,3] } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -241,9 +267,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testnotin(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testnotin(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {artist: { eq: 1 } id: { notin: [3,4] } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -253,9 +281,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testsort(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testsort(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query  = '{ performance ( filter: {artist: { eq: 1 } id: { sort: "desc" sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
@@ -281,9 +311,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(4, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testSortPriority(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testSortPriority(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query = '
           {
             performance (
@@ -351,9 +383,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(6, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testSortPriorityNoPriorityOneField(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testSortPriorityNoPriorityOneField(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         /**
          * This tests deprecation of not setting sortPriority when sort is set
          */
@@ -385,9 +419,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(7, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testSortPriorityNoPriorityTwoFields(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testSortPriorityNoPriorityTwoFields(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query = '
           {
             performance (
@@ -420,9 +456,11 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(8, $data['performance']['edges'][0]['node']['id']);
     }
 
-    /** @dataProvider schemaProvider */
-    public function testSortPriorityNoSort(Schema $schema): void
+    #[DataProvider('schemaProvider')]
+    public function testSortPriorityNoSort(callable $dataProvider): void
     {
+        $schema = $dataProvider();
+
         $query = '
           {
             performance (

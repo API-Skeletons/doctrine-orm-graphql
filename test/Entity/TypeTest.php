@@ -8,6 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\Strategy\CsvString;
 use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -21,6 +22,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'BetweenTypeContainerTest')]
 #[GraphQL\Entity(group: 'CustomTypeArray')]
 #[ORM\Entity]
+#[PHPUnit\Framework\Attributes\ExcludeFromCodeCoverage]
 class TypeTest
 {
     #[GraphQL\Field]

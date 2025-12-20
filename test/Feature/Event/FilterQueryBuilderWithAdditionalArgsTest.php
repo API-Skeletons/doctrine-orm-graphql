@@ -6,8 +6,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -18,7 +18,7 @@ use League\Event\EventDispatcher;
 /**
  * Use the resolve argument of $args on the FilterQueryBuilder object to filter the query builder
  */
-class FilterQueryBuilderWithAdditionalArgsTest extends AbstractTest
+class FilterQueryBuilderWithAdditionalArgsTest extends TestCase
 {
     public function testEvent(): void
     {

@@ -6,15 +6,15 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
 use function count;
 
-class DataTypesTest extends AbstractTest
+class DataTypesTest extends TestCase
 {
     public function testDataTypes(): void
     {

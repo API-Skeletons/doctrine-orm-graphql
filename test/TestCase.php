@@ -10,20 +10,20 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 use function date;
 use function file_get_contents;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-abstract class AbstractTest extends TestCase
+class TestCase extends PHPUnitTestCase
 {
-    protected EntityManager $entityManager;
+    protected static EntityManager $entityManager;
 
     public function setUp(): void
     {
-        // Create a simple "default" Doctrine ORM configuration for Annotations
+        // Create a simple "default" Doctrine ORM configuration for Attributes
         $config = ORMSetup::createAttributeMetadataConfiguration(
             paths: [__DIR__ . '/Entity'],
             isDevMode: true,
@@ -36,16 +36,16 @@ abstract class AbstractTest extends TestCase
         ]);
 
         // obtaining the entity manager
-        $this->entityManager = new EntityManager($connection, $config);
-        $tool                = new SchemaTool($this->entityManager);
-        $tool->createSchema($this->entityManager->getMetadataFactory()->getAllMetadata());
+        self::$entityManager = new EntityManager($connection, $config);
+        $tool                = new SchemaTool(self::$entityManager);
+        $tool->createSchema(self::$entityManager->getMetadataFactory()->getAllMetadata());
 
         $this->populateData();
     }
 
     protected function getEntityManager(): EntityManager
     {
-        return $this->entityManager;
+        return self::$entityManager;
     }
 
     protected function populateData(): void
@@ -135,7 +135,7 @@ abstract class AbstractTest extends TestCase
 
         foreach ($users as $userData) {
             $user = new Entity\User();
-            $this->entityManager->persist($user);
+            self::$entityManager->persist($user);
             $user->setName($userData['name']);
             $user->setEmail($userData['email']);
             $user->setPassword($userData['password']);
@@ -144,7 +144,7 @@ abstract class AbstractTest extends TestCase
         foreach ($artists as $name => $performances) {
             $artist = (new Entity\Artist())
                 ->setName($name);
-            $this->entityManager->persist($artist);
+            self::$entityManager->persist($artist);
 
             foreach ($performances as $performanceDate => $location) {
                 $performance = (new Entity\Performance())
@@ -153,7 +153,7 @@ abstract class AbstractTest extends TestCase
                     ->setCity($location['city'])
                     ->setState($location['state'])
                     ->setArtist($artist);
-                $this->entityManager->persist($performance);
+                self::$entityManager->persist($performance);
 
                 if (! isset($location['recordings'])) {
                     continue;
@@ -163,7 +163,7 @@ abstract class AbstractTest extends TestCase
                     $recording = (new Entity\Recording())
                         ->setSource($source)
                         ->setPerformance($performance);
-                    $this->entityManager->persist($recording);
+                    self::$entityManager->persist($recording);
                 }
             }
         }
@@ -190,9 +190,9 @@ abstract class AbstractTest extends TestCase
             ->setTestTime(new DateTime('2022-08-07T20:10:15.123456'))
             ->setTestTimeImmutable($immutableDateTime)
             ->setTestBlob(file_get_contents(__DIR__ . '/../docs/banner.png'));
-        $this->entityManager->persist($typeTest);
+        self::$entityManager->persist($typeTest);
 
-        $this->entityManager->flush();
-        $this->entityManager->clear();
+        self::$entityManager->flush();
+        self::$entityManager->clear();
     }
 }

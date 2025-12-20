@@ -7,13 +7,13 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Filter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
-use ApiSkeletonsTest\Doctrine\ORM\GraphQL\AbstractTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
-class FiltersTypeCollisionTest extends AbstractTest
+class FiltersTypeCollisionTest extends TestCase
 {
     public function testFiltersTypeCollision(): void
     {
