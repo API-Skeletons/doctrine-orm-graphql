@@ -54,7 +54,7 @@ class LimitTest extends AbstractTest
 
         $data = $result->toArray()['data'];
 
-        $this->assertEquals(9, count($data['performance']['edges']));
+        $this->assertEquals(10, count($data['performance']['edges']));
 
         $query  = '{ artist { edges { node { id performances { edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query);
@@ -62,6 +62,6 @@ class LimitTest extends AbstractTest
         $data = $result->toArray()['data'];
         $this->assertEquals(2, count($data['artist']['edges']));
         $this->assertEquals(5, count($data['artist']['edges'][0]['node']['performances']['edges']));
-        $this->assertEquals(2, count($data['artist']['edges'][1]['node']['performances']['edges']));
+        $this->assertEquals(3, count($data['artist']['edges'][1]['node']['performances']['edges']));
     }
 }

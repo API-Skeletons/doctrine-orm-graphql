@@ -13,12 +13,12 @@ on:
 jobs:
   psalm:
     name: "Static Analysis"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
 
     steps:
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.3'
 
       - uses: actions/checkout@v2
 

@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
 use ArrayObject;
 use League\Event\HasEventName;
+use Override;
 
 /**
  * This event is fired each time an entity GraphQL type is created
@@ -20,6 +21,7 @@ class EntityDefinition implements
     ) {
     }
 
+    #[Override]
     public function eventName(): string
     {
         return $this->eventName;

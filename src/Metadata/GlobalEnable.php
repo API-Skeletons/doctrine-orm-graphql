@@ -11,6 +11,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common\MetadataFactory;
 use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use League\Event\EventDispatcher;
+use Override;
 
 use function in_array;
 
@@ -97,6 +98,7 @@ final class GlobalEnable extends MetadataFactory
         }
     }
 
+    #[Override]
     protected function getConfig(): Config
     {
         return $this->config;

@@ -93,7 +93,7 @@ class EntityFilterTest extends AbstractTest
           {
             artists (
               moreFilters: {
-                performanceCount_gte: 3
+                performanceCount_gte: 4
               }
             ) {
               edges {

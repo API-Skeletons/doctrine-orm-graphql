@@ -256,7 +256,7 @@ class EntityFilterTest extends AbstractTest
     /** @dataProvider schemaProvider */
     public function testsort(Schema $schema): void
     {
-        $query  = '{ performance ( filter: {artist: { eq: 1 } id: { sort: "desc" } } ) { edges { node { id } } } }';
+        $query  = '{ performance ( filter: {artist: { eq: 1 } id: { sort: "desc" sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
@@ -264,7 +264,7 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(5, count($data['performance']['edges']));
         $this->assertEquals(5, $data['performance']['edges'][0]['node']['id']);
 
-        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "asc" } } ) { edges { node { id } } } }';
+        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "asc" sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
@@ -272,12 +272,186 @@ class EntityFilterTest extends AbstractTest
         $this->assertEquals(5, count($data['performance']['edges']));
         $this->assertEquals(5, $data['performance']['edges'][0]['node']['id']);
 
-        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "desc" } } ) { edges { node { id } } } }';
+        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "desc" sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
 
         $this->assertEquals(5, count($data['performance']['edges']));
         $this->assertEquals(4, $data['performance']['edges'][0]['node']['id']);
+    }
+
+    /** @dataProvider schemaProvider */
+    public function testSortPriority(Schema $schema): void
+    {
+        $query = '
+          {
+            performance (
+              filter: {
+                artist: {
+                  eq: 2
+                }
+                venue: {
+                  eq: "E Center"
+                  sort: "asc"
+                  sortPriority: 1
+                }
+                performanceDate: {
+                  sort: "asc"
+                  sortPriority: 2
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        ';
+
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(8, $data['performance']['edges'][0]['node']['id']);
+
+        $query = '
+          {
+            performance (
+              filter: {
+                artist: {
+                  eq: 2
+                }
+                venue: {
+                  eq: "E Center"
+                  sort: "asc"
+                  sortPriority: 1
+                }
+                performanceDate: {
+                  sort: "desc"
+                  sortPriority: 2
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        ';
+
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(6, $data['performance']['edges'][0]['node']['id']);
+    }
+
+    /** @dataProvider schemaProvider */
+    public function testSortPriorityNoPriorityOneField(Schema $schema): void
+    {
+        /**
+         * This tests deprecation of not setting sortPriority when sort is set
+         */
+        $query = '
+          {
+            performance (
+              filter: {
+                artist: {
+                  eq: 2
+                }
+                venue: {
+                  sort: "asc"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        ';
+
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(7, $data['performance']['edges'][0]['node']['id']);
+    }
+
+    /** @dataProvider schemaProvider */
+    public function testSortPriorityNoPriorityTwoFields(Schema $schema): void
+    {
+        $query = '
+          {
+            performance (
+              filter: {
+                artist: {
+                  eq: 2
+                }
+                venue: {
+                  eq: "E Center"
+                  sort: "asc"
+                }
+                performanceDate: {
+                  sort: "asc"
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        ';
+
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['data'];
+
+        $this->assertEquals(8, $data['performance']['edges'][0]['node']['id']);
+    }
+
+    /** @dataProvider schemaProvider */
+    public function testSortPriorityNoSort(Schema $schema): void
+    {
+        $query = '
+          {
+            performance (
+              filter: {
+                artist: {
+                  eq: 2
+                }
+                venue: {
+                  eq: "E Center"
+                  sortPriority: 1
+                }
+                performanceDate: {
+                  sortPriority: 2
+                }
+              }
+            ) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        ';
+
+        $result = GraphQL::executeQuery($schema, $query);
+
+        $data = $result->toArray()['errors'];
+
+        $this->assertEquals("Sort direction for field 'entity.venue' is not set but a sortPriority was. Please use the 'sort' filter to set the direction.", $data[0]['message']);
     }
 }

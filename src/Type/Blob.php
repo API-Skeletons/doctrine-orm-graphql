@@ -8,6 +8,7 @@ use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
+use Override;
 
 use function base64_decode;
 use function base64_encode;
@@ -22,6 +23,7 @@ class Blob extends ScalarType
 {
     public string|null $description = 'A binary file base64 encoded.';
 
+    #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
         // @codeCoverageIgnoreStart
@@ -34,6 +36,7 @@ class Blob extends ScalarType
         return $this->parseValue($valueNode->value);
     }
 
+    #[Override]
     public function parseValue(mixed $value): mixed
     {
         if (! is_string($value)) {
@@ -49,6 +52,7 @@ class Blob extends ScalarType
         return $data;
     }
 
+    #[Override]
     public function serialize(mixed $value): mixed
     {
         if (! $value) {

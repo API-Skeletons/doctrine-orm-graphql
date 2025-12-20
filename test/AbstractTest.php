@@ -105,9 +105,16 @@ abstract class AbstractTest extends TestCase
                     'recordings' => ['AKG480 > Aerco preamp > SBM-1'],
                 ],
                 '1999-12-31T00:00:00+00:00' => [
-                    'venue' => null,
+                    'venue' => 'Big Cypress Seminole Indian Reservation',
                     'city' => 'Big Cypress',
                     'state' => 'Florida',
+                ],
+                // A second performance at the same venue is needed to test
+                // sortPriority
+                '1997-11-14T00:00:00+00:00' => [
+                    'venue' => 'E Center',
+                    'city' => 'West Valley City',
+                    'state' => 'Utah',
                 ],
             ],
             'String Cheese Incident' => [

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
 use Laminas\Hydrator\Strategy\StrategyInterface;
+use Override;
 
 /**
  * Take no action on an association.  This class exists to
@@ -13,6 +14,7 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
 class AssociationDefault extends Collection implements
     StrategyInterface
 {
+    #[Override]
     public function extract(mixed $value, object|null $object = null): mixed
     {
         return $value;
@@ -23,6 +25,7 @@ class AssociationDefault extends Collection implements
      *
      * @codeCoverageIgnore
      */
+    #[Override]
     public function hydrate(mixed $value, array|null $data): mixed
     {
         return $value;

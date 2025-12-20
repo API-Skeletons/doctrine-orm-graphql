@@ -14,6 +14,7 @@ use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use League\Event\EventDispatcher;
+use Override;
 use ReflectionClass;
 
 use function assert;
@@ -205,6 +206,7 @@ class MetadataFactory extends CommonMetadataFactory
         }
     }
 
+    #[Override]
     protected function getConfig(): Config
     {
         return $this->config;

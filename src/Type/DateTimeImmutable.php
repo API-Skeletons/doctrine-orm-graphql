@@ -9,6 +9,7 @@ use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
+use Override;
 
 use function is_string;
 
@@ -21,6 +22,7 @@ class DateTimeImmutable extends ScalarType
     public string|null $description = 'The `datetime_immutable` scalar type represents datetime data.'
     . 'The format is ISO-8601 e.g. 2004-02-12T15:19:21+00:00';
 
+    #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTimeImmutable
     {
         // @codeCoverageIgnoreStart
@@ -33,6 +35,7 @@ class DateTimeImmutable extends ScalarType
         return $this->parseValue($valueNode->value);
     }
 
+    #[Override]
     public function parseValue(mixed $value): PHPDateTimeImmutable
     {
         if (! is_string($value)) {
@@ -48,6 +51,7 @@ class DateTimeImmutable extends ScalarType
         return $data;
     }
 
+    #[Override]
     public function serialize(mixed $value): string|null
     {
         if ($value instanceof PHPDateTimeImmutable) {

@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
 use Laminas\Hydrator\NamingStrategy\MapNamingStrategy;
 use Laminas\Hydrator\Strategy\StrategyInterface;
+use Override;
 
 use function assert;
 use function class_implements;
@@ -36,6 +37,7 @@ class HydratorContainer extends Container
     }
 
     /** @throws Error */
+    #[Override]
     public function get(string $id): mixed
     {
         if ($this->has($id)) {
