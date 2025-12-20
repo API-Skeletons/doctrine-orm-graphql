@@ -23,14 +23,14 @@ class Json extends ScalarType
     public string|null $description = 'The `json` scalar type represents json data.';
 
     #[Override]
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): array|null
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
             throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
-        return $valueNode->value;
+        return $this->parseValue($valueNode->value);
         // @codeCoverageIgnoreEnd
     }
 
@@ -56,8 +56,14 @@ class Json extends ScalarType
     }
 
     #[Override]
-    public function serialize(mixed $value): false|string
+    public function serialize(mixed $value): string|false
     {
-        return json_encode($value);
+        $return = json_encode($value);
+
+        if (! $return) {
+            throw new Error('Could not serialize JSON data');
+        }
+
+        return $return;
     }
 }

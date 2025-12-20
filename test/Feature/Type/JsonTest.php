@@ -49,10 +49,18 @@ class JsonTest extends TestCase
     {
         $jsonType    = new Json();
         $node        = new StringValueNode([]);
-        $node->value = 'search string';
+        $node->value = '{"field": "value"}';
         $result      = $jsonType->parseLiteral($node);
 
-        $this->assertTrue(true);
+        $this->assertEquals(['field' => 'value'], $result);
+    }
+
+    public function testSerializeFails(): void
+    {
+        $this->expectException(Error::class);
+
+        $jsonType = new Json();
+        $jsonType->serialize(["name" => "\xB1\x31"]);
     }
 
     public function testContains(): void
