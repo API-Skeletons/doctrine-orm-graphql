@@ -56,12 +56,12 @@ class Json extends ScalarType
     }
 
     #[Override]
-    public function serialize(mixed $value): false|string
+    public function serialize(mixed $value): string|false
     {
         $return = json_encode($value);
 
         if (! $return) {
-            return null;
+            throw new Error('Could not serialize JSON data');
         }
 
         return $return;
