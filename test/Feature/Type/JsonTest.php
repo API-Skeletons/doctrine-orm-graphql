@@ -60,7 +60,7 @@ class JsonTest extends TestCase
         $this->expectException(Error::class);
 
         $jsonType = new Json();
-        $jsonType->serialize(["name" => "\xB1\x31"]);
+        $jsonType->serialize(['name' => "\xB1\x31"]);
     }
 
     public function testContains(): void
