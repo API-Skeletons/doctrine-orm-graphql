@@ -12,7 +12,6 @@ GraphQL Type Driver for Doctrine ORM
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/badges/quality-score.png?b=12.4.x)](https://scrutinizer-ci.com/g/API-Skeletons/doctrine-orm-graphql/?branch=12.4.x)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%205-brightgreen.svg)](https://img.shields.io/badge/PHPStan-level%205-brightgreen.svg)
 [![psalm](https://img.shields.io/badge/psalm-level%204-brightgreen.svg)](https://img.shields.io/badge/psalm-level%204-brightgreen.svg)
-[![PHP Version](https://img.shields.io/badge/PHP-8.1%2b-blue)](https://img.shields.io/badge/PHP-8.1%2b-blue)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
     GraphQL, with types so neat,
@@ -62,7 +61,7 @@ Examples
 
 The **LDOG Stack**: Laravel, Doctrine ORM, and GraphQL uses this library:  https://ldog.apiskeletons.dev
 
-For an working implementation see https://graphql.lcdb.org and the corresonding application at https://github.com/lcdborg/graphql.lcdb.org.
+For an working implementation see https://graphql.lcdb.org
 
 
 Features
@@ -78,7 +77,7 @@ Features
 Quick Start
 -----------
 
-Add attributes to your Doctrine entities or see [globalEnable](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/config.html#globalenable) for all entities in your schema without attribute configuration.
+Add attributes to your Doctrine entities or see [globalEnable](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#globalenable) for all entities in your schema without attribute configuration.
 
 ```php
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
@@ -280,6 +279,8 @@ History
 -------
 
 The roots of this project go back to May 2018 with https://github.com/API-Skeletons/zf-doctrine-graphql; written for Zend Framework 2.  It was migrated to the framework agnostic https://packagist.org/packages/api-skeletons/doctrine-graphql but the name of that repository was incorrect because it did not specify ORM only.  So this repository was created and the others were abandoned.
+
+This was written for etreedb.org.  For more history on this project, see [tomhanderson.com](https://tomhanderson.com).
 
 
 License
