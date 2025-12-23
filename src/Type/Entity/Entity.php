@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
@@ -36,36 +34,24 @@ use function ucwords;
  */
 class Entity
 {
-    /** @var mixed[]  */
-    protected array $metadata;
     /** @var array<string, string> */
     protected array $extractionMap        = [];
     protected ObjectType|null $objectType = null;
-    protected readonly Config $config;
-    protected readonly EntityManager $entityManager;
-    protected readonly EntityTypeContainer $entityTypeContainer;
-    protected readonly EventDispatcher $eventDispatcher;
-    protected readonly FieldResolver $fieldResolver;
-    protected readonly FilterFactory $filterFactory;
-    protected readonly HydratorContainer $hydratorContainer;
-    protected readonly ResolveCollectionFactory $resolveCollectionFactory;
-    protected readonly TypeContainer $typeContainer;
 
+    /** @param array<string, mixed> $metadata */
     public function __construct(
-        Container $container,
-        string $typeName,
-        private string|null $eventName = null,
+        private string|null $eventName,
+        protected readonly Config $config,
+        protected readonly EntityManager $entityManager,
+        protected readonly EntityTypeContainer $entityTypeContainer,
+        protected readonly EventDispatcher $eventDispatcher,
+        protected readonly FieldResolver $fieldResolver,
+        protected readonly FilterFactory $filterFactory,
+        protected readonly HydratorContainer $hydratorContainer,
+        protected readonly ResolveCollectionFactory $resolveCollectionFactory,
+        protected readonly TypeContainer $typeContainer,
+        protected readonly array $metadata,
     ) {
-        $this->config                   = $container->get(Config::class);
-        $this->entityManager            = $container->get(EntityManager::class);
-        $this->entityTypeContainer      = $container->get(EntityTypeContainer::class);
-        $this->eventDispatcher          = $container->get(EventDispatcher::class);
-        $this->fieldResolver            = $container->get(FieldResolver::class);
-        $this->filterFactory            = $container->get(FilterFactory::class);
-        $this->hydratorContainer        = $container->get(HydratorContainer::class);
-        $this->resolveCollectionFactory = $container->get(ResolveCollectionFactory::class);
-        $this->typeContainer            = $container->get(TypeContainer::class);
-        $this->metadata                 = $container->get(Metadata::class)[$typeName];
     }
 
     public function getHydrator(): HydratorInterface
