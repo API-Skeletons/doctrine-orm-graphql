@@ -16,6 +16,7 @@ use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
 use League\Event\EventDispatcher;
+use ReflectionClass;
 
 use function array_filter;
 use function array_keys;
@@ -88,10 +89,15 @@ class FilterFactory
         $fields = $this->addFields($targetEntity, $allowedFilters);
         $fields = array_merge($fields, $this->addAssociations($targetEntity, $allowedFilters));
 
-        $inputObject = new GraphQLInputObjectType([
-            'name' => $typeName,
-            'fields' => static fn () => $fields,
-        ]);
+        $inputObject = (new ReflectionClass(GraphQLInputObjectType::class))
+            ->newLazyGhost(static function (GraphQLInputObjectType $object) use ($typeName, $fields): void {
+                $object->__construct(
+                    [
+                        'name' => $typeName,
+                        'fields' => static fn () => $fields,
+                    ],
+                );
+            });
 
         $this->typeContainer->set($typeName, $inputObject);
 
