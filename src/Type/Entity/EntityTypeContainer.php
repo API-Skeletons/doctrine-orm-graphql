@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use GraphQL\Error\Error;
 use Override;
+use ReflectionClass;
 
-use function assert;
 use function strtolower;
 
 /**
@@ -20,7 +20,6 @@ class EntityTypeContainer extends Container
     public function __construct(
         protected readonly Container $container,
     ) {
-        assert($container instanceof Driver);
     }
 
     /**
@@ -45,7 +44,26 @@ class EntityTypeContainer extends Container
             return $this->register[$key];
         }
 
-        $this->set($key, new Entity($this->container, $id, $eventName));
+        if (! $this->has($id)) {
+            throw new Error(
+                'Entity ' . $id . ' is not mapped in the GraphQL metadata',
+            );
+        }
+
+        $container = $this->container;
+
+        // Use a Lazy Ghost object
+        $this->set(
+            $key,
+            (new ReflectionClass(Entity::class))
+                ->newLazyGhost(static function (Entity $object) use ($container, $id, $eventName): void {
+                    $object->__construct(
+                        $container,
+                        $id,
+                        $eventName,
+                    );
+                }),
+        );
 
         return $this->get($id, $eventName);
     }

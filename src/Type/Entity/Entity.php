@@ -6,7 +6,6 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
@@ -20,14 +19,13 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
 use Exception;
-use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ObjectType;
 use Laminas\Hydrator\HydratorInterface;
 use League\Event\EventDispatcher;
+use ReflectionClass;
 
 use function array_keys;
 use function array_merge;
-use function assert;
 use function count;
 use function in_array;
 use function ksort;
@@ -60,8 +58,6 @@ class Entity
         string $typeName,
         private string|null $eventName = null,
     ) {
-        assert($container instanceof Driver);
-
         $this->config                   = $container->get(Config::class);
         $this->entityManager            = $container->get(EntityManager::class);
         $this->entityTypeContainer      = $container->get(EntityTypeContainer::class);
@@ -71,14 +67,7 @@ class Entity
         $this->hydratorContainer        = $container->get(HydratorContainer::class);
         $this->resolveCollectionFactory = $container->get(ResolveCollectionFactory::class);
         $this->typeContainer            = $container->get(TypeContainer::class);
-
-        if (! isset($container->get('metadata')[$typeName])) {
-            throw new Error(
-                'Entity ' . $typeName . ' is not mapped in the GraphQL metadata',
-            );
-        }
-
-        $this->metadata = $container->get('metadata')[$typeName];
+        $this->metadata                 = $container->get('metadata')[$typeName];
     }
 
     public function getHydrator(): HydratorInterface
@@ -184,7 +173,12 @@ class Entity
         }
 
         /** @psalm-suppress InvalidArgument */
-        $this->objectType = new ObjectType($arrayObject->getArrayCopy());
+        $this->objectType = (new ReflectionClass(ObjectType::class))
+            ->newLazyGhost(static function (ObjectType $object) use ($arrayObject): void {
+                $object->__construct(
+                    $arrayObject->getArrayCopy(),
+                );
+            });
 
         return $this->objectType;
     }

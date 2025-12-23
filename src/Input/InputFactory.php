@@ -13,6 +13,7 @@ use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use ReflectionClass;
 
 use function count;
 use function in_array;
@@ -41,21 +42,26 @@ class InputFactory
      */
     public function get(string $id, array $requiredFields = [], array $optionalFields = []): InputObjectType
     {
-        $fields       = [];
-        $targetEntity = $this->entityTypeContainer->get($id);
+        $self = $this;
 
-        if (! count($requiredFields) && ! count($optionalFields)) {
-            $this->addAllFieldsAsRequired($targetEntity, $fields);
-        } else {
-            $this->addRequiredFields($targetEntity, $requiredFields, $fields);
-            $this->addOptionalFields($targetEntity, $optionalFields, $fields);
-        }
+        return (new ReflectionClass(InputObjectType::class))
+            ->newLazyGhost(static function (InputObjectType $object) use ($self, $id, $requiredFields, $optionalFields): void {
+                $fields       = [];
+                $targetEntity = $self->entityTypeContainer->get($id);
 
-        return new InputObjectType([
-            'name' => $targetEntity->getTypeName() . '_Input_' . uniqid(),
-            'description' => $targetEntity->getDescription(),
-            'fields' => static fn () => $fields,
-        ]);
+                if (! count($requiredFields) && ! count($optionalFields)) {
+                    $self->addAllFieldsAsRequired($targetEntity, $fields);
+                } else {
+                    $self->addRequiredFields($targetEntity, $requiredFields, $fields);
+                    $self->addOptionalFields($targetEntity, $optionalFields, $fields);
+                }
+
+                $object->__construct([
+                    'name' => $targetEntity->getTypeName() . '_Input_' . uniqid(),
+                    'description' => $targetEntity->getDescription(),
+                    'fields' => static fn () => $fields,
+                ]);
+            });
     }
 
     /**

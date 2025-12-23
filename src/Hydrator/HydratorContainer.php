@@ -12,6 +12,7 @@ use GraphQL\Error\Error;
 use Laminas\Hydrator\NamingStrategy\MapNamingStrategy;
 use Laminas\Hydrator\Strategy\StrategyInterface;
 use Override;
+use ReflectionClass;
 
 use function assert;
 use function class_implements;
@@ -44,26 +45,39 @@ class HydratorContainer extends Container
             return parent::get($id);
         }
 
-        $entity   = $this->entityTypeContainer->get($id);
-        $metadata = $entity->getMetadata();
-        $hydrator = new DoctrineObject($this->entityManager, $metadata['byValue']);
+        $self = $this;
+        // Compose hydrators as Lazy Ghosts
+        $hydrator = (new ReflectionClass(DoctrineObject::class))
+            ->newLazyGhost(static function (DoctrineObject $object) use ($self, $id): void {
+                $entityManager = $self->entityManager;
+                $entity        = $self->entityTypeContainer->get($id);
+                $metadata      = $entity->getMetadata();
+                $byValue       = $metadata['byValue'];
 
-        // Create field strategy and assign to hydrator
-        foreach ($metadata['fields'] as $fieldName => $fieldMetadata) {
-            assert(
-                in_array(StrategyInterface::class, class_implements($fieldMetadata['hydratorStrategy'])),
-                'Strategy must implement ' . StrategyInterface::class,
-            );
+                $object->__construct(
+                    $entityManager,
+                    $byValue,
+                );
 
-            $hydrator->addStrategy($fieldName, $this->get($fieldMetadata['hydratorStrategy']));
-        }
+                // Create field strategy and assign to hydrator
+                foreach ($metadata['fields'] as $fieldName => $fieldMetadata) {
+                    assert(
+                        in_array(StrategyInterface::class, class_implements($fieldMetadata['hydratorStrategy'])),
+                        'Strategy must implement ' . StrategyInterface::class,
+                    );
 
-        // Create naming strategy for aliases and assign to hydrator
-        if ($entity->getExtractionMap()) {
-            $hydrator->setNamingStrategy(
-                MapNamingStrategy::createFromExtractionMap($entity->getExtractionMap()),
-            );
-        }
+                    $object->addStrategy($fieldName, $self->get($fieldMetadata['hydratorStrategy']));
+                }
+
+                // Create naming strategy for aliases and assign to hydrator
+                if (! $entity->getExtractionMap()) {
+                    return;
+                }
+
+                $object->setNamingStrategy(
+                    MapNamingStrategy::createFromExtractionMap($entity->getExtractionMap()),
+                );
+            });
 
         $this->set($id, $hydrator);
 
