@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use GraphQL\Error\Error;
 use Override;
 use ReflectionClass;
@@ -28,7 +29,7 @@ class EntityTypeContainer extends Container
     #[Override]
     public function has(string $id): bool
     {
-        return isset($this->container->get('metadata')[$id]);
+        return isset($this->container->get(Metadata::class)[$id]);
     }
 
     /**

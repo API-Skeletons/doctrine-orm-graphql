@@ -7,8 +7,8 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
-use ArrayObject;
 use Closure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
@@ -28,7 +28,7 @@ class ResolveEntityFactory
         protected readonly Config $config,
         protected readonly EntityManager $entityManager,
         protected readonly EventDispatcher $eventDispatcher,
-        protected readonly ArrayObject $metadata,
+        protected readonly Metadata $metadata,
     ) {
     }
 

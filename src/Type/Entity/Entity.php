@@ -9,11 +9,11 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
-use ArrayObject;
 use Closure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -30,8 +30,6 @@ use function count;
 use function in_array;
 use function ksort;
 use function ucwords;
-
-use const SORT_REGULAR;
 
 /**
  * This class is used to build an ObjectType for an entity
@@ -67,7 +65,7 @@ class Entity
         $this->hydratorContainer        = $container->get(HydratorContainer::class);
         $this->resolveCollectionFactory = $container->get(ResolveCollectionFactory::class);
         $this->typeContainer            = $container->get(TypeContainer::class);
-        $this->metadata                 = $container->get('metadata')[$typeName];
+        $this->metadata                 = $container->get(Metadata::class)[$typeName];
     }
 
     public function getHydrator(): HydratorInterface
@@ -146,8 +144,7 @@ class Entity
             $typeName .= '.' . $this->eventName;
         }
 
-        /** @var ArrayObject<'description'|'fields'|'name'|'resolveField', mixed> $arrayObject */
-        $arrayObject = new ArrayObject([
+        $definition = new Definition([
             'name' => $typeName,
             'description' => $this->getDescription(),
             'fields' => static fn () => $fields,
@@ -158,25 +155,25 @@ class Entity
          * Dispatch event to allow modifications to the ObjectType definition
          */
         $this->eventDispatcher->dispatch(
-            new EntityDefinition($arrayObject, $this->eventName ??= $this->getEntityClass() . '.definition'),
+            new EntityDefinition($definition, $this->eventName ??= $this->getEntityClass() . '.definition'),
         );
 
         /**
          * If sortFields then resolve the fields and sort them
          */
         if ($this->config->getSortFields()) {
-            if ($arrayObject['fields'] instanceof Closure) {
-                $arrayObject['fields'] = $arrayObject['fields']();
+            if ($definition['fields'] instanceof Closure) {
+                $definition['fields'] = $definition['fields']();
             }
 
-            ksort($arrayObject['fields'], SORT_REGULAR);
+            ksort($definition['fields']);
         }
 
         /** @psalm-suppress InvalidArgument */
         $this->objectType = (new ReflectionClass(ObjectType::class))
-            ->newLazyGhost(static function (ObjectType $object) use ($arrayObject): void {
+            ->newLazyGhost(static function (ObjectType $object) use ($definition): void {
                 $object->__construct(
-                    $arrayObject->getArrayCopy(),
+                    $definition->getArrayCopy(),
                 );
             });
 

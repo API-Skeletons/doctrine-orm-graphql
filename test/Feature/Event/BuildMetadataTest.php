@@ -6,7 +6,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata as MetadataEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use ArrayObject;
 use League\Event\EventDispatcher;
@@ -25,7 +26,7 @@ class BuildMetadataTest extends TestCase
 
         $driver->get(EventDispatcher::class)->subscribeTo(
             'metadata.build',
-            static function (Metadata $event) use ($test): void {
+            static function (MetadataEvent $event) use ($test): void {
                 $metadata = $event->getMetadata();
 
                 $test->assertEquals('metadata.build', $event->eventName());
@@ -36,7 +37,7 @@ class BuildMetadataTest extends TestCase
             },
         );
 
-        $metadata = $driver->get('metadata');
+        $metadata = $driver->get(Metadata::class);
 
         $this->assertInstanceOf(ArrayObject::class, $metadata);
         $test->assertEquals(100, $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit']);
@@ -50,7 +51,7 @@ class BuildMetadataTest extends TestCase
 
         $driver->get(EventDispatcher::class)->subscribeTo(
             'metadata.build',
-            static function (Metadata $event) use ($test): void {
+            static function (MetadataEvent $event) use ($test): void {
                 $metadata = $event->getMetadata();
 
                 $test->assertEquals('metadata.build', $event->eventName());
@@ -61,7 +62,7 @@ class BuildMetadataTest extends TestCase
             },
         );
 
-        $metadata = $driver->get('metadata');
+        $metadata = $driver->get(Metadata::class);
 
         $this->assertInstanceOf(ArrayObject::class, $metadata);
         $test->assertEquals(100, $metadata['ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance']['limit']);

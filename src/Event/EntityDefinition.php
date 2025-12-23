@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
-use ArrayObject;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Definition;
 use League\Event\HasEventName;
 use Override;
 
@@ -14,9 +14,8 @@ use Override;
 class EntityDefinition implements
     HasEventName
 {
-    /** @param ArrayObject $definition<'description'|'fields'|'name'|'resolveField', mixed> */
     public function __construct(
-        protected readonly ArrayObject $definition,
+        protected readonly Definition $definition,
         protected readonly string $eventName,
     ) {
     }
@@ -27,7 +26,7 @@ class EntityDefinition implements
         return $this->eventName;
     }
 
-    public function getDefinition(): ArrayObject
+    public function getDefinition(): Definition
     {
         return $this->definition;
     }
