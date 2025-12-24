@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
@@ -19,7 +20,7 @@ class CachingTest extends TestCase
     {
         $driver = new Driver($this->getEntityManager());
 
-        $metadata = $driver->get('metadata');
+        $metadata = $driver->get(Metadata::class);
 
         unset($driver);
 
@@ -30,7 +31,7 @@ class CachingTest extends TestCase
     public function testStaticMetadata(): void
     {
         $driver            = new Driver($this->getEntityManager(), new Config(['group' => 'StaticMetadata']));
-        $generatedMetadata = $driver->get('metadata')->getArrayCopy();
+        $generatedMetadata = $driver->get(Metadata::class)->getArrayCopy();
 
         $metadata = [
             'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User' => [
@@ -63,7 +64,7 @@ class CachingTest extends TestCase
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'StaticMetadata']), $metadata);
 
         $this->assertEquals($generatedMetadata, $metadata);
-        $this->assertEquals($generatedMetadata, $driver->get('metadata')->getArrayCopy());
+        $this->assertEquals($generatedMetadata, $driver->get(Metadata::class)->getArrayCopy());
 
         $this->assertInstanceOf(Entity::class, $driver->get(EntityTypeContainer::class)->get(User::class));
 

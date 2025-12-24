@@ -6,11 +6,11 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata as MetadataEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common\MetadataFactory as CommonMetadataFactory;
-use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use League\Event\EventDispatcher;
@@ -18,7 +18,6 @@ use Override;
 use ReflectionClass;
 
 use function assert;
-use function count;
 
 /**
  * Build metadata for entities
@@ -26,7 +25,7 @@ use function count;
 class MetadataFactory extends CommonMetadataFactory
 {
     public function __construct(
-        protected ArrayObject $metadata,
+        protected Metadata $metadata,
         protected readonly EntityManager $entityManager,
         protected readonly Config $config,
         protected readonly GlobalEnable $globalEnable,
@@ -37,9 +36,9 @@ class MetadataFactory extends CommonMetadataFactory
     /**
      * Build metadata for all entities and return it
      */
-    public function __invoke(): ArrayObject
+    public function getMetadata(): Metadata
     {
-        if (count($this->metadata)) {
+        if ($this->metadata->count()) {
             return $this->metadata;
         }
 
@@ -51,7 +50,7 @@ class MetadataFactory extends CommonMetadataFactory
 
         // If global enable is set, use the GlobalEnable class to build metadata
         if ($this->config->getGlobalEnable()) {
-            $this->metadata = ($this->globalEnable)($entityClasses);
+            $this->metadata = $this->globalEnable->getMetadata($entityClasses);
 
             return $this->metadata;
         }
@@ -71,7 +70,7 @@ class MetadataFactory extends CommonMetadataFactory
 
         // Fire the metadata.build event
         $this->eventDispatcher->dispatch(
-            new Metadata($this->metadata, 'metadata.build'),
+            new MetadataEvent($this->metadata, 'metadata.build'),
         );
 
         return $this->metadata;

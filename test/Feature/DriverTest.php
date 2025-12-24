@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
@@ -40,7 +41,7 @@ class DriverTest extends TestCase
         $entityTypeContainer = $driver->get(EntityTypeContainer::class);
 
         $this->assertInstanceOf(Driver::class, $driver);
-        $this->assertInstanceOf(ArrayObject::class, $driver->get('metadata'));
+        $this->assertInstanceOf(ArrayObject::class, $driver->get(Metadata::class));
         $this->assertInstanceOf(Entity::class, $entityTypeContainer->get(User::class));
         $this->assertInstanceOf(Entity::class, $entityTypeContainer->get(Artist::class));
         $this->assertInstanceOf(Entity::class, $entityTypeContainer->get(Performance::class));
@@ -59,7 +60,7 @@ class DriverTest extends TestCase
         $driver = new Driver($this->getEntityManager(), $config, [], $container);
 
         $this->assertInstanceOf(Driver::class, $driver);
-        $this->assertInstanceOf(ArrayObject::class, $driver->get('metadata'));
+        $this->assertInstanceOf(ArrayObject::class, $driver->get(Metadata::class));
     }
 
     public function testNonDefaultGroup(): void

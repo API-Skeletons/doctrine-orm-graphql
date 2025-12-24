@@ -7,10 +7,10 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
-use ArrayObject;
 use Closure;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
@@ -38,7 +38,7 @@ class ResolveCollectionFactory
         protected readonly TypeContainer $typeContainer,
         protected readonly EntityTypeContainer $entityTypeContainer,
         protected readonly EventDispatcher $eventDispatcher,
-        protected readonly ArrayObject $metadata,
+        protected readonly Metadata $metadata,
     ) {
     }
 

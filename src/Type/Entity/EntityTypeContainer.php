@@ -4,8 +4,17 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
+use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
+use League\Event\EventDispatcher;
 use Override;
 use ReflectionClass;
 
@@ -28,7 +37,7 @@ class EntityTypeContainer extends Container
     #[Override]
     public function has(string $id): bool
     {
-        return isset($this->container->get('metadata')[$id]);
+        return isset($this->container->get(Metadata::class)[$id]);
     }
 
     /**
@@ -58,9 +67,17 @@ class EntityTypeContainer extends Container
             (new ReflectionClass(Entity::class))
                 ->newLazyGhost(static function (Entity $object) use ($container, $id, $eventName): void {
                     $object->__construct(
-                        $container,
-                        $id,
                         $eventName,
+                        $container->get(Config::class),
+                        $container->get(EntityManager::class),
+                        $container->get(EntityTypeContainer::class),
+                        $container->get(EventDispatcher::class),
+                        $container->get(FieldResolver::class),
+                        $container->get(FilterFactory::class),
+                        $container->get(HydratorContainer::class),
+                        $container->get(ResolveCollectionFactory::class),
+                        $container->get(TypeContainer::class),
+                        $container->get(Metadata::class)[$id],
                     );
                 }),
         );

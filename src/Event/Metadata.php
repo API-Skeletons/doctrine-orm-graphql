@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Event;
 
-use ArrayObject;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata as MetadataObject;
 use League\Event\HasEventName;
 use Override;
 
@@ -15,7 +15,7 @@ class Metadata implements
     HasEventName
 {
     public function __construct(
-        protected readonly ArrayObject $metadata,
+        protected readonly MetadataObject $metadata,
         protected readonly string $eventName,
     ) {
     }
@@ -26,7 +26,7 @@ class Metadata implements
         return $this->eventName;
     }
 
-    public function getMetadata(): ArrayObject
+    public function getMetadata(): MetadataObject
     {
         return $this->metadata;
     }

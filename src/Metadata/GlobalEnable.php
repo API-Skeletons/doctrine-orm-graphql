@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata as MetadataEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common\MetadataFactory;
-use ArrayObject;
 use Doctrine\ORM\EntityManager;
 use League\Event\EventDispatcher;
 use Override;
@@ -20,18 +20,18 @@ use function in_array;
  */
 final class GlobalEnable extends MetadataFactory
 {
-    private ArrayObject $metadata;
+    private Metadata $metadata;
 
     public function __construct(
         protected readonly EntityManager $entityManager,
         protected readonly Config $config,
         protected readonly EventDispatcher $eventDispatcher,
     ) {
-        $this->metadata = new ArrayObject();
+        $this->metadata = new Metadata();
     }
 
     /** @param class-string[] $entityClasses */
-    public function __invoke(array $entityClasses): ArrayObject
+    public function getMetadata(array $entityClasses): Metadata
     {
         foreach ($entityClasses as $entityClass) {
             // Get extract by value or reference
@@ -53,7 +53,7 @@ final class GlobalEnable extends MetadataFactory
         }
 
         $this->eventDispatcher->dispatch(
-            new Metadata($this->metadata, 'metadata.build'),
+            new MetadataEvent($this->metadata, 'metadata.build'),
         );
 
         return $this->metadata;
