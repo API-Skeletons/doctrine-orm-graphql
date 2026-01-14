@@ -63,7 +63,11 @@ class MetadataFactory extends CommonMetadataFactory
                 ->getMetadataFactory()
                 ->getMetadataFor($reflectionClass->getName());
 
-            $this->buildMetadataForEntity($reflectionClass);
+            // If an Entity attribute does not exist, skip this entity
+            if (! $this->buildMetadataForEntity($reflectionClass)) {
+                continue;
+            }
+
             $this->buildMetadataForFields($entityClassMetadata, $reflectionClass);
             $this->buildMetadataForAssociations($reflectionClass);
         }
@@ -81,9 +85,10 @@ class MetadataFactory extends CommonMetadataFactory
      * The buildmetadata* functions exist to simplify the buildMetadata
      * function.
      */
-    private function buildMetadataForEntity(ReflectionClass $reflectionClass): void
+    private function buildMetadataForEntity(ReflectionClass $reflectionClass): bool
     {
-        $entityInstance = null;
+        $entityInstance       = null;
+        $entityAttributeFound = false;
 
         // Fetch attributes for the entity class filterd by Attribute\Entity
         foreach ($reflectionClass->getAttributes(Attribute\Entity::class) as $attribute) {
@@ -93,6 +98,8 @@ class MetadataFactory extends CommonMetadataFactory
             if ($instance->getGroup() !== $this->config->getGroup()) {
                 continue;
             }
+
+            $entityAttributeFound = true;
 
             // Only one matching instance per group is allowed
             assert(
@@ -115,6 +122,8 @@ class MetadataFactory extends CommonMetadataFactory
                     $this->getTypeName($reflectionClass->getName()),
             ];
         }
+
+        return $entityAttributeFound;
     }
 
     /**
