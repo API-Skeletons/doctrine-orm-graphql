@@ -16,7 +16,7 @@
         "webonyx/graphql-php": "^v15.29",
         "psr/container": "^2.0",
         "league/event": "^3.0",
-        "symfony/var-exporter": "^6.4 || ^7.0"
+        "symfony/var-exporter": "^6.4 || ^7.0 || ^8.0"
     },
     "require-dev": {
         "doctrine/coding-standard": "^14.0",
