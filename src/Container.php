@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeNotFound as TypeNotFoundException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SuggestSimilarString;
 use Closure;
 use GraphQL\Error\Error;
 use Override;
@@ -21,6 +22,8 @@ use function strtolower;
  */
 abstract class Container implements ContainerInterface
 {
+    use SuggestSimilarString;
+
     /** @var mixed[] */
     protected array $register = [];
 
@@ -38,9 +41,13 @@ abstract class Container implements ContainerInterface
         $id         = strtolower($id);
 
         if (! $this->has($id)) {
+            $availableTypes = array_keys($this->register);
+            $suggestion     = $this->findSimilarString($originalId, $availableTypes);
+
             throw new TypeNotFoundException(
                 typeId: $originalId,
-                availableTypes: array_keys($this->register),
+                availableTypes: $availableTypes,
+                suggestion: $suggestion,
             );
         }
 

@@ -53,9 +53,12 @@ class Driver extends Container
             $typeContainer->getRegisteredTypes(),
         );
 
+        $suggestion = $this->findSimilarString($id, $availableTypes);
+
         throw new TypeNotFoundException(
             typeId: $id,
             availableTypes: $availableTypes,
+            suggestion: $suggestion,
         );
     }
 
