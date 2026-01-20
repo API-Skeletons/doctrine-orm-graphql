@@ -183,7 +183,7 @@ class ConfigBuilderTest extends TestCase
     public function testExcludeFiltersSetsFilters(): void
     {
         $filters = [Filters::CONTAINS, Filters::BETWEEN];
-        $config = ConfigBuilder::create()
+        $config  = ConfigBuilder::create()
             ->excludeFilters($filters)
             ->build();
 
