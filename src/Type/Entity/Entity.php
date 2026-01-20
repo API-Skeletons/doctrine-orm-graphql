@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
@@ -16,7 +17,6 @@ use Closure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
-use Exception;
 use GraphQL\Type\Definition\ObjectType;
 use Laminas\Hydrator\HydratorInterface;
 use League\Event\EventDispatcher;
@@ -100,7 +100,10 @@ class Entity
 
             // Don't allow duplicate aliases
             if (in_array($fieldMetadata['alias'], $this->extractionMap)) {
-                throw new Exception('Duplicate alias found for field ' . $fieldName);
+                throw new MetadataException(
+                    'Duplicate alias "' . $fieldMetadata['alias'] . '" found for field ' . $fieldName .
+                    ' in entity ' . $this->getEntityClass() . '. Each field alias must be unique.',
+                );
             }
 
             $this->extractionMap[$fieldName] = $fieldMetadata['alias'];

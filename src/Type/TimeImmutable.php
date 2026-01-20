@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
 use DateTimeImmutable as PHPDateTime;
-use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
@@ -28,7 +28,7 @@ class TimeImmutable extends ScalarType
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
-            throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
+            throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
         // @codeCoverageIgnoreEnd
@@ -40,11 +40,11 @@ class TimeImmutable extends ScalarType
     public function parseValue(mixed $value): PHPDateTime|false
     {
         if (! is_string($value)) {
-            throw new Error('Time is not a string: ' . $value);
+            throw new TypeSerializationException('Time is not a string: ' . $value);
         }
 
         if (! preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])(\.\d{1,6})?$/', $value)) {
-            throw new Error('Time ' . $value . ' format does not match H:i:s.u e.g. 13:34:40.867530');
+            throw new TypeSerializationException('Time ' . $value . ' format does not match H:i:s.u e.g. 13:34:40.867530');
         }
 
         // If time does not have milliseconds, parse without

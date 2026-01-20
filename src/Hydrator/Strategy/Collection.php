@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection as DoctrineCollection;
 use Doctrine\Inflector\Inflector;
@@ -11,7 +12,6 @@ use Doctrine\Inflector\InflectorFactory;
 use Doctrine\Laminas\Hydrator\Strategy\CollectionStrategyInterface;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use InvalidArgumentException;
-use LogicException;
 use Override;
 use ReflectionException;
 
@@ -50,7 +50,7 @@ abstract class Collection implements CollectionStrategyInterface
     public function getCollectionName(): string
     {
         if ($this->collectionName === null) {
-            throw new LogicException('Collection name has not been set.');
+            throw new HydratorException('Collection name has not been set.');
         }
 
         return $this->collectionName;
@@ -66,7 +66,7 @@ abstract class Collection implements CollectionStrategyInterface
     public function getClassMetadata(): ClassMetadata
     {
         if ($this->metadata === null) {
-            throw new LogicException('Class metadata has not been set.');
+            throw new HydratorException('Class metadata has not been set.');
         }
 
         return $this->metadata;
@@ -82,7 +82,7 @@ abstract class Collection implements CollectionStrategyInterface
     public function getObject(): object
     {
         if ($this->object === null) {
-            throw new LogicException('Object has not been set.');
+            throw new HydratorException('Object has not been set.');
         }
 
         return $this->object;

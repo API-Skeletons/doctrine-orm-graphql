@@ -4,6 +4,7 @@
 /composer.lock
 /vendor/
 /coverage/
+/.claude
 /.idea/
 /.phpcs-cache
 /.phpunit.result.cache

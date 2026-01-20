@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
-use GraphQL\Error\Error;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
@@ -27,7 +27,7 @@ class Json extends ScalarType
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
-            throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
+            throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
         return $this->parseValue($valueNode->value);
@@ -37,19 +37,19 @@ class Json extends ScalarType
     /**
      * @return mixed[]|null
      *
-     * @throws Error
+     * @throws TypeSerializationException
      */
     #[Override]
     public function parseValue(mixed $value): array|null
     {
         if (! is_string($value)) {
-            throw new Error('JSON is not a string: ' . $value);
+            throw new TypeSerializationException('JSON is not a string: ' . $value);
         }
 
         $data = json_decode($value, true);
 
         if (! $data) {
-            throw new Error('Could not parse JSON data');
+            throw new TypeSerializationException('Could not parse JSON data');
         }
 
         return $data;
@@ -61,7 +61,7 @@ class Json extends ScalarType
         $return = json_encode($value);
 
         if (! $return) {
-            throw new Error('Could not serialize JSON data');
+            throw new TypeSerializationException('Could not serialize JSON data');
         }
 
         return $return;

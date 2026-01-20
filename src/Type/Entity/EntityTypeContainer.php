@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
@@ -13,11 +14,11 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Doctrine\ORM\EntityManager;
-use GraphQL\Error\Error;
 use League\Event\EventDispatcher;
 use Override;
 use ReflectionClass;
 
+use function array_keys;
 use function strtolower;
 
 /**
@@ -54,8 +55,9 @@ class EntityTypeContainer extends Container
         }
 
         if (! $this->has($id)) {
-            throw new Error(
-                'Entity ' . $id . ' is not mapped in the GraphQL metadata',
+            throw new MetadataException(
+                'Entity ' . $id . ' is not mapped in the GraphQL metadata. ' .
+                'Add the #[Entity] attribute to expose this entity.',
             );
         }
 
@@ -83,5 +85,16 @@ class EntityTypeContainer extends Container
         );
 
         return $this->get($id, $eventName);
+    }
+
+    /**
+     * Get all registered entity type IDs from metadata
+     *
+     * @return string[]
+     */
+    #[Override]
+    public function getRegisteredTypes(): array
+    {
+        return array_keys((array) $this->container->get(Metadata::class));
     }
 }

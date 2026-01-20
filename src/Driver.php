@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeNotFound as TypeNotFoundException;
 use Closure;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
+
+use function array_merge;
 
 class Driver extends Container
 {
@@ -30,7 +33,7 @@ class Driver extends Container
     /**
      * A shortcut into the EntityTypeContainer and TypeContainer
      *
-     * @throws Error
+     * @throws TypeNotFoundException
      */
     public function type(string $id, string|null $eventName = null): mixed
     {
@@ -44,7 +47,16 @@ class Driver extends Container
             return $typeContainer->get($id);
         }
 
-        throw new Error('Type "' . $id . '" is not registered');
+        // Collect all available types from both containers
+        $availableTypes = array_merge(
+            $entityTypeContainer->getRegisteredTypes(),
+            $typeContainer->getRegisteredTypes(),
+        );
+
+        throw new TypeNotFoundException(
+            typeId: $id,
+            availableTypes: $availableTypes,
+        );
     }
 
     /**

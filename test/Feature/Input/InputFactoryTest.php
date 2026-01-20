@@ -13,7 +13,6 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
-use Throwable;
 
 class InputFactoryTest extends TestCase
 {
@@ -209,11 +208,7 @@ class InputFactoryTest extends TestCase
     public function testInputExcludesIdentifier(): void
     {
         $config = new Config(['group' => 'InputFactoryTest']);
-
         $driver = new Driver($this->getEntityManager(), $config);
-
-        $this->expectException(Throwable::class);
-        $this->expectExceptionMessage('Identifier id is an invalid input.');
 
         $schema = new Schema([
             'mutation' => new ObjectType([
@@ -240,6 +235,9 @@ class InputFactoryTest extends TestCase
         }';
 
         $result = GraphQL::executeQuery($schema, $query);
+        $output = $result->toArray();
+
+        $this->assertEquals($output['errors'][0]['message'], 'Identifier id is an invalid input. Identifiers should not be included in mutation input.');
     }
 
     public function testInputWithOptionalField(): void
@@ -489,9 +487,6 @@ class InputFactoryTest extends TestCase
 
     public function testInputThrowsExceptionIfIdentifierFound(): void
     {
-        $this->expectException(Throwable::class);
-        $this->expectExceptionMessage('Identifier id is an invalid input.');
-
         $config = new Config(['group' => 'InputFactoryTest']);
 
         $driver = new Driver($this->getEntityManager(), $config);
@@ -530,12 +525,6 @@ class InputFactoryTest extends TestCase
         $result = GraphQL::executeQuery($schema, $query);
         $output = $result->toArray();
 
-        $this->getEntityManager()->clear();
-        $user = $this->getEntityManager()->getRepository(User::class)
-            ->find(1);
-
-        $this->assertEquals('inputTest', $user->getName());
-        $this->assertEquals(1, $output['data']['testInput']['id']);
-        $this->assertEquals('inputTest', $output['data']['testInput']['name']);
+        $this->assertEquals($output['errors'][0]['message'], 'Identifier id is an invalid input. Identifiers should not be included in mutation input.');
     }
 }

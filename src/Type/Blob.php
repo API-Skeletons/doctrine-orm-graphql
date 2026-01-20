@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
-use GraphQL\Error\Error;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
@@ -28,7 +28,7 @@ class Blob extends ScalarType
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
-            throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
+            throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
         // @codeCoverageIgnoreEnd
@@ -40,13 +40,13 @@ class Blob extends ScalarType
     public function parseValue(mixed $value): mixed
     {
         if (! is_string($value)) {
-            throw new Error('Blob field as base64 is not a string: ' . $value);
+            throw new TypeSerializationException('Blob field as base64 is not a string: ' . $value);
         }
 
         $data = base64_decode($value, true);
 
         if ($data === false) {
-            throw new Error('Blob field contains non-base64 encoded characters');
+            throw new TypeSerializationException('Blob field contains non-base64 encoded characters');
         }
 
         return $data;

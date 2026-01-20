@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Filter as FilterException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
-use GraphQL\Error\Error;
 
 use function array_flip;
 use function in_array;
@@ -187,7 +187,7 @@ class QueryBuilder
         foreach ($this->sortFields as $field => $sort) {
             // If the direction is not set, default to 'ASC'
             if (! isset($sort['direction'])) {
-                throw new Error(
+                throw new FilterException(
                     "Sort direction for field '"
                     . $field
                     . "' is not set but a sortPriority was. "

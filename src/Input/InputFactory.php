@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Input;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input as InputException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Doctrine\ORM\EntityManager;
-use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
@@ -86,7 +86,7 @@ class InputFactory
              * @phpcs-disable
              */
             if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
-                throw new Exception('Identifier ' . $fieldName . ' is an invalid input.');
+                throw new InputException('Identifier ' . $fieldName . ' is an invalid input. Identifiers should not be included in mutation input.');
             }
 
             $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
@@ -119,7 +119,7 @@ class InputFactory
              * should be set or updated, this factory is not the correct solution.
              */
             if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
-                throw new Exception('Identifier ' . $fieldName . ' is an invalid input.');
+                throw new InputException('Identifier ' . $fieldName . ' is an invalid input. Identifiers should not be included in mutation input.');
             }
 
             $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;

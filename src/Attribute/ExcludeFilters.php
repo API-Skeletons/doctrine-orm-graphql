@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration as ConfigurationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
-use Exception;
 
 use function array_udiff;
 use function array_uintersect;
@@ -29,7 +29,10 @@ trait ExcludeFilters
         $filters = [];
 
         if (count($this->includeFilters) && count($this->excludeFilters)) {
-            throw new Exception('includeFilters and excludeFilters are mutually exclusive.');
+            throw new ConfigurationException(
+                'includeFilters and excludeFilters are mutually exclusive. ' .
+                'Use either includeFilters OR excludeFilters, not both.',
+            );
         }
 
         if (count($this->includeFilters)) {

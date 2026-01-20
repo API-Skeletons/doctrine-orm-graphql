@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration as ConfigurationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
-use InvalidArgumentException;
 
+use function array_keys;
 use function array_merge;
 use function property_exists;
 
@@ -100,7 +101,10 @@ class Config
 
         foreach ($mergedConfig as $field => $value) {
             if (! property_exists($this, $field)) {
-                throw new InvalidArgumentException('Invalid configuration setting: ' . $field);
+                throw new ConfigurationException(
+                    'Invalid configuration setting: ' . $field,
+                    array_keys($default),
+                );
             }
         }
 

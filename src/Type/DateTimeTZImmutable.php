@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
 use DateTimeImmutable as PHPDateTimeTZImmutable;
-use GraphQL\Error\Error;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
@@ -27,7 +27,7 @@ class DateTimeTZImmutable extends ScalarType
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
-            throw new Error('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
+            throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
         // @codeCoverageIgnoreEnd
@@ -39,13 +39,13 @@ class DateTimeTZImmutable extends ScalarType
     public function parseValue(mixed $value): PHPDateTimeTZImmutable
     {
         if (! is_string($value)) {
-            throw new Error('datetimetz_immutable is not a string: ' . $value);
+            throw new TypeSerializationException('datetimetz_immutable is not a string: ' . $value);
         }
 
         $data = PHPDateTimeTZImmutable::createFromFormat(PHPDateTimeTZImmutable::ATOM, $value);
 
         if ($data === false) {
-            throw new Error('datetimetz_immutable format does not match ISO 8601.');
+            throw new TypeSerializationException('datetimetz_immutable format does not match ISO 8601.');
         }
 
         return $data;

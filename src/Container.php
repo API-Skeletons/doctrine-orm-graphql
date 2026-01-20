@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeNotFound as TypeNotFoundException;
 use Closure;
 use GraphQL\Error\Error;
 use Override;
@@ -11,6 +12,7 @@ use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
 
+use function array_keys;
 use function assert;
 use function strtolower;
 
@@ -28,14 +30,18 @@ abstract class Container implements ContainerInterface
         return isset($this->register[strtolower($id)]);
     }
 
-    /** @throws Error */
+    /** @throws TypeNotFoundException */
     #[Override]
     public function get(string $id): mixed
     {
-        $id = strtolower($id);
+        $originalId = $id;
+        $id         = strtolower($id);
 
         if (! $this->has($id)) {
-            throw new Error($id . ' is not registered');
+            throw new TypeNotFoundException(
+                typeId: $originalId,
+                availableTypes: array_keys($this->register),
+            );
         }
 
         if ($this->register[$id] instanceof Closure) {
@@ -57,6 +63,16 @@ abstract class Container implements ContainerInterface
         $this->register[$id] = $value;
 
         return $this;
+    }
+
+    /**
+     * Get all registered type IDs
+     *
+     * @return string[]
+     */
+    public function getRegisteredTypes(): array
+    {
+        return array_keys($this->register);
     }
 
     /**
