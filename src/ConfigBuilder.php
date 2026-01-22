@@ -16,16 +16,18 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
  *     ->withLimit(100)
  *     ->globalEnable()
  *     ->useHydratorCache()
+ *     ->useQueryResultCache()
  *     ->build();
  * </code>
  */
 class ConfigBuilder
 {
-    private string $group            = 'default';
-    private string|null $groupSuffix = null;
-    private bool $useHydratorCache   = false;
-    private int $limit               = 1000;
-    private bool $globalEnable       = false;
+    private string $group             = 'default';
+    private string|null $groupSuffix  = null;
+    private bool $useHydratorCache    = false;
+    private bool $useQueryResultCache = false;
+    private int $limit                = 1000;
+    private bool $globalEnable        = false;
     /** @var string[] */
     private array $ignoreFields       = [];
     private bool|null $globalByValue  = null;
@@ -82,6 +84,20 @@ class ConfigBuilder
     public function useHydratorCache(bool $enable = true): self
     {
         $this->useHydratorCache = $enable;
+
+        return $this;
+    }
+
+    /**
+     * Enable query result caching
+     *
+     * When set to true query results will be cached for the
+     * duration of the request thereby preventing duplicate database
+     * queries with identical SQL and parameters.
+     */
+    public function useQueryResultCache(bool $enable = true): self
+    {
+        $this->useQueryResultCache = $enable;
 
         return $this;
     }
@@ -215,6 +231,7 @@ class ConfigBuilder
             'group' => $this->group,
             'groupSuffix' => $this->groupSuffix,
             'useHydratorCache' => $this->useHydratorCache,
+            'useQueryResultCache' => $this->useQueryResultCache,
             'limit' => $this->limit,
             'globalEnable' => $this->globalEnable,
             'ignoreFields' => $this->ignoreFields,

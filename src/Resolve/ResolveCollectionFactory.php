@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Cache\QueryResultCache;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
@@ -38,6 +39,7 @@ class ResolveCollectionFactory
         protected readonly EventDispatcher $eventDispatcher,
         protected readonly Metadata $metadata,
         protected readonly PaginationService $paginationService,
+        protected readonly QueryResultCache $queryResultCache,
     ) {
     }
 
@@ -191,8 +193,20 @@ class ResolveCollectionFactory
             $paginator = new Paginator($queryBuilder->getQuery());
         }
 
-        // Get results
-        $results = $paginator->getQuery()->getResult();
+        // Get results (with cache if enabled)
+        $query = $paginator->getQuery();
+
+        if ($this->config->getUseQueryResultCache()) {
+            $cachedResults = $this->queryResultCache->get($query);
+            if ($cachedResults !== null) {
+                $results = $cachedResults;
+            } else {
+                $results = $query->getResult();
+                $this->queryResultCache->set($query, $results);
+            }
+        } else {
+            $results = $query->getResult();
+        }
 
         // Build edges
         $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);

@@ -25,6 +25,7 @@ Creating a Driver with all config options
       'limit' => 500,
       'sortFields' => true,
       'useHydratorCache' => true,
+      'useQueryResultCache' => true,
       'excludeFilters' => [Filters::LIKE],
   ]);
 
@@ -123,6 +124,27 @@ useHydratorCache
 When set to true hydrator results will be cached for
 the duration of the request thereby saving possible multiple extracts for
 the same entity.  Default is ``false``
+
+
+useQueryResultCache
+-------------------
+
+When set to true query results will be cached for
+the duration of the request thereby preventing duplicate database queries
+with identical SQL and parameters. This is particularly useful for:
+
+- Circular references in the graph
+- Queries accessing the same entity multiple times
+- Duplicate association queries
+
+The cache is request-scoped and automatically cleared after each request.
+Performance benefits are most noticeable with complex, nested GraphQL queries
+that may execute the same database query multiple times.
+
+Default is ``false``
+
+**Note**: This caches the query results, not the hydrated entities.
+For entity caching, see ``useHydratorCache``.
 
 
 Functions

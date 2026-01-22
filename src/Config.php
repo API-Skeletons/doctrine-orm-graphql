@@ -40,6 +40,13 @@ class Config
      */
     protected readonly bool $useHydratorCache;
 
+    /**
+     * @var bool When set to true query results will be cached for the
+     *           duration of the request thereby preventing duplicate database
+     *           queries with identical SQL and parameters.
+     */
+    protected readonly bool $useQueryResultCache;
+
     /** @var int A hard limit for fetching any collection within the schema */
     protected readonly int $limit;
 
@@ -88,6 +95,7 @@ class Config
             'group' => 'default',
             'groupSuffix' => null,
             'useHydratorCache' => false,
+            'useQueryResultCache' => false,
             'limit' => 1000,
             'globalEnable' => false,
             'ignoreFields' => [],
@@ -109,16 +117,17 @@ class Config
         }
 
         // Assigning properties explicitly is phpstan friendly
-        $this->group            = $mergedConfig['group'];
-        $this->groupSuffix      = $mergedConfig['groupSuffix'];
-        $this->useHydratorCache = $mergedConfig['useHydratorCache'];
-        $this->limit            = $mergedConfig['limit'];
-        $this->globalEnable     = $mergedConfig['globalEnable'];
-        $this->ignoreFields     = $mergedConfig['ignoreFields'];
-        $this->globalByValue    = $mergedConfig['globalByValue'];
-        $this->entityPrefix     = $mergedConfig['entityPrefix'];
-        $this->sortFields       = $mergedConfig['sortFields'];
-        $this->excludeFilters   = $mergedConfig['excludeFilters'];
+        $this->group               = $mergedConfig['group'];
+        $this->groupSuffix         = $mergedConfig['groupSuffix'];
+        $this->useHydratorCache    = $mergedConfig['useHydratorCache'];
+        $this->useQueryResultCache = $mergedConfig['useQueryResultCache'];
+        $this->limit               = $mergedConfig['limit'];
+        $this->globalEnable        = $mergedConfig['globalEnable'];
+        $this->ignoreFields        = $mergedConfig['ignoreFields'];
+        $this->globalByValue       = $mergedConfig['globalByValue'];
+        $this->entityPrefix        = $mergedConfig['entityPrefix'];
+        $this->sortFields          = $mergedConfig['sortFields'];
+        $this->excludeFilters      = $mergedConfig['excludeFilters'];
     }
 
     public function getGroup(): string
@@ -134,6 +143,11 @@ class Config
     public function getUseHydratorCache(): bool
     {
         return $this->useHydratorCache;
+    }
+
+    public function getUseQueryResultCache(): bool
+    {
+        return $this->useQueryResultCache;
     }
 
     public function getLimit(): int

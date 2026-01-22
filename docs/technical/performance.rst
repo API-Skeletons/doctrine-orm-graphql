@@ -154,6 +154,64 @@ Enable only when profiling shows repeated entity extraction:
 - Memory-constrained environments
 - Single-access patterns
 
+useQueryResultCache
+-------------------
+
+Enable to cache identical database queries within a single request:
+
+.. code-block:: php
+
+    new Config(['useQueryResultCache' => true]);
+
+**When to Enable**:
+
+- Complex GraphQL queries that may execute the same query multiple times
+- Queries with circular references or repeated associations
+- Deep nested queries accessing the same data paths
+- When profiling shows duplicate SQL queries
+
+**When to Disable**:
+
+- Simple queries without duplication
+- Memory-constrained environments
+- When query patterns show no duplication
+
+**How It Works**:
+
+The cache uses a signature based on SQL + parameters to identify identical queries.
+When a query is executed, the cache is checked first. If found, the cached results
+are returned without hitting the database. The cache is request-scoped and
+automatically cleared after the request completes.
+
+**Performance Impact**:
+
+.. code-block:: php
+
+    // Without cache: executes same query twice
+    query {
+        artist1: artist(id: 1) {
+            performances { edges { node { venue } } }
+        }
+        artist2: artist(id: 1) {  # Same artist
+            performances { edges { node { venue } } }  # Duplicate query
+        }
+    }
+
+    // With cache: second query uses cached results
+    // Queries reduced from 4 to 3 (artist query + performances query cached)
+
+**Cache Statistics**:
+
+.. code-block:: php
+
+    $cache = $driver->get(QueryResultCache::class);
+    $stats = $cache->getStats();
+
+    echo "Cache size: " . $stats['size'] . "\n";
+    echo "Hits: " . $stats['hits'] . "\n";
+    echo "Misses: " . $stats['misses'] . "\n";
+    echo "Hit rate: " . ($stats['hitRate'] * 100) . "%\n";
+
 **Profiling Example**:
 
 .. code-block:: php

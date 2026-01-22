@@ -70,6 +70,24 @@ class ConfigBuilderTest extends TestCase
         $this->assertFalse($config->getUseHydratorCache());
     }
 
+    public function testUseQueryResultCacheEnablesCache(): void
+    {
+        $config = ConfigBuilder::create()
+            ->useQueryResultCache()
+            ->build();
+
+        $this->assertTrue($config->getUseQueryResultCache());
+    }
+
+    public function testUseQueryResultCacheWithFalseDisablesCache(): void
+    {
+        $config = ConfigBuilder::create()
+            ->useQueryResultCache(false)
+            ->build();
+
+        $this->assertFalse($config->getUseQueryResultCache());
+    }
+
     public function testWithLimitSetsLimit(): void
     {
         $config = ConfigBuilder::create()
@@ -206,6 +224,7 @@ class ConfigBuilderTest extends TestCase
             ->withGroup('api')
             ->withGroupSuffix('API')
             ->useHydratorCache()
+            ->useQueryResultCache()
             ->withLimit(100)
             ->globalEnable()
             ->ignoreField('id')
@@ -219,6 +238,7 @@ class ConfigBuilderTest extends TestCase
         $this->assertEquals('api', $config->getGroup());
         $this->assertEquals('API', $config->getGroupSuffix());
         $this->assertTrue($config->getUseHydratorCache());
+        $this->assertTrue($config->getUseQueryResultCache());
         $this->assertEquals(100, $config->getLimit());
         $this->assertTrue($config->getGlobalEnable());
         $this->assertEquals(['id', 'password'], $config->getIgnoreFields());
@@ -236,6 +256,7 @@ class ConfigBuilderTest extends TestCase
         $this->assertEquals('default', $config->getGroup());
         $this->assertNull($config->getGroupSuffix());
         $this->assertFalse($config->getUseHydratorCache());
+        $this->assertFalse($config->getUseQueryResultCache());
         $this->assertEquals(1000, $config->getLimit());
         $this->assertFalse($config->getGlobalEnable());
         $this->assertEquals([], $config->getIgnoreFields());

@@ -45,6 +45,10 @@ trait Services
                 static fn () => new Pagination\PaginationService(),
             )
             ->set(
+                Cache\QueryResultCache::class,
+                static fn () => new Cache\QueryResultCache(),
+            )
+            ->set(
                 Type\Entity\EntityTypeContainer::class,
                 (new ReflectionClass(Type\Entity\EntityTypeContainer::class))
                     ->newLazyGhost(static function (Type\Entity\EntityTypeContainer $object) use ($self): void {
@@ -97,6 +101,7 @@ trait Services
                             $self->get(EventDispatcher::class),
                             $self->get(Metadata::class),
                             $self->get(Pagination\PaginationService::class),
+                            $self->get(Cache\QueryResultCache::class),
                         );
                     }),
             )
@@ -110,6 +115,7 @@ trait Services
                             $self->get(EventDispatcher::class),
                             $self->get(Metadata::class),
                             $self->get(Pagination\PaginationService::class),
+                            $self->get(Cache\QueryResultCache::class),
                         );
                     }),
             )

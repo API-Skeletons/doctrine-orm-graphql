@@ -18,6 +18,7 @@ Class Overview
         public function getGroup(): string;
         public function getGroupSuffix(): ?string;
         public function getUseHydratorCache(): bool;
+        public function getUseQueryResultCache(): bool;
         public function getLimit(): int;
         public function getGlobalEnable(): bool;
         public function getIgnoreFields(): array;
@@ -51,6 +52,7 @@ Available Options
         'group' => 'default',            // string
         'groupSuffix' => null,           // string|null
         'useHydratorCache' => false,     // bool
+        'useQueryResultCache' => false,  // bool
         'limit' => 1000,                 // int
         'globalEnable' => false,         // bool
         'ignoreFields' => [],            // string[]
@@ -221,6 +223,74 @@ extracted once per request, and subsequent accesses return cached data.
 **Scope**:
 
 Cache is request-scoped only. Cleared after each GraphQL query execution.
+
+useQueryResultCache
+-------------------
+
+**Type**: ``bool``
+
+**Default**: ``false``
+
+**Description**:
+
+Enables request-scoped caching of database query results. When enabled, identical
+SQL queries with the same parameters are executed only once per request, with
+subsequent executions returning cached results.
+
+**Use Cases**:
+
+- Complex nested queries that may execute the same query multiple times
+- Circular references in the GraphQL query
+- Queries accessing the same associations repeatedly
+- Performance optimization for duplicate data access patterns
+
+**How It Works**:
+
+The cache generates a signature from the SQL query string and parameters. When a
+query is executed, the cache is checked first. If found, cached results are returned
+without database access.
+
+**Performance Impact**:
+
+.. code-block:: graphql
+
+    # Without cache: artist performances queried twice
+    {
+        artist1: artist(id: 1) {
+            performances { edges { node { venue } } }
+        }
+        artist2: artist(id: 1) {  # Same artist
+            performances { edges { node { venue } } }  # Duplicate query
+        }
+    }
+
+    # With cache: second performances query uses cached results
+    new Config(['useQueryResultCache' => true]);
+
+**Cache Statistics**:
+
+.. code-block:: php
+
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Cache\QueryResultCache;
+
+    $cache = $driver->get(QueryResultCache::class);
+    $stats = $cache->getStats();
+
+    echo "Cache size: " . $stats['size'] . "\n";
+    echo "Cache hits: " . $stats['hits'] . "\n";
+    echo "Cache misses: " . $stats['misses'] . "\n";
+    echo "Hit rate: " . ($stats['hitRate'] * 100) . "%\n";
+
+**Scope**:
+
+Cache is request-scoped only. Automatically cleared after each request.
+
+**Difference from useHydratorCache**:
+
+- ``useQueryResultCache``: Caches database query results (SQL level)
+- ``useHydratorCache``: Caches entity extraction results (hydration level)
+
+Both can be enabled simultaneously for maximum caching.
 
 limit
 -----
@@ -696,6 +766,7 @@ Production Configuration
         'groupSuffix' => '',
         'sortFields' => true,
         'useHydratorCache' => true,
+        'useQueryResultCache' => true,
         'excludeFilters' => [
             Filters::CONTAINS,  // Expensive on large datasets
         ],
@@ -787,7 +858,7 @@ Best Practices
 4. **Use Groups for Multiple APIs**: Separate public/admin/internal APIs with different groups
 5. **Clean Type Names**: Use ``entityPrefix`` and ``groupSuffix`` for readable type names
 6. **Exclude Sensitive Fields**: Always use ``ignoreFields`` with ``globalEnable``
-7. **Profile Before Caching**: Only enable ``useHydratorCache`` if profiling shows benefit
+7. **Profile Before Caching**: Only enable ``useHydratorCache`` and ``useQueryResultCache`` if profiling shows benefit
 8. **Document Custom Configs**: Comment why you're using non-default values
 
 Common Pitfalls
@@ -796,6 +867,6 @@ Common Pitfalls
 1. **globalEnable in Production**: Security risk - always use explicit attributes
 2. **Same groupSuffix for Different Groups**: Causes type name collisions
 3. **Too High Limits**: Can cause memory exhaustion and slow queries
-4. **useHydratorCache Always On**: Wastes memory for simple queries
+4. **Cache Always On**: ``useHydratorCache`` and ``useQueryResultCache`` waste memory for simple queries
 5. **Empty entityPrefix**: Results in ugly type names like ``App_Entity_Artist_default``
 6. **Forgetting ignoreFields**: Exposes sensitive data with ``globalEnable``
