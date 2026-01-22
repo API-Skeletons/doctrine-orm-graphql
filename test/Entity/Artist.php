@@ -112,6 +112,16 @@ class Artist
     }
 
     /**
+     * Set id (for testing purposes).
+     */
+    public function setId(int $id): Artist
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
      * Add performance.
      */
     public function addPerformance(Performance $performance): Artist

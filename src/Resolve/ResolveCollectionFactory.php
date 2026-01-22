@@ -5,24 +5,22 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Closure;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\PersistentCollection;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
 
 use function array_flip;
-use function base64_decode;
-use function base64_encode;
+use function array_key_first;
 use function count;
 use function in_array;
 
@@ -39,15 +37,13 @@ class ResolveCollectionFactory
         protected readonly EntityTypeContainer $entityTypeContainer,
         protected readonly EventDispatcher $eventDispatcher,
         protected readonly Metadata $metadata,
+        protected readonly PaginationService $paginationService,
     ) {
     }
 
     public function get(Entity $entity): Closure
     {
-        return function ($source, array $args, $context, ResolveInfo $info) use ($entity) {
-            $fieldResolver = $this->fieldResolver;
-            $collection    = $fieldResolver($source, $args, $context, $info);
-
+        return function ($source, array $args, $context, ResolveInfo $info) {
             $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
             $entityClassName               = $defaultProxyClassNameResolver->getClass($source);
 
@@ -62,203 +58,88 @@ class ResolveCollectionFactory
                 ->getMetadataFor($entityClassName)
                 ->getAssociationTargetClass($targetCollectionName);
 
+            // Get the target entity
+            $targetEntity = $this->entityTypeContainer->get($targetClassName);
+
+            // Get event name
+            $eventName = $this->metadata[$entityClassName]['fields'][$targetCollectionName]['criteriaEventName'];
+
             return $this->buildPagination(
-                $entityClassName,
-                $targetClassName,
-                $args['pagination'] ?? [],
-                $collection,
-                $this->buildCriteria($args['filter'] ?? [], $entity),
-                $this->metadata[$entityClassName]['fields'][$targetCollectionName]['criteriaEventName'],
-                $source,
-                $args,
-                $context,
-                $info,
+                entity: $targetEntity,
+                entityClassName: $entityClassName,
+                targetClassName: $targetClassName,
+                associationName: $targetCollectionName,
+                source: $source,
+                eventName: $eventName,
+                objectValue: $source,
+                args: $args,
+                context: $context,
+                info: $info,
             );
         };
     }
 
-    /** @param mixed[] $filter */
-    protected function buildCriteria(array $filter, Entity $entity): Criteria
-    {
-        $orderBy  = [];
-        $criteria = Criteria::create();
-
-        foreach ($filter as $field => $filters) {
-            // Resolve aliases
-            $field = array_flip($entity->getExtractionMap())[$field] ?? $field;
-
-            foreach ($filters as $filter => $value) {
-                switch (Filters::from($filter)) {
-                    case Filters::ISNULL:
-                        $criteria->andWhere($criteria->expr()->$filter($field));
-                        break;
-                    case Filters::BETWEEN:
-                        $criteria->andWhere($criteria->expr()->gte($field, $value['from']));
-                        $criteria->andWhere($criteria->expr()->lte($field, $value['to']));
-                        break;
-                    case Filters::SORT:
-                        $orderBy[$field] = $value;
-                        break;
-                    default:
-                        $criteria->andWhere($criteria->expr()->$filter($field, $value));
-                        break;
-                }
-            }
-        }
-
-        if (! empty($orderBy)) {
-            $criteria->orderBy($orderBy);
-        }
-
-        return $criteria;
-    }
-
-    /**
-     * @param mixed[] $pagination
-     *
-     * @return mixed[]
-     */
+    /** @return mixed[] */
     protected function buildPagination(
+        Entity $entity,
         string $entityClassName,
         string $targetClassName,
-        array $pagination,
-        PersistentCollection $collection,
-        Criteria $criteria,
-        string|null $criteriaEventName,
+        string $associationName,
+        mixed $source,
+        string|null $eventName,
         mixed ...$resolve,
     ): array {
-        $paginationFields = [
-            'first' => 0,
-            'last' => 0,
-            'after' => 0,
-            'before' => 0,
-        ];
+        // Get the association metadata
+        $sourceMetadata = $this->entityManager->getClassMetadata($entityClassName);
+        $association    = $sourceMetadata->getAssociationMapping($associationName);
 
-        // Pagination
-        foreach ($pagination as $field => $value) {
-            $paginationFields[$field] = $value;
+        // Build QueryBuilder for the association
+        $queryBuilder = $this->entityManager->createQueryBuilder();
+        $queryBuilder->select('entity')
+            ->from($targetClassName, 'entity');
 
-            if ($field === 'after') {
-                $paginationFields[$field] = (int) base64_decode($value, true) + 1;
-            }
+        // Handle different association types
+        if (isset($association['joinTable'])) {
+            // Many-to-many relationship
+            $identifierValues = $sourceMetadata->getIdentifierValues($source);
+            $sourceId         = $identifierValues[array_key_first($identifierValues)];
 
-            if ($field !== 'before') {
-                continue;
-            }
+            $joinTable          = $association['joinTable']['name'];
+            $joinColumns        = $association['joinTable']['joinColumns'];
+            $inverseJoinColumns = $association['joinTable']['inverseJoinColumns'];
 
-            $paginationFields[$field] = (int) base64_decode($value, true);
-        }
-
-        // Calculate offset and limit
-        $itemCount      = count($collection->matching($criteria));
-        $offsetAndLimit = $this->calculateOffsetAndLimit($resolve[3]->fieldName, $entityClassName, $targetClassName, $paginationFields, $itemCount);
-
-        /**
-         * Fire the event dispatcher using the passed event name.
-         */
-        if ($criteriaEventName) {
-            $event = new CriteriaEvent(
-                $criteriaEventName,
-                $criteria,
-                $collection,
-                $offsetAndLimit['offset'],
-                $offsetAndLimit['limit'],
-                ...$resolve,
+            $queryBuilder->innerJoin(
+                $joinTable,
+                'jt',
+                'WITH',
+                'jt.' . $inverseJoinColumns[0]['name'] . ' = entity.id',
             );
-
-            $this->eventDispatcher->dispatch($event);
-            $collection = $event->getCollection();
+            $queryBuilder->where('jt.' . $joinColumns[0]['name'] . ' = :sourceId');
+            $queryBuilder->setParameter('sourceId', $sourceId);
+        } elseif (isset($association['mappedBy'])) {
+            // One-to-many: target entity has the foreign key
+            $queryBuilder->where('entity.' . $association['mappedBy'] . ' = :source');
+            $queryBuilder->setParameter('source', $source);
+        } elseif (isset($association['inversedBy'])) {
+            // Many-to-one from the owning side (less common for collections)
+            $queryBuilder->innerJoin($entityClassName, 'source', 'WITH', 'source.' . $associationName . ' = entity');
+            $queryBuilder->where('source = :source');
+            $queryBuilder->setParameter('source', $source);
         }
 
-        // Recalculate offset and limit after Criteria event
-        $itemCount      = count($collection->matching($criteria));
-        $offsetAndLimit = $this->calculateOffsetAndLimit($resolve[3]->fieldName, $entityClassName, $targetClassName, $paginationFields, $itemCount);
-
-        // Add offset and limit after Criteria event
-        if ($offsetAndLimit['offset']) {
-            $criteria->setFirstResult($offsetAndLimit['offset']);
+        // Apply filters using QueryBuilder
+        $queryBuilderFilter = new QueryBuilderFilter();
+        if (isset($resolve['args']['filter'])) {
+            $queryBuilderFilter->apply($resolve['args']['filter'], $queryBuilder, $entity);
         }
 
-        if ($offsetAndLimit['limit']) {
-            $criteria->setMaxResults($offsetAndLimit['limit']);
-        }
+        // Decode pagination fields
+        $paginationFields = $this->paginationService->decodePaginationFields(
+            $resolve['args']['pagination'] ?? [],
+        );
 
-        $edgesAndCursors = $this->buildEdgesAndCursors($collection->matching($criteria), $offsetAndLimit, $itemCount);
-
-        // Return entities
-        return [
-            'edges' => $edgesAndCursors['edges'],
-            'totalCount' => $itemCount,
-            'pageInfo' => [
-                'endCursor' => $edgesAndCursors['cursors']['last'],
-                'startCursor' => $edgesAndCursors['cursors']['start'],
-                'hasNextPage' => $edgesAndCursors['cursors']['end'] !== $edgesAndCursors['cursors']['last'],
-                'hasPreviousPage' => $edgesAndCursors['cursors']['start'] !== base64_encode((string) 0),
-            ],
-        ];
-    }
-
-    /**
-     * @param array<string, int>     $offsetAndLimit
-     * @param Collection<int, mixed> $items
-     *
-     * @return array<string, mixed>
-     */
-    protected function buildEdgesAndCursors(Collection $items, array $offsetAndLimit, int $itemCount): array
-    {
-        $edges   = [];
-        $index   = 0;
-        $cursors = [
-            'first' => null,
-            'last'  => base64_encode((string) 0),
-            'start' => base64_encode((string) 0),
-        ];
-
-        $startCursor = null;
-        foreach ($items as $item) {
-            $cursors['last'] = base64_encode((string) ($index + $offsetAndLimit['offset']));
-
-            $edges[] = [
-                'node' => $item,
-                'cursor' => $cursors['last'],
-            ];
-
-            if (! $startCursor) {
-                $startCursor = $cursors['last'];
-            }
-
-            if (! $cursors['first']) {
-                $cursors['first'] = $cursors['last'];
-            }
-
-            $index++;
-        }
-
-        $endIndex         = $itemCount ? $itemCount - 1 : 0;
-        $cursors['end']   = base64_encode((string) $endIndex);
-        $cursors['start'] = $startCursor ?? $cursors['start'];
-
-        return [
-            'cursors' => $cursors,
-            'edges'   => $edges,
-        ];
-    }
-
-    /**
-     * @param array<string, int> $paginationFields
-     *
-     * @return array<string, int>
-     */
-    protected function calculateOffsetAndLimit(
-        string $associationName,
-        string $entityClassName,
-        string $targetClassName,
-        array $paginationFields,
-        int $itemCount,
-    ): array {
-        $offset = 0;
-
-        $limit            = $this->metadata[$targetClassName]['limit'];
+        // Get the limit for this association
+        $limit            = $this->metadata[$targetClassName]['limit'] ?? null;
         $associationLimit = $this->metadata[$entityClassName]['fields'][$associationName]['limit'] ?? null;
 
         if ($associationLimit) {
@@ -269,30 +150,65 @@ class ResolveCollectionFactory
             $limit = $this->config->getLimit();
         }
 
-        $adjustedLimit = $paginationFields['first'] ?: $paginationFields['last'] ?: $limit;
+        // Calculate offset and limit
+        $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit(
+            $paginationFields,
+            $limit,
+        );
 
-        if ($adjustedLimit < $limit) {
-            $limit = $adjustedLimit;
+        /**
+         * Fire the event dispatcher using the passed event name.
+         * Include all resolve variables.
+         */
+        if ($eventName) {
+            $this->eventDispatcher->dispatch(
+                new QueryBuilderEvent(
+                    $eventName,
+                    $queryBuilder,
+                    (int) $offsetAndLimit['offset'],
+                    (int) $offsetAndLimit['limit'],
+                    ...$resolve,
+                ),
+            );
         }
 
-        if ($paginationFields['after']) {
-            $offset = $paginationFields['after'];
-        } elseif ($paginationFields['before']) {
-            $offset = $paginationFields['before'] - $limit;
+        if ($offsetAndLimit['offset']) {
+            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
         }
 
-        if ($offset < 0) {
-            $limit += $offset;
-            $offset = 0;
+        if ($offsetAndLimit['limit']) {
+            $queryBuilder->setMaxResults($offsetAndLimit['limit']);
         }
 
+        // Get paginator to count items
+        $paginator = new Paginator($queryBuilder->getQuery());
+        $itemCount = $paginator->count();
+
+        // Rebuild paginator if needed for 'last' without 'before'
         if ($paginationFields['last'] && ! $paginationFields['before']) {
-            $offset = $itemCount - $paginationFields['last'];
+            $offsetAndLimit['offset'] = $itemCount - $paginationFields['last'];
+            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
+            $paginator = new Paginator($queryBuilder->getQuery());
         }
 
-        return [
-            'offset' => $offset,
-            'limit'  => $limit,
-        ];
+        // Get results
+        $results = $paginator->getQuery()->getResult();
+
+        // Build edges
+        $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
+
+        // Build cursors
+        $cursors = $this->paginationService->buildCursors(
+            $offsetAndLimit['offset'],
+            $itemCount,
+            count($results),
+        );
+
+        // Build final pagination response
+        return $this->paginationService->buildPaginationResponse(
+            $edges,
+            $cursors,
+            $itemCount,
+        );
     }
 }

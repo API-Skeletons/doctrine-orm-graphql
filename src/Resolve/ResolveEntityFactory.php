@@ -8,6 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use Closure;
 use Doctrine\ORM\EntityManager;
@@ -16,8 +17,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
 
-use function base64_decode;
-use function base64_encode;
+use function count;
 
 /**
  * Build a resolver for entities
@@ -29,6 +29,7 @@ class ResolveEntityFactory
         protected readonly EntityManager $entityManager,
         protected readonly EventDispatcher $eventDispatcher,
         protected readonly Metadata $metadata,
+        protected readonly PaginationService $paginationService,
     ) {
     }
 
@@ -65,30 +66,19 @@ class ResolveEntityFactory
         string|null $eventName,
         mixed ...$resolve,
     ): array {
-        $paginationFields = [
-            'first'  => 0,
-            'last'   => 0,
-            'before' => 0,
-            'after'  => 0,
-        ];
+        // Decode pagination fields
+        $paginationFields = $this->paginationService->decodePaginationFields(
+            $resolve['args']['pagination'] ?? [],
+        );
 
-        if (isset($resolve['args']['pagination'])) {
-            foreach ($resolve['args']['pagination'] as $field => $value) {
-                $paginationFields[$field] = $value;
+        // Get the limit for this entity
+        $limit = $this->metadata[$entity->getEntityClass()]['limit'] ?: $this->config->getLimit();
 
-                if ($field === 'after') {
-                    $paginationFields[$field] = (int) base64_decode($value, true) + 1;
-                }
-
-                if ($field !== 'before') {
-                    continue;
-                }
-
-                $paginationFields[$field] = (int) base64_decode($value, true);
-            }
-        }
-
-        $offsetAndLimit = $this->calculateOffsetAndLimit($entity, $paginationFields);
+        // Calculate offset and limit
+        $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit(
+            $paginationFields,
+            $limit,
+        );
 
         /**
          * Fire the event dispatcher using the passed event name.
@@ -114,111 +104,35 @@ class ResolveEntityFactory
             $queryBuilder->setMaxResults($offsetAndLimit['limit']);
         }
 
-        $edgesAndCursors = $this->buildEdgesAndCursors($queryBuilder, $offsetAndLimit, $paginationFields);
-
-        return [
-            'edges' => $edgesAndCursors['edges'],
-            'totalCount' => $edgesAndCursors['totalCount'],
-            'pageInfo' => [
-                'endCursor' => $edgesAndCursors['cursors']['last'],
-                'startCursor' => $edgesAndCursors['cursors']['start'],
-                'hasNextPage' => $edgesAndCursors['cursors']['end'] !== $edgesAndCursors['cursors']['last'],
-                'hasPreviousPage' => $edgesAndCursors['cursors']['start'] !== base64_encode((string) 0),
-            ],
-        ];
-    }
-
-    /**
-     * @param array<string, int> $offsetAndLimit
-     * @param array<string, int> $paginationFields
-     *
-     * @return array<string, mixed>
-     */
-    protected function buildEdgesAndCursors(QueryBuilder $queryBuilder, array $offsetAndLimit, array $paginationFields): array
-    {
-        $index   = 0;
-        $edges   = [];
-        $cursors = [
-            'start' => base64_encode((string) 0),
-            'first' => null,
-            'last'  => base64_encode((string) 0),
-        ];
-
+        // Get paginator to count items
         $paginator = new Paginator($queryBuilder->getQuery());
         $itemCount = $paginator->count();
 
-        // Rebuild paginator if needed
+        // Rebuild paginator if needed for 'last' without 'before'
         if ($paginationFields['last'] && ! $paginationFields['before']) {
             $offsetAndLimit['offset'] = $itemCount - $paginationFields['last'];
             $queryBuilder->setFirstResult($offsetAndLimit['offset']);
             $paginator = new Paginator($queryBuilder->getQuery());
         }
 
-        $startCursor = null;
-        foreach ($paginator->getQuery()->getResult() as $result) {
-            $cursors['last'] = base64_encode((string) ($index + $offsetAndLimit['offset']));
+        // Get results
+        $results = $paginator->getQuery()->getResult();
 
-            $edges[] = [
-                'node' => $result,
-                'cursor' => $cursors['last'],
-            ];
+        // Build edges
+        $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
 
-            if (! $startCursor) {
-                $startCursor = $cursors['last'];
-            }
+        // Build cursors
+        $cursors = $this->paginationService->buildCursors(
+            $offsetAndLimit['offset'],
+            $itemCount,
+            count($results),
+        );
 
-            if (! $cursors['first']) {
-                $cursors['first'] = $cursors['last'];
-            }
-
-            $index++;
-        }
-
-        $endIndex         = $paginator->count() ? $paginator->count() - 1 : 0;
-        $cursors['end']   = base64_encode((string) $endIndex);
-        $cursors['start'] = $startCursor ?? $cursors['start'];
-
-        return [
-            'cursors'    => $cursors,
-            'edges'      => $edges,
-            'totalCount' => $paginator->count(),
-        ];
-    }
-
-    /**
-     * @param array<string, int> $paginationFields
-     *
-     * @return array<string, int>
-     */
-    protected function calculateOffsetAndLimit(Entity $entity, array $paginationFields): array
-    {
-        $offset = 0;
-
-        $limit = $this->metadata[$entity->getEntityClass()]['limit'];
-
-        if (! $limit) {
-            $limit = $this->config->getLimit();
-        }
-
-        $adjustedLimit = $paginationFields['first'] ?: $paginationFields['last'] ?: $limit;
-        if ($adjustedLimit < $limit) {
-            $limit = $adjustedLimit;
-        }
-
-        if ($paginationFields['after']) {
-            $offset = $paginationFields['after'];
-        } elseif ($paginationFields['before']) {
-            $offset = $paginationFields['before'] - $limit;
-        }
-
-        if ($offset < 0) {
-            $limit += $offset;
-            $offset = 0;
-        }
-
-        return [
-            'offset' => $offset,
-            'limit'  => $limit,
-        ];
+        // Build final pagination response
+        return $this->paginationService->buildPaginationResponse(
+            $edges,
+            $cursors,
+            $itemCount,
+        );
     }
 }

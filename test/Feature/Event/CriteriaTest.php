@@ -6,11 +6,10 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Event;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria as CriteriaEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\QueryBuilder;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -27,14 +26,12 @@ class CriteriaTest extends TestCase
 
         $driver->get(EventDispatcher::class)->subscribeTo(
             Artist::class . '.performances.criteria',
-            function (CriteriaEvent $event): void {
-                $this->assertInstanceOf(Criteria::class, $event->getCriteria());
+            function (QueryBuilderEvent $event): void {
+                $this->assertInstanceOf(QueryBuilder::class, $event->getQueryBuilder());
 
-                $event->getCriteria()->andWhere(
-                    $event->getCriteria()->expr()->eq('venue', 'Delta Center'),
-                );
+                $event->getQueryBuilder()->andWhere('entity.venue = :venue');
+                $event->getQueryBuilder()->setParameter('venue', 'Delta Center');
 
-                $this->assertInstanceOf(Collection::class, $event->getCollection());
                 $this->assertInstanceOf(Artist::class, $event->getObjectValue());
                 $this->assertEquals('contextTest', $event->getContext());
                 $this->assertIsArray($event->getArgs());
@@ -85,7 +82,7 @@ class CriteriaTest extends TestCase
         $data   = $result->toArray()['data'];
 
         $this->assertEquals(1, count($data['artist']['edges']));
-        $this->assertEquals(1, count($data['artist']['edges'][0]['node']['performances']));
+        $this->assertEquals(1, count($data['artist']['edges'][0]['node']['performances']['edges']));
         $this->assertEquals(
             'Delta Center',
             $data['artist']['edges'][0]['node']['performances']['edges'][0]['node']['venue'],
@@ -101,20 +98,15 @@ class CriteriaTest extends TestCase
 
         $driver->get(EventDispatcher::class)->subscribeTo(
             Artist::class . '.performances.criteria',
-            function (CriteriaEvent $event): void {
-                $this->assertInstanceOf(Criteria::class, $event->getCriteria());
+            function (QueryBuilderEvent $event): void {
+                $this->assertInstanceOf(QueryBuilder::class, $event->getQueryBuilder());
 
-                $matchingCollection = $event->getCollection()->matching($event->getCriteria());
-                $event->setCollection($matchingCollection->filter(
-                    static function ($performance) {
-                        return $performance->getVenue() === 'Delta Center'
-                            || $performance->getVenue() === 'Soldier Field';
-                    },
-                ));
+                $event->getQueryBuilder()->andWhere(
+                    $event->getQueryBuilder()->expr()->in('entity.venue', ['Delta Center', 'Soldier Field']),
+                );
 
                 $this->assertEquals(0, $event->getOffset());
                 $this->assertEquals(25, $event->getLimit());
-                $this->assertInstanceOf(Collection::class, $event->getCollection());
                 $this->assertInstanceOf(Artist::class, $event->getObjectValue());
                 $this->assertEquals('contextTest', $event->getContext());
                 $this->assertIsArray($event->getArgs());
@@ -166,7 +158,7 @@ class CriteriaTest extends TestCase
         $data   = $result->toArray()['data'];
 
         $this->assertEquals(1, count($data['artist']['edges']));
-        $this->assertEquals(1, count($data['artist']['edges'][0]['node']['performances']));
+        $this->assertEquals(2, count($data['artist']['edges'][0]['node']['performances']['edges']));
         $this->assertEquals(
             'Soldier Field',
             $data['artist']['edges'][0]['node']['performances']['edges'][0]['node']['venue'],
