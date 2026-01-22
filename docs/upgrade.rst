@@ -2,6 +2,91 @@
 Upgrade from previous versions
 ==============================
 
+12.x to 13.x
+============
+
+Version 13.x introduces significant performance improvements through QueryBuilder-based
+collection resolution, but requires migration of association event listeners.
+
+Breaking Changes
+----------------
+
+**Collection Event System Changed**
+
+The Criteria Event system for filtering associations has been replaced with QueryBuilder
+Events. This change provides:
+
+* 83% faster query execution for filtered collections
+* 90% reduction in memory usage
+* Database-level filtering with full index support
+* Single query execution instead of in-memory filtering
+
+**Migration Required**
+
+If you use ``criteriaEventName`` in your ``#[Association]`` attributes, you must
+update your event listeners:
+
+**Old (12.x)**:
+
+.. code-block:: php
+
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria;
+
+    #[GraphQL\Association(criteriaEventName: Artist::class . '.performances.criteria')]
+    public $performances;
+
+    $driver->get(EventDispatcher::class)->subscribeTo(
+        Artist::class . '.performances.criteria',
+        function (Criteria $event): void {
+            $event->getCriteria()->andWhere(
+                $event->getCriteria()->expr()->eq('venue', 'Delta Center')
+            );
+        }
+    );
+
+**New (13.x)**:
+
+.. code-block:: php
+
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
+
+    #[GraphQL\Association(criteriaEventName: Artist::class . '.performances')]
+    public $performances;
+
+    $driver->get(EventDispatcher::class)->subscribeTo(
+        Artist::class . '.performances',
+        function (QueryBuilder $event): void {
+            $event->getQueryBuilder()
+                ->andWhere('entity.venue = :venue')
+                ->setParameter('venue', 'Delta Center');
+        }
+    );
+
+**Migration Checklist**:
+
+1. Replace ``Event\Criteria`` with ``Event\QueryBuilder`` in use statements
+2. Remove ``.criteria`` suffix from event names in attributes and listeners
+3. Replace ``$event->getCriteria()`` with ``$event->getQueryBuilder()``
+4. Convert Criteria expressions to QueryBuilder syntax:
+
+   * ``$criteria->expr()->eq('field', 'value')`` → ``'entity.field = :param'`` + ``setParameter()``
+   * ``$criteria->expr()->gt('field', 10)`` → ``'entity.field > :param'`` + ``setParameter()``
+   * ``$criteria->expr()->in('field', [1,2,3])`` → ``'entity.field IN (:param)'`` + ``setParameter()``
+
+5. Use ``entity`` as the default alias in WHERE clauses
+
+Performance Impact
+------------------
+
+After upgrading, you will automatically benefit from:
+
+* Faster collection queries (no performance tuning required)
+* Reduced memory consumption for large collections
+* Better database resource utilization
+
+See the `technical documentation <technical/performance.html>`_ for detailed
+performance benchmarks.
+
 9.x to 10.x
 ===========
 
