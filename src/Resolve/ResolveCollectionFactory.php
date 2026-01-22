@@ -62,7 +62,7 @@ class ResolveCollectionFactory
             $targetEntity = $this->entityTypeContainer->get($targetClassName);
 
             // Get event name
-            $eventName = $this->metadata[$entityClassName]['fields'][$targetCollectionName]['criteriaEventName'];
+            $eventName = $this->metadata[$entityClassName]['fields'][$targetCollectionName]['eventName'];
 
             return $this->buildPagination(
                 entity: $targetEntity,

@@ -204,7 +204,7 @@ class MetadataFactory extends CommonMetadataFactory
                     'limit' => $instance->getLimit(),
                     'description' => $instance->getDescription(),
                     'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
-                    'criteriaEventName' => $instance->getCriteriaEventName(),
+                    'eventName' => $instance->getEventName(),
                     'hydratorStrategy' => $instance->getHydratorStrategy() ??
                         Strategy\AssociationDefault::class,
                 ];

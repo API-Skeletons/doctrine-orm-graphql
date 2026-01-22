@@ -92,7 +92,7 @@ final class GlobalEnable extends MetadataFactory
                 'limit' => null,
                 'excludeFilters' => [],
                 'description' => $associationName,
-                'criteriaEventName' => null,
+                'eventName' => null,
                 'hydratorStrategy' => Strategy\AssociationDefault::class,
             ];
         }

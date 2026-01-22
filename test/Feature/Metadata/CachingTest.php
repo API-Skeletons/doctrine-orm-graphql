@@ -53,7 +53,7 @@ class CachingTest extends TestCase
                         'alias' => null,
                         'limit' => null,
                         'description' => null,
-                        'criteriaEventName' => null,
+                        'eventName' => null,
                         'hydratorStrategy' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\AssociationDefault',
                         'excludeFilters' => ['eq'],
                     ],

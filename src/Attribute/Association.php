@@ -24,7 +24,7 @@ final class Association
         private readonly string|null $alias = null,
         private readonly string|null $description = null,
         private readonly int|null $limit = null,
-        private readonly string|null $criteriaEventName = null,
+        private readonly string|null $eventName = null,
         private readonly string|null $hydratorStrategy = null,
         private readonly array $excludeFilters = [],
         private readonly array $includeFilters = [],
@@ -56,8 +56,8 @@ final class Association
         return $this->description;
     }
 
-    public function getCriteriaEventName(): string|null
+    public function getEventName(): string|null
     {
-        return $this->criteriaEventName;
+        return $this->eventName;
     }
 }

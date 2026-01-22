@@ -66,7 +66,7 @@ class Artist
     #[GraphQL\Association(group: 'DuplicateGroup')]
     #[GraphQL\Association(group: 'DuplicateGroupAssociation')]
     #[GraphQL\Association(group: 'DuplicateGroupAssociation')]
-    #[GraphQL\Association(group: 'CriteriaEvent', criteriaEventName: self::class . '.performances.criteria')]
+    #[GraphQL\Association(group: 'CriteriaEvent', eventName: self::class . '.performances.criteria')]
     #[GraphQL\Association(group: 'LimitTest')]
     #[GraphQL\Association(group: 'AttributeLimit', limit: 3)]
     #[GraphQL\Association(group: 'ExtractionMap', alias: 'gigs')]
