@@ -231,3 +231,8 @@ This comprehensive technical documentation provides:
 - Migration guide
 
 Everything an experienced PHP developer needs to master the Doctrine ORM GraphQL library.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

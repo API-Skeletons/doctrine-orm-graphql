@@ -324,3 +324,8 @@ About This Documentation
 This comprehensive developer guide was created to provide in-depth technical documentation for experienced PHP developers working with the Doctrine ORM GraphQL library. It covers architecture, implementation details, performance considerations, and advanced usage patterns.
 
 For user-focused documentation, see the official documentation at https://doctrine-orm-graphql.apiskeletons.dev
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

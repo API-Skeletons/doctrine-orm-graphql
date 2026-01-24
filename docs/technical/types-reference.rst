@@ -211,3 +211,8 @@ Retrieval
     $emailType = $driver->type('email');
 
 For complete documentation, see :doc:`driver-reference` and :doc:`architecture`.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

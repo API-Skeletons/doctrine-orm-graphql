@@ -1165,3 +1165,8 @@ For maximum performance:
 - Use full-text search for text searching
 
 For additional customization, see :doc:`events-reference` and :doc:`advanced-topics`.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

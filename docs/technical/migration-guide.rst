@@ -538,3 +538,8 @@ Key migration points:
 5. Test thoroughly
 
 Performance benefits are automatic after migration!
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

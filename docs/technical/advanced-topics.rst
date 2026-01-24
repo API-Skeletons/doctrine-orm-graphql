@@ -361,3 +361,8 @@ Best Practices
 7. **Monitor Production**: Log slow queries and errors
 
 For more details, see :doc:`performance` and :doc:`architecture`.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

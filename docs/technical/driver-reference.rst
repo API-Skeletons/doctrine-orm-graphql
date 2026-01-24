@@ -895,3 +895,8 @@ Performance Tips
 5. **Lazy Initialization**: Driver services are lazy-loaded, so creating multiple drivers is cheap
 
 See :doc:`performance` for detailed optimization strategies.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

@@ -917,3 +917,8 @@ The library has been heavily optimized for performance, with database-level filt
 For most applications, the current optimizations are sufficient. Only consider additional optimizations (batch loading, aggressive caching, etc.) if profiling shows specific bottlenecks.
 
 Remember: **Measure first, optimize second**. Use profiling tools to identify actual bottlenecks before implementing complex optimizations.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

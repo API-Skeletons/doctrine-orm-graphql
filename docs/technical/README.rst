@@ -291,3 +291,8 @@ License
 =======
 
 This documentation is part of the Doctrine ORM GraphQL library and is licensed under the MIT License.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst
