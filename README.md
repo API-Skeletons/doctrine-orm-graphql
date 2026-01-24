@@ -46,23 +46,6 @@ Documentation
 Full documentation is available at https://doctrine-orm-graphql.apiskeletons.dev or in the [docs](https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/docs) directory.
 
 
-Versions
---------
-
-* 12.x - Supports [league/event](https://github.com/thephpleague/event) version 3.0 and is PSR-14 compliant
-* 11.x - Supports [league/event](https://github.com/thephpleague/event) version 2.2
-
-More information [in the documentation](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/versions.html).
-
-
-Examples
---------
-
-The **LDOG Stack**: Laravel, Doctrine ORM, and GraphQL uses this library:  https://ldog.apiskeletons.dev
-
-For an working implementation see https://graphql.lcdb.org
-
-
 Features
 --------
 
@@ -71,6 +54,26 @@ Features
 * [Filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
 * [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries, entity types and more
 * [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#group)
+
+
+Technical Features
+------------------
+
+* Attribute-based metadata
+* PHP 8.4 Lazy Ghost Objects for deferred type initialization
+* PSR-14 Event-Driven Architecture for query and type customization
+* Custom PSR-11 Container with lazy initialization and buildable types
+* Advanced hydration system with Doctrine Laminas Hydrator and extraction strategies
+* Dynamic QueryBuilder generation with filter translation and event-driven query modification
+  to solve N+1 query problems
+
+
+Examples
+--------
+
+The **LDOG Stack**: Laravel, Doctrine ORM, and GraphQL uses this library:  https://ldog.apiskeletons.dev
+
+For an working implementation see https://graphql.lcdb.org
 
 
 Quick Start
@@ -277,7 +280,10 @@ You may [exclude any filter](https://doctrine-orm-graphql.apiskeletons.dev/en/la
 History
 -------
 
-The roots of this project go back to May 2018 with https://github.com/API-Skeletons/zf-doctrine-graphql; written for Zend Framework 2.  It was migrated to the framework agnostic https://packagist.org/packages/api-skeletons/doctrine-graphql but the name of that repository was incorrect because it did not specify ORM only.  So this repository was created and the others were abandoned.
+The roots of this project go back to May 2018 with https://github.com/API-Skeletons/zf-doctrine-graphql; written for 
+Zend Framework 2.  It was migrated to the framework agnostic 
+https://packagist.org/packages/api-skeletons/doctrine-graphql but the name of that repository was incorrect 
+because it did not specify ORM only.  So this repository was created and the others were abandoned.
 
 This was written for the [Live Concert Database](https://lcdb.org)
 
