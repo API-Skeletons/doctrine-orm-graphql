@@ -307,3 +307,8 @@ Events provide powerful customization points:
 - **Metadata**: Programmatic metadata modifications
 
 For more examples, see :doc:`advanced-topics`.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

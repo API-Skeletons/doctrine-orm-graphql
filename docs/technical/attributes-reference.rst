@@ -1180,3 +1180,8 @@ The attribute system provides flexible, declarative configuration for GraphQL sc
 - Provide descriptions for better documentation
 
 For advanced customization beyond attributes, see :doc:`advanced-topics` and :doc:`events-reference`.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

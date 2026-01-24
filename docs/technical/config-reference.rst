@@ -870,3 +870,8 @@ Common Pitfalls
 4. **Cache Always On**: ``useHydratorCache`` and ``useQueryResultCache`` waste memory for simple queries
 5. **Empty entityPrefix**: Results in ugly type names like ``App_Entity_Artist_default``
 6. **Forgetting ignoreFields**: Exposes sensitive data with ``globalEnable``
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst

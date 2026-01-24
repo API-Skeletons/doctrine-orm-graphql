@@ -1031,3 +1031,8 @@ The library provides multiple extension points:
 6. **Metadata Manipulation**: Modify via Metadata event
 
 See :doc:`advanced-topics` for detailed examples.
+
+.. role:: raw-html(raw)
+   :format: html
+
+.. include:: footer.rst
