@@ -24,7 +24,7 @@ you'll see, there's a lot of customizable power built in too.
 
 .. toctree::
 
-    :caption: Table of Contents
+    :caption: User Documentation
 
     install
     just-the-basics
@@ -49,6 +49,8 @@ you'll see, there's a lot of customizable power built in too.
    :maxdepth: 2
    :caption: Technical Documentation
 
+   technical/index
+
 .. toctree::
    :maxdepth: 2
    :caption: Core Concepts
@@ -58,6 +60,31 @@ you'll see, there's a lot of customizable power built in too.
    technical/config-reference
    technical/attributes-reference
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Features
+
+   technical/filters-reference
+   technical/events-reference
+   technical/types-reference
+   technical/pagination
+   technical/mutations
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced Topics
+
+   technical/advanced-topics
+   technical/performance
+   technical/internals
+   technical/migration-guide
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Reference
+
+   technical/api-index
+   technical/changelog
 
 .. role:: raw-html(raw)
    :format: html
