@@ -45,6 +45,19 @@ you'll see, there's a lot of customizable power built in too.
     upgrade
     about
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Technical Documentation
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Core Concepts
+
+   technical/architecture
+   technical/driver-reference
+   technical/config-reference
+   technical/attributes-reference
+
 
 .. role:: raw-html(raw)
    :format: html
