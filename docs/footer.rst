@@ -3,9 +3,6 @@
 
 This is documentation for
 `API-Skeletons/doctrine-orm-graphql <https://github.com/API-Skeletons/doctrine-orm-graphql>`_.
-
-There is also `technical documentation <technical/index.html>`_ available.
-
 Please add your ★ star to the project.
 
 Authored by `API Skeletons <https://apiskeletons.com>`_.
