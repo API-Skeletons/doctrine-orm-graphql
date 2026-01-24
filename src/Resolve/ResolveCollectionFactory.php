@@ -21,7 +21,6 @@ use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
 
 use function array_flip;
-use function array_key_first;
 use function count;
 use function in_array;
 
@@ -102,31 +101,22 @@ class ResolveCollectionFactory
 
         // Handle different association types
         if (isset($association['joinTable'])) {
-            // Many-to-many relationship
-            $identifierValues = $sourceMetadata->getIdentifierValues($source);
-            $sourceId         = $identifierValues[array_key_first($identifierValues)];
-
-            $joinTable          = $association['joinTable']['name'];
-            $joinColumns        = $association['joinTable']['joinColumns'];
-            $inverseJoinColumns = $association['joinTable']['inverseJoinColumns'];
-
-            $queryBuilder->innerJoin(
-                $joinTable,
-                'jt',
-                'WITH',
-                'jt.' . $inverseJoinColumns[0]['name'] . ' = entity.id',
-            );
-            $queryBuilder->where('jt.' . $joinColumns[0]['name'] . ' = :sourceId');
-            $queryBuilder->setParameter('sourceId', $sourceId);
+            // Many-to-many relationship (owning side with join table)
+            // Use Doctrine's association mapping instead of manual join table handling
+            $queryBuilder->innerJoin($entityClassName, 'source', 'WITH', ':source MEMBER OF source.' . $associationName);
+            $queryBuilder->setParameter('source', $source);
         } elseif (isset($association['mappedBy'])) {
             // One-to-many: target entity has the foreign key
             $queryBuilder->where('entity.' . $association['mappedBy'] . ' = :source');
             $queryBuilder->setParameter('source', $source);
+            // @codeCoverageIgnoreStart
         } elseif (isset($association['inversedBy'])) {
             // Many-to-one from the owning side (less common for collections)
+            // This is defensively handled here for completeness
             $queryBuilder->innerJoin($entityClassName, 'source', 'WITH', 'source.' . $associationName . ' = entity');
             $queryBuilder->where('source = :source');
             $queryBuilder->setParameter('source', $source);
+            // @codeCoverageIgnoreEnd
         }
 
         // Apply filters using QueryBuilder

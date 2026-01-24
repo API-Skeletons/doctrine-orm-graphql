@@ -246,12 +246,6 @@ Documentation Structure
    internals
    migration-guide
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Reference
-
-   api-index
-   changelog
 
 Conventions Used
 ================

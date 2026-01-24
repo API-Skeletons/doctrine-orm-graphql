@@ -79,12 +79,6 @@ you'll see, there's a lot of customizable power built in too.
    technical/internals
    technical/migration-guide
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Reference
-
-   technical/api-index
-   technical/changelog
 
 .. role:: raw-html(raw)
    :format: html

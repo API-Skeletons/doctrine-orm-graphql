@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use Doctrine\ORM\QueryBuilder;
 use GraphQL\GraphQL;
@@ -658,5 +659,414 @@ class ResolveCollectionFactoryTest extends TestCase
         $factory = $driver->get(ResolveCollectionFactory::class);
 
         $this->assertInstanceOf(ResolveCollectionFactory::class, $factory);
+    }
+
+    /**
+     * Phase 1: Test null eventName path (line 152)
+     * When eventName is not set, the event dispatcher should not be called
+     */
+    public function testWithoutEventName(): void
+    {
+        // Use 'default' group which doesn't have custom eventName on associations
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'default']));
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artist' => [
+                        'type' => $driver->connection(Artist::class),
+                        'args' => [
+                            'filter' => $driver->filter(Artist::class),
+                        ],
+                        'resolve' => $driver->resolve(Artist::class),
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query = '
+          query ($id: String!) {
+            artist(filter: { id: { eq: $id } }) {
+              edges {
+                node {
+                  id
+                  performances {
+                    edges {
+                      node {
+                        venue
+                      }
+                    }
+                    totalCount
+                  }
+                }
+              }
+            }
+          }';
+
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['id' => '1'],
+        );
+
+        $data = $result->toArray()['data'];
+
+        // Verify collection is returned successfully even without eventName
+        $this->assertArrayHasKey('artist', $data);
+        $this->assertGreaterThan(0, count($data['artist']['edges']));
+        $performances = $data['artist']['edges'][0]['node']['performances'];
+        $this->assertArrayHasKey('edges', $performances);
+        $this->assertGreaterThan(0, count($performances['edges']));
+    }
+
+    /**
+     * Phase 2: Test query result cache (lines 187-193)
+     * Test both cache miss and cache hit paths
+     */
+    public function testWithQueryResultCache(): void
+    {
+        $driver = new Driver(
+            $this->getEntityManager(),
+            new Config(['group' => 'default', 'useQueryResultCache' => true]),
+        );
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artist' => [
+                        'type' => $driver->connection(Artist::class),
+                        'args' => [
+                            'filter' => $driver->filter(Artist::class),
+                        ],
+                        'resolve' => $driver->resolve(Artist::class),
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query = '
+          query ($id: String!) {
+            artist(filter: { id: { eq: $id } }) {
+              edges {
+                node {
+                  id
+                  performances {
+                    edges {
+                      node {
+                        venue
+                      }
+                    }
+                    totalCount
+                  }
+                }
+              }
+            }
+          }';
+
+        // First execution - cache miss (line 191-192)
+        $result1 = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['id' => '1'],
+        );
+
+        $data1 = $result1->toArray()['data'];
+
+        // Second execution - cache hit (line 189)
+        $result2 = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['id' => '1'],
+        );
+
+        $data2 = $result2->toArray()['data'];
+
+        // Results should be identical
+        $this->assertEquals($data1, $data2);
+        $this->assertArrayHasKey('artist', $data2);
+        $this->assertGreaterThan(0, count($data2['artist']['edges']));
+    }
+
+    /**
+     * Phase 2: Verify cache keys are unique per query
+     */
+    public function testQueryResultCacheWithDifferentQueries(): void
+    {
+        $driver = new Driver(
+            $this->getEntityManager(),
+            new Config(['group' => 'default', 'useQueryResultCache' => true]),
+        );
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artist' => [
+                        'type' => $driver->connection(Artist::class),
+                        'args' => [
+                            'filter' => $driver->filter(Artist::class),
+                        ],
+                        'resolve' => $driver->resolve(Artist::class),
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query = '
+          query ($id: String!, $venueFilter: String!) {
+            artist(filter: { id: { eq: $id } }) {
+              edges {
+                node {
+                  id
+                  performances(filter: { venue: { contains: $venueFilter } }) {
+                    edges {
+                      node {
+                        venue
+                      }
+                    }
+                    totalCount
+                  }
+                }
+              }
+            }
+          }';
+
+        // Query with first filter - should match "Delta Center"
+        $result1 = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['id' => '1', 'venueFilter' => 'Delta'],
+        );
+
+        $data1         = $result1->toArray()['data'];
+        $performances1 = $data1['artist']['edges'][0]['node']['performances']['edges'];
+
+        // Query with different filter - should match "Soldier Field"
+        $result2 = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['id' => '1', 'venueFilter' => 'Soldier'],
+        );
+
+        $data2         = $result2->toArray()['data'];
+        $performances2 = $data2['artist']['edges'][0]['node']['performances']['edges'];
+
+        // Different filters should yield different results
+        $this->assertGreaterThan(0, count($performances1), 'Should find Delta Center');
+        $this->assertGreaterThan(0, count($performances2), 'Should find Soldier Field');
+
+        // Verify the venues are actually different
+        $venue1 = $performances1[0]['node']['venue'];
+        $venue2 = $performances2[0]['node']['venue'];
+        $this->assertNotEquals($venue1, $venue2, 'Cache keys should be unique per query');
+        $this->assertStringContainsString('Delta', $venue1);
+        $this->assertStringContainsString('Soldier', $venue2);
+    }
+
+    /**
+     * Phase 4: Test zero offset edge case (lines 164-166)
+     * When no pagination args are provided, offset should be 0
+     */
+    public function testWithZeroOffset(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'default']));
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artist' => [
+                        'type' => $driver->connection(Artist::class),
+                        'args' => [
+                            'filter' => $driver->filter(Artist::class),
+                        ],
+                        'resolve' => $driver->resolve(Artist::class),
+                    ],
+                ],
+            ]),
+        ]);
+
+        // Query without pagination args - offset should be 0
+        $query = '
+          query ($id: String!) {
+            artist(filter: { id: { eq: $id } }) {
+              edges {
+                node {
+                  id
+                  performances {
+                    edges {
+                      node {
+                        venue
+                      }
+                    }
+                    totalCount
+                  }
+                }
+              }
+            }
+          }';
+
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['id' => '1'],
+        );
+
+        $data = $result->toArray()['data'];
+
+        // Verify results are still returned correctly with zero offset
+        $this->assertArrayHasKey('artist', $data);
+        $performances = $data['artist']['edges'][0]['node']['performances'];
+        $this->assertArrayHasKey('edges', $performances);
+        $this->assertGreaterThan(0, count($performances['edges']));
+        $this->assertGreaterThan(0, $performances['totalCount']);
+    }
+
+    /**
+     * Phase 5: Test empty collection edge case
+     * Query an artist with no performances
+     */
+    public function testEmptyCollection(): void
+    {
+        // Create an artist without performances
+        $artist = new Artist();
+        $artist->setName('Test Artist Without Performances');
+        $this->getEntityManager()->persist($artist);
+        $this->getEntityManager()->flush();
+
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'default']));
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artist' => [
+                        'type' => $driver->connection(Artist::class),
+                        'args' => [
+                            'filter' => $driver->filter(Artist::class),
+                        ],
+                        'resolve' => $driver->resolve(Artist::class),
+                    ],
+                ],
+            ]),
+        ]);
+
+        $query = '
+          query ($name: String!) {
+            artist(filter: { name: { eq: $name } }) {
+              edges {
+                node {
+                  id
+                  name
+                  performances {
+                    edges {
+                      node {
+                        venue
+                      }
+                    }
+                    totalCount
+                    pageInfo {
+                      hasNextPage
+                      hasPreviousPage
+                    }
+                  }
+                }
+              }
+            }
+          }';
+
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+            variableValues: ['name' => 'Test Artist Without Performances'],
+        );
+
+        $data = $result->toArray()['data'];
+
+        // Verify empty collection returns proper structure
+        $this->assertArrayHasKey('artist', $data);
+        $this->assertEquals(1, count($data['artist']['edges']));
+
+        $performances = $data['artist']['edges'][0]['node']['performances'];
+        $this->assertArrayHasKey('edges', $performances);
+        $this->assertEquals(0, count($performances['edges']), 'Should have zero performances');
+        $this->assertEquals(0, $performances['totalCount'], 'Total count should be 0');
+        $this->assertFalse($performances['pageInfo']['hasNextPage']);
+        $this->assertFalse($performances['pageInfo']['hasPreviousPage']);
+    }
+
+    /**
+     * Phase 3: Test ManyToMany relationship (owning side with joinTable)
+     * This tests line 103-107 (joinTable branch)
+     * Note: Attempts to test the inversedBy branch (lines 112-117) without joinTable
+     * appear to be unreachable with valid Doctrine ORM configurations, as ManyToMany
+     * relationships ALWAYS have a joinTable (explicit or auto-generated).
+     */
+    public function testManyToManyWithJoinTable(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'default']));
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'user' => [
+                        'type' => $driver->connection(User::class),
+                        'args' => [
+                            'filter' => $driver->filter(User::class),
+                        ],
+                        'resolve' => $driver->resolve(User::class),
+                    ],
+                ],
+            ]),
+        ]);
+
+        // Query User.recordings (ManyToMany owning side with joinTable and inversedBy)
+        $query = '
+          {
+            user {
+              edges {
+                node {
+                  id
+                  name
+                  recordings {
+                    edges {
+                      node {
+                        id
+                        source
+                      }
+                    }
+                    totalCount
+                  }
+                }
+              }
+            }
+          }';
+
+        $result = GraphQL::executeQuery(
+            schema: $schema,
+            source: $query,
+        );
+
+        $data = $result->toArray()['data'];
+
+        // Verify ManyToMany collection works correctly
+        $this->assertArrayHasKey('user', $data);
+        $this->assertGreaterThan(0, count($data['user']['edges']));
+
+        // At least one user should have recordings
+        $foundRecordings = false;
+        foreach ($data['user']['edges'] as $edge) {
+            if ($edge['node']['recordings']['totalCount'] > 0) {
+                $foundRecordings = true;
+                $this->assertArrayHasKey('edges', $edge['node']['recordings']);
+                $this->assertGreaterThan(0, count($edge['node']['recordings']['edges']));
+                break;
+            }
+        }
+
+        $this->assertTrue($foundRecordings, 'At least one user should have recordings');
     }
 }
