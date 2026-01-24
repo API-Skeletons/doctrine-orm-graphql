@@ -12,6 +12,7 @@ use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
+use function count;
 use function date;
 use function file_get_contents;
 
@@ -50,7 +51,8 @@ class TestCase extends PHPUnitTestCase
 
     protected function populateData(): void
     {
-        $users = [
+        $userEntities = [];
+        $users        = [
             [
                 'name' => 'User one',
                 'email' => 'userOne@gmail.com',
@@ -139,8 +141,10 @@ class TestCase extends PHPUnitTestCase
             $user->setName($userData['name']);
             $user->setEmail($userData['email']);
             $user->setPassword($userData['password']);
+            $userEntities[] = $user;
         }
 
+        $recordingIndex = 0;
         foreach ($artists as $name => $performances) {
             $artist = (new Entity\Artist())
                 ->setName($name);
@@ -164,6 +168,16 @@ class TestCase extends PHPUnitTestCase
                         ->setSource($source)
                         ->setPerformance($performance);
                     self::$entityManager->persist($recording);
+
+                    // Link recordings to users for testing ManyToMany relationships
+                    if (empty($userEntities)) {
+                        continue;
+                    }
+
+                    $userIndex = $recordingIndex % count($userEntities);
+                    $userEntities[$userIndex]->addRecording($recording);
+                    $recording->addUser($userEntities[$userIndex]);
+                    $recordingIndex++;
                 }
             }
         }
