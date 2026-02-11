@@ -7,11 +7,12 @@ This document provides comprehensive reference documentation for all PHP attribu
 Overview
 ========
 
-The library uses PHP 8 attributes to declaratively configure which entities, fields, and associations are exposed via GraphQL. Three main attributes are available:
+The library uses PHP 8 attributes to declaratively configure which entities, fields, and associations are exposed via GraphQL. Four main attributes are available:
 
 - ``#[Entity]`` - Marks a Doctrine entity for GraphQL exposure
 - ``#[Field]`` - Exposes an entity field (scalar property)
 - ``#[Association]`` - Exposes an entity association (relationship)
+- ``#[ComputedField]`` - Exposes derived values from entity methods
 
 All attributes are in the ``ApiSkeletons\Doctrine\ORM\GraphQL\Attribute`` namespace.
 
@@ -27,7 +28,7 @@ Attribute Characteristics
 Repeatable Attributes
 ---------------------
 
-All three attributes are **repeatable**, allowing multiple configurations per entity/field:
+All four attributes are **repeatable**, allowing multiple configurations per entity/field/method:
 
 .. code-block:: php
 
@@ -810,6 +811,566 @@ includeFilters
 
 **Mutually Exclusive**: Cannot use with ``excludeFilters``.
 
+ComputedField Attribute
+=======================
+
+Exposes computed values from entity methods in GraphQL schema.
+
+**Target**: ``Attribute::TARGET_METHOD``
+
+**Repeatable**: Yes
+
+Signature
+---------
+
+.. code-block:: php
+
+    #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+    final class ComputedField
+    {
+        public function __construct(
+            string $type,
+            string $group = 'default',
+            ?string $name = null,
+            ?string $description = null,
+        );
+    }
+
+Parameters
+----------
+
+type
+^^^^
+
+**Type**: ``string``
+
+**Required**: Yes
+
+**Description**: The GraphQL type name for the computed field.
+
+**Example**:
+
+.. code-block:: php
+
+    class Artist
+    {
+        #[GraphQL\ComputedField(type: 'string')]
+        public function getFullName(): string
+        {
+            return $this->firstName . ' ' . $this->lastName;
+        }
+
+        #[GraphQL\ComputedField(type: 'int')]
+        public function getAge(): int
+        {
+            return (new DateTime())->diff($this->birthDate)->y;
+        }
+
+        #[GraphQL\ComputedField(type: 'boolean')]
+        public function isActive(): bool
+        {
+            return $this->status === 'active';
+        }
+    }
+
+**Type Registration**: The type must be registered in TypeContainer. Built-in types (string, int, boolean, float) are pre-registered.
+
+**Custom Types**:
+
+.. code-block:: php
+
+    // Register custom type
+    $driver->get(TypeContainer::class)->set('email', new EmailType());
+
+    // Use in computed field
+    #[GraphQL\ComputedField(type: 'email')]
+    public function getContactEmail(): string
+    {
+        return $this->email;
+    }
+
+group
+^^^^^
+
+**Type**: ``string``
+
+**Default**: ``'default'``
+
+**Description**: Configuration group for this computed field.
+
+**Example**:
+
+.. code-block:: php
+
+    class Artist
+    {
+        #[GraphQL\ComputedField(type: 'string', group: 'public')]
+        #[GraphQL\ComputedField(type: 'string', group: 'admin')]
+        public function getFullName(): string
+        {
+            return $this->firstName . ' ' . $this->lastName;
+        }
+
+        // Admin-only computed field
+        #[GraphQL\ComputedField(type: 'string', group: 'admin')]
+        public function getInternalNotes(): string
+        {
+            return $this->notes;
+        }
+    }
+
+name
+^^^^
+
+**Type**: ``string|null``
+
+**Default**: ``null`` (auto-derived from method name)
+
+**Description**: Override the GraphQL field name.
+
+**Auto-Derivation Rules**:
+
+.. code-block:: php
+
+    getFullName()     -> fullName
+    getEmailDomain()  -> emailDomain
+    isActive()        -> isActive (preserved for boolean methods)
+    calculateTotal()  -> calculateTotal (fallback: method name as-is)
+
+**Custom Name**:
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(
+        type: 'string',
+        name: 'displayName'
+    )]
+    public function getFullDisplayName(): string
+    {
+        return 'Artist: ' . $this->name;
+    }
+
+**GraphQL Query**:
+
+.. code-block:: graphql
+
+    query {
+        artists {
+            edges {
+                node {
+                    displayName    # Not 'fullDisplayName'
+                }
+            }
+        }
+    }
+
+description
+^^^^^^^^^^^
+
+**Type**: ``string|null``
+
+**Default**: ``null``
+
+**Description**: Human-readable description for schema documentation.
+
+**Example**:
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(
+        type: 'string',
+        description: 'Full name combining first and last name'
+    )]
+    public function getFullName(): string
+    {
+        return $this->firstName . ' ' . $this->lastName;
+    }
+
+**Introspection**:
+
+.. code-block:: graphql
+
+    query {
+        __type(name: "Artist") {
+            fields {
+                name
+                description
+            }
+        }
+    }
+
+How Computed Fields Work
+-------------------------
+
+**Extraction Pipeline**
+
+1. **Metadata Extraction**: MetadataFactory scans entity methods for ``#[ComputedField]`` attributes
+2. **Hydrator Registration**: DoctrineObjectWithComputed hydrator registers extraction closures
+3. **Type Building**: Entity type adds computed fields to GraphQL type definition
+4. **Resolution**: FieldResolver extracts computed values using hydrator
+5. **Caching**: Values cached per request if ``useHydratorCache`` enabled
+
+**Implementation Details**:
+
+.. code-block:: php
+
+    // Internal: How computed fields are registered in the hydrator
+    $hydrator->addComputedField(
+        $fieldName,
+        static fn ($entity) => $entity->getFullName()
+    );
+
+    // When extracted, the hydrator calls the method
+    $data = $hydrator->extract($artist);
+    // $data['fullName'] = $artist->getFullName()
+
+**Performance**: Computed fields are only evaluated when explicitly requested in GraphQL queries (lazy evaluation).
+
+Characteristics
+---------------
+
+**Integrated Extraction**
+
+Computed fields are extracted alongside regular fields:
+
+.. code-block:: php
+
+    $artist = $entityManager->find(Artist::class, 1);
+    $hydrator = $driver->get(HydratorContainer::class)->get(Artist::class);
+
+    $data = $hydrator->extract($artist);
+    // [
+    //     'id' => 1,
+    //     'firstName' => 'Jerry',
+    //     'lastName' => 'Garcia',
+    //     'fullName' => 'Jerry Garcia',  // Computed
+    // ]
+
+**No Database Filtering**
+
+Computed fields cannot be filtered at database level:
+
+.. code-block:: php
+
+    $filterType = $driver->filter(Artist::class);
+    $fields = $filterType->getFields();
+
+    // Computed fields NOT present
+    isset($fields['fullName']);  // false
+
+    // Regular fields present
+    isset($fields['firstName']); // true
+
+**Reason**: Computed values are calculated in PHP after data retrieval, not in SQL.
+
+**Request-Scoped Caching**
+
+.. code-block:: php
+
+    $driver = new Driver($em, new Config([
+        'useHydratorCache' => true,
+    ]));
+
+    // First query extracts and caches
+    $result1 = GraphQL::executeQuery($schema, $query1);
+
+    // Second query uses cached extraction
+    $result2 = GraphQL::executeQuery($schema, $query2);
+
+**Cache Scope**: Per-request only. Cleared after each GraphQL execution.
+
+Use Cases
+---------
+
+**1. Simple Concatenation**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'string')]
+    public function getFullName(): string
+    {
+        return $this->firstName . ' ' . $this->lastName;
+    }
+
+**2. Calculations**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'float', description: 'Total with tax')]
+    public function getTotalWithTax(): float
+    {
+        return $this->subtotal * (1 + $this->taxRate);
+    }
+
+**3. Formatting**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'string')]
+    public function getFormattedDate(): string
+    {
+        return $this->createdAt->format('Y-m-d H:i:s');
+    }
+
+**4. Business Logic**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'boolean')]
+    public function isEligibleForDiscount(): bool
+    {
+        return $this->memberSince < new DateTime('-1 year')
+            && $this->totalPurchases > 1000;
+    }
+
+**5. String Manipulation**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'string')]
+    public function getEmailDomain(): string
+    {
+        return substr($this->email, strpos($this->email, '@') + 1);
+    }
+
+**6. Collection Aggregation**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'int')]
+    public function getPerformanceCount(): int
+    {
+        return $this->performances->count();
+    }
+
+Limitations
+-----------
+
+**No Complex Queries**
+
+Computed fields should NOT execute database queries:
+
+.. code-block:: php
+
+    // BAD: N+1 query problem
+    #[GraphQL\ComputedField(type: 'int')]
+    public function getPerformanceCount(): int
+    {
+        // This triggers a database query per artist!
+        return $entityManager->createQueryBuilder()
+            ->select('COUNT(p)')
+            ->from(Performance::class, 'p')
+            ->where('p.artist = :artist')
+            ->setParameter('artist', $this)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+**Better Alternative**: Use EntityDefinition event for database-dependent computed fields.
+
+**No Filtering**
+
+Cannot filter by computed fields:
+
+.. code-block:: graphql
+
+    # This WON'T work - fullName not in filters
+    query {
+        artists(filter: { fullName: { eq: "Jerry Garcia" } }) {
+            edges { node { fullName } }
+        }
+    }
+
+**Alternative**: Store filterable values in database or use QueryBuilder event.
+
+**Method Requirements**
+
+Methods must be:
+
+- Public
+- Non-static
+- Not constructors
+- Return a value
+
+.. code-block:: php
+
+    // VALID
+    public function getFullName(): string { }
+
+    // INVALID: private
+    private function getFullName(): string { }
+
+    // INVALID: static
+    public static function getFullName(): string { }
+
+    // INVALID: constructor
+    public function __construct() { }
+
+Best Practices
+--------------
+
+**1. Keep Computations Simple**
+
+.. code-block:: php
+
+    // GOOD: Simple, fast computation
+    public function getFullName(): string
+    {
+        return $this->firstName . ' ' . $this->lastName;
+    }
+
+    // BAD: Complex, slow computation
+    public function getComplexCalculation(): float
+    {
+        // Avoid expensive operations
+        foreach ($this->items as $item) {
+            // Complex nested logic...
+        }
+    }
+
+**2. Use Type Hints**
+
+.. code-block:: php
+
+    // GOOD: Clear return type
+    public function getAge(): int
+    {
+        return (new DateTime())->diff($this->birthDate)->y;
+    }
+
+    // BAD: No type hint
+    public function getAge()
+    {
+        return (new DateTime())->diff($this->birthDate)->y;
+    }
+
+**3. Document Complex Logic**
+
+.. code-block:: php
+
+    /**
+     * Calculate eligibility based on membership duration and purchase history
+     */
+    #[GraphQL\ComputedField(
+        type: 'boolean',
+        description: 'Whether user qualifies for premium discount'
+    )]
+    public function isPremiumEligible(): bool
+    {
+        return $this->memberSince < new DateTime('-1 year')
+            && $this->totalPurchases > 1000;
+    }
+
+**4. Avoid Side Effects**
+
+.. code-block:: php
+
+    // BAD: Modifies state
+    public function getAndIncrementCounter(): int
+    {
+        return $this->counter++;  // Don't do this!
+    }
+
+    // GOOD: Pure function
+    public function getCounter(): int
+    {
+        return $this->counter;
+    }
+
+**5. Use Appropriate Types**
+
+.. code-block:: php
+
+    // Match return type to GraphQL type
+    #[GraphQL\ComputedField(type: 'string')]
+    public function getStatus(): string { }  // Good
+
+    #[GraphQL\ComputedField(type: 'int')]
+    public function getStatus(): string { }  // Bad: type mismatch
+
+Common Patterns
+---------------
+
+**Pattern 1: Full Name**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'string')]
+    public function getFullName(): string
+    {
+        return trim($this->firstName . ' ' . $this->lastName);
+    }
+
+**Pattern 2: Age from Date**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'int')]
+    public function getAge(): int
+    {
+        return (new DateTime())->diff($this->birthDate)->y;
+    }
+
+**Pattern 3: Status Check**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'boolean')]
+    public function isActive(): bool
+    {
+        return $this->status === 'active' && $this->expiresAt > new DateTime();
+    }
+
+**Pattern 4: Formatted Money**
+
+.. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'string')]
+    public function getFormattedPrice(): string
+    {
+        return '$' . number_format($this->price, 2);
+    }
+
+**Pattern 5: Multiple Groups**
+
+.. code-block:: php
+
+    // Public: basic info
+    #[GraphQL\ComputedField(type: 'string', group: 'public')]
+    public function getFullName(): string
+    {
+        return $this->firstName . ' ' . $this->lastName;
+    }
+
+    // Admin: detailed info
+    #[GraphQL\ComputedField(
+        type: 'string',
+        group: 'admin',
+        description: 'Full name with ID'
+    )]
+    public function getFullName(): string
+    {
+        return $this->firstName . ' ' . $this->lastName . ' (#' . $this->id . ')';
+    }
+
+Comparison with Events
+----------------------
+
+**When to use ComputedField attribute**:
+
+- Simple calculations
+- String concatenation/formatting
+- Boolean logic
+- Collection counts
+- No database queries needed
+
+**When to use EntityDefinition event**:
+
+- Complex database queries
+- Aggregations requiring SQL
+- Fields needing custom resolve logic
+- Dynamic field addition based on runtime conditions
+
 Complete Example
 ================
 
@@ -864,19 +1425,26 @@ Comprehensive example showing all attributes and parameters:
         private int $id;
 
         /**
-         * Artist name
+         * First name
          */
         #[ORM\Column(type: 'string')]
         #[GraphQL\Field(
             group: 'public',
-            description: 'Artist or band name',
-            excludeFilters: [Filters::STARTSWITH],
+            description: 'Artist first name',
         )]
+        #[GraphQL\Field(group: 'admin')]
+        private string $firstName;
+
+        /**
+         * Last name
+         */
+        #[ORM\Column(type: 'string')]
         #[GraphQL\Field(
-            group: 'admin',
-            alias: 'artistName',
+            group: 'public',
+            description: 'Artist last name',
         )]
-        private string $name;
+        #[GraphQL\Field(group: 'admin')]
+        private string $lastName;
 
         /**
          * Email address (admin only)
@@ -908,6 +1476,38 @@ Comprehensive example showing all attributes and parameters:
             criteriaEventName: 'artist.performances.admin',
         )]
         private Collection $performances;
+
+        /**
+         * Computed field: Full name
+         */
+        #[GraphQL\ComputedField(
+            type: 'string',
+            group: 'public',
+            description: 'Full name of the artist',
+        )]
+        #[GraphQL\ComputedField(
+            type: 'string',
+            group: 'admin',
+            name: 'displayName',
+            description: 'Full display name with ID',
+        )]
+        public function getFullName(): string
+        {
+            return $this->firstName . ' ' . $this->lastName;
+        }
+
+        /**
+         * Computed field: Performance count (admin only)
+         */
+        #[GraphQL\ComputedField(
+            type: 'int',
+            group: 'admin',
+            description: 'Total number of performances',
+        )]
+        public function getPerformanceCount(): int
+        {
+            return $this->performances->count();
+        }
 
         // Getters and setters...
     }
@@ -1173,11 +1773,21 @@ The attribute system provides flexible, declarative configuration for GraphQL sc
 - Use ``#[Entity]`` to expose entities
 - Use ``#[Field]`` for scalar properties
 - Use ``#[Association]`` for relationships
+- Use ``#[ComputedField]`` for derived values from entity methods
 - Leverage groups for multiple configurations
 - Set limits to prevent abuse
 - Exclude filters for better performance
 - Use events for complex logic
 - Provide descriptions for better documentation
+
+**Attribute Targets**:
+
+- ``#[Entity]`` - TARGET_CLASS
+- ``#[Field]`` - TARGET_PROPERTY
+- ``#[Association]`` - TARGET_PROPERTY
+- ``#[ComputedField]`` - TARGET_METHOD
+
+All attributes are repeatable to support multiple groups.
 
 For advanced customization beyond attributes, see :doc:`advanced-topics` and :doc:`events-reference`.
 

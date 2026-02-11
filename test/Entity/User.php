@@ -12,6 +12,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+use function strpos;
+use function substr;
+
 /**
  * User
  */
@@ -22,6 +25,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'InputFactoryTest')]
 #[GraphQL\Entity(group: 'InputFactoryAliasTest')]
 #[GraphQL\Entity(group: 'StaticMetadata')]
+#[GraphQL\Entity(group: 'multiComputedTest')]
+#[GraphQL\Entity(group: 'computedFieldNameTest')]
+#[GraphQL\Entity(group: 'isMethodTest')]
 #[ORM\Entity]
 class User
 {
@@ -32,6 +38,9 @@ class User
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'InputFactoryAliasTest', alias: 'nameAlias')]
     #[GraphQL\Field(group: 'StaticMetadata')]
+    #[GraphQL\Field(group: 'multiComputedTest')]
+    #[GraphQL\Field(group: 'computedFieldNameTest')]
+    #[GraphQL\Field(group: 'isMethodTest')]
 
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
@@ -39,6 +48,7 @@ class User
     #[GraphQL\Field(description: 'User email')]
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'InputFactoryAliasTest')]
+    #[GraphQL\Field(group: 'multiComputedTest')]
 
     #[ORM\Column(type: 'string', nullable: false)]
     private string $email;
@@ -48,6 +58,7 @@ class User
 
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'InputFactoryAliasTest')]
+    #[GraphQL\Field(group: 'isMethodTest')]
     #[ORM\Column(type: 'string', nullable: false)]
     private string $password;
 
@@ -172,5 +183,65 @@ class User
     public function getRecordings(): Collection
     {
         return $this->recordings;
+    }
+
+    /**
+     * Get full name (for testing computed fields)
+     */
+    #[GraphQL\ComputedField(
+        type: 'string',
+        group: 'multiComputedTest',
+        description: 'Full name',
+    )]
+    public function getFullName(): string
+    {
+        return $this->name . ' (' . $this->email . ')';
+    }
+
+    /**
+     * Get full display name with explicit name override
+     */
+    #[GraphQL\ComputedField(
+        type: 'string',
+        name: 'displayName',
+        group: 'computedFieldNameTest',
+        description: 'Display name for UI',
+    )]
+    public function getFullDisplayName(): string
+    {
+        return 'User: ' . $this->name;
+    }
+
+    /**
+     * Get email domain (for testing computed fields)
+     */
+    #[GraphQL\ComputedField(
+        type: 'string',
+        group: 'multiComputedTest',
+        description: 'Email domain',
+    )]
+    public function getEmailDomain(): string
+    {
+        $pos = strpos($this->email, '@');
+
+        return $pos !== false ? substr($this->email, $pos + 1) : '';
+    }
+
+    /**
+     * Is user active (for testing computed fields with isXxx pattern)
+     */
+    #[GraphQL\ComputedField(
+        type: 'boolean',
+        group: 'multiComputedTest',
+        description: 'Is user active',
+    )]
+    #[GraphQL\ComputedField(
+        type: 'boolean',
+        group: 'isMethodTest',
+        description: 'Is user active',
+    )]
+    public function isActive(): bool
+    {
+        return $this->password !== '';
     }
 }

@@ -16,8 +16,14 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use League\Event\EventDispatcher;
 use Override;
 use ReflectionClass;
+use RuntimeException;
 
 use function assert;
+use function ctype_upper;
+use function lcfirst;
+use function str_starts_with;
+use function strlen;
+use function substr;
 
 /**
  * Build metadata for entities
@@ -70,6 +76,7 @@ class MetadataFactory extends CommonMetadataFactory
 
             $this->buildMetadataForFields($entityClassMetadata, $reflectionClass);
             $this->buildMetadataForAssociations($reflectionClass);
+            $this->buildMetadataForComputedFields($reflectionClass);
         }
 
         // Fire the metadata.build event
@@ -212,6 +219,82 @@ class MetadataFactory extends CommonMetadataFactory
                 $this->metadata[$reflectionClass->getName()]['fields'][$associationName] = $associationMetadata;
             }
         }
+    }
+
+    /**
+     * Build the metadata for computed fields in an entity based on ComputedField attributes
+     */
+    private function buildMetadataForComputedFields(ReflectionClass $reflectionClass): void
+    {
+        foreach ($reflectionClass->getMethods() as $reflectionMethod) {
+            // Skip non-public, static, or constructor methods
+            if (! $reflectionMethod->isPublic() || $reflectionMethod->isStatic() || $reflectionMethod->isConstructor()) {
+                continue;
+            }
+
+            $computedFieldInstance = null;
+
+            foreach ($reflectionMethod->getAttributes(Attribute\ComputedField::class) as $attribute) {
+                $instance = $attribute->newInstance();
+
+                // Only process attributes for the same group
+                if ($instance->getGroup() !== $this->config->getGroup()) {
+                    continue;
+                }
+
+                // Only one matching instance per group is allowed
+                assert(
+                    ! $computedFieldInstance,
+                    'Duplicate ComputedField attribute found for method '
+                    . $reflectionMethod->getName() . ', group ' . $instance->getGroup(),
+                );
+                $computedFieldInstance = $instance;
+
+                // Determine field name: use explicit name or derive from method name
+                $fieldName = $instance->getName() ?? $this->deriveFieldNameFromMethod($reflectionMethod->getName());
+
+                // Validate no collision with existing fields
+                if (isset($this->metadata[$reflectionClass->getName()]['fields'][$fieldName])) {
+                    throw new RuntimeException(
+                        'Computed field "' . $fieldName . '" collides with existing field in entity '
+                        . $reflectionClass->getName(),
+                    );
+                }
+
+                // Initialize computedFields array if not exists
+                if (! isset($this->metadata[$reflectionClass->getName()]['computedFields'])) {
+                    $this->metadata[$reflectionClass->getName()]['computedFields'] = [];
+                }
+
+                $computedFieldMetadata = [
+                    'method' => $reflectionMethod->getName(),
+                    'type' => $instance->getType(),
+                    'name' => $fieldName,
+                    'description' => $instance->getDescription(),
+                ];
+
+                $this->metadata[$reflectionClass->getName()]['computedFields'][$fieldName] = $computedFieldMetadata;
+            }
+        }
+    }
+
+    /**
+     * Derive GraphQL field name from method name by removing get/is prefix
+     */
+    private function deriveFieldNameFromMethod(string $methodName): string
+    {
+        // Handle getXxx() -> xxx
+        if (str_starts_with($methodName, 'get') && strlen($methodName) > 3) {
+            return lcfirst(substr($methodName, 3));
+        }
+
+        // Handle isXxx() -> isXxx (keep as-is for boolean getters)
+        if (str_starts_with($methodName, 'is') && strlen($methodName) > 2 && ctype_upper($methodName[2])) {
+            return $methodName;
+        }
+
+        // Fallback: use method name as-is
+        return $methodName;
     }
 
     #[Override]
