@@ -3,7 +3,7 @@ Attributes
 ==========
 
 Configuration of your entities for GraphQL is done with PHP attributes.
-There are three attributes and all options for each are covered in this
+There are four attributes and all options for each are covered in this
 document.
 
 The namespace for attributes is ``ApiSkeletons\Doctrine\ORM\GraphQL\Attribute``.
@@ -136,6 +136,50 @@ associated with.  Associations of the to many variety will become connections.
   limit.
 * ``hydratorStrategy`` - A custom hydrator strategy class.
   Class must be injected into the HydratorFactory container.  See `containers <containers.html>`_
+
+
+ComputedField
+=============
+
+Used on public methods to expose computed values derived from entity logic.
+Computed fields are values calculated from other properties or business logic,
+not stored directly in the database.
+
+* ``type`` - **Required**. The GraphQL type name (e.g., ``'string'``, ``'int'``).
+  Must match a registered type in the TypeContainer.
+* ``description`` - A description of the computed field.
+* ``name`` - An override for the field name in GraphQL. If not provided,
+  the name is derived from the method name (``getFullName`` becomes ``fullName``).
+* ``group`` - You can have multiple GraphQL configurations organized by ``group``.
+
+Example:
+
+.. code-block:: php
+
+  #[GraphQL\Entity]
+  class Artist
+  {
+      #[GraphQL\Field]
+      private string $firstName;
+
+      #[GraphQL\Field]
+      private string $lastName;
+
+      #[GraphQL\ComputedField(
+          type: 'string',
+          description: 'Full name of the artist'
+      )]
+      public function getFullName(): string
+      {
+          return $this->firstName . ' ' . $this->lastName;
+      }
+  }
+
+**Important**: Computed fields cannot be filtered at the database level
+and will not appear in filter InputObjects.  They are calculated in PHP
+after data is retrieved from the database.
+
+For more information, see `computed-fields <computed-fields.html>`_.
 
 .. role:: raw-html(raw)
    :format: html

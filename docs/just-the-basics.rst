@@ -14,7 +14,7 @@ all optional.
 The first step is to add attributes to your entities.
 Attributes are stored in the namespace
 ``ApiSkeletons\Doctrine\ORM\GraphQL\Attribute`` and there are attributes for
-``Entity``, ``Field``, and ``Association``.  Use the appropriate attribute on
+``Entity``, ``Field``, ``Association``, and ``ComputedField``.  Use the appropriate attribute on
 each element you want to be queryable from GraphQL.
 
 .. code-block:: php

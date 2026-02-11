@@ -28,7 +28,7 @@ API Reference (2,918 lines)
     Detailed documentation of all 10 configuration options with use cases and examples.
 
 **attributes-reference.rst** (1,182 lines)
-    Comprehensive reference for all PHP attributes (#[Entity], #[Field], #[Association]).
+    Comprehensive reference for all PHP attributes (#[Entity], #[Field], #[Association], #[ComputedField]).
 
 **filters-reference.rst** (1,167 lines)
     Complete filter system documentation covering all 15 filter types.

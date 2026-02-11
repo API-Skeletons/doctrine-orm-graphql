@@ -113,6 +113,7 @@ The metadata structure includes:
 
 - Field mappings (type, nullable, description, filters)
 - Association mappings (type, target, filters, limits)
+- Computed field mappings (method, type, description)
 - Entity limits (global, per-association)
 - Extraction maps (field aliasing)
 
