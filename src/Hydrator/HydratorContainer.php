@@ -6,7 +6,6 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
-use Doctrine\Laminas\Hydrator\DoctrineObject;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
 use Laminas\Hydrator\NamingStrategy\MapNamingStrategy;
@@ -46,9 +45,9 @@ class HydratorContainer extends Container
         }
 
         $self = $this;
-        // Compose hydrators as Lazy Ghosts
-        $hydrator = (new ReflectionClass(DoctrineObject::class))
-            ->newLazyGhost(static function (DoctrineObject $object) use ($self, $id): void {
+        // Compose hydrators as Lazy Ghosts using DoctrineObjectWithComputed
+        $hydrator = (new ReflectionClass(DoctrineObjectWithComputed::class))
+            ->newLazyGhost(static function (DoctrineObjectWithComputed $object) use ($self, $id): void {
                 $entityManager = $self->entityManager;
                 $entity        = $self->entityTypeContainer->get($id);
                 $metadata      = $entity->getMetadata();
@@ -67,6 +66,19 @@ class HydratorContainer extends Container
                     );
 
                     $object->addStrategy($fieldName, $self->get($fieldMetadata['hydratorStrategy']));
+                }
+
+                // Register computed fields
+                if (isset($metadata['computedFields'])) {
+                    foreach ($metadata['computedFields'] as $fieldName => $computedFieldMetadata) {
+                        $methodName = $computedFieldMetadata['method'];
+
+                        // Create extractor closure that calls the entity method
+                        $object->addComputedField(
+                            $fieldName,
+                            static fn ($entity) => $entity->$methodName(),
+                        );
+                    }
                 }
 
                 // Create naming strategy for aliases and assign to hydrator

@@ -127,6 +127,7 @@ class Entity
 
         $fields = $this->addFields();
         $fields = array_merge($fields, $this->addAssociations());
+        $fields = array_merge($fields, $this->addComputedFields());
 
         $typeName = $this->getTypeName();
         if ($this->eventName) {
@@ -250,6 +251,30 @@ class Entity
                     'resolve' => $this->resolveCollectionFactory->get($entity),
                 ];
             };
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Add computed fields to the GraphQL type
+     *
+     * @return array<string, mixed>
+     */
+    protected function addComputedFields(): array
+    {
+        $fields = [];
+
+        // Check if computed fields exist in metadata
+        if (! isset($this->metadata['computedFields'])) {
+            return $fields;
+        }
+
+        foreach ($this->metadata['computedFields'] as $fieldName => $computedFieldMetadata) {
+            $fields[$fieldName] = [
+                'type' => $this->typeContainer->get($computedFieldMetadata['type']),
+                'description' => $computedFieldMetadata['description'],
+            ];
         }
 
         return $fields;

@@ -10,6 +10,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+use function strtoupper;
+
 /**
  * Artist
  */
@@ -25,6 +27,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'LimitTest', limit: 2)]
 #[GraphQL\Entity(group: 'ExtractionMap', limit: 1)]
 #[GraphQL\Entity(group: 'ExtractionMapDuplicate', limit: 1)]
+#[GraphQL\Entity(group: 'computedFieldTest')]
 
 #[ORM\Entity]
 class Artist
@@ -41,6 +44,7 @@ class Artist
     #[GraphQL\Field(group: 'AttributeLimit')]
     #[GraphQL\Field(group: 'ExtractionMap', alias: 'title')]
     #[GraphQL\Field(group: 'ExtractionMapDuplicate', alias: 'duplicate')]
+    #[GraphQL\Field(group: 'computedFieldTest')]
 
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
@@ -52,6 +56,7 @@ class Artist
     #[GraphQL\Field(group: 'LimitTest')]
     #[GraphQL\Field(group: 'AttributeLimit')]
     #[GraphQL\Field(group: 'ExtractionMapDuplicate', alias: 'duplicate')]
+    #[GraphQL\Field(group: 'computedFieldTest')]
 
     #[ORM\Id]
     #[ORM\Column(type: 'bigint')]
@@ -149,5 +154,18 @@ class Artist
     public function getPerformances(): Collection
     {
         return $this->performances;
+    }
+
+    /**
+     * Get full name in uppercase (for testing computed fields)
+     */
+    #[GraphQL\ComputedField(
+        type: 'string',
+        group: 'computedFieldTest',
+        description: 'Full display name',
+    )]
+    public function getFullName(): string
+    {
+        return strtoupper($this->name);
     }
 }
