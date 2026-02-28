@@ -52,10 +52,22 @@ class Time extends ScalarType
 
         // If time does not have milliseconds, parse without
         if (preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])$/', $value)) {
-            return PHPDateTime::createFromFormat('H:i:s', $value);
+            $time = PHPDateTime::createFromFormat('H:i:s', $value);
+
+            if ($time === false) {
+                throw new TypeSerializationException('Time format does not match H:i:s.');
+            }
+
+            return $time;
         }
 
-        return PHPDateTime::createFromFormat('H:i:s.u', $value);
+        $time = PHPDateTime::createFromFormat('H:i:s.u', $value);
+
+        if ($time === false) {
+            throw new TypeSerializationException('Time format does not match H:i:s.u.');
+        }
+
+        return $time;
     }
 
     #[Override]

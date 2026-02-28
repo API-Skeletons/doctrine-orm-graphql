@@ -162,9 +162,7 @@ class Entity
         /** @psalm-suppress InvalidArgument */
         $this->objectType = (new ReflectionClass(ObjectType::class))
             ->newLazyGhost(static function (ObjectType $object) use ($definition): void {
-                $object->__construct(
-                    $definition->getArrayCopy(),
-                );
+                $object->__construct($definition->getArrayCopy()); // @phpstan-ignore argument.type
             });
 
         return $this->objectType;

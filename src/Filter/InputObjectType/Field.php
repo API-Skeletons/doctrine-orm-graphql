@@ -66,7 +66,7 @@ class Field extends InputObjectType
 
         // ScalarType field filters are named by their field type
         // and a hash of the allowed filters
-        parent::__construct([
+        parent::__construct([ // @phpstan-ignore argument.type
             'name' => 'Filters_' . $typeName . '_' . md5(serialize($allowedFilters)),
             'description' => 'Field filters',
             'fields' => static fn () => $fields,

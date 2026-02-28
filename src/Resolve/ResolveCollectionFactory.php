@@ -21,6 +21,8 @@ use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
 
 use function array_flip;
+use function assert;
+use function class_exists;
 use function count;
 use function in_array;
 
@@ -95,6 +97,7 @@ class ResolveCollectionFactory
         $association    = $sourceMetadata->getAssociationMapping($associationName);
 
         // Build QueryBuilder for the association
+        assert(class_exists($targetClassName));
         $queryBuilder = $this->entityManager->createQueryBuilder();
         $queryBuilder->select('entity')
             ->from($targetClassName, 'entity');

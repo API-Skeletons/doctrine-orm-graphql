@@ -61,7 +61,7 @@ class HydratorContainer extends Container
                 // Create field strategy and assign to hydrator
                 foreach ($metadata['fields'] as $fieldName => $fieldMetadata) {
                     assert(
-                        in_array(StrategyInterface::class, class_implements($fieldMetadata['hydratorStrategy'])),
+                        in_array(StrategyInterface::class, class_implements($fieldMetadata['hydratorStrategy']) ?: []),
                         'Strategy must implement ' . StrategyInterface::class,
                     );
 

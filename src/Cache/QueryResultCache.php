@@ -7,6 +7,8 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Cache;
 use Doctrine\ORM\Query;
 
 use function count;
+use function implode;
+use function is_array;
 use function md5;
 use function serialize;
 
@@ -118,6 +120,7 @@ class QueryResultCache
     private function getCacheKey(Query $query): string
     {
         $sql        = $query->getSQL();
+        $sql        = is_array($sql) ? implode(';', $sql) : $sql;
         $parameters = $query->getParameters()->toArray();
 
         // Normalize parameters for consistent cache keys
