@@ -28,7 +28,7 @@ use function substr;
 /**
  * Build metadata for entities
  */
-class MetadataFactory extends CommonMetadataFactory
+final class MetadataFactory extends CommonMetadataFactory
 {
     public function __construct(
         protected Metadata $metadata,
@@ -126,7 +126,7 @@ class MetadataFactory extends CommonMetadataFactory
                 'fields' => [],
                 'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                 'description' => $instance->getDescription(),
-                'typeName' => $instance->getTypeName()
+                'typeName' => $instance->getTypeName() !== null
                     ? $this->appendGroupSuffix($instance->getTypeName()) :
                     $this->getTypeName($reflectionClass->getName()),
             ];

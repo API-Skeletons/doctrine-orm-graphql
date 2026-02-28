@@ -25,7 +25,7 @@ use function serialize;
  * The cache is stored in memory and is automatically cleared after
  * the request completes.
  */
-class QueryResultCache
+final class QueryResultCache
 {
     /** @var array<string, mixed[]> */
     private array $cache = [];

@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * Thrown when configuration is invalid
  */
-class Configuration extends GraphQL
+final class Configuration extends GraphQL
 {
     /** @param string[] $validOptions */
     public function __construct(

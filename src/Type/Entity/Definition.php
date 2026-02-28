@@ -12,6 +12,6 @@ use ArrayObject;
  *
  * @extends ArrayObject<string, mixed>
  */
-class Definition extends ArrayObject
+final class Definition extends ArrayObject
 {
 }

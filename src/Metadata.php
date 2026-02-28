@@ -11,6 +11,6 @@ use ArrayObject;
  *
  * @extends ArrayObject<string, mixed>
  */
-class Metadata extends ArrayObject
+final class Metadata extends ArrayObject
 {
 }

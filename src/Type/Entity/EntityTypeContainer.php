@@ -25,7 +25,7 @@ use function strtolower;
  * This class is used to manage the Entity classes
  * It does not manage GraphQL types
  */
-class EntityTypeContainer extends Container
+final class EntityTypeContainer extends Container
 {
     public function __construct(
         protected readonly Container $container,
@@ -48,7 +48,7 @@ class EntityTypeContainer extends Container
     public function get(string $id, string|null $eventName = null): mixed
     {
         // Allow for entities with a custom eventName
-        $key = strtolower($id . ($eventName ? '.' . $eventName : ''));
+        $key = strtolower($id . ($eventName !== null ? '.' . $eventName : ''));
 
         if (isset($this->register[$key])) {
             return $this->register[$key];
@@ -68,6 +68,7 @@ class EntityTypeContainer extends Container
             $key,
             (new ReflectionClass(Entity::class))
                 ->newLazyGhost(static function (Entity $object) use ($container, $id, $eventName): void {
+                    /** @psalm-suppress DirectConstructorCall */
                     $object->__construct(
                         $eventName,
                         $container->get(Config::class),

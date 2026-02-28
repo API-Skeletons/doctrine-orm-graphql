@@ -34,7 +34,7 @@ use const SORT_REGULAR;
 /**
  * Build filters for an entity
  */
-class FilterFactory
+final class FilterFactory
 {
     public function __construct(
         protected readonly Config $config,
@@ -79,7 +79,7 @@ class FilterFactory
         });
 
         // Limit association filters
-        if ($associationName) {
+        if ($associationName !== null) {
             $excludeFilters = Filters::fromArray($associationMetadata['excludeFilters'] ?? []);
             $allowedFilters = array_filter($allowedFilters, static function ($value) use ($excludeFilters) {
                 return ! in_array($value, $excludeFilters);
@@ -92,6 +92,7 @@ class FilterFactory
         $inputObject = (new ReflectionClass(GraphQLInputObjectType::class))
             ->newLazyGhost(static function (GraphQLInputObjectType $object) use ($typeName, $fields): void {
                 /** @psalm-suppress PossiblyInvalidArgument */
+                /** @psalm-suppress DirectConstructorCall */
                 $object->__construct([ // @phpstan-ignore argument.type
                     'name' => $typeName,
                     'fields' => static fn () => $fields,

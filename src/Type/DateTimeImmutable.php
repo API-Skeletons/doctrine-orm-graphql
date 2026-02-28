@@ -16,7 +16,7 @@ use function is_string;
 /**
  * This class is used to create a DateTimeImmutable type
  */
-class DateTimeImmutable extends ScalarType
+final class DateTimeImmutable extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `datetime_immutable` scalar type represents datetime data.'

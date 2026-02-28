@@ -10,7 +10,7 @@ use Override;
 /**
  * Return the same value
  */
-class FieldDefault extends Collection implements
+final class FieldDefault extends Collection implements
     StrategyInterface
 {
     #[Override]

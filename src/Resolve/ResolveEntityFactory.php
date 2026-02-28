@@ -23,7 +23,7 @@ use function count;
 /**
  * Build a resolver for entities
  */
-class ResolveEntityFactory
+final class ResolveEntityFactory
 {
     public function __construct(
         protected readonly Config $config,
@@ -37,7 +37,7 @@ class ResolveEntityFactory
 
     public function get(Entity $entity, string|null $eventName): Closure
     {
-        return function ($objectValue, array $args, $context, ResolveInfo $info) use ($entity, $eventName) {
+        return function (mixed $objectValue, array $args, mixed $context, ResolveInfo $info) use ($entity, $eventName) {
             $entityClass        = $entity->getEntityClass();
             $queryBuilderFilter = new QueryBuilderFilter();
 
@@ -86,13 +86,13 @@ class ResolveEntityFactory
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
          */
-        if ($eventName) {
+        if ($eventName !== null) {
             $this->eventDispatcher->dispatch(
                 new QueryBuilderEvent(
                     $eventName,
                     $queryBuilder,
-                    (int) $offsetAndLimit['offset'],
-                    (int) $offsetAndLimit['limit'],
+                    $offsetAndLimit['offset'],
+                    $offsetAndLimit['limit'],
                     ...$resolve,
                 ),
             );

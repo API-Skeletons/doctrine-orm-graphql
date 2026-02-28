@@ -12,7 +12,7 @@ use Override;
 /**
  * This event is fired when the QueryBuilder is created for an entity
  */
-class QueryBuilder implements
+final class QueryBuilder implements
     HasEventName
 {
     /** @param mixed[] $args */

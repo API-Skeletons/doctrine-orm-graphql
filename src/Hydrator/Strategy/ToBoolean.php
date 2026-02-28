@@ -12,7 +12,7 @@ use Override;
  *
  * @returns float
  */
-class ToBoolean extends Collection implements
+final class ToBoolean extends Collection implements
     StrategyInterface
 {
     #[Override]

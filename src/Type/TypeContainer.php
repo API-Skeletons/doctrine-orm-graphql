@@ -10,7 +10,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * This class manages all GraphQL types
  */
-class TypeContainer extends Container
+final class TypeContainer extends Container
 {
     public function __construct()
     {

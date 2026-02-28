@@ -16,7 +16,7 @@ use function is_string;
 /**
  * This class is used to create a DateTimeTZ type
  */
-class DateTimeTZ extends ScalarType
+final class DateTimeTZ extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `datetimetz` scalar type represents datetime data.'

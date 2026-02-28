@@ -15,7 +15,7 @@ use function property_exists;
  * This class is used for setting parameters when
  * creating the driver
  */
-class Config
+final class Config
 {
     /**
      * @var string The GraphQL group. This allows multiple GraphQL

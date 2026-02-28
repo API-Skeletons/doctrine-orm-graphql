@@ -15,7 +15,7 @@ use function uniqid;
 /**
  * This Type is a special case filter that takes two arguments
  */
-class Between extends InputObjectType
+final class Between extends InputObjectType
 {
     /** @param ScalarType|ListOfType<Type> $type */
     public function __construct(readonly ScalarType|ListOfType $type)

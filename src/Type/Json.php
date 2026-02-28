@@ -17,7 +17,7 @@ use function json_encode;
 /**
  * This class is used to create a Json type
  */
-class Json extends ScalarType
+final class Json extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `json` scalar type represents json data.';
@@ -61,7 +61,7 @@ class Json extends ScalarType
     {
         $return = json_encode($value);
 
-        if (! $return) {
+        if ($return === false) {
             throw new TypeSerializationException('Could not serialize JSON data');
         }
 

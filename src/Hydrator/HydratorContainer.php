@@ -21,7 +21,7 @@ use function in_array;
  * This factory is used in the Metadata\Entity class to create a hydrator
  * for the current entity
  */
-class HydratorContainer extends Container
+final class HydratorContainer extends Container
 {
     public function __construct(
         protected readonly EntityManager $entityManager,
@@ -53,6 +53,7 @@ class HydratorContainer extends Container
                 $metadata      = $entity->getMetadata();
                 $byValue       = $metadata['byValue'];
 
+                /** @psalm-suppress DirectConstructorCall */
                 $object->__construct(
                     $entityManager,
                     $byValue,
@@ -60,8 +61,9 @@ class HydratorContainer extends Container
 
                 // Create field strategy and assign to hydrator
                 foreach ($metadata['fields'] as $fieldName => $fieldMetadata) {
+                    $implements = class_implements($fieldMetadata['hydratorStrategy']);
                     assert(
-                        in_array(StrategyInterface::class, class_implements($fieldMetadata['hydratorStrategy']) ?: []),
+                        in_array(StrategyInterface::class, $implements !== false ? $implements : []),
                         'Strategy must implement ' . StrategyInterface::class,
                     );
 
@@ -76,7 +78,7 @@ class HydratorContainer extends Container
                         // Create extractor closure that calls the entity method
                         $object->addComputedField(
                             $fieldName,
-                            static fn ($entity) => $entity->$methodName(),
+                            static fn (object $entity): mixed => $entity->$methodName(),
                         );
                     }
                 }

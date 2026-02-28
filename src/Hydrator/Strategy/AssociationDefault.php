@@ -11,7 +11,7 @@ use Override;
  * Take no action on an association.  This class exists to
  * differentiate associations inside generated config.
  */
-class AssociationDefault extends Collection implements
+final class AssociationDefault extends Collection implements
     StrategyInterface
 {
     #[Override]

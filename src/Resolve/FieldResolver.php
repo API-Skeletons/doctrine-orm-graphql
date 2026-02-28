@@ -18,7 +18,7 @@ use function spl_object_hash;
 /**
  * A field resolver that uses the Doctrine Laminas hydrator to extract values
  */
-class FieldResolver
+final class FieldResolver
 {
     /**
      * Cache all hydrator extract operations based on spl object hash

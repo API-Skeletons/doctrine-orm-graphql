@@ -20,7 +20,7 @@ use function uniqid;
  * This class is used to add filters to a Doctrine QueryBuilder based on the
  * field filters
  */
-class QueryBuilder
+final class QueryBuilder
 {
     /** @var mixed[]  */
     private array $sortFields = [];

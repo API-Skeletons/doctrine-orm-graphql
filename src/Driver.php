@@ -12,7 +12,7 @@ use GraphQL\Type\Definition\ObjectType;
 
 use function array_merge;
 
-class Driver extends Container
+final class Driver extends Container
 {
     use Services;
 

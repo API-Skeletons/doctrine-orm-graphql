@@ -22,7 +22,7 @@ use function uniqid;
 /**
  * Create an input object type for a mutation
  */
-class InputFactory
+final class InputFactory
 {
     public function __construct(
         protected readonly Config $config,
@@ -56,6 +56,7 @@ class InputFactory
                     $self->addOptionalFields($targetEntity, $optionalFields, $fields);
                 }
 
+                /** @psalm-suppress DirectConstructorCall */
                 $object->__construct([
                     'name' => $targetEntity->getTypeName() . '_Input_' . uniqid(),
                     'description' => $targetEntity->getDescription(),

@@ -10,7 +10,7 @@ use function base64_encode;
 /**
  * Shared pagination logic for entities and collections
  */
-class PaginationService
+final class PaginationService
 {
     /**
      * Decode pagination fields (after/before cursors)

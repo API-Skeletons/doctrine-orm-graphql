@@ -19,7 +19,7 @@ use function stream_get_contents;
 /**
  * This class is used to create a Blob type
  */
-class Blob extends ScalarType
+final class Blob extends ScalarType
 {
     public string|null $description = 'A binary file base64 encoded.';
 

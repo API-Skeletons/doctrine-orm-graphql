@@ -17,7 +17,7 @@ use function preg_match;
 /**
  * This class is used to create a Date type
  */
-class Date extends ScalarType
+final class Date extends ScalarType
 {
     public string|null $description = 'The `Date` scalar type represents datetime data.'
     . 'The format is e.g. 2004-02-12.';

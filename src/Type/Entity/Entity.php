@@ -32,7 +32,7 @@ use function ucwords;
 /**
  * This class is used to build an ObjectType for an entity
  */
-class Entity
+final class Entity
 {
     /** @var array<string, string> */
     protected array $extractionMap        = [];
@@ -130,7 +130,7 @@ class Entity
         $fields = array_merge($fields, $this->addComputedFields());
 
         $typeName = $this->getTypeName();
-        if ($this->eventName) {
+        if ($this->eventName !== null) {
             $typeName .= '.' . $this->eventName;
         }
 
@@ -162,6 +162,7 @@ class Entity
         /** @psalm-suppress InvalidArgument, ArgumentTypeCoercion */
         $this->objectType = (new ReflectionClass(ObjectType::class))
             ->newLazyGhost(static function (ObjectType $object) use ($definition): void {
+                /** @psalm-suppress DirectConstructorCall */
                 $object->__construct($definition->getArrayCopy()); // @phpstan-ignore argument.type
             });
 
@@ -211,7 +212,7 @@ class Entity
                 ])
             ) {
                 $targetEntity             = $associationMetadata['targetEntity'];
-                $fields[$associationName] = function () use ($targetEntity) {
+                $fields[$associationName] = function () use ($targetEntity): array {
                     $entity = $this->entityTypeContainer->get($targetEntity);
 
                     return [
@@ -226,7 +227,7 @@ class Entity
             // Collections
             $targetEntity = $associationMetadata['targetEntity'];
 
-            $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName) {
+            $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName): array {
                 $entity    = $this->entityTypeContainer->get($targetEntity);
                 $shortName = $this->getTypeName() . '_' . ucwords($associationName);
 

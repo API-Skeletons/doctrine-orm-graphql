@@ -17,7 +17,7 @@ use function preg_match;
 /**
  * This class is used to create a DateImmutable type
  */
-class DateImmutable extends ScalarType
+final class DateImmutable extends ScalarType
 {
     public string|null $description = 'The `date_immutable` scalar type represents datetime data.'
     . 'The format is e.g. 2004-02-12.';

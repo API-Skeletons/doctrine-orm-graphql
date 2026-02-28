@@ -17,7 +17,7 @@ use function preg_match;
 /**
  * This class is used to create a TimeImmutable type
  */
-class TimeImmutable extends ScalarType
+final class TimeImmutable extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `Time` scalar type represents time data.'

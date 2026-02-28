@@ -10,7 +10,7 @@ use GraphQL\Type\Definition\Type;
 /**
  * This class is used to create a Pagination type
  */
-class Pagination extends InputObjectType
+final class Pagination extends InputObjectType
 {
     public function __construct()
     {

@@ -29,7 +29,7 @@ use function in_array;
 /**
  * Build a resolver for collections
  */
-class ResolveCollectionFactory
+final class ResolveCollectionFactory
 {
     public function __construct(
         protected readonly EntityManager $entityManager,
@@ -46,7 +46,7 @@ class ResolveCollectionFactory
 
     public function get(Entity $entity): Closure
     {
-        return function ($source, array $args, $context, ResolveInfo $info) {
+        return function (mixed $source, array $args, mixed $context, ResolveInfo $info) {
             $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
             $entityClassName               = $defaultProxyClassNameResolver->getClass($source);
 
@@ -57,7 +57,7 @@ class ResolveCollectionFactory
                     ->get($entityClassName)->getExtractionMap())[$info->fieldName] ?? $info->fieldName;
             }
 
-            $targetClassName = (string) $this->entityManager->getMetadataFactory()
+            $targetClassName = $this->entityManager->getMetadataFactory()
                 ->getMetadataFor($entityClassName)
                 ->getAssociationTargetClass($targetCollectionName);
 
@@ -137,11 +137,11 @@ class ResolveCollectionFactory
         $limit            = $this->metadata[$targetClassName]['limit'] ?? null;
         $associationLimit = $this->metadata[$entityClassName]['fields'][$associationName]['limit'] ?? null;
 
-        if ($associationLimit) {
+        if ($associationLimit !== null && $associationLimit !== 0) {
             $limit = $associationLimit;
         }
 
-        if (! $limit) {
+        if ($limit === null || $limit === 0) {
             $limit = $this->config->getLimit();
         }
 
@@ -155,13 +155,13 @@ class ResolveCollectionFactory
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
          */
-        if ($eventName) {
+        if ($eventName !== null) {
             $this->eventDispatcher->dispatch(
                 new QueryBuilderEvent(
                     $eventName,
                     $queryBuilder,
-                    (int) $offsetAndLimit['offset'],
-                    (int) $offsetAndLimit['limit'],
+                    $offsetAndLimit['offset'],
+                    $offsetAndLimit['limit'],
                     ...$resolve,
                 ),
             );
