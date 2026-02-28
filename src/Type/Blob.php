@@ -61,6 +61,10 @@ class Blob extends ScalarType
 
         if (is_resource($value)) {
             $value = stream_get_contents($value);
+
+            if ($value === false) {
+                return null;
+            }
         }
 
         return base64_encode($value);

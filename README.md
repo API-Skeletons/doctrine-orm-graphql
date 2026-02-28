@@ -10,7 +10,7 @@ GraphQL Type Driver for Doctrine ORM
 [![Build Status](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml?query=branch%3Amain)
 [![Code Coverage](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main/graphs/badge.svg)](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)
-[![psalm](https://img.shields.io/badge/psalm-level%204-brightgreen.svg)](https://img.shields.io/badge/psalm-level%204-brightgreen.svg)
+[![psalm](https://img.shields.io/badge/psalm-level%203-brightgreen.svg)](https://img.shields.io/badge/psalm-level%203-brightgreen.svg)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
     GraphQL, with types so neat,

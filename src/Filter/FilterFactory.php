@@ -91,6 +91,7 @@ class FilterFactory
 
         $inputObject = (new ReflectionClass(GraphQLInputObjectType::class))
             ->newLazyGhost(static function (GraphQLInputObjectType $object) use ($typeName, $fields): void {
+                /** @psalm-suppress PossiblyInvalidArgument */
                 $object->__construct([ // @phpstan-ignore argument.type
                     'name' => $typeName,
                     'fields' => static fn () => $fields,

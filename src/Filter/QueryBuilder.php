@@ -179,7 +179,7 @@ class QueryBuilder
                 return $a['priority'] <=> $b['priority'];
             }
 
-            return strcmp(key($a), key($b));
+            return strcmp(key($a) ?? '', key($b) ?? '');
         });
 
         $sortStrings = [];

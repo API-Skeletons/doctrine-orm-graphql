@@ -133,6 +133,7 @@ class ResolveEntityFactory
         }
 
         // Build edges
+        /** @psalm-suppress PossiblyInvalidArgument */
         $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
 
         // Build cursors
