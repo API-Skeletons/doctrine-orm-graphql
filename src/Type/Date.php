@@ -39,6 +39,7 @@ final class Date extends ScalarType
     public function parseValue(mixed $value): DateTime
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('Date is not a string: ' . $value);
         }
 

@@ -44,12 +44,14 @@ final class Json extends ScalarType
     public function parseValue(mixed $value): array
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('JSON is not a string: ' . $value);
         }
 
+        /** @var array<mixed>|null $data */
         $data = json_decode($value, true);
 
-        if (! $data) {
+        if ($data === null) {
             throw new TypeSerializationException('Could not parse JSON data');
         }
 

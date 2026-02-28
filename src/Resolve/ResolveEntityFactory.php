@@ -46,6 +46,7 @@ final class ResolveEntityFactory
                 ->from($entityClass, 'entity');
 
             if (isset($args['filter'])) {
+                /** @psalm-suppress MixedArgument */
                 $queryBuilderFilter->apply($args['filter'], $queryBuilder, $entity);
             }
 
@@ -61,7 +62,11 @@ final class ResolveEntityFactory
         };
     }
 
-    /** @return mixed[] */
+    /**
+     * @return mixed[]
+     *
+     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment
+     */
     public function buildPagination(
         Entity $entity,
         QueryBuilder $queryBuilder,
@@ -69,14 +74,17 @@ final class ResolveEntityFactory
         mixed ...$resolve,
     ): array {
         // Decode pagination fields
+        /** @psalm-suppress MixedArgument, MixedArrayAccess */
         $paginationFields = $this->paginationService->decodePaginationFields(
             $resolve['args']['pagination'] ?? [],
         );
 
         // Get the limit for this entity
+        /** @psalm-suppress MixedAssignment, MixedArrayAccess */
         $limit = $this->metadata[$entity->getEntityClass()]['limit'] ?: $this->config->getLimit();
 
         // Calculate offset and limit
+        /** @psalm-suppress MixedArgument */
         $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit(
             $paginationFields,
             $limit,
@@ -87,6 +95,7 @@ final class ResolveEntityFactory
          * Include all resolve variables.
          */
         if ($eventName !== null) {
+            /** @psalm-suppress MixedArgument */
             $this->eventDispatcher->dispatch(
                 new QueryBuilderEvent(
                     $eventName,
@@ -125,18 +134,22 @@ final class ResolveEntityFactory
             if ($cachedResults !== null) {
                 $results = $cachedResults;
             } else {
+                /** @psalm-suppress MixedAssignment */
                 $results = $query->getResult();
+                /** @psalm-suppress MixedArgument */
                 $this->queryResultCache->set($query, $results);
             }
         } else {
+            /** @psalm-suppress MixedAssignment */
             $results = $query->getResult();
         }
 
         // Build edges
-        /** @psalm-suppress PossiblyInvalidArgument */
+        /** @psalm-suppress PossiblyInvalidArgument, MixedArgument */
         $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
 
         // Build cursors
+        /** @psalm-suppress MixedArgument */
         $cursors = $this->paginationService->buildCursors(
             $offsetAndLimit['offset'],
             $itemCount,

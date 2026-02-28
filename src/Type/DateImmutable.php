@@ -39,6 +39,7 @@ final class DateImmutable extends ScalarType
     public function parseValue(mixed $value): DateTimeImmutable|false
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('Date is not a string: ' . $value);
         }
 

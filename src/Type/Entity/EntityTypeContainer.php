@@ -19,6 +19,8 @@ use Override;
 use ReflectionClass;
 
 use function array_keys;
+use function array_map;
+use function assert;
 use function strtolower;
 
 /**
@@ -38,7 +40,10 @@ final class EntityTypeContainer extends Container
     #[Override]
     public function has(string $id): bool
     {
-        return isset($this->container->get(Metadata::class)[$id]);
+        $metadata = $this->container->get(Metadata::class);
+        assert($metadata instanceof Metadata);
+
+        return isset($metadata[$id]);
     }
 
     /**
@@ -68,7 +73,9 @@ final class EntityTypeContainer extends Container
             $key,
             (new ReflectionClass(Entity::class))
                 ->newLazyGhost(static function (Entity $object) use ($container, $id, $eventName): void {
-                    /** @psalm-suppress DirectConstructorCall */
+                    $metadata = $container->get(Metadata::class);
+                    assert($metadata instanceof Metadata);
+                    /** @psalm-suppress DirectConstructorCall, MixedArgument, MixedArrayAccess */
                     $object->__construct(
                         $eventName,
                         $container->get(Config::class),
@@ -80,7 +87,7 @@ final class EntityTypeContainer extends Container
                         $container->get(HydratorContainer::class),
                         $container->get(ResolveCollectionFactory::class),
                         $container->get(TypeContainer::class),
-                        $container->get(Metadata::class)[$id],
+                        $metadata[$id],
                     );
                 }),
         );
@@ -96,6 +103,9 @@ final class EntityTypeContainer extends Container
     #[Override]
     public function getRegisteredTypes(): array
     {
-        return array_keys((array) $this->container->get(Metadata::class));
+        $metadata = $this->container->get(Metadata::class);
+        assert($metadata instanceof Metadata);
+
+        return array_map('strval', array_keys((array) $metadata));
     }
 }

@@ -39,6 +39,7 @@ final class DateTime extends ScalarType
     public function parseValue(mixed $value): PHPDateTime
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('datetime is not a string: ' . $value);
         }
 
@@ -55,9 +56,9 @@ final class DateTime extends ScalarType
     public function serialize(mixed $value): string|null
     {
         if ($value instanceof PHPDateTime) {
-            $value = $value->format(PHPDateTime::ATOM);
+            return $value->format(PHPDateTime::ATOM);
         }
 
-        return $value;
+        return is_string($value) ? $value : null;
     }
 }

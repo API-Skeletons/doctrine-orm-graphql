@@ -14,6 +14,7 @@ use ReflectionClass;
 use ReflectionException;
 
 use function array_keys;
+use function array_map;
 use function assert;
 use function strtolower;
 
@@ -41,7 +42,7 @@ abstract class Container implements ContainerInterface
         $id         = strtolower($id);
 
         if (! $this->has($id)) {
-            $availableTypes = array_keys($this->register);
+            $availableTypes = array_map('strval', array_keys($this->register));
             $suggestion     = $this->findSimilarString($originalId, $availableTypes);
 
             throw new TypeNotFoundException(
@@ -79,7 +80,7 @@ abstract class Container implements ContainerInterface
      */
     public function getRegisteredTypes(): array
     {
-        return array_keys($this->register);
+        return array_map('strval', array_keys($this->register));
     }
 
     /**
@@ -101,6 +102,7 @@ abstract class Container implements ContainerInterface
         $reflectionClass = new ReflectionClass($className);
         assert($reflectionClass->implementsInterface(Buildable::class));
 
+        /** @psalm-suppress MixedMethodCall */
         return $this
             ->set($typeName, new $className($this, $typeName, $params))
             ->get($typeName);

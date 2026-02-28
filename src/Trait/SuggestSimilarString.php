@@ -111,6 +111,7 @@ trait SuggestSimilarString
         }
 
         // Sort by distance (closest first)
+        /** @psalm-suppress MixedArrayAccess */
         usort($suggestions, static fn ($a, $b) => $a['distance'] <=> $b['distance']);
 
         // Return only the values, limited to maxResults

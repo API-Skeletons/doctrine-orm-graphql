@@ -11,6 +11,7 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
 
 use function array_merge;
+use function assert;
 
 final class Driver extends Container
 {
@@ -25,9 +26,13 @@ final class Driver extends Container
     public function connection(string $id, string|null $eventName = null): ObjectType
     {
         $objectType = $this->type($id, $eventName);
+        assert($objectType instanceof ObjectType);
 
-        return $this->get(Type\TypeContainer::class)
-            ->build(Type\Connection::class, $objectType->name, $objectType);
+        $typeContainer = $this->get(Type\TypeContainer::class);
+        assert($typeContainer instanceof Type\TypeContainer);
+
+        /** @psalm-suppress MixedReturnStatement */
+        return $typeContainer->build(Type\Connection::class, $objectType->name, $objectType);
     }
 
     /**
@@ -38,11 +43,16 @@ final class Driver extends Container
     public function type(string $id, string|null $eventName = null): mixed
     {
         $entityTypeContainer = $this->get(Type\Entity\EntityTypeContainer::class);
+        assert($entityTypeContainer instanceof Type\Entity\EntityTypeContainer);
         if ($entityTypeContainer->has($id)) {
-            return $entityTypeContainer->get($id, $eventName)->getObjectType();
+            $entity = $entityTypeContainer->get($id, $eventName);
+            assert($entity instanceof Type\Entity\Entity);
+
+            return $entity->getObjectType();
         }
 
         $typeContainer = $this->get(Type\TypeContainer::class);
+        assert($typeContainer instanceof Type\TypeContainer);
         if ($typeContainer->has($id)) {
             return $typeContainer->get($id);
         }
@@ -70,9 +80,14 @@ final class Driver extends Container
      */
     public function filter(string $id): object
     {
-        return $this->get(Filter\FilterFactory::class)->get(
-            $this->get(Type\Entity\EntityTypeContainer::class)->get($id),
-        );
+        $filterFactory = $this->get(Filter\FilterFactory::class);
+        assert($filterFactory instanceof Filter\FilterFactory);
+        $entityTypeContainer = $this->get(Type\Entity\EntityTypeContainer::class);
+        assert($entityTypeContainer instanceof Type\Entity\EntityTypeContainer);
+        $entity = $entityTypeContainer->get($id);
+        assert($entity instanceof Type\Entity\Entity);
+
+        return $filterFactory->get($entity);
     }
 
     /**
@@ -82,7 +97,10 @@ final class Driver extends Container
      */
     public function pagination(): object
     {
-        return $this->type('pagination');
+        $result = $this->type('pagination');
+        assert($result instanceof InputObjectType);
+
+        return $result;
     }
 
     /**
@@ -92,10 +110,14 @@ final class Driver extends Container
      */
     public function resolve(string $id, string|null $eventName = null): Closure
     {
-        return $this->get(Resolve\ResolveEntityFactory::class)->get(
-            $this->get(Type\Entity\EntityTypeContainer::class)->get($id),
-            $eventName,
-        );
+        $resolveEntityFactory = $this->get(Resolve\ResolveEntityFactory::class);
+        assert($resolveEntityFactory instanceof Resolve\ResolveEntityFactory);
+        $entityTypeContainer = $this->get(Type\Entity\EntityTypeContainer::class);
+        assert($entityTypeContainer instanceof Type\Entity\EntityTypeContainer);
+        $entity = $entityTypeContainer->get($id);
+        assert($entity instanceof Type\Entity\Entity);
+
+        return $resolveEntityFactory->get($entity, $eventName);
     }
 
     /**
@@ -104,7 +126,10 @@ final class Driver extends Container
      */
     public function input(string $entityClass, array $requiredFields = [], array $optionalFields = []): InputObjectType
     {
-        return $this->get(Input\InputFactory::class)->get($entityClass, $requiredFields, $optionalFields);
+        $inputFactory = $this->get(Input\InputFactory::class);
+        assert($inputFactory instanceof Input\InputFactory);
+
+        return $inputFactory->get($entityClass, $requiredFields, $optionalFields);
     }
 
     /**

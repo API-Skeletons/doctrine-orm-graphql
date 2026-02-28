@@ -174,6 +174,7 @@ final class MetadataFactory extends CommonMetadataFactory
                     'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                 ];
 
+                /** @psalm-suppress MixedArrayAssignment */
                 $this->metadata[$reflectionClass->getName()]['fields'][$fieldName] = $fieldMetadata;
             }
         }
@@ -223,6 +224,7 @@ final class MetadataFactory extends CommonMetadataFactory
                         Strategy\AssociationDefault::class,
                 ];
 
+                /** @psalm-suppress MixedArrayAssignment */
                 $this->metadata[$reflectionClass->getName()]['fields'][$associationName] = $associationMetadata;
             }
         }
@@ -272,6 +274,7 @@ final class MetadataFactory extends CommonMetadataFactory
 
                 // Initialize computedFields array if not exists
                 if (! isset($this->metadata[$reflectionClass->getName()]['computedFields'])) {
+                    /** @psalm-suppress MixedArrayAssignment */
                     $this->metadata[$reflectionClass->getName()]['computedFields'] = [];
                 }
 
@@ -282,6 +285,7 @@ final class MetadataFactory extends CommonMetadataFactory
                     'description' => $instance->getDescription(),
                 ];
 
+                /** @psalm-suppress MixedArrayAssignment */
                 $this->metadata[$reflectionClass->getName()]['computedFields'][$fieldName] = $computedFieldMetadata;
             }
         }

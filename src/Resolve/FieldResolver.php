@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use Doctrine\Persistence\Proxy;
@@ -23,7 +24,7 @@ final class FieldResolver
     /**
      * Cache all hydrator extract operations based on spl object hash
      *
-     * @var mixed[]
+     * @var array<string, array<array-key, mixed>>
      */
     private array $extractValues = [];
 
@@ -60,9 +61,10 @@ final class FieldResolver
 
             $this->extractValues = [];
 
-            $this->extractValues[$splObjectHash] = $this->entityTypeContainer
-                ->get($entityClass)
-                    ->getHydrator()->extract($source);
+            /** @psalm-suppress MixedAssignment */
+            $entity = $this->entityTypeContainer->get($entityClass);
+            assert($entity instanceof Entity);
+            $this->extractValues[$splObjectHash] = $entity->getHydrator()->extract($source);
 
             return $this->extractValues[$splObjectHash][$info->fieldName] ?? null;
         }
@@ -72,9 +74,10 @@ final class FieldResolver
             return $this->extractValues[$splObjectHash][$info->fieldName] ?? null;
         }
 
-        $this->extractValues[$splObjectHash] = $this->entityTypeContainer
-            ->get($entityClass)
-            ->getHydrator()->extract($source);
+        /** @psalm-suppress MixedAssignment */
+        $entity = $this->entityTypeContainer->get($entityClass);
+        assert($entity instanceof Entity);
+        $this->extractValues[$splObjectHash] = $entity->getHydrator()->extract($source);
 
         return $this->extractValues[$splObjectHash][$info->fieldName] ?? null;
     }

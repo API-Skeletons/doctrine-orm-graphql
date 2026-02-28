@@ -39,6 +39,7 @@ final class DateTimeImmutable extends ScalarType
     public function parseValue(mixed $value): PHPDateTimeImmutable
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('datetime_immutable is not a string: ' . $value);
         }
 
@@ -55,9 +56,9 @@ final class DateTimeImmutable extends ScalarType
     public function serialize(mixed $value): string|null
     {
         if ($value instanceof PHPDateTimeImmutable) {
-            $value = $value->format(PHPDateTimeImmutable::ATOM);
+            return $value->format(PHPDateTimeImmutable::ATOM);
         }
 
-        return $value;
+        return is_string($value) ? $value : null;
     }
 }

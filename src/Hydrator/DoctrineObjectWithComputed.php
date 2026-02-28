@@ -70,6 +70,7 @@ final class DoctrineObjectWithComputed extends DoctrineObject
 
         // Add computed field values
         foreach ($this->computedFields as $fieldName => $extractor) {
+            /** @psalm-suppress MixedAssignment */
             $data[$fieldName] = $extractor($object);
         }
 

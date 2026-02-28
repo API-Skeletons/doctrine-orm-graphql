@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
@@ -49,33 +50,42 @@ final class HydratorContainer extends Container
         $hydrator = (new ReflectionClass(DoctrineObjectWithComputed::class))
             ->newLazyGhost(static function (DoctrineObjectWithComputed $object) use ($self, $id): void {
                 $entityManager = $self->entityManager;
-                $entity        = $self->entityTypeContainer->get($id);
-                $metadata      = $entity->getMetadata();
-                $byValue       = $metadata['byValue'];
+                /** @psalm-suppress MixedAssignment */
+                $entity = $self->entityTypeContainer->get($id);
+                assert($entity instanceof Entity);
+                $metadata = $entity->getMetadata();
+                /** @psalm-suppress MixedArrayAccess, MixedAssignment */
+                $byValue = $metadata['byValue'];
 
-                /** @psalm-suppress DirectConstructorCall */
+                /** @psalm-suppress DirectConstructorCall, MixedArgument */
                 $object->__construct(
                     $entityManager,
                     $byValue,
                 );
 
                 // Create field strategy and assign to hydrator
+                /** @psalm-suppress MixedArrayAccess, MixedAssignment */
                 foreach ($metadata['fields'] as $fieldName => $fieldMetadata) {
+                    /** @psalm-suppress MixedArrayAccess, MixedArgument */
                     $implements = class_implements($fieldMetadata['hydratorStrategy']);
                     assert(
                         in_array(StrategyInterface::class, $implements !== false ? $implements : []),
                         'Strategy must implement ' . StrategyInterface::class,
                     );
 
+                    /** @psalm-suppress MixedArgument, MixedArrayAccess */
                     $object->addStrategy($fieldName, $self->get($fieldMetadata['hydratorStrategy']));
                 }
 
                 // Register computed fields
                 if (isset($metadata['computedFields'])) {
+                    /** @psalm-suppress MixedArrayAccess, MixedAssignment */
                     foreach ($metadata['computedFields'] as $fieldName => $computedFieldMetadata) {
+                        /** @psalm-suppress MixedArrayAccess */
                         $methodName = $computedFieldMetadata['method'];
 
                         // Create extractor closure that calls the entity method
+                        /** @psalm-suppress MixedArgument, MixedMethodCall */
                         $object->addComputedField(
                             $fieldName,
                             static fn (object $entity): mixed => $entity->$methodName(),

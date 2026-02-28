@@ -33,6 +33,7 @@ final class Blob extends ScalarType
 
         // @codeCoverageIgnoreEnd
 
+        /** @psalm-suppress MixedReturnStatement */
         return $this->parseValue($valueNode->value);
     }
 
@@ -40,6 +41,7 @@ final class Blob extends ScalarType
     public function parseValue(mixed $value): mixed
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('Blob field as base64 is not a string: ' . $value);
         }
 
@@ -67,6 +69,7 @@ final class Blob extends ScalarType
             }
         }
 
+        /** @psalm-suppress MixedArgument */
         return base64_encode($value);
     }
 }

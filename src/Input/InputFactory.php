@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Input;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input as InputException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Doctrine\ORM\EntityManager;
@@ -15,6 +16,7 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use ReflectionClass;
 
+use function assert;
 use function count;
 use function in_array;
 use function uniqid;
@@ -46,8 +48,10 @@ final class InputFactory
 
         return (new ReflectionClass(InputObjectType::class))
             ->newLazyGhost(static function (InputObjectType $object) use ($self, $id, $requiredFields, $optionalFields): void {
-                $fields       = [];
+                $fields = [];
+                /** @psalm-suppress MixedAssignment */
                 $targetEntity = $self->entityTypeContainer->get($id);
+                assert($targetEntity instanceof Entity);
 
                 if (! count($requiredFields) && ! count($optionalFields)) {
                     $self->addAllFieldsAsRequired($targetEntity, $fields);
@@ -68,9 +72,11 @@ final class InputFactory
     /**
      * @param string[]                            $optionalFields
      * @param array<int|string, InputObjectField> $fields
+     *
+     * @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion
      */
     protected function addOptionalFields(
-        mixed $targetEntity,
+        Entity $targetEntity,
         array $optionalFields,
         array &$fields,
     ): void {
@@ -103,9 +109,11 @@ final class InputFactory
     /**
      * @param string[]                            $requiredFields
      * @param array<int|string, InputObjectField> $fields
+     *
+     * @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion
      */
     protected function addRequiredFields(
-        mixed $targetEntity,
+        Entity $targetEntity,
         array $requiredFields,
         array &$fields,
     ): void {
@@ -135,8 +143,12 @@ final class InputFactory
         }
     }
 
-    /** @param array<int|string, InputObjectField> $fields */
-    protected function addAllFieldsAsRequired(mixed $targetEntity, array &$fields): void
+    /**
+     * @param array<int|string, InputObjectField> $fields
+     *
+     * @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion
+     */
+    protected function addAllFieldsAsRequired(Entity $targetEntity, array &$fields): void
     {
         foreach ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->getFieldNames() as $fieldName) {
             /**

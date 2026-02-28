@@ -60,11 +60,13 @@ final class FilterFactory
             : 'Filter_' . $targetEntity->getTypeName();
 
         if ($this->typeContainer->has($typeName)) {
+            /** @psalm-suppress MixedReturnStatement, MixedInferredReturnType */
             return $this->typeContainer->get($typeName);
         }
 
         $entityMetadata = $targetEntity->getMetadata();
 
+        /** @psalm-suppress MixedArgument */
         $excludedFilters = array_unique(
             array_merge(
                 Filters::fromArray($entityMetadata['excludeFilters'] ?? []),
@@ -74,19 +76,23 @@ final class FilterFactory
         );
 
         // Get the allowed filters
+        /** @psalm-suppress MixedPropertyFetch */
         $allowedFilters = array_udiff(Filters::cases(), $excludedFilters, static function ($a, $b) {
             return $a->value <=> $b->value;
         });
 
         // Limit association filters
         if ($associationName !== null) {
+            /** @psalm-suppress MixedArgument */
             $excludeFilters = Filters::fromArray($associationMetadata['excludeFilters'] ?? []);
             $allowedFilters = array_filter($allowedFilters, static function ($value) use ($excludeFilters) {
                 return ! in_array($value, $excludeFilters);
             });
         }
 
+        /** @psalm-suppress MixedArgumentTypeCoercion */
         $fields = $this->addFields($targetEntity, $allowedFilters);
+        /** @psalm-suppress MixedArgumentTypeCoercion */
         $fields = array_merge($fields, $this->addAssociations($targetEntity, $allowedFilters));
 
         $inputObject = (new ReflectionClass(GraphQLInputObjectType::class))
@@ -110,6 +116,8 @@ final class FilterFactory
      * @param Filters[] $allowedFilters
      *
      * @return array<string, mixed[]>
+     *
+     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment
      */
     protected function addFields(Entity $targetEntity, array $allowedFilters): array
     {
@@ -159,6 +167,7 @@ final class FilterFactory
             $filterTypeName = 'Filters_' . $type->name() . '_' . md5(serialize($filteredFilters));
 
             if ($this->typeContainer->has($filterTypeName)) {
+                /** @psalm-suppress MixedAssignment */
                 $fieldType = $this->typeContainer->get($filterTypeName);
             } else {
                 $fieldType = new Field($this->typeContainer, $type, $filteredFilters);

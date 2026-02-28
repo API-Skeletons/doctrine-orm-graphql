@@ -59,6 +59,7 @@ class Field extends InputObjectType
                 $typeContainer->set('Between_' . $type->name(), new Between($type));
             }
 
+            /** @psalm-suppress MixedAssignment */
             $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
         }
 

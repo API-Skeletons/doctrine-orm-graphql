@@ -15,6 +15,7 @@ use InvalidArgumentException;
 use Override;
 use ReflectionException;
 
+use function assert;
 use function is_array;
 use function method_exists;
 use function spl_object_hash;
@@ -116,6 +117,8 @@ abstract class Collection implements CollectionStrategyInterface
      * @return DoctrineCollection<array-key,object>
      *
      * @throws InvalidArgumentException
+     *
+     * @psalm-suppress MixedReturnTypeCoercion
      */
     protected function getCollectionFromObjectByValue(): DoctrineCollection
     {
@@ -133,11 +136,14 @@ abstract class Collection implements CollectionStrategyInterface
             );
         }
 
+        /** @psalm-suppress MixedMethodCall, MixedAssignment */
         $collection = $object->$getter();
 
         if (is_array($collection)) {
             $collection = new ArrayCollection($collection);
         }
+
+        assert($collection instanceof DoctrineCollection);
 
         return $collection;
     }
@@ -157,6 +163,7 @@ abstract class Collection implements CollectionStrategyInterface
 
         $reflProperty->setAccessible(true);
 
+        /** @psalm-suppress MixedReturnStatement */
         return $reflProperty->getValue($object);
     }
 

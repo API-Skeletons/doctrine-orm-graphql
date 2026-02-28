@@ -105,6 +105,7 @@ final class Config
             'excludeFilters' => [],
         ];
 
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, limit: int, globalEnable: bool, ignoreFields: string[], globalByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
         $mergedConfig = array_merge($default, $config);
 
         foreach ($mergedConfig as $field => $value) {

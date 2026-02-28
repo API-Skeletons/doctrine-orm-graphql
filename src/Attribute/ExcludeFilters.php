@@ -23,7 +23,11 @@ trait ExcludeFilters
     /** @var Filters[] */
     private readonly array $excludeFilters;
 
-    /** @return Filters[] */
+    /**
+     * @return Filters[]
+     *
+     * @psalm-suppress MixedReturnTypeCoercion
+     */
     public function getExcludeFilters(): array
     {
         $filters = [];

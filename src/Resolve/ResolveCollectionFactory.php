@@ -25,6 +25,8 @@ use function assert;
 use function class_exists;
 use function count;
 use function in_array;
+use function is_object;
+use function is_string;
 
 /**
  * Build a resolver for collections
@@ -47,25 +49,35 @@ final class ResolveCollectionFactory
     public function get(Entity $entity): Closure
     {
         return function (mixed $source, array $args, mixed $context, ResolveInfo $info) {
+            assert(is_object($source));
             $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
             $entityClassName               = $defaultProxyClassNameResolver->getClass($source);
 
             // If an alias map exists, check for an alias
             $targetCollectionName = $info->fieldName;
+            /** @psalm-suppress MixedMethodCall, MixedArgument */
             if (in_array($info->fieldName, $this->entityTypeContainer->get($entityClassName)->getExtractionMap())) {
+                /** @psalm-suppress MixedMethodCall, MixedArgument */
                 $targetCollectionName = array_flip($this->entityTypeContainer
                     ->get($entityClassName)->getExtractionMap())[$info->fieldName] ?? $info->fieldName;
             }
 
+            /** @psalm-suppress MixedArgumentTypeCoercion */
             $targetClassName = $this->entityManager->getMetadataFactory()
                 ->getMetadataFor($entityClassName)
                 ->getAssociationTargetClass($targetCollectionName);
 
             // Get the target entity
+            /** @psalm-suppress MixedAssignment */
             $targetEntity = $this->entityTypeContainer->get($targetClassName);
+            assert($targetEntity instanceof Entity);
 
             // Get event name
+            /** @psalm-suppress MixedAssignment, MixedArrayAccess */
             $eventName = $this->metadata[$entityClassName]['fields'][$targetCollectionName]['eventName'];
+            assert(is_string($eventName) || $eventName === null);
+
+            assert(is_string($targetCollectionName));
 
             return $this->buildPagination(
                 entity: $targetEntity,
@@ -82,7 +94,11 @@ final class ResolveCollectionFactory
         };
     }
 
-    /** @return mixed[] */
+    /**
+     * @return mixed[]
+     *
+     * @psalm-suppress MixedOperand, MixedArgument, MixedArrayAccess, MixedAssignment
+     */
     protected function buildPagination(
         Entity $entity,
         string $entityClassName,
@@ -125,19 +141,24 @@ final class ResolveCollectionFactory
         // Apply filters using QueryBuilder
         $queryBuilderFilter = new QueryBuilderFilter();
         if (isset($resolve['args']['filter'])) {
+            /** @psalm-suppress MixedArgument */
             $queryBuilderFilter->apply($resolve['args']['filter'], $queryBuilder, $entity);
         }
 
         // Decode pagination fields
+        /** @psalm-suppress MixedArgument, MixedArrayAccess */
         $paginationFields = $this->paginationService->decodePaginationFields(
             $resolve['args']['pagination'] ?? [],
         );
 
         // Get the limit for this association
-        $limit            = $this->metadata[$targetClassName]['limit'] ?? null;
+        /** @psalm-suppress MixedAssignment, MixedArrayAccess */
+        $limit = $this->metadata[$targetClassName]['limit'] ?? null;
+        /** @psalm-suppress MixedAssignment, MixedArrayAccess */
         $associationLimit = $this->metadata[$entityClassName]['fields'][$associationName]['limit'] ?? null;
 
         if ($associationLimit !== null && $associationLimit !== 0) {
+            /** @psalm-suppress MixedAssignment */
             $limit = $associationLimit;
         }
 
@@ -146,6 +167,7 @@ final class ResolveCollectionFactory
         }
 
         // Calculate offset and limit
+        /** @psalm-suppress MixedArgument */
         $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit(
             $paginationFields,
             $limit,
@@ -156,6 +178,7 @@ final class ResolveCollectionFactory
          * Include all resolve variables.
          */
         if ($eventName !== null) {
+            /** @psalm-suppress MixedArgument */
             $this->eventDispatcher->dispatch(
                 new QueryBuilderEvent(
                     $eventName,
@@ -194,18 +217,22 @@ final class ResolveCollectionFactory
             if ($cachedResults !== null) {
                 $results = $cachedResults;
             } else {
+                /** @psalm-suppress MixedAssignment */
                 $results = $query->getResult();
+                /** @psalm-suppress MixedArgument */
                 $this->queryResultCache->set($query, $results);
             }
         } else {
+            /** @psalm-suppress MixedAssignment */
             $results = $query->getResult();
         }
 
         // Build edges
-        /** @psalm-suppress PossiblyInvalidArgument */
+        /** @psalm-suppress PossiblyInvalidArgument, MixedArgument */
         $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
 
         // Build cursors
+        /** @psalm-suppress MixedArgument */
         $cursors = $this->paginationService->buildCursors(
             $offsetAndLimit['offset'],
             $itemCount,

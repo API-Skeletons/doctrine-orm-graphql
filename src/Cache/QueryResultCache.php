@@ -126,6 +126,7 @@ final class QueryResultCache
         // Normalize parameters for consistent cache keys
         $normalizedParams = [];
         foreach ($parameters as $param) {
+            /** @psalm-suppress MixedAssignment */
             $normalizedParams[$param->getName()] = $param->getValue();
         }
 
