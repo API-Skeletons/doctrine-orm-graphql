@@ -23,7 +23,7 @@ final class Date extends ScalarType
     . 'The format is e.g. 2004-02-12.';
 
     #[Override]
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): DateTime|null
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): DateTime
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -56,7 +56,7 @@ final class Date extends ScalarType
     }
 
     #[Override]
-    public function serialize(mixed $value): string|null
+    public function serialize(mixed $value): string
     {
         if (is_string($value)) {
             throw new TypeSerializationException('Expected DateTime object.  Got string.');

@@ -24,7 +24,7 @@ final class Time extends ScalarType
     . 'The format is e.g. 24 hour:minutes:seconds.microseconds';
 
     #[Override]
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string|null
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {

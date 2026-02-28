@@ -50,7 +50,7 @@ final class DateImmutable extends ScalarType
     }
 
     #[Override]
-    public function serialize(mixed $value): string|null
+    public function serialize(mixed $value): string
     {
         if (is_string($value)) {
             throw new TypeSerializationException('Expected DateTimeImmutable object.  Got string.');
