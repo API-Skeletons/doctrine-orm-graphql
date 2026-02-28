@@ -29,6 +29,7 @@ abstract class Collection implements CollectionStrategyInterface
 {
     private string|null $collectionName = null;
 
+    /** @var ClassMetadata<object>|null */
     private ClassMetadata|null $metadata = null;
 
     private object|null $object = null;
@@ -56,12 +57,14 @@ abstract class Collection implements CollectionStrategyInterface
         return $this->collectionName;
     }
 
+    /** @param ClassMetadata<object> $classMetadata */
     #[Override]
     public function setClassMetadata(ClassMetadata $classMetadata): void
     {
         $this->metadata = $classMetadata;
     }
 
+    /** @return ClassMetadata<object> */
     #[Override]
     public function getClassMetadata(): ClassMetadata
     {

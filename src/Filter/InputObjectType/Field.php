@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
+use GraphQL\Type\Definition\Type;
 
 use function md5;
 use function serialize;
@@ -20,13 +21,16 @@ use function uniqid;
  */
 class Field extends InputObjectType
 {
-    /** @param Filters[] $allowedFilters */
+    /**
+     * @param ScalarType|ListOfType<Type> $type
+     * @param Filters[]                   $allowedFilters
+     */
     public function __construct(
         readonly TypeContainer $typeContainer,
         readonly ScalarType|ListOfType $type,
         readonly array $allowedFilters,
     ) {
-        /** @var array<string, array> $fields */
+        /** @var array<string, array<string, mixed>> $fields */
         $fields = [];
 
         foreach ($allowedFilters as $filter) {

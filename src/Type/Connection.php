@@ -23,12 +23,14 @@ class Connection extends ObjectType implements
         assert($params[0] instanceof ObjectType);
         $objectType = $params[0];
 
+        $nodeType = $container->build(Node::class, 'Node_' . $typeName, $objectType);
+        assert($nodeType instanceof ObjectType);
+
         $configuration = [
             'name' => 'Connection_' . $typeName,
             'description' => 'Connection for ' . $typeName,
             'fields' => [
-                'edges' => Type::listOf($container
-                    ->build(Node::class, 'Node_' . $typeName, $objectType)),
+                'edges' => Type::listOf($nodeType),
                 'totalCount' => Type::nonNull(Type::int()),
                 'pageInfo' => $container->get('PageInfo'),
             ],

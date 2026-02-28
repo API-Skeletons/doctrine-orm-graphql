@@ -22,6 +22,7 @@ class Json extends ScalarType
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `json` scalar type represents json data.';
 
+    /** @return array<mixed>|null */
     #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): array|null
     {

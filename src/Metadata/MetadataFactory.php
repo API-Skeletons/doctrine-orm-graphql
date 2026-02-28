@@ -91,6 +91,8 @@ class MetadataFactory extends CommonMetadataFactory
      * Using the entity class attributes, generate the metadata.
      * The buildmetadata* functions exist to simplify the buildMetadata
      * function.
+     *
+     * @param ReflectionClass<object> $reflectionClass
      */
     private function buildMetadataForEntity(ReflectionClass $reflectionClass): bool
     {
@@ -135,6 +137,9 @@ class MetadataFactory extends CommonMetadataFactory
 
     /**
      * Build the metadata for each field in an entity based on the Attribute\Field
+     *
+     * @param ClassMetadata<object>   $entityClassMetadata
+     * @param ReflectionClass<object> $reflectionClass
      */
     private function buildMetadataForFields(
         ClassMetadata $entityClassMetadata,
@@ -176,6 +181,8 @@ class MetadataFactory extends CommonMetadataFactory
 
     /**
      * Build the metadata for each field in an entity based on the Attribute\Association
+     *
+     * @param ReflectionClass<object> $reflectionClass
      */
     private function buildMetadataForAssociations(
         ReflectionClass $reflectionClass,
@@ -223,6 +230,8 @@ class MetadataFactory extends CommonMetadataFactory
 
     /**
      * Build the metadata for computed fields in an entity based on ComputedField attributes
+     *
+     * @param ReflectionClass<object> $reflectionClass
      */
     private function buildMetadataForComputedFields(ReflectionClass $reflectionClass): void
     {
