@@ -53,6 +53,22 @@ class TimeTest extends TestCase
         $result   = $dateType->parseValue('25:56:33.222222');
     }
 
+    public function testSerializeString(): void
+    {
+        $timeType = new Time();
+        $result   = $timeType->serialize('20:12:15.123456');
+
+        $this->assertEquals('20:12:15.123456', $result);
+    }
+
+    public function testSerializeNull(): void
+    {
+        $timeType = new Time();
+        $result   = $timeType->serialize(null);
+
+        $this->assertNull($result);
+    }
+
     public function testBetween(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));

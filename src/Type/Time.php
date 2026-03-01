@@ -55,18 +55,24 @@ final class Time extends ScalarType
         if (preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])$/', $value)) {
             $time = PHPDateTime::createFromFormat('H:i:s', $value);
 
+            // @codeCoverageIgnoreStart
             if ($time === false) {
                 throw new TypeSerializationException('Time format does not match H:i:s.');
             }
+
+            // @codeCoverageIgnoreEnd
 
             return $time;
         }
 
         $time = PHPDateTime::createFromFormat('H:i:s.u', $value);
 
+        // @codeCoverageIgnoreStart
         if ($time === false) {
             throw new TypeSerializationException('Time format does not match H:i:s.u.');
         }
+
+        // @codeCoverageIgnoreEnd
 
         return $time;
     }

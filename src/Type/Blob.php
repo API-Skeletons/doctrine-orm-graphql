@@ -64,9 +64,12 @@ final class Blob extends ScalarType
         if (is_resource($value)) {
             $value = stream_get_contents($value);
 
+            // @codeCoverageIgnoreStart
             if ($value === false) {
                 return null;
             }
+
+            // @codeCoverageIgnoreEnd
         }
 
         /** @psalm-suppress MixedArgument */

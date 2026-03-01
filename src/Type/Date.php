@@ -49,9 +49,12 @@ final class Date extends ScalarType
 
         $date = DateTime::createFromFormat(DateTime::ATOM, $value . 'T00:00:00+00:00');
 
+        // @codeCoverageIgnoreStart
         if ($date === false) {
             throw new TypeSerializationException('Date format does not match Y-m-d e.g. 2004-02-12.');
         }
+
+        // @codeCoverageIgnoreEnd
 
         return $date;
     }
