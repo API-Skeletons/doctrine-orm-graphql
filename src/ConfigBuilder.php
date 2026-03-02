@@ -20,7 +20,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
  *     ->build();
  * </code>
  */
-class ConfigBuilder
+final class ConfigBuilder
 {
     private string $group             = 'default';
     private string|null $groupSuffix  = null;

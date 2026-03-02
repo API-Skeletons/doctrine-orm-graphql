@@ -34,7 +34,7 @@ use const SORT_REGULAR;
 /**
  * Build filters for an entity
  */
-class FilterFactory
+final class FilterFactory
 {
     public function __construct(
         protected readonly Config $config,
@@ -60,11 +60,13 @@ class FilterFactory
             : 'Filter_' . $targetEntity->getTypeName();
 
         if ($this->typeContainer->has($typeName)) {
+            /** @psalm-suppress MixedReturnStatement, MixedInferredReturnType */
             return $this->typeContainer->get($typeName);
         }
 
         $entityMetadata = $targetEntity->getMetadata();
 
+        /** @psalm-suppress MixedArgument */
         $excludedFilters = array_unique(
             array_merge(
                 Filters::fromArray($entityMetadata['excludeFilters'] ?? []),
@@ -74,29 +76,33 @@ class FilterFactory
         );
 
         // Get the allowed filters
+        /** @psalm-suppress MixedPropertyFetch */
         $allowedFilters = array_udiff(Filters::cases(), $excludedFilters, static function ($a, $b) {
             return $a->value <=> $b->value;
         });
 
         // Limit association filters
-        if ($associationName) {
+        if ($associationName !== null) {
+            /** @psalm-suppress MixedArgument */
             $excludeFilters = Filters::fromArray($associationMetadata['excludeFilters'] ?? []);
             $allowedFilters = array_filter($allowedFilters, static function ($value) use ($excludeFilters) {
                 return ! in_array($value, $excludeFilters);
             });
         }
 
+        /** @psalm-suppress MixedArgumentTypeCoercion */
         $fields = $this->addFields($targetEntity, $allowedFilters);
+        /** @psalm-suppress MixedArgumentTypeCoercion */
         $fields = array_merge($fields, $this->addAssociations($targetEntity, $allowedFilters));
 
         $inputObject = (new ReflectionClass(GraphQLInputObjectType::class))
             ->newLazyGhost(static function (GraphQLInputObjectType $object) use ($typeName, $fields): void {
-                $object->__construct(
-                    [
-                        'name' => $typeName,
-                        'fields' => static fn () => $fields,
-                    ],
-                );
+                /** @psalm-suppress PossiblyInvalidArgument */
+                /** @psalm-suppress DirectConstructorCall */
+                $object->__construct([ // @phpstan-ignore argument.type
+                    'name' => $typeName,
+                    'fields' => static fn () => $fields,
+                ]);
             });
 
         $this->typeContainer->set($typeName, $inputObject);
@@ -110,6 +116,8 @@ class FilterFactory
      * @param Filters[] $allowedFilters
      *
      * @return array<string, mixed[]>
+     *
+     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment
      */
     protected function addFields(Entity $targetEntity, array $allowedFilters): array
     {
@@ -159,6 +167,7 @@ class FilterFactory
             $filterTypeName = 'Filters_' . $type->name() . '_' . md5(serialize($filteredFilters));
 
             if ($this->typeContainer->has($filterTypeName)) {
+                /** @psalm-suppress MixedAssignment */
                 $fieldType = $this->typeContainer->get($filterTypeName);
             } else {
                 $fieldType = new Field($this->typeContainer, $type, $filteredFilters);

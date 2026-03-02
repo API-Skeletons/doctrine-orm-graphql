@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * Thrown when a requested GraphQL type or entity type is not registered
  */
-class TypeNotFound extends GraphQL
+final class TypeNotFound extends GraphQL
 {
     /** @param string[] $availableTypes */
     public function __construct(

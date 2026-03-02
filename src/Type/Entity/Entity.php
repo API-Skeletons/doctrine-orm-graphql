@@ -32,7 +32,7 @@ use function ucwords;
 /**
  * This class is used to build an ObjectType for an entity
  */
-class Entity
+final class Entity
 {
     /** @var array<string, string> */
     protected array $extractionMap        = [];
@@ -54,16 +54,19 @@ class Entity
     ) {
     }
 
+    /** @psalm-suppress MixedReturnStatement, MixedInferredReturnType */
     public function getHydrator(): HydratorInterface
     {
         return $this->hydratorContainer->get($this->getEntityClass());
     }
 
+    /** @psalm-suppress MixedReturnStatement */
     public function getTypeName(): string
     {
         return $this->metadata['typeName'];
     }
 
+    /** @psalm-suppress MixedReturnStatement */
     public function getDescription(): string|null
     {
         return $this->metadata['description'];
@@ -75,7 +78,11 @@ class Entity
         return $this->metadata;
     }
 
-    /** @return class-string */
+    /**
+     * @return class-string
+     *
+     * @psalm-suppress MixedReturnStatement
+     */
     public function getEntityClass(): string
     {
         return $this->metadata['entityClass'];
@@ -86,6 +93,8 @@ class Entity
      * naming strategy in the hydrator
      *
      * @return array<string, string>
+     *
+     * @psalm-suppress MixedReturnTypeCoercion, MixedAssignment, MixedArrayAccess, MixedOperand, MixedArrayOffset, MixedPropertyTypeCoercion
      */
     public function getExtractionMap(): array
     {
@@ -130,7 +139,7 @@ class Entity
         $fields = array_merge($fields, $this->addComputedFields());
 
         $typeName = $this->getTypeName();
-        if ($this->eventName) {
+        if ($this->eventName !== null) {
             $typeName .= '.' . $this->eventName;
         }
 
@@ -153,24 +162,29 @@ class Entity
          */
         if ($this->config->getSortFields()) {
             if ($definition['fields'] instanceof Closure) {
+                /** @psalm-suppress MixedAssignment */
                 $definition['fields'] = $definition['fields']();
             }
 
+            /** @psalm-suppress MixedArgument */
             ksort($definition['fields']);
         }
 
-        /** @psalm-suppress InvalidArgument */
+        /** @psalm-suppress InvalidArgument, ArgumentTypeCoercion */
         $this->objectType = (new ReflectionClass(ObjectType::class))
             ->newLazyGhost(static function (ObjectType $object) use ($definition): void {
-                $object->__construct(
-                    $definition->getArrayCopy(),
-                );
+                /** @psalm-suppress DirectConstructorCall */
+                $object->__construct($definition->getArrayCopy()); // @phpstan-ignore argument.type
             });
 
         return $this->objectType;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     *
+     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedArrayOffset
+     */
     protected function addFields(): array
     {
         $fields = [];
@@ -192,7 +206,11 @@ class Entity
         return $fields;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     *
+     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment, MixedMethodCall
+     */
     protected function addAssociations(): array
     {
         $fields = [];
@@ -213,7 +231,8 @@ class Entity
                 ])
             ) {
                 $targetEntity             = $associationMetadata['targetEntity'];
-                $fields[$associationName] = function () use ($targetEntity) {
+                $fields[$associationName] = function () use ($targetEntity): array {
+                    /** @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall */
                     $entity = $this->entityTypeContainer->get($targetEntity);
 
                     return [
@@ -228,7 +247,8 @@ class Entity
             // Collections
             $targetEntity = $associationMetadata['targetEntity'];
 
-            $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName) {
+            $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName): array {
+                /** @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall, MixedArrayAccess */
                 $entity    = $this->entityTypeContainer->get($targetEntity);
                 $shortName = $this->getTypeName() . '_' . ucwords($associationName);
 
@@ -260,6 +280,8 @@ class Entity
      * Add computed fields to the GraphQL type
      *
      * @return array<string, mixed>
+     *
+     * @psalm-suppress MixedAssignment, MixedArrayAccess, MixedArrayOffset, MixedArgument, MixedReturnTypeCoercion
      */
     protected function addComputedFields(): array
     {

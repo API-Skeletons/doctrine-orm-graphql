@@ -20,7 +20,7 @@ use function uniqid;
  * This class is used to add filters to a Doctrine QueryBuilder based on the
  * field filters
  */
-class QueryBuilder
+final class QueryBuilder
 {
     /** @var mixed[]  */
     private array $sortFields = [];
@@ -29,6 +29,8 @@ class QueryBuilder
      * Add where clauses to a QueryBuilder based on the FilterType of the entity
      *
      * @param array<string, mixed|array<string, mixed>> $filterTypes
+     *
+     * @psalm-suppress MixedAssignment, MixedArgument
      */
     public function apply(
         array $filterTypes,
@@ -60,6 +62,7 @@ class QueryBuilder
                 }
 
                 if ($filter === Filters::ISNULL) {
+                    /** @psalm-suppress MixedArgument */
                     $this->isnull($queryBuilderField, $value, $queryBuilder);
                     continue;
                 }
@@ -152,6 +155,7 @@ class QueryBuilder
 
         // This method is used to set the sort direction for a field
         // It will be used to apply sorting later in the applySort method
+        /** @psalm-suppress MixedArrayAssignment */
         $this->sortFields[$field]['direction'] = strtoupper($direction);
     }
 
@@ -163,6 +167,7 @@ class QueryBuilder
 
         // This method is used to set the sort priority for a field
         // It will be used to apply sorting later in the applySort method
+        /** @psalm-suppress MixedArrayAssignment */
         $this->sortFields[$field]['priority'] = $priority;
     }
 
@@ -174,16 +179,18 @@ class QueryBuilder
         }
 
         // Sort fields by priority if set, otherwise by field name
+        /** @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion */
         uasort($this->sortFields, static function ($a, $b) {
             if (isset($a['priority']) && isset($b['priority'])) {
                 return $a['priority'] <=> $b['priority'];
             }
 
-            return strcmp(key($a), key($b));
+            return strcmp(key($a) ?? '', key($b) ?? '');
         });
 
         $sortStrings = [];
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($this->sortFields as $field => $sort) {
             // If the direction is not set, default to 'ASC'
             if (! isset($sort['direction'])) {
@@ -195,6 +202,7 @@ class QueryBuilder
                 );
             }
 
+            /** @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion */
             $queryBuilder->addOrderBy($field, $sort['direction']);
         }
     }

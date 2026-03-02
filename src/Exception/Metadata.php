@@ -10,7 +10,7 @@ use Throwable;
 /**
  * Thrown when entity metadata is invalid or missing
  */
-class Metadata extends GraphQL
+final class Metadata extends GraphQL
 {
     public function __construct(
         string $message,

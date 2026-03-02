@@ -16,7 +16,7 @@ use function is_string;
 /**
  * This class is used to create a DateTimeImmutable type
  */
-class DateTimeTZImmutable extends ScalarType
+final class DateTimeTZImmutable extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `datetimetz_immutable` scalar type represents datetime data.'
@@ -39,6 +39,7 @@ class DateTimeTZImmutable extends ScalarType
     public function parseValue(mixed $value): PHPDateTimeTZImmutable
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('datetimetz_immutable is not a string: ' . $value);
         }
 
@@ -55,9 +56,9 @@ class DateTimeTZImmutable extends ScalarType
     public function serialize(mixed $value): string|null
     {
         if ($value instanceof PHPDateTimeTZImmutable) {
-            $value = $value->format(PHPDateTimeTZImmutable::ATOM);
+            return $value->format(PHPDateTimeTZImmutable::ATOM);
         }
 
-        return $value;
+        return is_string($value) ? $value : null;
     }
 }

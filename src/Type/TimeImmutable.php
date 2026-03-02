@@ -17,7 +17,7 @@ use function preg_match;
 /**
  * This class is used to create a TimeImmutable type
  */
-class TimeImmutable extends ScalarType
+final class TimeImmutable extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `Time` scalar type represents time data.'
@@ -40,6 +40,7 @@ class TimeImmutable extends ScalarType
     public function parseValue(mixed $value): PHPDateTime|false
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('Time is not a string: ' . $value);
         }
 
@@ -59,9 +60,9 @@ class TimeImmutable extends ScalarType
     public function serialize(mixed $value): string|null
     {
         if ($value instanceof PHPDateTime) {
-            $value = $value->format('H:i:s.u');
+            return $value->format('H:i:s.u');
         }
 
-        return $value;
+        return is_string($value) ? $value : null;
     }
 }

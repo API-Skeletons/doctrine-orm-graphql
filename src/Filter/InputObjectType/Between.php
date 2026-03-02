@@ -8,14 +8,16 @@ use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
+use GraphQL\Type\Definition\Type;
 
 use function uniqid;
 
 /**
  * This Type is a special case filter that takes two arguments
  */
-class Between extends InputObjectType
+final class Between extends InputObjectType
 {
+    /** @param ScalarType|ListOfType<Type> $type */
     public function __construct(readonly ScalarType|ListOfType $type)
     {
         $name = $type instanceof ScalarType ? $type->name() : uniqid();

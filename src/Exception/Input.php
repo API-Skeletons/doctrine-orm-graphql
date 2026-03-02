@@ -10,7 +10,7 @@ use Throwable;
 /**
  * Thrown when input validation fails
  */
-class Input extends GraphQL
+final class Input extends GraphQL
 {
     public function __construct(
         string $message,

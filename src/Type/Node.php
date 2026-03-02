@@ -13,8 +13,10 @@ use function assert;
 
 /**
  * This type is built within the TypeContainer
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
-class Node extends ObjectType implements
+final class Node extends ObjectType implements
     Buildable
 {
     /** @param mixed[] $params */

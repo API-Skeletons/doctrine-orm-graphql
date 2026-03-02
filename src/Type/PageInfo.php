@@ -9,8 +9,10 @@ use GraphQL\Type\Definition\Type;
 
 /**
  * This type is defined in the GraphqQL Complete Connection Specification
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
-class PageInfo extends ObjectType
+final class PageInfo extends ObjectType
 {
     public function __construct()
     {

@@ -17,14 +17,14 @@ use function preg_match;
 /**
  * This class is used to create a Time type
  */
-class Time extends ScalarType
+final class Time extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `Time` scalar type represents time data.'
     . 'The format is e.g. 24 hour:minutes:seconds.microseconds';
 
     #[Override]
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string|null
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -43,6 +43,7 @@ class Time extends ScalarType
     public function parseValue(mixed $value): PHPDateTime
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('Time is not a string: ' . $value);
         }
 
@@ -52,19 +53,37 @@ class Time extends ScalarType
 
         // If time does not have milliseconds, parse without
         if (preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])$/', $value)) {
-            return PHPDateTime::createFromFormat('H:i:s', $value);
+            $time = PHPDateTime::createFromFormat('H:i:s', $value);
+
+            // @codeCoverageIgnoreStart
+            if ($time === false) {
+                throw new TypeSerializationException('Time format does not match H:i:s.');
+            }
+
+            // @codeCoverageIgnoreEnd
+
+            return $time;
         }
 
-        return PHPDateTime::createFromFormat('H:i:s.u', $value);
+        $time = PHPDateTime::createFromFormat('H:i:s.u', $value);
+
+        // @codeCoverageIgnoreStart
+        if ($time === false) {
+            throw new TypeSerializationException('Time format does not match H:i:s.u.');
+        }
+
+        // @codeCoverageIgnoreEnd
+
+        return $time;
     }
 
     #[Override]
     public function serialize(mixed $value): string|null
     {
         if ($value instanceof PHPDateTime) {
-            $value = $value->format('H:i:s.u');
+            return $value->format('H:i:s.u');
         }
 
-        return $value;
+        return is_string($value) ? $value : null;
     }
 }

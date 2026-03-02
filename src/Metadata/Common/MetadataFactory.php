@@ -70,9 +70,10 @@ abstract class MetadataFactory
      */
     protected function appendGroupSuffix(string $entityClass): string
     {
-        if ($this->getConfig()->getGroupSuffix() !== null) {
-            if ($this->getConfig()->getGroupSuffix()) {
-                $entityClass .= '_' . $this->getConfig()->getGroupSuffix();
+        $groupSuffix = $this->getConfig()->getGroupSuffix();
+        if ($groupSuffix !== null) {
+            if ($groupSuffix !== '') {
+                $entityClass .= '_' . $groupSuffix;
             }
         } else {
             $entityClass .= '_' . $this->getConfig()->getGroup();

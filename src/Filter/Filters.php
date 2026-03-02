@@ -59,6 +59,8 @@ enum Filters: string
 
     /**
      * Fetch the GraphQL type for the filter
+     *
+     * @param ScalarType|ListOfType<Type> $type
      */
     public function type(ScalarType|ListOfType $type): Type
     {

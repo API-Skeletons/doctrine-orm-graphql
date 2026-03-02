@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
+use GraphQL\Type\Definition\Type;
 
 use function md5;
 use function serialize;
@@ -20,13 +21,16 @@ use function uniqid;
  */
 class Field extends InputObjectType
 {
-    /** @param Filters[] $allowedFilters */
+    /**
+     * @param ScalarType|ListOfType<Type> $type
+     * @param Filters[]                   $allowedFilters
+     */
     public function __construct(
         readonly TypeContainer $typeContainer,
         readonly ScalarType|ListOfType $type,
         readonly array $allowedFilters,
     ) {
-        /** @var array<string, array> $fields */
+        /** @var array<string, array<string, mixed>> $fields */
         $fields = [];
 
         foreach ($allowedFilters as $filter) {
@@ -55,6 +59,7 @@ class Field extends InputObjectType
                 $typeContainer->set('Between_' . $type->name(), new Between($type));
             }
 
+            /** @psalm-suppress MixedAssignment */
             $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
         }
 
@@ -62,7 +67,7 @@ class Field extends InputObjectType
 
         // ScalarType field filters are named by their field type
         // and a hash of the allowed filters
-        parent::__construct([
+        parent::__construct([ // @phpstan-ignore argument.type
             'name' => 'Filters_' . $typeName . '_' . md5(serialize($allowedFilters)),
             'description' => 'Field filters',
             'fields' => static fn () => $fields,

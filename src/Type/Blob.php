@@ -19,7 +19,7 @@ use function stream_get_contents;
 /**
  * This class is used to create a Blob type
  */
-class Blob extends ScalarType
+final class Blob extends ScalarType
 {
     public string|null $description = 'A binary file base64 encoded.';
 
@@ -33,6 +33,7 @@ class Blob extends ScalarType
 
         // @codeCoverageIgnoreEnd
 
+        /** @psalm-suppress MixedReturnStatement */
         return $this->parseValue($valueNode->value);
     }
 
@@ -40,6 +41,7 @@ class Blob extends ScalarType
     public function parseValue(mixed $value): mixed
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('Blob field as base64 is not a string: ' . $value);
         }
 
@@ -61,8 +63,16 @@ class Blob extends ScalarType
 
         if (is_resource($value)) {
             $value = stream_get_contents($value);
+
+            // @codeCoverageIgnoreStart
+            if ($value === false) {
+                return null;
+            }
+
+            // @codeCoverageIgnoreEnd
         }
 
+        /** @psalm-suppress MixedArgument */
         return base64_encode($value);
     }
 }

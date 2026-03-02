@@ -17,7 +17,7 @@ use function preg_match;
 /**
  * This class is used to create a DateImmutable type
  */
-class DateImmutable extends ScalarType
+final class DateImmutable extends ScalarType
 {
     public string|null $description = 'The `date_immutable` scalar type represents datetime data.'
     . 'The format is e.g. 2004-02-12.';
@@ -39,6 +39,7 @@ class DateImmutable extends ScalarType
     public function parseValue(mixed $value): DateTimeImmutable|false
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('Date is not a string: ' . $value);
         }
 
@@ -50,7 +51,7 @@ class DateImmutable extends ScalarType
     }
 
     #[Override]
-    public function serialize(mixed $value): string|null
+    public function serialize(mixed $value): string
     {
         if (is_string($value)) {
             throw new TypeSerializationException('Expected DateTimeImmutable object.  Got string.');

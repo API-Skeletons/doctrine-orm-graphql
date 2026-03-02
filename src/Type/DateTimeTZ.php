@@ -16,7 +16,7 @@ use function is_string;
 /**
  * This class is used to create a DateTimeTZ type
  */
-class DateTimeTZ extends ScalarType
+final class DateTimeTZ extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `datetimetz` scalar type represents datetime data.'
@@ -39,6 +39,7 @@ class DateTimeTZ extends ScalarType
     public function parseValue(mixed $value): PHPDateTimeTZ
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('datetimetz is not a string: ' . $value);
         }
 
@@ -55,9 +56,9 @@ class DateTimeTZ extends ScalarType
     public function serialize(mixed $value): string|null
     {
         if ($value instanceof PHPDateTimeTZ) {
-            $value = $value->format(PHPDateTimeTZ::ATOM);
+            return $value->format(PHPDateTimeTZ::ATOM);
         }
 
-        return $value;
+        return is_string($value) ? $value : null;
     }
 }

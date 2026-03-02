@@ -14,7 +14,7 @@ use function intval;
  *
  * @returns integer
  */
-class ToInteger extends Collection implements
+final class ToInteger extends Collection implements
     StrategyInterface
 {
     #[Override]

@@ -55,6 +55,22 @@ class DateTimeImmutableTest extends TestCase
         $result       = $dateTimeType->parseLiteral($node);
     }
 
+    public function testSerializeString(): void
+    {
+        $dateImmutableType = new DateTimeImmutable();
+        $result            = $dateImmutableType->serialize('2020-03-01T00:00:00+00:00');
+
+        $this->assertEquals('2020-03-01T00:00:00+00:00', $result);
+    }
+
+    public function testSerializeNull(): void
+    {
+        $dateImmutableType = new DateTimeImmutable();
+        $result            = $dateImmutableType->serialize(null);
+
+        $this->assertNull($result);
+    }
+
     public function testBetween(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));

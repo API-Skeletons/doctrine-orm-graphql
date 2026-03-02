@@ -17,13 +17,13 @@ use function preg_match;
 /**
  * This class is used to create a Date type
  */
-class Date extends ScalarType
+final class Date extends ScalarType
 {
     public string|null $description = 'The `Date` scalar type represents datetime data.'
     . 'The format is e.g. 2004-02-12.';
 
     #[Override]
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): DateTime|null
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): DateTime
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -39,6 +39,7 @@ class Date extends ScalarType
     public function parseValue(mixed $value): DateTime
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('Date is not a string: ' . $value);
         }
 
@@ -46,11 +47,20 @@ class Date extends ScalarType
             throw new TypeSerializationException('Date format does not match Y-m-d e.g. 2004-02-12.');
         }
 
-        return DateTime::createFromFormat(DateTime::ATOM, $value . 'T00:00:00+00:00');
+        $date = DateTime::createFromFormat(DateTime::ATOM, $value . 'T00:00:00+00:00');
+
+        // @codeCoverageIgnoreStart
+        if ($date === false) {
+            throw new TypeSerializationException('Date format does not match Y-m-d e.g. 2004-02-12.');
+        }
+
+        // @codeCoverageIgnoreEnd
+
+        return $date;
     }
 
     #[Override]
-    public function serialize(mixed $value): string|null
+    public function serialize(mixed $value): string
     {
         if (is_string($value)) {
             throw new TypeSerializationException('Expected DateTime object.  Got string.');

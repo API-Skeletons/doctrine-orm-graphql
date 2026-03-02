@@ -69,6 +69,7 @@ final class GlobalEnable extends MetadataFactory
                 continue;
             }
 
+            /** @psalm-suppress MixedArrayAssignment */
             $this->metadata[$entityClass]['fields'][$fieldName] = [
                 'description' => $fieldName,
                 'type' => $entityClassMetadata->getTypeOfField($fieldName),
@@ -88,6 +89,7 @@ final class GlobalEnable extends MetadataFactory
                 continue;
             }
 
+            /** @psalm-suppress MixedArrayAssignment */
             $this->metadata[$entityClass]['fields'][$associationName] = [
                 'limit' => null,
                 'excludeFilters' => [],

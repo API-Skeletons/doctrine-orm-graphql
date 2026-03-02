@@ -10,7 +10,7 @@ use Throwable;
 /**
  * Thrown when filter operations fail or are invalid
  */
-class Filter extends GraphQL
+final class Filter extends GraphQL
 {
     public function __construct(
         string $message,

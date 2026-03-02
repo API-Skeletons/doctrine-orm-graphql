@@ -10,7 +10,7 @@ use function base64_encode;
 /**
  * Shared pagination logic for entities and collections
  */
-class PaginationService
+final class PaginationService
 {
     /**
      * Decode pagination fields (after/before cursors)
@@ -28,18 +28,19 @@ class PaginationService
             'after'  => 0,
         ];
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($pagination as $field => $value) {
-            $paginationFields[$field] = $value;
+            $paginationFields[$field] = (int) $value;
 
             if ($field === 'after') {
-                $paginationFields[$field] = (int) base64_decode($value, true) + 1;
+                $paginationFields[$field] = (int) base64_decode((string) $value, true) + 1;
             }
 
             if ($field !== 'before') {
                 continue;
             }
 
-            $paginationFields[$field] = (int) base64_decode($value, true);
+            $paginationFields[$field] = (int) base64_decode((string) $value, true);
         }
 
         return $paginationFields;
@@ -125,7 +126,9 @@ class PaginationService
         $edges = [];
         $index = 0;
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($items as $item) {
+            /** @psalm-suppress MixedAssignment */
             $edges[] = [
                 'node'   => $item,
                 'cursor' => base64_encode((string) ($index + $offset)),

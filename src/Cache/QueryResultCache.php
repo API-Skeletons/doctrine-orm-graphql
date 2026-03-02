@@ -7,6 +7,8 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Cache;
 use Doctrine\ORM\Query;
 
 use function count;
+use function implode;
+use function is_array;
 use function md5;
 use function serialize;
 
@@ -23,7 +25,7 @@ use function serialize;
  * The cache is stored in memory and is automatically cleared after
  * the request completes.
  */
-class QueryResultCache
+final class QueryResultCache
 {
     /** @var array<string, mixed[]> */
     private array $cache = [];
@@ -118,11 +120,13 @@ class QueryResultCache
     private function getCacheKey(Query $query): string
     {
         $sql        = $query->getSQL();
+        $sql        = is_array($sql) ? implode(';', $sql) : $sql;
         $parameters = $query->getParameters()->toArray();
 
         // Normalize parameters for consistent cache keys
         $normalizedParams = [];
         foreach ($parameters as $param) {
+            /** @psalm-suppress MixedAssignment */
             $normalizedParams[$param->getName()] = $param->getValue();
         }
 

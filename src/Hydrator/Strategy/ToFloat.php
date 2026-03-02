@@ -14,7 +14,7 @@ use function floatval;
  *
  * @returns float
  */
-class ToFloat extends Collection implements
+final class ToFloat extends Collection implements
     StrategyInterface
 {
     #[Override]

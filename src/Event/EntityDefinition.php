@@ -11,7 +11,7 @@ use Override;
 /**
  * This event is fired each time an entity GraphQL type is created
  */
-class EntityDefinition implements
+final class EntityDefinition implements
     HasEventName
 {
     public function __construct(

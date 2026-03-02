@@ -10,6 +10,8 @@ use Doctrine\ORM\EntityManager;
 use League\Event\EventDispatcher;
 use ReflectionClass;
 
+use function assert;
+
 /**
  * This trait is used to remove complexity from the Driver class.
  * It doesn't change what the Driver does.  It just separates the container work
@@ -17,7 +19,7 @@ use ReflectionClass;
  */
 trait Services
 {
-    /** @param mixed[] $metadataArray */
+    /** @param array<string, mixed> $metadataArray */
     public function __construct(
         readonly EntityManager $entityManager,
         readonly Config|null $config = null,
@@ -52,18 +54,28 @@ trait Services
                 Type\Entity\EntityTypeContainer::class,
                 (new ReflectionClass(Type\Entity\EntityTypeContainer::class))
                     ->newLazyGhost(static function (Type\Entity\EntityTypeContainer $object) use ($self): void {
+                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
                         $object->__construct($self);
                     }),
             )
             ->set(
                 Metadata::class,
                 static function (Container $container) use ($metadata) {
+                    $entityManager = $container->get(EntityManager::class);
+                    assert($entityManager instanceof EntityManager);
+                    $config = $container->get(Config::class);
+                    assert($config instanceof Config);
+                    $globalEnable = $container->get(GlobalEnable::class);
+                    assert($globalEnable instanceof Metadata\GlobalEnable);
+                    $eventDispatcher = $container->get(EventDispatcher::class);
+                    assert($eventDispatcher instanceof EventDispatcher);
+
                     return (new Metadata\MetadataFactory(
                         $metadata,
-                        $container->get(EntityManager::class),
-                        $container->get(Config::class),
-                        $container->get(GlobalEnable::class),
-                        $container->get(EventDispatcher::class),
+                        $entityManager,
+                        $config,
+                        $globalEnable,
+                        $eventDispatcher,
                     ))->getMetadata();
                 },
             )
@@ -71,6 +83,7 @@ trait Services
                 Metadata\GlobalEnable::class,
                 (new ReflectionClass(Metadata\GlobalEnable::class))
                     ->newLazyGhost(static function (Metadata\GlobalEnable $object) use ($self): void {
+                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
                         $object->__construct(
                             $self->get(EntityManager::class),
                             $self->get(Config::class),
@@ -82,6 +95,7 @@ trait Services
                 Resolve\FieldResolver::class,
                 (new ReflectionClass(Resolve\FieldResolver::class))
                     ->newLazyGhost(static function (Resolve\FieldResolver $object) use ($self): void {
+                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
                         $object->__construct(
                             $self->get(Config::class),
                             $self->get(Type\Entity\EntityTypeContainer::class),
@@ -92,6 +106,7 @@ trait Services
                 Resolve\ResolveCollectionFactory::class,
                 (new ReflectionClass(Resolve\ResolveCollectionFactory::class))
                     ->newLazyGhost(static function (Resolve\ResolveCollectionFactory $object) use ($self): void {
+                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
                         $object->__construct(
                             $self->get(EntityManager::class),
                             $self->get(Config::class),
@@ -109,6 +124,7 @@ trait Services
                 Resolve\ResolveEntityFactory::class,
                 (new ReflectionClass(Resolve\ResolveEntityFactory::class))
                     ->newLazyGhost(static function (Resolve\ResolveEntityFactory $object) use ($self): void {
+                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
                         $object->__construct(
                             $self->get(Config::class),
                             $self->get(EntityManager::class),
@@ -123,6 +139,7 @@ trait Services
                 Filter\FilterFactory::class,
                 (new ReflectionClass(Filter\FilterFactory::class))
                     ->newLazyGhost(static function (Filter\FilterFactory $object) use ($self): void {
+                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
                         $object->__construct(
                             $self->get(Config::class),
                             $self->get(EntityManager::class),
@@ -135,6 +152,7 @@ trait Services
                 Hydrator\HydratorContainer::class,
                 (new ReflectionClass(Hydrator\HydratorContainer::class))
                     ->newLazyGhost(static function (Hydrator\HydratorContainer $object) use ($self): void {
+                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
                         $object->__construct(
                             $self->get(EntityManager::class),
                             $self->get(Type\Entity\EntityTypeContainer::class),
@@ -145,6 +163,7 @@ trait Services
                 Input\InputFactory::class,
                 (new ReflectionClass(Input\InputFactory::class))
                     ->newLazyGhost(static function (Input\InputFactory $object) use ($self): void {
+                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
                         $object->__construct(
                             $self->get(Config::class),
                             $self->get(EntityManager::class),

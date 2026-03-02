@@ -17,13 +17,14 @@ use function json_encode;
 /**
  * This class is used to create a Json type
  */
-class Json extends ScalarType
+final class Json extends ScalarType
 {
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `json` scalar type represents json data.';
 
+    /** @return array<mixed> */
     #[Override]
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): array|null
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): array
     {
         // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
@@ -35,20 +36,22 @@ class Json extends ScalarType
     }
 
     /**
-     * @return mixed[]|null
+     * @return mixed[]
      *
      * @throws TypeSerializationException
      */
     #[Override]
-    public function parseValue(mixed $value): array|null
+    public function parseValue(mixed $value): array
     {
         if (! is_string($value)) {
+            /** @psalm-suppress MixedOperand */
             throw new TypeSerializationException('JSON is not a string: ' . $value);
         }
 
+        /** @var array<mixed>|null $data */
         $data = json_decode($value, true);
 
-        if (! $data) {
+        if ($data === null) {
             throw new TypeSerializationException('Could not parse JSON data');
         }
 
@@ -56,11 +59,11 @@ class Json extends ScalarType
     }
 
     #[Override]
-    public function serialize(mixed $value): string|false
+    public function serialize(mixed $value): string
     {
         $return = json_encode($value);
 
-        if (! $return) {
+        if ($return === false) {
             throw new TypeSerializationException('Could not serialize JSON data');
         }
 

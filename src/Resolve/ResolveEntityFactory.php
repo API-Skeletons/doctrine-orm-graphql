@@ -23,7 +23,7 @@ use function count;
 /**
  * Build a resolver for entities
  */
-class ResolveEntityFactory
+final class ResolveEntityFactory
 {
     public function __construct(
         protected readonly Config $config,
@@ -37,7 +37,7 @@ class ResolveEntityFactory
 
     public function get(Entity $entity, string|null $eventName): Closure
     {
-        return function ($objectValue, array $args, $context, ResolveInfo $info) use ($entity, $eventName) {
+        return function (mixed $objectValue, array $args, mixed $context, ResolveInfo $info) use ($entity, $eventName) {
             $entityClass        = $entity->getEntityClass();
             $queryBuilderFilter = new QueryBuilderFilter();
 
@@ -46,6 +46,7 @@ class ResolveEntityFactory
                 ->from($entityClass, 'entity');
 
             if (isset($args['filter'])) {
+                /** @psalm-suppress MixedArgument */
                 $queryBuilderFilter->apply($args['filter'], $queryBuilder, $entity);
             }
 
@@ -61,7 +62,11 @@ class ResolveEntityFactory
         };
     }
 
-    /** @return mixed[] */
+    /**
+     * @return mixed[]
+     *
+     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment
+     */
     public function buildPagination(
         Entity $entity,
         QueryBuilder $queryBuilder,
@@ -69,14 +74,17 @@ class ResolveEntityFactory
         mixed ...$resolve,
     ): array {
         // Decode pagination fields
+        /** @psalm-suppress MixedArgument, MixedArrayAccess */
         $paginationFields = $this->paginationService->decodePaginationFields(
             $resolve['args']['pagination'] ?? [],
         );
 
         // Get the limit for this entity
+        /** @psalm-suppress MixedAssignment, MixedArrayAccess */
         $limit = $this->metadata[$entity->getEntityClass()]['limit'] ?: $this->config->getLimit();
 
         // Calculate offset and limit
+        /** @psalm-suppress MixedArgument */
         $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit(
             $paginationFields,
             $limit,
@@ -86,13 +94,14 @@ class ResolveEntityFactory
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
          */
-        if ($eventName) {
+        if ($eventName !== null) {
+            /** @psalm-suppress MixedArgument */
             $this->eventDispatcher->dispatch(
                 new QueryBuilderEvent(
                     $eventName,
                     $queryBuilder,
-                    (int) $offsetAndLimit['offset'],
-                    (int) $offsetAndLimit['limit'],
+                    $offsetAndLimit['offset'],
+                    $offsetAndLimit['limit'],
                     ...$resolve,
                 ),
             );
@@ -125,17 +134,22 @@ class ResolveEntityFactory
             if ($cachedResults !== null) {
                 $results = $cachedResults;
             } else {
+                /** @psalm-suppress MixedAssignment */
                 $results = $query->getResult();
+                /** @psalm-suppress MixedArgument */
                 $this->queryResultCache->set($query, $results);
             }
         } else {
+            /** @psalm-suppress MixedAssignment */
             $results = $query->getResult();
         }
 
         // Build edges
+        /** @psalm-suppress PossiblyInvalidArgument, MixedArgument */
         $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
 
         // Build cursors
+        /** @psalm-suppress MixedArgument */
         $cursors = $this->paginationService->buildCursors(
             $offsetAndLimit['offset'],
             $itemCount,

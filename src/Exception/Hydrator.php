@@ -10,7 +10,7 @@ use Throwable;
 /**
  * Thrown when hydrator operations fail
  */
-class Hydrator extends GraphQL
+final class Hydrator extends GraphQL
 {
     public function __construct(
         string $message,

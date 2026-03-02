@@ -54,6 +54,22 @@ class TimeImmutableTest extends TestCase
         $result        = $timeImmutable->parseValue('45:33:22');
     }
 
+    public function testSerializeString(): void
+    {
+        $timeImmutable = new TimeImmutable();
+        $result        = $timeImmutable->serialize('20:12:15.123456');
+
+        $this->assertEquals('20:12:15.123456', $result);
+    }
+
+    public function testSerializeNull(): void
+    {
+        $timeImmutable = new TimeImmutable();
+        $result        = $timeImmutable->serialize(null);
+
+        $this->assertNull($result);
+    }
+
     public function testBetween(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));

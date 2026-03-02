@@ -16,7 +16,7 @@ use function array_keys;
  * the results with regular field extraction. This maintains a single
  * resolution path through the FieldResolver.
  */
-class DoctrineObjectWithComputed extends DoctrineObject
+final class DoctrineObjectWithComputed extends DoctrineObject
 {
     /**
      * Map of computed field names to extraction callables
@@ -70,6 +70,7 @@ class DoctrineObjectWithComputed extends DoctrineObject
 
         // Add computed field values
         foreach ($this->computedFields as $fieldName => $extractor) {
+            /** @psalm-suppress MixedAssignment */
             $data[$fieldName] = $extractor($object);
         }
 

@@ -28,7 +28,7 @@ use function substr;
 /**
  * Build metadata for entities
  */
-class MetadataFactory extends CommonMetadataFactory
+final class MetadataFactory extends CommonMetadataFactory
 {
     public function __construct(
         protected Metadata $metadata,
@@ -91,6 +91,8 @@ class MetadataFactory extends CommonMetadataFactory
      * Using the entity class attributes, generate the metadata.
      * The buildmetadata* functions exist to simplify the buildMetadata
      * function.
+     *
+     * @param ReflectionClass<object> $reflectionClass
      */
     private function buildMetadataForEntity(ReflectionClass $reflectionClass): bool
     {
@@ -124,7 +126,7 @@ class MetadataFactory extends CommonMetadataFactory
                 'fields' => [],
                 'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                 'description' => $instance->getDescription(),
-                'typeName' => $instance->getTypeName()
+                'typeName' => $instance->getTypeName() !== null
                     ? $this->appendGroupSuffix($instance->getTypeName()) :
                     $this->getTypeName($reflectionClass->getName()),
             ];
@@ -135,6 +137,9 @@ class MetadataFactory extends CommonMetadataFactory
 
     /**
      * Build the metadata for each field in an entity based on the Attribute\Field
+     *
+     * @param ClassMetadata<object>   $entityClassMetadata
+     * @param ReflectionClass<object> $reflectionClass
      */
     private function buildMetadataForFields(
         ClassMetadata $entityClassMetadata,
@@ -169,6 +174,7 @@ class MetadataFactory extends CommonMetadataFactory
                     'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                 ];
 
+                /** @psalm-suppress MixedArrayAssignment */
                 $this->metadata[$reflectionClass->getName()]['fields'][$fieldName] = $fieldMetadata;
             }
         }
@@ -176,6 +182,8 @@ class MetadataFactory extends CommonMetadataFactory
 
     /**
      * Build the metadata for each field in an entity based on the Attribute\Association
+     *
+     * @param ReflectionClass<object> $reflectionClass
      */
     private function buildMetadataForAssociations(
         ReflectionClass $reflectionClass,
@@ -216,6 +224,7 @@ class MetadataFactory extends CommonMetadataFactory
                         Strategy\AssociationDefault::class,
                 ];
 
+                /** @psalm-suppress MixedArrayAssignment */
                 $this->metadata[$reflectionClass->getName()]['fields'][$associationName] = $associationMetadata;
             }
         }
@@ -223,6 +232,8 @@ class MetadataFactory extends CommonMetadataFactory
 
     /**
      * Build the metadata for computed fields in an entity based on ComputedField attributes
+     *
+     * @param ReflectionClass<object> $reflectionClass
      */
     private function buildMetadataForComputedFields(ReflectionClass $reflectionClass): void
     {
@@ -263,6 +274,7 @@ class MetadataFactory extends CommonMetadataFactory
 
                 // Initialize computedFields array if not exists
                 if (! isset($this->metadata[$reflectionClass->getName()]['computedFields'])) {
+                    /** @psalm-suppress MixedArrayAssignment */
                     $this->metadata[$reflectionClass->getName()]['computedFields'] = [];
                 }
 
@@ -273,6 +285,7 @@ class MetadataFactory extends CommonMetadataFactory
                     'description' => $instance->getDescription(),
                 ];
 
+                /** @psalm-suppress MixedArrayAssignment */
                 $this->metadata[$reflectionClass->getName()]['computedFields'][$fieldName] = $computedFieldMetadata;
             }
         }

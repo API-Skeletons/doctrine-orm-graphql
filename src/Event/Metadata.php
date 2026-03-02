@@ -11,7 +11,7 @@ use Override;
 /**
  * This event is fired when the metadta is created
  */
-class Metadata implements
+final class Metadata implements
     HasEventName
 {
     public function __construct(
