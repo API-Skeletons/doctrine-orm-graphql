@@ -42,7 +42,9 @@ final class FieldResolver
 
         // Proxy objects cannot hydrate by reference without loading
         if ($source instanceof Proxy) {
+            // @codeCoverageIgnoreStart
             $source->__load();
+            // @codeCoverageIgnoreEnd
         }
 
         $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
