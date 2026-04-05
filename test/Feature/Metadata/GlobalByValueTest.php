@@ -11,9 +11,11 @@ use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 
 class GlobalByValueTest extends TestCase
 {
+    #[IgnoreDeprecations]
     public function testGlobalByValueGlobalEnableFalse(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config([
@@ -57,6 +59,7 @@ class GlobalByValueTest extends TestCase
         $this->assertFalse($driver->get(Config::class)->getGlobalByValue());
     }
 
+    #[IgnoreDeprecations]
     public function testGlobalByValueFalse(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['globalByValue' => false]));

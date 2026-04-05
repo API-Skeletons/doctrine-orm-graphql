@@ -29,6 +29,7 @@ class TestCase extends PHPUnitTestCase
             paths: [__DIR__ . '/Entity'],
             isDevMode: true,
         );
+        $config->enableNativeLazyObjects(true);
 
         // database connection
         $connection = DriverManager::getConnection([
