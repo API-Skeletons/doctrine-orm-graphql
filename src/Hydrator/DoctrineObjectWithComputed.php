@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use Doctrine\Laminas\Hydrator\DoctrineObject;
+use Laminas\Hydrator\Filter\FilterProviderInterface;
 use Override;
 
+use function array_key_exists;
 use function array_keys;
+use function get_class_methods;
+use function in_array;
+use function method_exists;
 
 /**
  * Extends DoctrineObject hydrator to support computed fields
@@ -52,6 +57,57 @@ final class DoctrineObjectWithComputed extends DoctrineObject
     public function getComputedFieldNames(): array
     {
         return array_keys($this->computedFields);
+    }
+
+    /**
+     * Extract values from an object using by-value logic, with __call fallback.
+     *
+     * When neither getField() nor isField() exists as an explicit method, but the
+     * entity implements __call, the getter is invoked through __call so magic
+     * accessor patterns are honoured during extraction.
+     *
+     * @return array<string, mixed>
+     */
+    #[Override]
+    protected function extractByValue(object $object): array
+    {
+        $data = parent::extractByValue($object);
+
+        // Nothing extra to do if the entity doesn't use __call
+        if (! method_exists($object, '__call')) {
+            return $data;
+        }
+
+        $methods = get_class_methods($object);
+        $filter  = $object instanceof FilterProviderInterface
+            ? $object->getFilter()
+            : $this->filterComposite;
+
+        foreach ($this->getFieldNames() as $fieldName) {
+            if ($filter && ! $filter->filter($fieldName)) {
+                continue;
+            }
+
+            $getter        = 'get' . $this->inflector->classify($fieldName);
+            $isser         = 'is' . $this->inflector->classify($fieldName);
+            $dataFieldName = $this->computeExtractFieldName($fieldName);
+
+            // Skip fields already handled by the parent (explicit getter/isser found,
+            // or value already present in the extracted data)
+            if (
+                array_key_exists($dataFieldName, $data)
+                || in_array($getter, $methods)
+                || in_array($isser, $methods)
+            ) {
+                continue;
+            }
+
+            // Invoke getter via __call
+            /** @psalm-suppress MixedMethodCall, MixedAssignment */
+            $data[$dataFieldName] = $this->extractValue($fieldName, $object->$getter(), $object);
+        }
+
+        return $data;
     }
 
     /**
