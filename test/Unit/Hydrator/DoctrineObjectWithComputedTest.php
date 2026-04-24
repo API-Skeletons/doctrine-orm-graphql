@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Unit\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\DoctrineObjectWithComputed;
-use Doctrine\ORM\EntityManager;
-use PHPUnit\Framework\TestCase;
-use stdClass;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 
 use function strlen;
 use function strtoupper;
@@ -16,13 +15,11 @@ class DoctrineObjectWithComputedTest extends TestCase
 {
     private DoctrineObjectWithComputed $hydrator;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
-        // Create a stub entity manager for testing (not used by the hydrator methods we're testing)
-        $entityManager = $this->createStub(EntityManager::class);
+        parent::setUp();
 
-        // DoctrineObjectWithComputed extends DoctrineObject which takes EntityManager and byValue flag
-        $this->hydrator = new DoctrineObjectWithComputed($entityManager, false);
+        $this->hydrator = new DoctrineObjectWithComputed($this->getEntityManager(), false);
     }
 
     public function testHasComputedFieldReturnsFalseWhenNotRegistered(): void
@@ -58,19 +55,19 @@ class DoctrineObjectWithComputedTest extends TestCase
 
     public function testExtractIncludesComputedFields(): void
     {
-        $entity       = new stdClass();
-        $entity->name = 'Test Name';
+        $artist = $this->getEntityManager()
+            ->getRepository(Artist::class)
+            ->findOneBy(['name' => 'Grateful Dead']);
 
-        // Add computed field that transforms the name
-        $this->hydrator->addComputedField('uppercaseName', static fn ($obj) => strtoupper($obj->name));
-        $this->hydrator->addComputedField('nameLength', static fn ($obj) => strlen($obj->name));
+        $this->hydrator->addComputedField('uppercaseName', static fn ($obj) => strtoupper($obj->getName()));
+        $this->hydrator->addComputedField('nameLength', static fn ($obj) => strlen($obj->getName()));
 
-        $result = $this->hydrator->extract($entity);
+        $result = $this->hydrator->extract($artist);
 
         $this->assertArrayHasKey('uppercaseName', $result);
         $this->assertArrayHasKey('nameLength', $result);
-        $this->assertEquals('TEST NAME', $result['uppercaseName']);
-        $this->assertEquals(9, $result['nameLength']);
+        $this->assertEquals('GRATEFUL DEAD', $result['uppercaseName']);
+        $this->assertEquals(13, $result['nameLength']);
     }
 
     public function testAddComputedFieldAllowsMultipleFields(): void

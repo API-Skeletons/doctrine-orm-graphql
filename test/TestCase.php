@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use function count;
 use function date;
 use function file_get_contents;
+use function method_exists;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -29,7 +30,9 @@ class TestCase extends PHPUnitTestCase
             paths: [__DIR__ . '/Entity'],
             isDevMode: true,
         );
-        $config->enableNativeLazyObjects(true);
+        if (method_exists($config, 'enableNativeLazyObjects')) {
+            $config->enableNativeLazyObjects(true);
+        }
 
         // database connection
         $connection = DriverManager::getConnection([
