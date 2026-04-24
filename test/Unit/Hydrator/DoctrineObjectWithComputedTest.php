@@ -6,6 +6,8 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Unit\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\DoctrineObjectWithComputed;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithMagicCall;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithMagicCallAndFilterProvider;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 
 use function strlen;
@@ -78,5 +80,111 @@ class DoctrineObjectWithComputedTest extends TestCase
         $this->assertTrue($this->hydrator->hasComputedField('field1'));
         $this->assertTrue($this->hydrator->hasComputedField('field2'));
         $this->assertCount(2, $this->hydrator->getComputedFieldNames());
+    }
+
+    /**
+     * When an entity has no __call method, extractByValue returns early after
+     * the parent extraction — the __call fallback loop is never entered.
+     */
+    public function testExtractByValueEarlyReturnWhenNoMagicCall(): void
+    {
+        $hydrator = new DoctrineObjectWithComputed($this->getEntityManager(), true);
+
+        $artist = $this->getEntityManager()
+            ->getRepository(Artist::class)
+            ->findOneBy(['name' => 'Grateful Dead']);
+
+        $result = $hydrator->extract($artist);
+
+        $this->assertArrayHasKey('name', $result);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertEquals('Grateful Dead', $result['name']);
+    }
+
+    /**
+     * When an entity implements __call and a field has no explicit getter,
+     * extractByValue must invoke the getter via __call to populate the field.
+     */
+    public function testExtractByValueInvokesMagicCallForFieldsWithoutGetter(): void
+    {
+        $em       = $this->getEntityManager();
+        $hydrator = new DoctrineObjectWithComputed($em, true);
+
+        $entity = (new TestEntityWithMagicCall())
+            ->setRegularField('regular value')
+            ->setMagicField('magic value');
+        $em->persist($entity);
+        $em->flush();
+        $em->clear();
+
+        $persisted = $em->getRepository(TestEntityWithMagicCall::class)->findAll()[0];
+
+        $result = $hydrator->extract($persisted);
+
+        // regularField has an explicit getter — parent extracts it
+        $this->assertArrayHasKey('regularField', $result);
+        $this->assertEquals('regular value', $result['regularField']);
+
+        // magicField has no explicit getter — extracted via __call
+        $this->assertArrayHasKey('magicField', $result);
+        $this->assertEquals('magic value', $result['magicField']);
+    }
+
+    /**
+     * When a Laminas filter is attached to the hydrator, fields rejected by
+     * the filter must be skipped even when __call would otherwise handle them.
+     */
+    public function testExtractByValueFiltersOutMagicCallFieldWhenFilterRejects(): void
+    {
+        $em       = $this->getEntityManager();
+        $hydrator = new DoctrineObjectWithComputed($em, true);
+
+        // Reject magicField; allow everything else
+        $hydrator->addFilter(
+            'blockMagicField',
+            static fn (string $property): bool => $property !== 'magicField',
+        );
+
+        $entity = (new TestEntityWithMagicCall())
+            ->setRegularField('regular value')
+            ->setMagicField('should be filtered');
+        $em->persist($entity);
+        $em->flush();
+        $em->clear();
+
+        $persisted = $em->getRepository(TestEntityWithMagicCall::class)->findAll()[0];
+
+        $result = $hydrator->extract($persisted);
+
+        $this->assertArrayHasKey('regularField', $result);
+        $this->assertArrayNotHasKey('magicField', $result);
+    }
+
+    /**
+     * When an entity implements FilterProviderInterface, extractByValue must
+     * call $object->getFilter() (line 83) rather than reading $this->filterComposite.
+     * The entity's own filter allows all fields, so magicField is still extracted via __call.
+     */
+    public function testExtractByValueUsesEntityFilterWhenFilterProviderImplemented(): void
+    {
+        $em       = $this->getEntityManager();
+        $hydrator = new DoctrineObjectWithComputed($em, true);
+
+        $entity = (new TestEntityWithMagicCallAndFilterProvider())
+            ->setRegularField('regular value')
+            ->setMagicField('magic value');
+        $em->persist($entity);
+        $em->flush();
+        $em->clear();
+
+        $persisted = $em->getRepository(TestEntityWithMagicCallAndFilterProvider::class)->findAll()[0];
+
+        $result = $hydrator->extract($persisted);
+
+        $this->assertArrayHasKey('regularField', $result);
+        $this->assertEquals('regular value', $result['regularField']);
+
+        $this->assertArrayHasKey('magicField', $result);
+        $this->assertEquals('magic value', $result['magicField']);
     }
 }
