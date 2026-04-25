@@ -14,6 +14,8 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
 use Override;
 use ReflectionClass;
 
+use function array_keys;
+use function array_map;
 use function assert;
 use function class_implements;
 use function in_array;
@@ -76,6 +78,10 @@ final class HydratorContainer extends Container
                     /** @psalm-suppress MixedArgument, MixedArrayAccess */
                     $object->addStrategy($fieldName, $self->get($fieldMetadata['hydratorStrategy']));
                 }
+
+                // Restrict extraction to only GraphQL-exposed fields
+                /** @psalm-suppress MixedArgument */
+                $object->setAllowedFields(array_map('strval', array_keys($metadata['fields'])));
 
                 // Register computed fields
                 if (isset($metadata['computedFields'])) {
