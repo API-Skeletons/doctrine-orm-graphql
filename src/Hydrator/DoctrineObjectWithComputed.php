@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use Doctrine\Laminas\Hydrator\DoctrineObject;
+use Generator;
 use Laminas\Hydrator\Filter\FilterProviderInterface;
 use Override;
 
+use function array_flip;
 use function array_key_exists;
 use function array_keys;
 use function get_class_methods;
@@ -29,6 +31,42 @@ final class DoctrineObjectWithComputed extends DoctrineObject
      * @var array<string, callable>
      */
     private array $computedFields = [];
+
+    /**
+     * Flipped map of allowed field names for O(1) lookup.
+     * When empty, all Doctrine fields are yielded (no restriction).
+     *
+     * @var array<string, int>
+     */
+    private array $allowedFields = [];
+
+    /**
+     * Restrict extraction to only the given field names.
+     *
+     * @param array<int, string> $fieldNames
+     */
+    public function setAllowedFields(array $fieldNames): void
+    {
+        $this->allowedFields = array_flip($fieldNames);
+    }
+
+    /**
+     * Yield only the allowed subset of Doctrine field/association names.
+     * Falls back to all names when no restriction has been set.
+     *
+     * @return Generator<mixed, string, mixed, mixed>
+     */
+    #[Override]
+    public function getFieldNames(): iterable
+    {
+        foreach (parent::getFieldNames() as $fieldName) {
+            if ($this->allowedFields !== [] && ! isset($this->allowedFields[$fieldName])) {
+                continue;
+            }
+
+            yield $fieldName;
+        }
+    }
 
     /**
      * Register a computed field for extraction
