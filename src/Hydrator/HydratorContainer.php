@@ -83,6 +83,26 @@ final class HydratorContainer extends Container
                 /** @psalm-suppress MixedArgument */
                 $object->setAllowedFields(array_map('strval', array_keys($metadata['fields'])));
 
+                // Register extractorMethod fields as computed overrides
+                /** @psalm-suppress MixedArrayAccess, MixedAssignment */
+                foreach ($metadata['fields'] as $fieldName => $fieldMetadata) {
+                    /** @psalm-suppress MixedArrayAccess */
+                    $extractorMethod = $fieldMetadata['extractorMethod'] ?? null;
+                    if ($extractorMethod === null) {
+                        continue;
+                    }
+
+                    // Use alias as data key when present so FieldResolver can find it by GraphQL field name
+                    /** @psalm-suppress MixedArrayAccess */
+                    $dataKey = $fieldMetadata['alias'] ?? $fieldName;
+
+                    /** @psalm-suppress MixedArgument, MixedMethodCall */
+                    $object->addComputedField(
+                        $dataKey,
+                        static fn (object $entity): mixed => $entity->$extractorMethod(),
+                    );
+                }
+
                 // Register computed fields
                 if (isset($metadata['computedFields'])) {
                     /** @psalm-suppress MixedArrayAccess, MixedAssignment */

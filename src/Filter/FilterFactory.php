@@ -132,6 +132,11 @@ final class FilterFactory
                 continue;
             }
 
+            // Fields with extractorMethod cannot be filtered at the database level
+            if (! empty($entityMetadata['fields'][$fieldName]['extractorMethod'])) {
+                continue;
+            }
+
             $type = $this->typeContainer
                 ->get($entityMetadata['fields'][$fieldName]['type']);
 

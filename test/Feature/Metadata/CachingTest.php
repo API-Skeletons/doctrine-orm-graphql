@@ -38,7 +38,7 @@ class CachingTest extends TestCase
                 'entityClass' => 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User',
                 'byValue' => true,
                 'limit' => 0,
-                'description' => '',
+                'description' => null,
                 'excludeFilters' => [],
                 'typeName' => 'ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_User_StaticMetadata',
                 'fields' => [
@@ -48,6 +48,7 @@ class CachingTest extends TestCase
                         'type' => 'string',
                         'hydratorStrategy' => 'ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault',
                         'excludeFilters' => [],
+                        'extractorMethod' => null,
                     ],
                     'recordings' => [
                         'alias' => null,
