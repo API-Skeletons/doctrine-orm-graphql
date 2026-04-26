@@ -28,6 +28,7 @@ use function strtoupper;
 #[GraphQL\Entity(group: 'ExtractionMap', limit: 1)]
 #[GraphQL\Entity(group: 'ExtractionMapDuplicate', limit: 1)]
 #[GraphQL\Entity(group: 'computedFieldTest')]
+#[GraphQL\Entity(group: 'extractorMethodTest')]
 
 #[ORM\Entity]
 class Artist
@@ -45,6 +46,7 @@ class Artist
     #[GraphQL\Field(group: 'ExtractionMap', alias: 'title')]
     #[GraphQL\Field(group: 'ExtractionMapDuplicate', alias: 'duplicate')]
     #[GraphQL\Field(group: 'computedFieldTest')]
+    #[GraphQL\Field(group: 'extractorMethodTest', extractorMethod: 'getNameUppercased')]
 
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
@@ -57,6 +59,7 @@ class Artist
     #[GraphQL\Field(group: 'AttributeLimit')]
     #[GraphQL\Field(group: 'ExtractionMapDuplicate', alias: 'duplicate')]
     #[GraphQL\Field(group: 'computedFieldTest')]
+    #[GraphQL\Field(group: 'extractorMethodTest')]
 
     #[ORM\Id]
     #[ORM\Column(type: 'bigint')]
@@ -154,6 +157,14 @@ class Artist
     public function getPerformances(): Collection
     {
         return $this->performances;
+    }
+
+    /**
+     * Returns name uppercased — used as extractorMethod target in extractorMethodTest group
+     */
+    public function getNameUppercased(): string
+    {
+        return strtoupper($this->name);
     }
 
     /**

@@ -172,6 +172,7 @@ final class MetadataFactory extends CommonMetadataFactory
                     'hydratorStrategy' => $instance->getHydratorStrategy() ??
                         $this->getDefaultStrategy($entityClassMetadata->getTypeOfField($fieldName)),
                     'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
+                    'extractorMethod' => $instance->getExtractorMethod(),
                 ];
 
                 /** @psalm-suppress MixedArrayAssignment */

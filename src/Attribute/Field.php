@@ -27,6 +27,7 @@ final class Field
         private readonly string|null $hydratorStrategy = null,
         private readonly array $excludeFilters = [],
         private readonly array $includeFilters = [],
+        private readonly string|null $extractorMethod = null,
     ) {
     }
 
@@ -53,5 +54,10 @@ final class Field
     public function getType(): string|null
     {
         return $this->type;
+    }
+
+    public function getExtractorMethod(): string|null
+    {
+        return $this->extractorMethod;
     }
 }
