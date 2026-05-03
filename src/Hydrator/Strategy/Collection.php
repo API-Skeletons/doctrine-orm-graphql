@@ -157,11 +157,10 @@ abstract class Collection implements CollectionStrategyInterface
      */
     protected function getCollectionFromObjectByReference(): DoctrineCollection
     {
-        $object       = $this->getObject();
+        $object = $this->getObject();
+        /** @psalm-suppress UndefinedDocblockClass */
         $refl         = $this->getClassMetadata()->getReflectionClass();
         $reflProperty = $refl->getProperty($this->getCollectionName());
-
-        $reflProperty->setAccessible(true);
 
         /** @psalm-suppress MixedReturnStatement */
         return $reflProperty->getValue($object);

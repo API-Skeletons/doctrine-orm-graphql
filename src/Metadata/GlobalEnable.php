@@ -41,6 +41,7 @@ final class GlobalEnable extends MetadataFactory
             $this->metadata[$entityClass] = [
                 'entityClass' => $entityClass,
                 'byValue' => $byValue,
+                'magicCall' => false,
                 'limit' => 0,
                 'fields' => [],
                 'excludeFilters' => [],

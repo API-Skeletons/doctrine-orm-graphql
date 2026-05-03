@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use Doctrine\Laminas\Hydrator\DoctrineObject;
+use Doctrine\ORM\EntityManager;
 use Laminas\Hydrator\Filter\FilterProviderInterface;
 use Override;
 
@@ -29,6 +30,11 @@ final class DoctrineObjectWithComputed extends DoctrineObject
      * @var array<string, callable>
      */
     private array $computedFields = [];
+
+    public function __construct(EntityManager $objectManager, bool $byValue = true, private bool $magicCall = false)
+    {
+        parent::__construct($objectManager, $byValue);
+    }
 
     /**
      * Register a computed field for extraction
@@ -60,11 +66,11 @@ final class DoctrineObjectWithComputed extends DoctrineObject
     }
 
     /**
-     * Extract values from an object using by-value logic, with __call fallback.
+     * Extract values from an object using by-value logic, with optional __call fallback.
      *
-     * When neither getField() nor isField() exists as an explicit method, but the
-     * entity implements __call, the getter is invoked through __call so magic
-     * accessor patterns are honoured during extraction.
+     * When magicCall is enabled and the entity implements __call, getters that have no
+     * explicit method are invoked through __call so magic accessor patterns are honoured
+     * during extraction. magicCall must be explicitly enabled via the Entity attribute.
      *
      * @return array<string, mixed>
      */
@@ -73,8 +79,8 @@ final class DoctrineObjectWithComputed extends DoctrineObject
     {
         $data = parent::extractByValue($object);
 
-        // Nothing extra to do if the entity doesn't use __call
-        if (! method_exists($object, '__call')) {
+        // __call fallback is opt-in and only applies when the entity has __call
+        if (! $this->magicCall || ! method_exists($object, '__call')) {
             return $data;
         }
 

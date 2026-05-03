@@ -56,11 +56,14 @@ final class HydratorContainer extends Container
                 $metadata = $entity->getMetadata();
                 /** @psalm-suppress MixedArrayAccess, MixedAssignment */
                 $byValue = $metadata['byValue'];
+                /** @psalm-suppress MixedArrayAccess, MixedAssignment */
+                $magicCall = $metadata['magicCall'] ?? false;
 
                 /** @psalm-suppress DirectConstructorCall, MixedArgument */
                 $object->__construct(
                     $entityManager,
                     $byValue,
+                    $magicCall,
                 );
 
                 // Create field strategy and assign to hydrator

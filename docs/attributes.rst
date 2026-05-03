@@ -69,6 +69,25 @@ data from Doctrine entities.  The hydrator library is
   More information here:
   `By Value and By Reference <https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.0/by-value-by-reference.html#by-value-and-by-reference>`_
 
+* ``magicCall`` - Default is ``false``.  When set to ``true`` and ``byValue``
+  is also ``true``, the hydrator will fall back to PHP's ``__call`` magic
+  method to extract fields that have no explicit getter (``getField()``) or
+  isser (``isField()``).  Enable this only for entities that intentionally
+  use ``__call`` to handle property access, such as those backed by a
+  dynamic data source or a legacy accessor pattern.
+
+  .. code-block:: php
+
+    #[GraphQL\Entity(magicCall: true)]
+    class DynamicEntity
+    {
+        // Fields without explicit getters are accessed via __call
+        public function __call(string $name, array $args): mixed
+        {
+            // custom accessor logic
+        }
+    }
+
 
 Field
 =====

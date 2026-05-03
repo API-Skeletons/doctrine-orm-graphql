@@ -56,7 +56,7 @@
             "vendor/bin/phpstan analyze src --level=8",
             "vendor/bin/phpunit"
         ],
-        "coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html=coverage-report"
+        "coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text"
     },
     "config": {
         "allow-plugins": {
