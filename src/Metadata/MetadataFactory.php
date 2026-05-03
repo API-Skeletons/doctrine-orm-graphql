@@ -122,6 +122,7 @@ final class MetadataFactory extends CommonMetadataFactory
             $this->metadata[$reflectionClass->getName()] = [
                 'entityClass' => $reflectionClass->getName(),
                 'byValue' => $this->config->getGlobalByValue() ?? $instance->getByValue(),
+                'magicCall' => $instance->getMagicCall(),
                 'limit' => $instance->getLimit(),
                 'fields' => [],
                 'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
@@ -220,8 +221,7 @@ final class MetadataFactory extends CommonMetadataFactory
                     'description' => $instance->getDescription(),
                     'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                     'eventName' => $instance->getEventName(),
-                    'hydratorStrategy' => $instance->getHydratorStrategy() ??
-                        Strategy\AssociationDefault::class,
+                    'hydratorStrategy' => $instance->getHydratorStrategy() ?? Strategy\AssociationDefault::class,
                 ];
 
                 /** @psalm-suppress MixedArrayAssignment */

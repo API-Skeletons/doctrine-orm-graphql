@@ -102,13 +102,37 @@ class DoctrineObjectWithComputedTest extends TestCase
     }
 
     /**
+     * When magicCall is false (default), __call is never used even when the
+     * entity implements it — fields without an explicit getter are simply absent.
+     */
+    public function testExtractByValueDoesNotUseMagicCallWhenDisabled(): void
+    {
+        $em       = $this->getEntityManager();
+        $hydrator = new DoctrineObjectWithComputed($em, true, false);
+
+        $entity = (new TestEntityWithMagicCall())
+            ->setRegularField('regular value')
+            ->setMagicField('magic value');
+        $em->persist($entity);
+        $em->flush();
+        $em->clear();
+
+        $persisted = $em->getRepository(TestEntityWithMagicCall::class)->findAll()[0];
+
+        $result = $hydrator->extract($persisted);
+
+        $this->assertArrayHasKey('regularField', $result);
+        $this->assertArrayNotHasKey('magicField', $result);
+    }
+
+    /**
      * When an entity implements __call and a field has no explicit getter,
      * extractByValue must invoke the getter via __call to populate the field.
      */
     public function testExtractByValueInvokesMagicCallForFieldsWithoutGetter(): void
     {
         $em       = $this->getEntityManager();
-        $hydrator = new DoctrineObjectWithComputed($em, true);
+        $hydrator = new DoctrineObjectWithComputed($em, true, true);
 
         $entity = (new TestEntityWithMagicCall())
             ->setRegularField('regular value')
@@ -137,7 +161,7 @@ class DoctrineObjectWithComputedTest extends TestCase
     public function testExtractByValueFiltersOutMagicCallFieldWhenFilterRejects(): void
     {
         $em       = $this->getEntityManager();
-        $hydrator = new DoctrineObjectWithComputed($em, true);
+        $hydrator = new DoctrineObjectWithComputed($em, true, true);
 
         // Reject magicField; allow everything else
         $hydrator->addFilter(
@@ -168,7 +192,7 @@ class DoctrineObjectWithComputedTest extends TestCase
     public function testExtractByValueUsesEntityFilterWhenFilterProviderImplemented(): void
     {
         $em       = $this->getEntityManager();
-        $hydrator = new DoctrineObjectWithComputed($em, true);
+        $hydrator = new DoctrineObjectWithComputed($em, true, true);
 
         $entity = (new TestEntityWithMagicCallAndFilterProvider())
             ->setRegularField('regular value')

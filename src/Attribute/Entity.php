@@ -27,6 +27,7 @@ final class Entity
         private readonly string|null $typeName = null,
         private readonly array $excludeFilters = [],
         private readonly array $includeFilters = [],
+        private readonly bool $magicCall = false,
     ) {
     }
 
@@ -53,5 +54,10 @@ final class Entity
     public function getTypeName(): string|null
     {
         return $this->typeName;
+    }
+
+    public function getMagicCall(): bool
+    {
+        return $this->magicCall;
     }
 }
