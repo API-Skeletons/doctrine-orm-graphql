@@ -157,7 +157,10 @@ abstract class Collection implements CollectionStrategyInterface
      */
     protected function getCollectionFromObjectByReference(): DoctrineCollection
     {
-        $object       = $this->getObject();
+        $object = $this->getObject();
+        // Psalm does not understand the ReflectionClass<covariant T> return
+        // type of Doctrine\Persistence\Mapping\ClassMetadata::getReflectionClass()
+        /** @psalm-suppress UndefinedDocblockClass */
         $refl         = $this->getClassMetadata()->getReflectionClass();
         $reflProperty = $refl->getProperty($this->getCollectionName());
 

@@ -136,6 +136,17 @@ trait Services
                     }),
             )
             ->set(
+                Resolve\ResolveDbalFactory::class,
+                (new ReflectionClass(Resolve\ResolveDbalFactory::class))
+                    ->newLazyGhost(static function (Resolve\ResolveDbalFactory $object) use ($self): void {
+                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                        $object->__construct(
+                            $self->get(Config::class),
+                            $self->get(Pagination\PaginationService::class),
+                        );
+                    }),
+            )
+            ->set(
                 Filter\FilterFactory::class,
                 (new ReflectionClass(Filter\FilterFactory::class))
                     ->newLazyGhost(static function (Filter\FilterFactory $object) use ($self): void {
