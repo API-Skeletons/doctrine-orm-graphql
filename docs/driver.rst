@@ -208,6 +208,96 @@ custom event name to fire for the entity definition event.
     ]);
 
 
+dbalCompleteConnection()
+------------------------
+
+This is a short cut to using dbalConnection(), pagination(), and dbalResolve().
+There are two parameters:
+
+1. A GraphQL ``ObjectType`` describing one row of the result, required,
+2. A ``Doctrine\DBAL\Query\QueryBuilder``, required.
+
+  .. code-block:: php
+
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+
+    $driver = new Driver($this->getEntityManager());
+
+    $queryBuilder = $entityManager->getConnection()->createQueryBuilder()
+        ->select('id', 'name')
+        ->from('artist')
+        ->orderBy('name', 'ASC');
+
+    $artistRow = new ObjectType([
+        'name' => 'artistRow',
+        'fields' => [
+            'id' => Type::int(),
+            'name' => Type::string(),
+        ],
+    ]);
+
+    $schema = new Schema([
+        'query' => new ObjectType([
+            'name' => 'query',
+            'fields' => [
+                'artistRows' => $driver->dbalCompleteConnection($artistRow, $queryBuilder),
+            ],
+        ]),
+    ]);
+
+
+dbalConnection() and dbalResolve()
+----------------------------------
+
+These functions implement the
+`GraphQL Complete Connection Model <https://graphql.org/learn/pagination/#complete-connection-model>`_
+for a
+`DBAL QueryBuilder <https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/query-builder.html>`_.
+They are for queries which are not backed by an entity such as reports and
+aggregates.
+
+The ``dbalConnection`` function takes a GraphQL ``ObjectType`` describing one
+row of the result and returns that type wrapped in a connection.  The
+``dbalResolve`` function takes a ``Doctrine\DBAL\Query\QueryBuilder`` and
+returns the resolve closure for that connection.  The ``pagination`` argument
+must be added to the args.
+
+  .. code-block:: php
+
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+
+    $driver = new Driver($this->getEntityManager());
+
+    $schema = new Schema([
+        'query' => new ObjectType([
+            'name' => 'query',
+            'fields' => [
+                'artistRows' => [
+                    'type' => $driver->dbalConnection($artistRow),
+                    'args' => [
+                        'pagination' => $driver->pagination(),
+                    ],
+                    'resolve' => $driver->dbalResolve($queryBuilder),
+                ],
+            ],
+        ]),
+    ]);
+
+When the query is resolved the QueryBuilder is given the offset and limit
+calculated from the ``pagination`` argument.
+
+Rows are returned as associative arrays so the fields of the given type are
+resolved by their column name or alias.  Filters are not available because
+there is no entity metadata to build them from.  The QueryBuilder is cloned
+for each resolution so it is not modified by a query.
+
+The ``totalCount`` is computed by replacing the select of the QueryBuilder
+with ``COUNT(*)``.  A QueryBuilder using ``GROUP BY`` or ``DISTINCT`` will not
+report the correct ``totalCount``.
+
+The hard ``limit`` from the ``Config`` applies to these functions.
+
+
 filter()
 --------
 

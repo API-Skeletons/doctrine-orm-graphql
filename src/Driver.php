@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeNotFound as TypeNotFoundException;
 use Closure;
+use Doctrine\DBAL\Query\QueryBuilder as DbalQueryBuilder;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
@@ -118,6 +119,55 @@ final class Driver extends Container
         assert($entity instanceof Type\Entity\Entity);
 
         return $resolveEntityFactory->get($entity, $eventName);
+    }
+
+    /**
+     * Return a connection wrapper for a type resolved from a DBAL QueryBuilder.
+     * Used in conjunction with dbalResolve()
+     *
+     * @throws Error
+     */
+    public function dbalConnection(ObjectType $type): ObjectType
+    {
+        $typeContainer = $this->get(Type\TypeContainer::class);
+        assert($typeContainer instanceof Type\TypeContainer);
+
+        $connection = $typeContainer->build(Type\Connection::class, $type->name, $type);
+        assert($connection instanceof ObjectType);
+
+        return $connection;
+    }
+
+    /**
+     * Resolve a connection from a DBAL QueryBuilder.  The QueryBuilder is
+     * given the offset and limit calculated from the pagination argument.
+     * Used in conjunction with dbalConnection()
+     *
+     * @throws Error
+     */
+    public function dbalResolve(DbalQueryBuilder $queryBuilder): Closure
+    {
+        $resolveDbalFactory = $this->get(Resolve\ResolveDbalFactory::class);
+        assert($resolveDbalFactory instanceof Resolve\ResolveDbalFactory);
+
+        return $resolveDbalFactory->get($queryBuilder);
+    }
+
+    /**
+     * Return an array defining a GraphQL endpoint for a DBAL QueryBuilder.
+     * This is a short cut to using dbalConnection(), pagination(), and dbalResolve().
+     *
+     * @return mixed[]
+     *
+     * @throws Error
+     */
+    public function dbalCompleteConnection(ObjectType $type, DbalQueryBuilder $queryBuilder): array
+    {
+        return [
+            'type' => $this->dbalConnection($type),
+            'args' => ['pagination' => $this->pagination()],
+            'resolve' => $this->dbalResolve($queryBuilder),
+        ];
     }
 
     /**

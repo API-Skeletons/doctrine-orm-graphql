@@ -220,8 +220,7 @@ final class MetadataFactory extends CommonMetadataFactory
                     'description' => $instance->getDescription(),
                     'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
                     'eventName' => $instance->getEventName(),
-                    'hydratorStrategy' => $instance->getHydratorStrategy() ??
-                        Strategy\AssociationDefault::class,
+                    'hydratorStrategy' => $instance->getHydratorStrategy() ?? Strategy\AssociationDefault::class,
                 ];
 
                 /** @psalm-suppress MixedArrayAssignment */

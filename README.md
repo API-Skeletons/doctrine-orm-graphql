@@ -13,11 +13,11 @@ GraphQL Type Driver for Doctrine ORM
 [![psalm](https://img.shields.io/badge/psalm-level%201-brightgreen.svg)](https://img.shields.io/badge/psalm-level%201-brightgreen.svg)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
 
-    GraphQL, with types so neat,
-    Felt a longing, a database heat.
-    "I'd love," it would sigh,
-    "To be SQL, oh my!
-    With relations and joins, oh so sweet!"
+    An entity, marked up with care,
+    Gains fields that a schema can share;
+　　The driver resolves,
+　　A Connection evolves,
+    With edges and cursors to spare.
 
 This library provides a GraphQL driver for Doctrine ORM for use with the [webonyx/graphql-php](https://github.com/webonyx/graphql-php) library.  
 It **does not** try to redefine how that excellent library operates.  Instead, it creates types to be used 
@@ -54,6 +54,7 @@ Features
 * [Filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
 * [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries, entity types and more
 * [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#group)
+* [DBAL QueryBuilder Complete Connection Model(https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html)
 
 
 Technical Features
@@ -285,7 +286,7 @@ Zend Framework 2.  It was migrated to the framework agnostic
 https://packagist.org/packages/api-skeletons/doctrine-graphql but the name of that repository was incorrect 
 because it did not specify ORM only.  So this repository was created and the others were abandoned.
 
-This was written for the [Live Concert Database](https://lcdb.org)
+This was written for [graphql.etreedb.org](https://graphql.etreedb.org)
 
 License
 -------
