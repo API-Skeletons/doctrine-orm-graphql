@@ -54,7 +54,7 @@ Features
 * [Filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
 * [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries, entity types and more
 * [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#group)
-* [DBAL QueryBuilder Complete Connection Model(https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html)
+* [DBAL QueryBuilder Complete Connection Model](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#dbalcompleteconnection)
 
 
 Technical Features
