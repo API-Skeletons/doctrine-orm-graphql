@@ -15,8 +15,8 @@ GraphQL Type Driver for Doctrine ORM
 
     An entity, marked up with care,
     Gains fields that a schema can share;
-　　The driver resolves,
-　　A Connection evolves,
+    The driver resolves,
+    A Connection evolves,
     With edges and cursors to spare.
 
 This library provides a GraphQL driver for Doctrine ORM for use with the [webonyx/graphql-php](https://github.com/webonyx/graphql-php) library.  
