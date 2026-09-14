@@ -66,14 +66,25 @@ all resolve parameters:
 
 * ``getQueryBuilder`` - Will return a query builder with the user specified
   filters already applied.
-* ``getOffset`` - Will return the offset for the query.  The QueryBuilder passed
-  to the event is not modified with the offset and limit yet.  So if you have a
-  large dataset and need to fetch it within the event, you may use this method
-  to get the offset.
-* ``getLimit`` - Will return the limit for the query.  The QueryBuilder passed
-  to the event is not modified with the offset and limit yet.  So if you have a
-  large dataset and need to fetch it within the event, you may use this method
-  to get the limit.
+* ``getRequestedOffset`` - Will return the offset the client asked for.  The
+  QueryBuilder passed to the event is not modified with the offset and limit
+  yet, so if you have a large dataset and need to fetch it within the event you
+  may use this method to get the offset.
+* ``getRequestedLimit`` - Will return the page size the client asked for, capped
+  by the configured ``limit``.
+
+.. note::
+
+    The event is dispatched **before** the rows are counted so that a listener
+    may modify the QueryBuilder and have that modification reflected in both
+    ``totalCount`` and the rows returned.  The offset and limit are therefore
+    the window the client requested, not the window finally queried.
+
+    A backward request - ``last`` without a ``before`` cursor - reports an
+    offset of zero because its real offset is the row count minus ``last``, and
+    that count has not been taken when the event is dispatched.  Read
+    ``getArgs()['pagination']`` if you need to tell a backward request apart
+    from a request for the first page.
 
 Association QueryBuilder Event
 ==============================
@@ -131,8 +142,8 @@ The ``QueryBuilder`` event for associations has the same methods as the
 QueryBuilder event for entity queries (see above):
 
 * ``getQueryBuilder`` - Returns a QueryBuilder with user-specified filters already applied
-* ``getOffset`` - Returns the offset for the query
-* ``getLimit`` - Returns the limit for the query
+* ``getRequestedOffset`` - Returns the offset the client asked for
+* ``getRequestedLimit`` - Returns the page size the client asked for
 * Plus getters for all resolve parameters (getSource, getArgs, getContext, getInfo)
 
 Performance Benefits

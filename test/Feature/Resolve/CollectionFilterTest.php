@@ -324,11 +324,12 @@ class CollectionFilterTest extends TestCase
     public function testNegativeOffset(): void
     {
         $query  = '{ artist { edges { node { performances ( pagination: { first: 3, after: "LTU=" } ) { edges { node { id } } } } } } }';
-        $result = GraphQL::executeQuery($this->schema, $query);
+        $result = GraphQL::executeQuery($this->schema, $query)->toArray();
 
-        $data = $result->toArray()['data'];
-
-        $this->assertEquals(5, count($data['artist']['edges'][0]['node']['performances']['edges']));
-        $this->assertEquals(1, $data['artist']['edges'][0]['node']['performances']['edges'][0]['node']['id']);
+        $this->assertArrayHasKey('errors', $result);
+        $this->assertEquals(
+            'Pagination argument "after" is not a valid cursor.',
+            $result['errors'][0]['message'],
+        );
     }
 }

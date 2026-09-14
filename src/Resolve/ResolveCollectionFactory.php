@@ -16,6 +16,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Closure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
@@ -166,65 +167,56 @@ final class ResolveCollectionFactory
             $limit = $this->config->getLimit();
         }
 
-        // Calculate offset and limit
-        /** @psalm-suppress MixedArgument */
-        $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit(
-            $paginationFields,
-            $limit,
-        );
-
         /**
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
+         *
+         * The event is dispatched before the rows are counted so a listener
+         * may modify the QueryBuilder.  It therefore carries the requested
+         * offset and limit rather than the final ones.
          */
         if ($eventName !== null) {
+            /** @psalm-suppress MixedArgument */
+            $requested = $this->paginationService->calculateRequestedOffsetAndLimit(
+                $paginationFields,
+                $limit,
+            );
+
             /** @psalm-suppress MixedArgument */
             $this->eventDispatcher->dispatch(
                 new QueryBuilderEvent(
                     $eventName,
                     $queryBuilder,
-                    $offsetAndLimit['offset'],
-                    $offsetAndLimit['limit'],
+                    $requested['offset'],
+                    $requested['limit'],
                     ...$resolve,
                 ),
             );
         }
 
-        if ($offsetAndLimit['offset']) {
-            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
-        }
+        // The rows must be counted before the offset and limit can be resolved
+        // Paginator is deprecated as of ORM 3.7 in favour of OffsetPaginator, which
+        // does not exist in ORM 2.x or ORM < 3.7. Keep Paginator until those are dropped.
+        /** @psalm-suppress DeprecatedClass */
+        $itemCount = (new Paginator($queryBuilder->getQuery()))->count();
 
-        if ($offsetAndLimit['limit']) {
+        // Calculate offset and limit
+        /** @psalm-suppress MixedArgument */
+        $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit(
+            $paginationFields,
+            $limit,
+            $itemCount,
+        );
+
+        // A limit of zero cannot match a row so the query is not executed
+        $results = [];
+
+        if ($offsetAndLimit['limit'] > 0) {
+            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
             $queryBuilder->setMaxResults($offsetAndLimit['limit']);
-        }
 
-        // Get paginator to count items
-        $paginator = new Paginator($queryBuilder->getQuery());
-        $itemCount = $paginator->count();
-
-        // Rebuild paginator if needed for 'last' without 'before'
-        if ($paginationFields['last'] && ! $paginationFields['before']) {
-            $offsetAndLimit['offset'] = $itemCount - $paginationFields['last'];
-            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
-            $paginator = new Paginator($queryBuilder->getQuery());
-        }
-
-        // Get results (with cache if enabled)
-        $query = $paginator->getQuery();
-
-        if ($this->config->getUseQueryResultCache()) {
-            $cachedResults = $this->queryResultCache->get($query);
-            if ($cachedResults !== null) {
-                $results = $cachedResults;
-            } else {
-                /** @psalm-suppress MixedAssignment */
-                $results = $query->getResult();
-                /** @psalm-suppress MixedArgument */
-                $this->queryResultCache->set($query, $results);
-            }
-        } else {
             /** @psalm-suppress MixedAssignment */
-            $results = $query->getResult();
+            $results = $this->getResults($queryBuilder);
         }
 
         // Build edges
@@ -235,7 +227,6 @@ final class ResolveCollectionFactory
         /** @psalm-suppress MixedArgument */
         $cursors = $this->paginationService->buildCursors(
             $offsetAndLimit['offset'],
-            $itemCount,
             count($results),
         );
 
@@ -244,6 +235,36 @@ final class ResolveCollectionFactory
             $edges,
             $cursors,
             $itemCount,
+            $offsetAndLimit['offset'],
         );
+    }
+
+    /**
+     * Fetch the rows for the QueryBuilder, using the query result cache when enabled
+     *
+     * @return mixed[]
+     */
+    private function getResults(QueryBuilder $queryBuilder): array
+    {
+        $query = $queryBuilder->getQuery();
+
+        if (! $this->config->getUseQueryResultCache()) {
+            /** @psalm-suppress MixedReturnStatement */
+            return $query->getResult();
+        }
+
+        $cachedResults = $this->queryResultCache->get($query);
+
+        if ($cachedResults !== null) {
+            return $cachedResults;
+        }
+
+        /** @psalm-suppress MixedAssignment */
+        $results = $query->getResult();
+        /** @psalm-suppress MixedArgument */
+        $this->queryResultCache->set($query, $results);
+
+        /** @psalm-suppress MixedReturnStatement */
+        return $results;
     }
 }

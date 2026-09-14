@@ -274,11 +274,12 @@ class PaginationTest extends TestCase
         ]);
 
         $query  = '{ performance ( pagination: { first: 3, after: "LTU=" } ) { edges { node { id } } } }';
-        $result = GraphQL::executeQuery($schema, $query);
+        $result = GraphQL::executeQuery($schema, $query)->toArray();
 
-        $data = $result->toArray()['data'];
-
-        $this->assertEquals(10, count($data['performance']['edges']));
-        $this->assertEquals(1, $data['performance']['edges'][0]['node']['id']);
+        $this->assertArrayHasKey('errors', $result);
+        $this->assertEquals(
+            'Pagination argument "after" is not a valid cursor.',
+            $result['errors'][0]['message'],
+        );
     }
 }

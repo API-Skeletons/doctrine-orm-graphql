@@ -552,8 +552,8 @@ class ResolveCollectionFactoryTest extends TestCase
 
                 // Verify event has expected properties
                 $this->assertInstanceOf(QueryBuilder::class, $event->getQueryBuilder());
-                $this->assertIsInt($event->getOffset());
-                $this->assertIsInt($event->getLimit());
+                $this->assertIsInt($event->getRequestedOffset());
+                $this->assertIsInt($event->getRequestedLimit());
             },
         );
 
