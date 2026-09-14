@@ -111,6 +111,9 @@ final class ResolveEntityFactory
         }
 
         // The rows must be counted before the offset and limit can be resolved
+        // Paginator is deprecated as of ORM 3.7 in favour of OffsetPaginator, which
+        // does not exist in ORM 2.x or ORM < 3.7. Keep Paginator until those are dropped.
+        /** @psalm-suppress DeprecatedClass */
         $itemCount = (new Paginator($queryBuilder->getQuery()))->count();
 
         // Calculate offset and limit
