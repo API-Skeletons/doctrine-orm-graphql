@@ -11,6 +11,11 @@ use Override;
 
 /**
  * This event is fired when the QueryBuilder is created for an entity
+ *
+ * The event is dispatched before the rows are counted so that a listener may
+ * modify the QueryBuilder and have that modification reflected in both the
+ * total count and the rows returned.  The offset and limit it carries are
+ * therefore the window the client requested, not the window finally queried.
  */
 final class QueryBuilder implements
     HasEventName
@@ -19,8 +24,8 @@ final class QueryBuilder implements
     public function __construct(
         protected readonly string $eventName,
         protected readonly DoctrineQueryBuilder $queryBuilder,
-        protected readonly int $offset,
-        protected readonly int $limit,
+        protected readonly int $requestedOffset,
+        protected readonly int $requestedLimit,
         protected readonly mixed $objectValue,
         protected readonly array $args,
         protected readonly mixed $context,
@@ -39,14 +44,25 @@ final class QueryBuilder implements
         return $this->queryBuilder;
     }
 
-    public function getOffset(): int
+    /**
+     * The offset the client asked for
+     *
+     * A backward request - `last` without a `before` cursor - reports zero
+     * because its offset depends on a row count which has not been taken when
+     * this event is dispatched.  Read `getArgs()['pagination']` to tell a
+     * backward request from a request for the first page.
+     */
+    public function getRequestedOffset(): int
     {
-        return $this->offset;
+        return $this->requestedOffset;
     }
 
-    public function getLimit(): int
+    /**
+     * The page size the client asked for, capped by the configured limit
+     */
+    public function getRequestedLimit(): int
     {
-        return $this->limit;
+        return $this->requestedLimit;
     }
 
     public function getObjectValue(): mixed

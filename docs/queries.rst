@@ -195,6 +195,36 @@ For the previous page, you would add the startCursor from the current page as th
     }
   }
 
+Combining the arguments
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The four arguments narrow the same range and may be combined freely.  The
+range starts as every row the query matches, then
+
+* ``after`` moves the start of the range past the cursor it names;
+* ``before`` moves the end of the range to the cursor it names;
+* ``first`` moves the end of the range to ``first`` rows after the start;
+* ``last`` moves the start of the range to ``last`` rows before the end.
+
+No argument is discarded when another is present, so
+``{ after: "cursor", before: "cursor" }`` returns the rows between the two
+cursors.  A range which cannot match a row, such as
+``{ before: "<the first cursor>" }``, returns an empty ``edges`` list rather
+than a full page.  An empty page has no first or last node, so
+``pageInfo.startCursor`` and ``pageInfo.endCursor`` are both null.
+
+The configured ``limit`` remains a hard cap.  A request for more rows than the
+limit allows is truncated: a forward request keeps the start of its range and a
+backward (``last``) request keeps the end.
+
+Invalid arguments
+^^^^^^^^^^^^^^^^^
+
+``first`` and ``last`` must be non-negative integers and ``after`` and
+``before`` must be cursors taken from a previous result.  A negative count or a
+cursor which cannot be decoded is reported to the client as a GraphQL error
+rather than silently ignored.
+
 .. role:: raw-html(raw)
    :format: html
 

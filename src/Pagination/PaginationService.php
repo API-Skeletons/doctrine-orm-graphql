@@ -4,82 +4,157 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Pagination;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Pagination as PaginationException;
+
 use function base64_decode;
 use function base64_encode;
+use function count;
+use function ctype_digit;
+use function is_int;
+use function is_string;
+use function max;
+use function min;
 
 /**
- * Shared pagination logic for entities and collections
+ * Shared pagination logic for entities, collections and DBAL queries
+ *
+ * Cursors are the base64 encoded, zero based index of a row within the full
+ * result set.  The `after` cursor is exclusive and the `before` cursor is
+ * exclusive, matching the GraphQL Complete Connection Model.
  */
 final class PaginationService
 {
     /**
-     * Decode pagination fields (after/before cursors)
+     * Decode the pagination argument into integers
+     *
+     * A field which was not supplied is returned as null so that a cursor for
+     * index zero may be distinguished from an absent argument.  The `after`
+     * value is returned as the index of the first row to return, which is one
+     * past the cursor it was decoded from.
      *
      * @param array<string, mixed> $pagination
      *
-     * @return array<string, int>
+     * @return array{first: int|null, last: int|null, before: int|null, after: int|null}
+     *
+     * @throws PaginationException When an argument is negative or a cursor cannot be decoded.
      */
     public function decodePaginationFields(array $pagination): array
     {
         $paginationFields = [
-            'first'  => 0,
-            'last'   => 0,
-            'before' => 0,
-            'after'  => 0,
+            'first'  => null,
+            'last'   => null,
+            'before' => null,
+            'after'  => null,
         ];
 
-        /** @psalm-suppress MixedAssignment */
-        foreach ($pagination as $field => $value) {
-            $paginationFields[$field] = (int) $value;
-
-            if ($field === 'after') {
-                $paginationFields[$field] = (int) base64_decode((string) $value, true) + 1;
-            }
-
-            if ($field !== 'before') {
+        foreach (['first', 'last'] as $field) {
+            if (! isset($pagination[$field])) {
                 continue;
             }
 
-            $paginationFields[$field] = (int) base64_decode((string) $value, true);
+            $paginationFields[$field] = $this->decodeCount($field, $pagination[$field]);
+        }
+
+        if (isset($pagination['after'])) {
+            $paginationFields['after'] = $this->decodeCursor('after', $pagination['after']) + 1;
+        }
+
+        if (isset($pagination['before'])) {
+            $paginationFields['before'] = $this->decodeCursor('before', $pagination['before']);
         }
 
         return $paginationFields;
     }
 
     /**
-     * Calculate offset and limit from pagination fields
+     * Resolve the pagination arguments into an offset and a limit
      *
-     * @param array<string, int> $paginationFields
+     * The GraphQL Complete Connection Model algorithm is applied to the range
+     * [0, $itemCount): `after` and `before` narrow the range, then `first`
+     * narrows it from the end and `last` narrows it from the start.  Every
+     * combination of arguments is therefore well defined and no argument is
+     * silently discarded.
      *
-     * @return array<string, int>
+     * A limit of zero means the request cannot match any row and the query
+     * should not be executed.
+     *
+     * @param array{first: int|null, last: int|null, before: int|null, after: int|null} $paginationFields
+     *
+     * @return array{offset: int, limit: int}
      */
     public function calculateOffsetAndLimit(
         array $paginationFields,
         int $defaultLimit,
-        int|null $itemCount = null,
+        int $itemCount,
     ): array {
+        $itemCount = max($itemCount, 0);
+        $start     = 0;
+        $end       = $itemCount;
+
+        if ($paginationFields['after'] !== null) {
+            $start = min(max($start, $paginationFields['after']), $itemCount);
+        }
+
+        if ($paginationFields['before'] !== null) {
+            $end = min($end, $paginationFields['before']);
+        }
+
+        // A before cursor at or below the offset leaves nothing to return
+        $end = max($end, $start);
+
+        if ($paginationFields['first'] !== null) {
+            $end = min($end, $start + $paginationFields['first']);
+        }
+
+        if ($paginationFields['last'] !== null) {
+            $start = max($start, $end - $paginationFields['last']);
+        }
+
+        // The configured limit is a hard cap on the rows a single query returns
+        if ($defaultLimit > 0 && $end - $start > $defaultLimit) {
+            if ($paginationFields['last'] !== null && $paginationFields['first'] === null) {
+                // A backward request keeps the end of the range
+                $start = $end - $defaultLimit;
+            } else {
+                $end = $start + $defaultLimit;
+            }
+        }
+
+        return [
+            'offset' => $start,
+            'limit'  => $end - $start,
+        ];
+    }
+
+    /**
+     * Resolve the offset and limit a request asks for, before the rows are counted
+     *
+     * The QueryBuilder event is dispatched before the count query runs so that
+     * a listener may modify the QueryBuilder.  These values are the window the
+     * client requested rather than the window finally queried; a backward
+     * (`last`) request without a `before` cursor reports an offset of zero
+     * because its offset cannot be known until the rows have been counted.
+     *
+     * @param array{first: int|null, last: int|null, before: int|null, after: int|null} $paginationFields
+     *
+     * @return array{offset: int, limit: int}
+     */
+    public function calculateRequestedOffsetAndLimit(
+        array $paginationFields,
+        int $defaultLimit,
+    ): array {
+        $limit = $paginationFields['first'] ?? $paginationFields['last'] ?? $defaultLimit;
+
+        if ($defaultLimit > 0) {
+            $limit = min($limit, $defaultLimit);
+        }
+
         $offset = 0;
-        $limit  = $defaultLimit;
 
-        $adjustedLimit = $paginationFields['first'] ?: $paginationFields['last'] ?: $limit;
-        if ($adjustedLimit < $limit) {
-            $limit = $adjustedLimit;
-        }
-
-        if ($paginationFields['after']) {
+        if ($paginationFields['after'] !== null) {
             $offset = $paginationFields['after'];
-        } elseif ($paginationFields['before']) {
-            $offset = $paginationFields['before'] - $limit;
-        }
-
-        if ($offset < 0) {
-            $limit += $offset;
-            $offset = 0;
-        }
-
-        // Handle 'last' without 'before' - requires item count
-        if ($paginationFields['last'] && ! $paginationFields['before'] && $itemCount !== null) {
-            $offset = $itemCount - $paginationFields['last'];
+        } elseif ($paginationFields['before'] !== null) {
+            $offset = max($paginationFields['before'] - $limit, 0);
         }
 
         return [
@@ -89,29 +164,25 @@ final class PaginationService
     }
 
     /**
-     * Build cursors for pagination
+     * Build the start and end cursors for a page
      *
-     * @return array<string, string|null>
+     * An empty page has no first or last node so both cursors are null.
+     *
+     * @return array{start: string|null, end: string|null}
      */
-    public function buildCursors(
-        int $offset,
-        int $itemCount,
-        int $resultCount,
-    ): array {
-        $cursors = [
-            'start' => base64_encode((string) 0),
-            'first' => null,
-            'last'  => base64_encode((string) 0),
-            'end'   => base64_encode((string) ($itemCount ? $itemCount - 1 : 0)),
-        ];
-
-        if ($resultCount > 0) {
-            $cursors['first'] = base64_encode((string) $offset);
-            $cursors['last']  = base64_encode((string) ($offset + $resultCount - 1));
-            $cursors['start'] = $cursors['first'];
+    public function buildCursors(int $offset, int $resultCount): array
+    {
+        if ($resultCount < 1) {
+            return [
+                'start' => null,
+                'end'   => null,
+            ];
         }
 
-        return $cursors;
+        return [
+            'start' => base64_encode((string) $offset),
+            'end'   => base64_encode((string) ($offset + $resultCount - 1)),
+        ];
     }
 
     /**
@@ -143,8 +214,11 @@ final class PaginationService
     /**
      * Build final pagination response
      *
-     * @param array<int, array<string, mixed>> $edges
-     * @param array<string, string|null>       $cursors
+     * The page flags are derived from the offset and the row count rather than
+     * from the cursors so that an empty page reports its position correctly.
+     *
+     * @param array<int, array<string, mixed>>            $edges
+     * @param array{start: string|null, end: string|null} $cursors
      *
      * @return array<string, mixed>
      */
@@ -152,16 +226,61 @@ final class PaginationService
         array $edges,
         array $cursors,
         int $totalCount,
+        int $offset,
     ): array {
+        $resultCount = count($edges);
+
         return [
             'edges'      => $edges,
             'totalCount' => $totalCount,
             'pageInfo'   => [
-                'endCursor'       => $cursors['last'],
+                'endCursor'       => $cursors['end'],
                 'startCursor'     => $cursors['start'],
-                'hasNextPage'     => $cursors['end'] !== $cursors['last'],
-                'hasPreviousPage' => $cursors['start'] !== base64_encode((string) 0),
+                'hasNextPage'     => $offset + $resultCount < $totalCount,
+                'hasPreviousPage' => $offset > 0,
             ],
         ];
+    }
+
+    /**
+     * Validate a non negative integer pagination argument
+     *
+     * @throws PaginationException
+     */
+    private function decodeCount(string $field, mixed $value): int
+    {
+        if (! is_int($value) && ! (is_string($value) && ctype_digit($value))) {
+            throw new PaginationException(
+                'Pagination argument "' . $field . '" must be a non-negative integer.',
+            );
+        }
+
+        $count = (int) $value;
+
+        if ($count < 0) {
+            throw new PaginationException(
+                'Pagination argument "' . $field . '" must be a non-negative integer.',
+            );
+        }
+
+        return $count;
+    }
+
+    /**
+     * Decode a cursor into the row index it represents
+     *
+     * @throws PaginationException
+     */
+    private function decodeCursor(string $field, mixed $value): int
+    {
+        $decoded = is_string($value) ? base64_decode($value, true) : false;
+
+        if ($decoded === false || ! ctype_digit($decoded)) {
+            throw new PaginationException(
+                'Pagination argument "' . $field . '" is not a valid cursor.',
+            );
+        }
+
+        return (int) $decoded;
     }
 }

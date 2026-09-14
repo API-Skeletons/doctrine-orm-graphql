@@ -105,8 +105,8 @@ class CriteriaTest extends TestCase
                     $event->getQueryBuilder()->expr()->in('entity.venue', ['Delta Center', 'Soldier Field']),
                 );
 
-                $this->assertEquals(0, $event->getOffset());
-                $this->assertEquals(25, $event->getLimit());
+                $this->assertEquals(0, $event->getRequestedOffset());
+                $this->assertEquals(25, $event->getRequestedLimit());
                 $this->assertInstanceOf(Artist::class, $event->getObjectValue());
                 $this->assertEquals('contextTest', $event->getContext());
                 $this->assertIsArray($event->getArgs());

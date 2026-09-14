@@ -53,8 +53,7 @@ final class ResolveDbalFactory
             is_array($args['pagination'] ?? null) ? $args['pagination'] : [],
         );
 
-        // The total number of rows must be known before the offset can be
-        // calculated for a 'last' request without a 'before' cursor
+        // The rows must be counted before the offset and limit can be resolved
         $itemCount = $this->getItemCount($queryBuilder);
 
         // Calculate offset and limit
@@ -64,17 +63,15 @@ final class ResolveDbalFactory
             $itemCount,
         );
 
-        if ($offsetAndLimit['offset'] < 0) {
-            $offsetAndLimit['offset'] = 0;
-        }
+        // A limit of zero cannot match a row so the query is not executed
+        $results = [];
 
-        $queryBuilder->setFirstResult($offsetAndLimit['offset']);
-
-        if ($offsetAndLimit['limit']) {
+        if ($offsetAndLimit['limit'] > 0) {
+            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
             $queryBuilder->setMaxResults($offsetAndLimit['limit']);
-        }
 
-        $results = $queryBuilder->executeQuery()->fetchAllAssociative();
+            $results = $queryBuilder->executeQuery()->fetchAllAssociative();
+        }
 
         // Build edges
         $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
@@ -82,7 +79,6 @@ final class ResolveDbalFactory
         // Build cursors
         $cursors = $this->paginationService->buildCursors(
             $offsetAndLimit['offset'],
-            $itemCount,
             count($results),
         );
 
@@ -91,6 +87,7 @@ final class ResolveDbalFactory
             $edges,
             $cursors,
             $itemCount,
+            $offsetAndLimit['offset'],
         );
     }
 
