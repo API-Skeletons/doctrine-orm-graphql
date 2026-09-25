@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
-use Laminas\Hydrator\Strategy\StrategyInterface;
 use Override;
 
 /**
@@ -12,11 +11,10 @@ use Override;
  *
  * @returns float
  */
-final class ToBoolean extends Collection implements
-    StrategyInterface
+final class ToBoolean implements StrategyInterface
 {
     #[Override]
-    public function extract(mixed $value, object|null $object = null): bool|null
+    public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): bool|null
     {
         if ($value === null) {
             // @codeCoverageIgnoreStart

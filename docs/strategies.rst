@@ -35,7 +35,7 @@ Add a custom hydrator strategy
 ==============================
 
 To add a custom hydrator strategy, create a class that implements the interface
-``Laminas\Hydrator\Strategy\StrategyInterface``.  Add the class to the
+``ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\StrategyInterface``.  Add the class to the
 hydrator strategy container after creating the driver.
 
 .. code-block:: php
@@ -55,8 +55,8 @@ The S3Url class would look something like this:
 
     namespace App\GraphQL\Hydrator\Strategy;
 
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\StrategyInterface;
     use Illuminate\Support\Facades\Storage;
-    use Laminas\Hydrator\Strategy\StrategyInterface;
 
     /**
      * Resolve the token to an S3 url
@@ -64,7 +64,7 @@ The S3Url class would look something like this:
     class S3Url implements
         StrategyInterface
     {
-        public function extract(mixed $value, object|null $object = null): mixed
+        public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed
         {
             if (! $value) {
                 return $value;
@@ -90,6 +90,34 @@ Then add the hydratorStrategy to the entity field you wish to custom extract.
     #[GraphQL\Field(hydratorStrategy: S3Url::class)]
     #[ORM\Column(type: "text", nullable: true)]
     public $favicon;
+
+The field name
+==============
+
+A strategy is a shared instance.  The hydrator strategy container creates one instance of
+each strategy class and that instance is used for every field, on every entity, which names
+it in ``hydratorStrategy``.  The Laminas hydrator does not tell a strategy which field it is
+extracting, so this library passes the field name as the third argument, ``$fieldName``, to
+``extract()``.  This allows one strategy to act differently per field without keeping
+per-field state.
+
+.. code-block:: php
+
+    public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed
+    {
+        return match ($fieldName) {
+            'thumbnail' => Storage::disk('s3')->url('thumbnails/' . $value),
+            default     => Storage::disk('s3')->url($value),
+        };
+    }
+
+``$fieldName`` is the Doctrine field name on the entity, not the GraphQL field name.  If a
+field has an ``alias``, the strategy still receives the Doctrine field name.
+
+`Computed fields <computed-fields.html>`_ do not use hydrator strategies.
+
+A strategy which implements only ``Laminas\Hydrator\Strategy\StrategyInterface`` is still
+supported.  It is called without the field name.
 
 .. role:: raw-html(raw)
    :format: html

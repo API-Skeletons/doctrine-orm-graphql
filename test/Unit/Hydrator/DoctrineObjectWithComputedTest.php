@@ -8,8 +8,11 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\DoctrineObjectWithComputed;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithMagicCall;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithMagicCallAndFilterProvider;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\Strategy\PrefixFieldName;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
+use Laminas\Hydrator\Strategy\StrategyInterface as LaminasStrategyInterface;
 
+use function func_num_args;
 use function strlen;
 use function strtoupper;
 
@@ -186,5 +189,62 @@ class DoctrineObjectWithComputedTest extends TestCase
 
         $this->assertArrayHasKey('magicField', $result);
         $this->assertEquals('magic value', $result['magicField']);
+    }
+
+    public function testExtractValueReturnsValueWhenNoStrategy(): void
+    {
+        $this->assertSame('value', $this->hydrator->extractValue('name', 'value'));
+    }
+
+    /**
+     * One strategy instance shared by two fields receives each field's name,
+     * by value and by reference.
+     */
+    public function testExtractPassesFieldNameToStrategy(): void
+    {
+        $artist = $this->getEntityManager()
+            ->getRepository(Artist::class)
+            ->findOneBy(['name' => 'Grateful Dead']);
+
+        foreach ([true, false] as $byValue) {
+            $hydrator = new DoctrineObjectWithComputed($this->getEntityManager(), $byValue);
+            $strategy = new PrefixFieldName();
+            $hydrator->addStrategy('id', $strategy);
+            $hydrator->addStrategy('name', $strategy);
+
+            $result = $hydrator->extract($artist);
+
+            $this->assertSame('name:Grateful Dead', $result['name']);
+            $this->assertSame('id:' . $artist->getId(), $result['id']);
+        }
+    }
+
+    /**
+     * A strategy implementing only the Laminas StrategyInterface is called
+     * with two arguments.
+     */
+    public function testExtractValueCallsLaminasStrategyWithoutFieldName(): void
+    {
+        $strategy = new class implements LaminasStrategyInterface {
+            public int $argumentCount = 0;
+
+            public function extract(mixed $value, object|null $object = null): mixed
+            {
+                $this->argumentCount = func_num_args();
+
+                return $value . '!';
+            }
+
+            /** @param mixed[]|null $data */
+            public function hydrate(mixed $value, array|null $data = null): mixed
+            {
+                return $value;
+            }
+        };
+
+        $this->hydrator->addStrategy('name', $strategy);
+
+        $this->assertSame('value!', $this->hydrator->extractValue('name', 'value'));
+        $this->assertSame(2, $strategy->argumentCount);
     }
 }
