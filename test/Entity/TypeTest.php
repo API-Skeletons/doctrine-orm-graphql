@@ -7,6 +7,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\Strategy\CsvString;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\Strategy\PrefixFieldName;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -21,6 +22,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'CustomTypeTest')]
 #[GraphQL\Entity(group: 'BetweenTypeContainerTest')]
 #[GraphQL\Entity(group: 'CustomTypeArray')]
+#[GraphQL\Entity(group: 'FieldNameStrategy')]
 #[ORM\Entity]
 #[PHPUnit\Framework\Attributes\ExcludeFromCodeCoverage]
 class TypeTest
@@ -55,6 +57,7 @@ class TypeTest
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[GraphQL\Field(group: 'CustomTypeArray', type: 'csvstring', hydratorStrategy: CsvString::class)]
+    #[GraphQL\Field(group: 'FieldNameStrategy', hydratorStrategy: PrefixFieldName::class)]
     #[ORM\Column(type: "text", nullable: false)]
     private string $testText;
 
@@ -67,6 +70,7 @@ class TypeTest
     private int $id;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
+    #[GraphQL\Field(group: 'FieldNameStrategy', alias: 'bigintAlias', hydratorStrategy: PrefixFieldName::class)]
     #[ORM\Column(type: "bigint", nullable: false)]
     private string $testBigint;
 

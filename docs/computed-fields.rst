@@ -146,6 +146,14 @@ Computed fields do not appear in filter InputObjects because they cannot be filt
 at the database level.  If you need to filter on computed values, consider storing
 them in the database or using the `QueryBuilder Event <events.html>`_ to add custom filters.
 
+Hydrator Strategies
+-------------------
+
+Computed fields do not use `hydrator strategies <strategies.html>`_.  The value
+returned by the entity method is used as-is; it is not passed through a strategy
+and a strategy's ``$fieldName`` argument is never a computed field name.  Transform
+the value inside the entity method instead.
+
 
 Advanced: Event-Based Computed Fields
 ======================================

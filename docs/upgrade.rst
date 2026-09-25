@@ -2,6 +2,29 @@
 Upgrade from previous versions
 ==============================
 
+13.x to 14.0
+============
+
+Hydrator strategies receive the field name
+------------------------------------------
+
+This library now has its own
+``ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\StrategyInterface``, which
+extends ``Laminas\Hydrator\Strategy\StrategyInterface``.  Its ``extract()`` method
+takes a third argument, the Doctrine field name being extracted:
+
+.. code-block:: php
+
+    public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed;
+
+All strategies supplied with this library implement the new interface.  If you
+extend the abstract ``Collection`` strategy and override ``extract()``, add the
+``$fieldName`` parameter to your method signature.
+
+Custom strategies which implement only the Laminas interface continue to work
+unchanged and are called without the field name.  See
+`Hydrator Strategies <strategies.html>`_.
+
 13.0 to 13.2
 ============
 

@@ -26,7 +26,9 @@ use function sprintf;
  *
  * @codeCoverageIgnore
  */
-abstract class Collection implements CollectionStrategyInterface
+abstract class Collection implements
+    CollectionStrategyInterface,
+    StrategyInterface
 {
     private string|null $collectionName = null;
 
@@ -95,13 +97,14 @@ abstract class Collection implements CollectionStrategyInterface
     /**
      * Converts the given value so that it can be extracted by the hydrator.
      *
-     * @param  mixed       $value  The original value.
-     * @param  object|null $object (optional) The original object for context.
+     * @param  mixed       $value     The original value.
+     * @param  object|null $object    (optional) The original object for context.
+     * @param  string|null $fieldName (optional) The Doctrine field name being extracted.
      *
      * @return mixed       Returns the value that should be extracted.
      */
     #[Override]
-    public function extract(mixed $value, object|null $object = null): mixed
+    public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed
     {
         return $value;
     }

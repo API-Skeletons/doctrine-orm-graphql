@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
-use Laminas\Hydrator\Strategy\StrategyInterface;
 use Override;
 
 /**
  * Take no action on an association.  This class exists to
  * differentiate associations inside generated config.
  */
-final class AssociationDefault extends Collection implements
-    StrategyInterface
+final class AssociationDefault extends Collection
 {
     #[Override]
-    public function extract(mixed $value, object|null $object = null): mixed
+    public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed
     {
         return $value;
     }
