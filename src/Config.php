@@ -51,16 +51,6 @@ final class Config
     protected readonly int $limit;
 
     /**
-     * @var bool When set to true all fields and all associations will be
-     *           enabled.  This is best used as a development setting when
-     *           the entities are subject to change.
-     */
-    protected readonly bool $globalEnable;
-
-    /** @var string[] An array of field names to ignore when using globalEnable. */
-    protected readonly array $ignoreFields;
-
-    /**
      * @var bool|null When set to true, all entities will be extracted by value
      *                across all hydrators in the driver.  When set to false,
      *                all hydrators will extract by reference.  This overrides
@@ -97,15 +87,13 @@ final class Config
             'useHydratorCache' => false,
             'useQueryResultCache' => false,
             'limit' => 1000,
-            'globalEnable' => false,
-            'ignoreFields' => [],
             'globalByValue' => null,
             'entityPrefix' => null,
             'sortFields' => null,
             'excludeFilters' => [],
         ];
 
-        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, limit: int, globalEnable: bool, ignoreFields: string[], globalByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, limit: int, globalByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
         $mergedConfig = array_merge($default, $config);
 
         foreach ($mergedConfig as $field => $value) {
@@ -123,8 +111,6 @@ final class Config
         $this->useHydratorCache    = $mergedConfig['useHydratorCache'];
         $this->useQueryResultCache = $mergedConfig['useQueryResultCache'];
         $this->limit               = $mergedConfig['limit'];
-        $this->globalEnable        = $mergedConfig['globalEnable'];
-        $this->ignoreFields        = $mergedConfig['ignoreFields'];
         $this->globalByValue       = $mergedConfig['globalByValue'];
         $this->entityPrefix        = $mergedConfig['entityPrefix'];
         $this->sortFields          = $mergedConfig['sortFields'];
@@ -154,17 +140,6 @@ final class Config
     public function getLimit(): int
     {
         return $this->limit;
-    }
-
-    public function getGlobalEnable(): bool
-    {
-        return $this->globalEnable;
-    }
-
-    /** @return string[] */
-    public function getIgnoreFields(): array
-    {
-        return $this->ignoreFields;
     }
 
     public function getGlobalByValue(): bool|null

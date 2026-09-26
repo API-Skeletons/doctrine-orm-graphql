@@ -33,11 +33,11 @@ composer coverage
 # Run PHP CodeSniffer (Doctrine Coding Standard)
 vendor/bin/phpcs
 
-# Run Psalm (level 4)
+# Run Psalm (errorLevel 1, set in psalm.xml)
 vendor/bin/psalm
 
-# Run PHPStan (level 5)
-vendor/bin/phpstan analyze src --level=5
+# Run PHPStan (level 8, as run by composer test)
+vendor/bin/phpstan analyze src --level=8
 
 # Run PHP Parallel Lint
 vendor/bin/parallel-lint ./src/ ./test
@@ -75,7 +75,6 @@ Key containers:
 
 Metadata is extracted from entity attributes and stored in a `Metadata` object (ArrayObject wrapper):
 - `MetadataFactory` builds metadata from PHP attributes on entities
-- `GlobalEnable` feature enables all fields/associations without attributes (useful for development)
 - Metadata is cached per entity and includes field mappings, association mappings, limits, filters, etc.
 
 Attributes are in `src/Attribute/`:
@@ -111,7 +110,9 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `ResolveCollectionFactory` creates resolve closures for associations
 - `FieldResolver` resolves individual fields
 - Uses Doctrine Laminas Hydrator for extracting entity data to arrays
-- Supports extraction strategies (e.g., ToBoolean, ToFloat, ToInteger, Collection handling)
+- Supports extraction strategies (FieldDefault, AssociationDefault, ToBoolean, ToFloat, ToInteger, ToString)
+- Strategies implement `Hydrator\Strategy\StrategyInterface`, which extends the Laminas interface; `extract()` receives the Doctrine field name (not the GraphQL alias) as a third argument. Strategies are shared instances in `HydratorContainer`. Laminas-only strategies are still called with two arguments.
+- `AssociationDefault` must extend `Strategy\Collection`: Doctrine requires `CollectionStrategyInterface` for collection-valued associations
 
 ### Config Options
 
@@ -120,8 +121,6 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `groupSuffix` - Custom suffix for type names
 - `useHydratorCache` - Cache hydrator results per request
 - `limit` - Hard limit for collections (default: 1000)
-- `globalEnable` - Enable all fields/associations without attributes
-- `ignoreFields` - Fields to ignore with globalEnable
 - `globalByValue` - Extract by value vs reference
 - `entityPrefix` - Remove prefix from type names
 - `sortFields` - Sort fields alphabetically
@@ -155,6 +154,7 @@ Test organization:
 
 - PHP 8.4+ required
 - Doctrine ORM 3.6+ required
-- Main branch is `12.5.x`
+- Default branch is `main`; version 14 (breaking changes) is based on `14.0.x`
+- Record breaking changes in the "13.x to 14.0" section of `docs/upgrade.rst`
 - This library is framework-agnostic (can be used with Laravel, Symfony, etc.)
 - Type names are suffixed with group name by default (can be customized via groupSuffix config)

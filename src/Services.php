@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\GlobalEnable;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\ORM\EntityManager;
 use League\Event\EventDispatcher;
@@ -65,8 +64,6 @@ trait Services
                     assert($entityManager instanceof EntityManager);
                     $config = $container->get(Config::class);
                     assert($config instanceof Config);
-                    $globalEnable = $container->get(GlobalEnable::class);
-                    assert($globalEnable instanceof Metadata\GlobalEnable);
                     $eventDispatcher = $container->get(EventDispatcher::class);
                     assert($eventDispatcher instanceof EventDispatcher);
 
@@ -74,22 +71,9 @@ trait Services
                         $metadata,
                         $entityManager,
                         $config,
-                        $globalEnable,
                         $eventDispatcher,
                     ))->getMetadata();
                 },
-            )
-            ->set(
-                Metadata\GlobalEnable::class,
-                (new ReflectionClass(Metadata\GlobalEnable::class))
-                    ->newLazyGhost(static function (Metadata\GlobalEnable $object) use ($self): void {
-                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
-                        $object->__construct(
-                            $self->get(EntityManager::class),
-                            $self->get(Config::class),
-                            $self->get(EventDispatcher::class),
-                        );
-                    }),
             )
             ->set(
                 Resolve\FieldResolver::class,

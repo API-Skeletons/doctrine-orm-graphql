@@ -19,8 +19,6 @@ Creating a Driver with all config options
       'entityPrefix' => 'App\\ORM\\Entity\\',
       'group' => 'customGroup',
       'groupSuffix' => 'customGroupSuffix',
-      'globalEnable' => true,
-      'ignoreFields' => ['password'],
       'globalByValue' => true,
       'limit' => 500,
       'sortFields' => true,
@@ -76,22 +74,6 @@ a different suffix or an empty suffix.  When used in combination with
 ``App_ORM_Entity_Artist_groupname``
 to
 ``Artist``
-
-
-globalEnable
-------------
-
-When set to true, all fields and all associations will be
-enabled.  This is best used as a development setting when
-the entities are subject to change.  Really.
-
-
-ignoreFields
-------------
-
-When ``globalEnable`` is set to true, this array of field and association names
-will be excluded from the schema.  For instance ``['password']`` is a good choice
-to ignore globally.
 
 
 globalByValue

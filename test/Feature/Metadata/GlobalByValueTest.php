@@ -16,50 +16,6 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 class GlobalByValueTest extends TestCase
 {
     #[IgnoreDeprecations]
-    public function testGlobalByValueGlobalEnableFalse(): void
-    {
-        $driver = new Driver($this->getEntityManager(), new Config([
-            'group' => 'globalEnable',
-            'globalByValue' => false,
-            'globalEnable' => true,
-        ]));
-
-        $schema = new Schema([
-            'query' => new ObjectType([
-                'name' => 'query',
-                'fields' => [
-                    'artist' => [
-                        'type' => $driver->connection(Artist::class),
-                        'args' => [
-                            'filter' => $driver->filter(Artist::class),
-                        ],
-                        'resolve' => $driver->resolve(Artist::class),
-                    ],
-                ],
-            ]),
-        ]);
-
-        $query  = '{
-          artist {
-            edges {
-              node {
-                performances ( filter: {venue: { neq: "test" } } ) {
-                  edges {
-                    node {
-                      venue
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }';
-        $result = GraphQL::executeQuery($schema, $query);
-
-        $this->assertFalse($driver->get(Config::class)->getGlobalByValue());
-    }
-
-    #[IgnoreDeprecations]
     public function testGlobalByValueFalse(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['globalByValue' => false]));

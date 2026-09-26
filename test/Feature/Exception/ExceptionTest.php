@@ -93,14 +93,14 @@ class ExceptionTest extends TestCase
     {
         $exception = new ConfigurationException(
             'Invalid configuration setting: badOption',
-            ['group', 'limit', 'globalEnable'],
+            ['group', 'limit', 'sortFields'],
         );
 
         $this->assertStringContainsString('Invalid configuration setting: badOption', $exception->getMessage());
         $this->assertStringContainsString('Valid options:', $exception->getMessage());
         $this->assertStringContainsString('group', $exception->getMessage());
         $this->assertStringContainsString('limit', $exception->getMessage());
-        $this->assertStringContainsString('globalEnable', $exception->getMessage());
+        $this->assertStringContainsString('sortFields', $exception->getMessage());
     }
 
     public function testMetadataExceptionBasicMessage(): void

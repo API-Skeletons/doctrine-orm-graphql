@@ -97,44 +97,6 @@ class ConfigBuilderTest extends TestCase
         $this->assertEquals(500, $config->getLimit());
     }
 
-    public function testGlobalEnableEnablesGlobalEnable(): void
-    {
-        $config = ConfigBuilder::create()
-            ->globalEnable()
-            ->build();
-
-        $this->assertTrue($config->getGlobalEnable());
-    }
-
-    public function testGlobalEnableWithFalseDisablesGlobalEnable(): void
-    {
-        $config = ConfigBuilder::create()
-            ->globalEnable(false)
-            ->build();
-
-        $this->assertFalse($config->getGlobalEnable());
-    }
-
-    public function testIgnoreFieldsSetsFields(): void
-    {
-        $fields = ['field1', 'field2', 'field3'];
-        $config = ConfigBuilder::create()
-            ->ignoreFields($fields)
-            ->build();
-
-        $this->assertEquals($fields, $config->getIgnoreFields());
-    }
-
-    public function testIgnoreFieldAddsField(): void
-    {
-        $config = ConfigBuilder::create()
-            ->ignoreField('field1')
-            ->ignoreField('field2')
-            ->build();
-
-        $this->assertEquals(['field1', 'field2'], $config->getIgnoreFields());
-    }
-
     public function testExtractByValueSetsGlobalByValue(): void
     {
         $config = ConfigBuilder::create()
@@ -226,9 +188,6 @@ class ConfigBuilderTest extends TestCase
             ->useHydratorCache()
             ->useQueryResultCache()
             ->withLimit(100)
-            ->globalEnable()
-            ->ignoreField('id')
-            ->ignoreField('password')
             ->extractByValue()
             ->withEntityPrefix('App\\')
             ->sortFields()
@@ -240,8 +199,6 @@ class ConfigBuilderTest extends TestCase
         $this->assertTrue($config->getUseHydratorCache());
         $this->assertTrue($config->getUseQueryResultCache());
         $this->assertEquals(100, $config->getLimit());
-        $this->assertTrue($config->getGlobalEnable());
-        $this->assertEquals(['id', 'password'], $config->getIgnoreFields());
         $this->assertTrue($config->getGlobalByValue());
         $this->assertEquals('App\\', $config->getEntityPrefix());
         $this->assertTrue($config->getSortFields());
@@ -258,25 +215,10 @@ class ConfigBuilderTest extends TestCase
         $this->assertFalse($config->getUseHydratorCache());
         $this->assertFalse($config->getUseQueryResultCache());
         $this->assertEquals(1000, $config->getLimit());
-        $this->assertFalse($config->getGlobalEnable());
-        $this->assertEquals([], $config->getIgnoreFields());
         $this->assertNull($config->getGlobalByValue());
         $this->assertNull($config->getEntityPrefix());
         $this->assertNull($config->getSortFields());
         $this->assertEquals([], $config->getExcludeFilters());
-    }
-
-    public function testMultipleIgnoreFieldsCombinesProperly(): void
-    {
-        $config = ConfigBuilder::create()
-            ->ignoreFields(['field1', 'field2'])
-            ->ignoreField('field3')
-            ->ignoreField('field4')
-            ->build();
-
-        // The ignoreFields() method overwrites, so only the last call applies
-        // Then ignoreField() appends
-        $this->assertEquals(['field1', 'field2', 'field3', 'field4'], $config->getIgnoreFields());
     }
 
     public function testBuilderReturnsNewConfigInstanceEachTime(): void

@@ -10,31 +10,31 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata as MetadataEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\Common\MetadataFactory as CommonMetadataFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use League\Event\EventDispatcher;
-use Override;
 use ReflectionClass;
 use RuntimeException;
 
 use function assert;
 use function ctype_upper;
+use function in_array;
 use function lcfirst;
+use function str_replace;
 use function str_starts_with;
 use function strlen;
+use function strpos;
 use function substr;
 
 /**
  * Build metadata for entities
  */
-final class MetadataFactory extends CommonMetadataFactory
+final class MetadataFactory
 {
     public function __construct(
         protected Metadata $metadata,
         protected readonly EntityManager $entityManager,
         protected readonly Config $config,
-        protected readonly GlobalEnable $globalEnable,
         protected readonly EventDispatcher $eventDispatcher,
     ) {
     }
@@ -52,13 +52,6 @@ final class MetadataFactory extends CommonMetadataFactory
         $entityClasses = [];
         foreach ($this->entityManager->getMetadataFactory()->getAllMetadata() as $metadata) {
             $entityClasses[] = $metadata->getName();
-        }
-
-        // If global enable is set, use the GlobalEnable class to build metadata
-        if ($this->config->getGlobalEnable()) {
-            $this->metadata = $this->globalEnable->getMetadata($entityClasses);
-
-            return $this->metadata;
         }
 
         // Build metadata for each entity class
@@ -309,9 +302,65 @@ final class MetadataFactory extends CommonMetadataFactory
         return $methodName;
     }
 
-    #[Override]
-    protected function getConfig(): Config
+    private function getDefaultStrategy(string|null $fieldType): string
     {
-        return $this->config;
+        // Set default strategy based on field type
+        if (in_array($fieldType, ['tinyint', 'smallint', 'integer', 'int'])) {
+            return Strategy\ToInteger::class;
+        }
+
+        if (in_array($fieldType, ['decimal', 'float'])) {
+            return Strategy\ToFloat::class;
+        }
+
+        if ($fieldType === 'boolean') {
+            return Strategy\ToBoolean::class;
+        }
+
+        return Strategy\FieldDefault::class;
+    }
+
+    /**
+     * Compute the GraphQL type name
+     *
+     * @param class-string $entityClass
+     */
+    private function getTypeName(string $entityClass): string
+    {
+        return $this->appendGroupSuffix($this->stripEntityPrefix($entityClass));
+    }
+
+    /**
+     * Strip the configured entityPrefix from the type name
+     *
+     * @param class-string $entityClass
+     */
+    private function stripEntityPrefix(string $entityClass): string
+    {
+        $entityClassWithPrefix = $entityClass;
+        $entityPrefix          = $this->config->getEntityPrefix();
+
+        if ($entityPrefix !== null && strpos($entityClass, $entityPrefix) === 0) {
+            $entityClassWithPrefix = substr($entityClass, strlen($entityPrefix));
+        }
+
+        return str_replace('\\', '_', $entityClassWithPrefix);
+    }
+
+    /**
+     * Append the configured groupSuffix to the type name
+     */
+    private function appendGroupSuffix(string $entityClass): string
+    {
+        $groupSuffix = $this->config->getGroupSuffix();
+        if ($groupSuffix !== null) {
+            if ($groupSuffix !== '') {
+                $entityClass .= '_' . $groupSuffix;
+            }
+        } else {
+            $entityClass .= '_' . $this->config->getGroup();
+        }
+
+        return $entityClass;
     }
 }

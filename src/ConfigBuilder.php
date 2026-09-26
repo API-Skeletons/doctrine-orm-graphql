@@ -14,7 +14,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
  * $config = ConfigBuilder::create()
  *     ->withGroup('api')
  *     ->withLimit(100)
- *     ->globalEnable()
  *     ->useHydratorCache()
  *     ->useQueryResultCache()
  *     ->build();
@@ -27,9 +26,6 @@ final class ConfigBuilder
     private bool $useHydratorCache    = false;
     private bool $useQueryResultCache = false;
     private int $limit                = 1000;
-    private bool $globalEnable        = false;
-    /** @var string[] */
-    private array $ignoreFields       = [];
     private bool|null $globalByValue  = null;
     private string|null $entityPrefix = null;
     private bool|null $sortFields     = null;
@@ -116,42 +112,6 @@ final class ConfigBuilder
     }
 
     /**
-     * Enable all fields and associations globally
-     *
-     * When set to true all fields and all associations will be
-     * enabled. This is best used as a development setting when
-     * the entities are subject to change.
-     */
-    public function globalEnable(bool $enable = true): self
-    {
-        $this->globalEnable = $enable;
-
-        return $this;
-    }
-
-    /**
-     * Set field names to ignore when using globalEnable
-     *
-     * @param string[] $fields
-     */
-    public function ignoreFields(array $fields): self
-    {
-        $this->ignoreFields = $fields;
-
-        return $this;
-    }
-
-    /**
-     * Add a field name to ignore when using globalEnable
-     */
-    public function ignoreField(string $field): self
-    {
-        $this->ignoreFields[] = $field;
-
-        return $this;
-    }
-
-    /**
      * Set global extraction strategy
      *
      * When set to true, all entities will be extracted by value
@@ -233,8 +193,6 @@ final class ConfigBuilder
             'useHydratorCache' => $this->useHydratorCache,
             'useQueryResultCache' => $this->useQueryResultCache,
             'limit' => $this->limit,
-            'globalEnable' => $this->globalEnable,
-            'ignoreFields' => $this->ignoreFields,
             'globalByValue' => $this->globalByValue,
             'entityPrefix' => $this->entityPrefix,
             'sortFields' => $this->sortFields,
