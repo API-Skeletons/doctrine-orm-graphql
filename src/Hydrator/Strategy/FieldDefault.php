@@ -9,7 +9,7 @@ use Override;
 /**
  * Return the same value
  */
-final class FieldDefault implements StrategyInterface
+final class FieldDefault implements Strategy
 {
     #[Override]
     public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed

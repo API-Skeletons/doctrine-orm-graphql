@@ -28,7 +28,7 @@ use function sprintf;
  */
 abstract class Collection implements
     CollectionStrategyInterface,
-    StrategyInterface
+    Strategy
 {
     private string|null $collectionName = null;
 

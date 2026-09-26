@@ -111,7 +111,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `FieldResolver` resolves individual fields
 - Uses Doctrine Laminas Hydrator for extracting entity data to arrays
 - Supports extraction strategies (FieldDefault, AssociationDefault, ToBoolean, ToFloat, ToInteger, ToString)
-- Strategies implement `Hydrator\Strategy\StrategyInterface`, which extends the Laminas interface; `extract()` receives the Doctrine field name (not the GraphQL alias) as a third argument. Strategies are shared instances in `HydratorContainer`. Laminas-only strategies are still called with two arguments.
+- Strategies implement `Hydrator\Strategy\Strategy` interface, which extends the Laminas interface; `extract()` receives the Doctrine field name (not the GraphQL alias) as a third argument. Strategies are shared instances in `HydratorContainer`. Laminas-only strategies are still called with two arguments.
 - `AssociationDefault` must extend `Strategy\Collection`: Doctrine requires `CollectionStrategyInterface` for collection-valued associations
 
 ### Config Options

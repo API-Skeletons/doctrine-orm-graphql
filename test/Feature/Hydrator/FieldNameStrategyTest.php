@@ -15,7 +15,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
 /**
- * A strategy implementing this library's StrategyInterface receives the
+ * A strategy implementing this library's Strategy interface receives the
  * Doctrine field name for each field it extracts, even though one instance
  * is shared by every field which uses it.
  */

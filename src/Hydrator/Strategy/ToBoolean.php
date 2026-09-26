@@ -11,7 +11,7 @@ use Override;
  *
  * @returns float
  */
-final class ToBoolean implements StrategyInterface
+final class ToBoolean implements Strategy
 {
     #[Override]
     public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): bool|null

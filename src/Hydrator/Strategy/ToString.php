@@ -13,7 +13,7 @@ use function strval;
  *
  * @returns string
  */
-final class ToString implements StrategyInterface
+final class ToString implements Strategy
 {
     #[Override]
     public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): string|null
