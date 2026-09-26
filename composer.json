@@ -31,7 +31,7 @@
         "amphp/cache": "^v2.0.1",
         "amphp/parser": "^v1.1.1",
         "amphp/process": "^v2.0.3",
-        "symfony/console": "^8.0",
+        "symfony/console": "^7.0 || ^8.0",
         "spatie/array-to-xml": "^3.4.4",
         "daverandom/libdns": "^2.1"
     },
