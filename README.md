@@ -80,7 +80,7 @@ For an working implementation see https://graphql.lcdb.org
 Quick Start
 -----------
 
-Add attributes to your Doctrine entities or see [globalEnable](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#globalenable) for all entities in your schema without attribute configuration.
+Add attributes to your Doctrine entities.
 
 ```php
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;

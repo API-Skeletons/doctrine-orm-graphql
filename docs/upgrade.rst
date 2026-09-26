@@ -25,6 +25,19 @@ Custom strategies which implement only the Laminas interface continue to work
 unchanged and are called without the field name.  See
 `Hydrator Strategies <strategies.html>`_.
 
+globalEnable and ignoreFields are removed
+-----------------------------------------
+
+The ``globalEnable`` and ``ignoreFields`` config options are removed, along
+with ``ConfigBuilder::globalEnable()``, ``ConfigBuilder::ignoreFields()``,
+``ConfigBuilder::ignoreField()``, ``Config::getGlobalEnable()``,
+``Config::getIgnoreFields()`` and the ``Metadata\GlobalEnable`` class.
+
+Passing either option to ``Config`` now throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration``.  Expose
+entities, fields and associations with the ``#[Entity]``, ``#[Field]`` and
+``#[Association]`` attributes instead.
+
 13.0 to 13.2
 ============
 
