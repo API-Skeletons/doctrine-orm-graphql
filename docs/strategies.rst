@@ -31,6 +31,22 @@ ToBoolean
 Similar to ``ToInteger``, this will convert the field value to a boolean to be handled as a boolean internal to PHP.
 
 
+ToString
+========
+
+Similar to ``ToInteger``, this will convert the field value to a string to be handled as a string internal to PHP.
+Scalars and ``Stringable`` objects are converted; ``null`` is returned as ``null``.  This strategy is not applied
+by default.  Use it with ``hydratorStrategy`` and set the GraphQL ``type`` of the field to ``string``.
+
+.. code-block:: php
+
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToString;
+
+    #[GraphQL\Field(type: 'string', hydratorStrategy: ToString::class)]
+    #[ORM\Column(type: "integer")]
+    private int $zipCode;
+
+
 Add a custom hydrator strategy
 ==============================
 

@@ -34,7 +34,8 @@ final class HydratorContainer extends Container
             ->set(Strategy\FieldDefault::class, static fn () => new Strategy\FieldDefault())
             ->set(Strategy\ToBoolean::class, static fn () => new Strategy\ToBoolean())
             ->set(Strategy\ToFloat::class, static fn () => new Strategy\ToFloat())
-            ->set(Strategy\ToInteger::class, static fn () => new Strategy\ToInteger());
+            ->set(Strategy\ToInteger::class, static fn () => new Strategy\ToInteger())
+            ->set(Strategy\ToString::class, static fn () => new Strategy\ToString());
     }
 
     /** @throws Error */

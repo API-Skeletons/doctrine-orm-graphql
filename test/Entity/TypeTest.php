@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToString;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\Strategy\CsvString;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\Strategy\PrefixFieldName;
 use DateTime;
@@ -23,6 +24,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'BetweenTypeContainerTest')]
 #[GraphQL\Entity(group: 'CustomTypeArray')]
 #[GraphQL\Entity(group: 'FieldNameStrategy')]
+#[GraphQL\Entity(group: 'ToStringStrategy')]
 #[ORM\Entity]
 #[PHPUnit\Framework\Attributes\ExcludeFromCodeCoverage]
 class TypeTest
@@ -30,6 +32,7 @@ class TypeTest
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[GraphQL\Field(group: 'BetweenTypeContainerTest')]
+    #[GraphQL\Field(group: 'ToStringStrategy', type: 'string', hydratorStrategy: ToString::class)]
     #[ORM\Column(type: "integer", nullable: false)]
     private int $testInt;
 
