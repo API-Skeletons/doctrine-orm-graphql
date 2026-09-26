@@ -16,9 +16,34 @@ by supporting version 2 of that library instead of version 3.  Version 2 is not 
 Version Overview
 ================
 
+* **14.x** - In development; field-aware hydrator strategies, ``globalEnable`` removed (breaking changes from 13.x)
 * **13.x** - Current version, QueryBuilder-based collection resolution (breaking changes from 12.x)
 * **12.x** - Introduced QueryBuilder support, deprecated Criteria Event for collections
 * **11.x** - Supports `league/event <https://github.com/thephpleague/event>`_ version 2.2 (non-PSR-14)
+
+Version 14.x (In Development)
+============================
+
+**Requirements**:
+
+- PHP 8.4+
+- Doctrine ORM 2.20.9+ or 3.0+
+- league/event 3.0+ (PSR-14 compliant)
+- webonyx/graphql-php 15.29+
+
+On PHP 8.5, Doctrine ORM 3.3.1 or later is required.  ``doctrine/doctrine-laminas-hydrator``
+supports PHP 8.5 only from 3.7.0, which requires ``doctrine/persistence`` 4, and earlier
+ORM versions do not support ``doctrine/persistence`` 4.
+
+**Key Features**:
+
+- Hydrator strategies receive the name of the field being extracted
+- ``ToString`` hydrator strategy
+
+**Breaking Changes from 13.x**:
+
+- ``globalEnable`` and ``ignoreFields`` config options removed
+- See `upgrade guide <upgrade.html>`_ for migration instructions
 
 Version 13.x (Current)
 ======================
@@ -26,9 +51,9 @@ Version 13.x (Current)
 **Requirements**:
 
 - PHP 8.4+
-- Doctrine ORM 3.6+
+- Doctrine ORM 2.20.9+ or 3.0+
 - league/event 3.0+ (PSR-14 compliant)
-- webonyx/graphql-php 15.0+
+- webonyx/graphql-php 15.29+
 
 **Key Features**:
 
@@ -49,10 +74,13 @@ Version 12.x
 
 **Requirements**:
 
-- PHP 8.4+
-- Doctrine ORM 3.6+
 - league/event 3.0+ (PSR-14 compliant)
-- webonyx/graphql-php 15.0+
+- webonyx/graphql-php 15.0+ (15.29+ from 12.5)
+- PHP and Doctrine ORM by minor version:
+
+  - 12.0 to 12.3: PHP 8.1+, Doctrine ORM 2.18+ or 3.0+
+  - 12.4: PHP 8.3+, Doctrine ORM 3.0+
+  - 12.5: PHP 8.4+, Doctrine ORM 3.6+
 
 **Key Features**:
 
@@ -71,9 +99,9 @@ Version 11.x
 **Requirements**:
 
 - PHP 8.1+
-- Doctrine ORM 3.0+
+- Doctrine ORM 2.18+ or 3.0+
 - league/event 2.2 (non-PSR-14)
-- webonyx/graphql-php 14.0+
+- webonyx/graphql-php 15.0+
 
 **Compatibility**:
 

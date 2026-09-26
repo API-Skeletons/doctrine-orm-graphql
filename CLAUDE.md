@@ -153,7 +153,7 @@ Test organization:
 ## Important Notes
 
 - PHP 8.4+ required
-- Doctrine ORM 3.6+ required
+- Doctrine ORM 2.20.9+ or 3.0+ required (`^2.20.9 || ^3.0`); on PHP 8.5 the lowest installable ORM is 3.3.1. CI tests ORM 2.20.9, 3.0.0 and ^3.0
 - Default branch is `main`; version 14 (breaking changes) is based on `14.0.x`
 - Record breaking changes in the "13.x to 14.0" section of `docs/upgrade.rst`
 - This library is framework-agnostic (can be used with Laravel, Symfony, etc.)
