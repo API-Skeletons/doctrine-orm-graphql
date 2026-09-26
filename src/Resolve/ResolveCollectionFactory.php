@@ -149,7 +149,7 @@ final class ResolveCollectionFactory
         // Decode pagination fields
         /** @psalm-suppress MixedArgument, MixedArrayAccess */
         $paginationFields = $this->paginationService->decodePaginationFields(
-            $resolve['args']['pagination'] ?? [],
+            $resolve['args'] ?? [],
         );
 
         // Get the limit for this association

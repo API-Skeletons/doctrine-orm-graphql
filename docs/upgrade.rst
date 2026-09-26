@@ -25,6 +25,53 @@ Custom strategies which implement only the Laminas interface continue to work
 unchanged and are called without the field name.  See
 `Hydrator Strategies <strategies.html>`_.
 
+Pagination arguments are top-level arguments
+--------------------------------------------
+
+The ``pagination`` argument is removed.  ``first``, ``after``, ``last`` and
+``before`` are now top-level arguments of every connection, as the
+`GraphQL Complete Connection Model <https://graphql.org/learn/pagination/#complete-connection-model>`_
+defines them.  This is a schema change.
+
+**Clients** must move the pagination fields out of the ``pagination`` object:
+
+.. code-block:: js
+
+    # 13.x
+    artists (filter: { name: { contains: "Dead" } }, pagination: { first: 10, after: "MA==" }) { ... }
+
+    # 14.0
+    artists (filter: { name: { contains: "Dead" } }, first: 10, after: "MA==") { ... }
+
+A query which still uses ``pagination`` fails validation with an unknown
+argument error.  Regenerate any client types built from the schema.
+
+**Schemas built by hand**: ``Driver::pagination()`` now returns an array of the
+four argument definitions instead of the ``Pagination`` input type.  Add it to
+the top level of the args rather than under a ``pagination`` key:
+
+.. code-block:: php
+
+    // 13.x
+    'args' => [
+        'filter' => $driver->filter(Artist::class),
+        'pagination' => $driver->pagination(),
+    ],
+
+    // 14.0
+    'args' => ['filter' => $driver->filter(Artist::class)] + $driver->pagination(),
+
+``completeConnection()``, ``dbalCompleteConnection()`` and the arguments of
+association fields are updated for you.
+
+The ``Pagination`` input type (``Type\Pagination``) is removed, so
+``$driver->type('pagination')`` no longer exists.
+
+**QueryBuilder event listeners**: ``$event->getArgs()['pagination']`` is now
+always null.  Read ``getArgs()['first']``, ``['after']``, ``['last']`` and
+``['before']`` instead.  This change does not raise an error, so search your
+listeners for ``'pagination'``.
+
 globalEnable and ignoreFields are removed
 -----------------------------------------
 

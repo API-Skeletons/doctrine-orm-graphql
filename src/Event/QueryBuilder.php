@@ -49,8 +49,9 @@ final class QueryBuilder implements
      *
      * A backward request - `last` without a `before` cursor - reports zero
      * because its offset depends on a row count which has not been taken when
-     * this event is dispatched.  Read `getArgs()['pagination']` to tell a
-     * backward request from a request for the first page.
+     * this event is dispatched.  Read `getArgs()['last']` and
+     * `getArgs()['before']` to tell a backward request from a request for the
+     * first page.
      */
     public function getRequestedOffset(): int
     {

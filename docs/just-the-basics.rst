@@ -55,10 +55,7 @@ a connection for the entity, filters for the entity, and a resolver.
           'fields' => [
               'artists' => [
                   'type' => $driver->connection(Artist::class),
-                  'args' => [
-                      'filter' => $driver->filter(Artist::class),
-                      'pagination' => $driver->pagination(),
-                  ],
+                  'args' => ['filter' => $driver->filter(Artist::class)] + $driver->pagination(),
                   'resolve' => $driver->resolve(Artist::class),
               ],
           ],

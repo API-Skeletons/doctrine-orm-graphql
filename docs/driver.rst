@@ -180,9 +180,7 @@ custom event name to fire for the entity definition event.
             'fields' => [
                 'artists' => [
                     'type' => $driver->connection(Artist::class),
-                    'args' => [
-                        'pagination' => $driver->pagination(),
-                    ],
+                    'args' => $driver->pagination(),
                     'resolve' => $driver->resolve(Artist::class),
                 ],
             ],
@@ -241,7 +239,7 @@ aggregates.
 The ``dbalConnection`` function takes a GraphQL ``ObjectType`` describing one
 row of the result and returns that type wrapped in a connection.  The
 ``dbalResolve`` function takes a ``Doctrine\DBAL\Query\QueryBuilder`` and
-returns the resolve closure for that connection.  The ``pagination`` argument
+returns the resolve closure for that connection.  The pagination arguments
 must be added to the args.
 
   .. code-block:: php
@@ -256,9 +254,7 @@ must be added to the args.
             'fields' => [
                 'artistRows' => [
                     'type' => $driver->dbalConnection($artistRow),
-                    'args' => [
-                        'pagination' => $driver->pagination(),
-                    ],
+                    'args' => $driver->pagination(),
                     'resolve' => $driver->dbalResolve($queryBuilder),
                 ],
             ],
@@ -266,7 +262,7 @@ must be added to the args.
     ]);
 
 When the query is resolved the QueryBuilder is given the offset and limit
-calculated from the ``pagination`` argument.
+calculated from the pagination arguments.
 
 Rows are returned as associative arrays so the fields of the given type are
 resolved by their column name or alias.  Filters are not available because
@@ -292,10 +288,7 @@ as detailed in `tips <tips.html>`_.
 
   .. code-block:: php
 
-    'args' => [
-        'pagination' => $driver->pagination(),
-        'filter' => $driver->filter(Artist::class),
-    ],
+    'args' => ['filter' => $driver->filter(Artist::class)] + $driver->pagination(),
 
 
 input()

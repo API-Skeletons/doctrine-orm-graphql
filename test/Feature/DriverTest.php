@@ -24,6 +24,9 @@ use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 use Psr\Container\ContainerInterface;
 
+use function array_keys;
+use function array_map;
+
 class DriverTest extends TestCase
 {
     public function testGetInvalidService(): void
@@ -94,10 +97,7 @@ class DriverTest extends TestCase
                 'fields' => [
                     'artist' => [
                         'type' => $driver->connection(Artist::class),
-                        'args' => [
-                            'filter' => $driver->filter(Artist::class),
-                            'pagination' => $driver->pagination(),
-                        ],
+                        'args' => ['filter' => $driver->filter(Artist::class)] + $driver->pagination(),
                         'resolve' => $driver->resolve(Artist::class),
                     ],
                 ],
@@ -226,5 +226,27 @@ class DriverTest extends TestCase
         $test    = $driver->type(Artist::class, 'custom');
 
         $this->assertSame($control, $test);
+    }
+
+    /**
+     * The GraphQL Complete Connection Model places first, after, last and
+     * before at the top level of a connection's arguments, for a top level
+     * connection and for an association
+     */
+    public function testPaginationArgumentsAreTopLevel(): void
+    {
+        $driver = new Driver($this->getEntityManager());
+
+        $this->assertSame(['first', 'after', 'last', 'before'], array_keys($driver->pagination()));
+        $this->assertSame(
+            ['filter', 'first', 'after', 'last', 'before'],
+            array_keys($driver->completeConnection(Artist::class)['args']),
+        );
+
+        $performances = $driver->type(Artist::class)->getField('performances');
+        $this->assertSame(
+            ['filter', 'first', 'after', 'last', 'before'],
+            array_map(static fn ($arg) => $arg->name, $performances->args),
+        );
     }
 }

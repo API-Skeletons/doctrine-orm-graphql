@@ -24,7 +24,7 @@ Fetch at most 100 performances in CA for each artist with 'Dead' in their name.
           name
           performances (
             filter: { state: { eq: "CA" } }
-            pagination: { first: 100 }
+            first: 100
           ) {
             edges {
               node {
@@ -129,16 +129,18 @@ Pagination
 Pagination of collections supports
 `GraphQL's Complete Connection Model <https://graphql.org/learn/pagination/#complete-connection-model>`_.
 
-A pagination argument is included with embedded collections but for top-level
-collections you must include the pagination argument yourself just as you do
-for filters.
+The pagination arguments ``first``, ``after``, ``last`` and ``before`` are
+top-level arguments of a connection, as the Complete Connection Model defines
+them.  They are included with embedded collections, but for top-level
+collections you must include them yourself, as you do for filters.
+``$driver->completeConnection()`` includes them for you.
 
 A complete query for all pagination data:
 
 .. code-block:: js
 
   {
-    artists (pagination: {first: 10, after: "cursor"}) {
+    artists (first: 10, after: "cursor") {
       totalCount
       pageInfo {
         endCursor
@@ -173,7 +175,7 @@ To get the first page specify the number of edges
 .. code-block:: js
 
   {
-    artists (pagination: { first: 10 }) {
+    artists (first: 10) {
     }
   }
 
@@ -182,7 +184,7 @@ To get the next page, you would add the endCursor from the current page as the a
 .. code-block:: js
 
   {
-    artists (pagination: { first: 10, after: "endCursor" }) {
+    artists (first: 10, after: "endCursor") {
     }
   }
 
@@ -191,7 +193,7 @@ For the previous page, you would add the startCursor from the current page as th
 .. code-block:: js
 
   {
-    offers (pagination: { last: 10, before: "startCursor" }) {
+    offers (last: 10, before: "startCursor") {
     }
   }
 

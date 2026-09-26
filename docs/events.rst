@@ -83,8 +83,8 @@ all resolve parameters:
     A backward request - ``last`` without a ``before`` cursor - reports an
     offset of zero because its real offset is the row count minus ``last``, and
     that count has not been taken when the event is dispatched.  Read
-    ``getArgs()['pagination']`` if you need to tell a backward request apart
-    from a request for the first page.
+    ``getArgs()['last']`` and ``getArgs()['before']`` if you need to tell a
+    backward request apart from a request for the first page.
 
 Association QueryBuilder Event
 ==============================

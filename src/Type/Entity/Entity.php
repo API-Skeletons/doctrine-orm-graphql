@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
@@ -48,6 +49,7 @@ final class Entity
         protected readonly FieldResolver $fieldResolver,
         protected readonly FilterFactory $filterFactory,
         protected readonly HydratorContainer $hydratorContainer,
+        protected readonly PaginationService $paginationService,
         protected readonly ResolveCollectionFactory $resolveCollectionFactory,
         protected readonly TypeContainer $typeContainer,
         protected readonly array $metadata,
@@ -265,8 +267,7 @@ final class Entity
                             $associationName,
                             $this->metadata['fields'][$associationName],
                         ),
-                        'pagination' => $this->typeContainer->get('pagination'),
-                    ],
+                    ] + $this->paginationService->getArguments(),
                     'description' => $this->metadata['fields'][$associationName]['description'],
                     'resolve' => $this->resolveCollectionFactory->get($entity),
                 ];

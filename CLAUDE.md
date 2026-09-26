@@ -52,7 +52,7 @@ The `Driver` class (src/Driver.php) is the main entry point. It extends `Contain
 - `type(string $id)` - Get a GraphQL type (entity or custom type)
 - `connection(string $id)` - Wrap an entity type in a Connection type
 - `filter(string $id)` - Get filter InputObjectType for an entity
-- `pagination()` - Get pagination type
+- `pagination()` - Get the pagination arguments (`first`, `after`, `last`, `before`) to add to the top level of a connection's args
 - `resolve(string $id)` - Get resolve closure for an entity
 - `input(string $entityClass, array $requiredFields, array $optionalFields)` - Create InputObjectType for mutations
 - `completeConnection(string $id)` - Returns a complete GraphQL endpoint definition with type, args, and resolve

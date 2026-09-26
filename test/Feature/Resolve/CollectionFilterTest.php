@@ -277,7 +277,7 @@ class CollectionFilterTest extends TestCase
 
     public function testfirst(): void
     {
-        $query  = '{ artist { edges { node { performances ( pagination: { first: 2 } ) { edges { node { id } } } } } } }';
+        $query  = '{ artist { edges { node { performances ( first: 2 ) { edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($this->schema, $query);
 
         $data = $result->toArray()['data'];
@@ -289,7 +289,7 @@ class CollectionFilterTest extends TestCase
     public function testfirstafter(): void
     {
         $after  = base64_encode((string) 1);
-        $query  = '{ artist { edges { node { performances ( pagination: { first: 2, after:"' . $after . '" } ) { edges { node { id } } } } } } }';
+        $query  = '{ artist { edges { node { performances ( first: 2, after:"' . $after . '" ) { edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($this->schema, $query);
 
         $data = $result->toArray()['data'];
@@ -300,7 +300,7 @@ class CollectionFilterTest extends TestCase
 
     public function testlast(): void
     {
-        $query  = '{ artist { edges { node { performances ( pagination: { last: 3 } ) { edges { node { id } } } } } } }';
+        $query  = '{ artist { edges { node { performances ( last: 3 ) { edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($this->schema, $query);
 
         $data = $result->toArray()['data'];
@@ -312,7 +312,7 @@ class CollectionFilterTest extends TestCase
     public function testlastbefore(): void
     {
         $after  = base64_encode((string) 4);
-        $query  = '{ artist { edges { node { performances ( pagination: { last: 2, before:"' . $after . '" } ) { edges { node { id } } } } } } }';
+        $query  = '{ artist { edges { node { performances ( last: 2, before:"' . $after . '" ) { edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($this->schema, $query);
 
         $data = $result->toArray()['data'];
@@ -323,7 +323,7 @@ class CollectionFilterTest extends TestCase
 
     public function testNegativeOffset(): void
     {
-        $query  = '{ artist { edges { node { performances ( pagination: { first: 3, after: "LTU=" } ) { edges { node { id } } } } } } }';
+        $query  = '{ artist { edges { node { performances ( first: 3, after: "LTU=" ) { edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($this->schema, $query)->toArray();
 
         $this->assertArrayHasKey('errors', $result);

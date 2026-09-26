@@ -11,14 +11,13 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use GraphQL\Type\Definition\ResolveInfo;
 
 use function count;
-use function is_array;
 use function method_exists;
 
 /**
  * Build a resolver for a DBAL QueryBuilder.
  *
  * The QueryBuilder is modified with the offset and limit calculated from the
- * pagination argument then executed.  The result is returned in the GraphQL
+ * pagination arguments then executed.  The result is returned in the GraphQL
  * Complete Connection Model.
  *
  * Because the QueryBuilder is captured when the schema is built it is cloned
@@ -41,7 +40,7 @@ final class ResolveDbalFactory
     }
 
     /**
-     * @param mixed[] $args
+     * @param mixed[] $args The connection field arguments
      *
      * @return mixed[]
      */
@@ -49,9 +48,7 @@ final class ResolveDbalFactory
     {
         // Decode pagination fields
         /** @psalm-suppress MixedArgument */
-        $paginationFields = $this->paginationService->decodePaginationFields(
-            is_array($args['pagination'] ?? null) ? $args['pagination'] : [],
-        );
+        $paginationFields = $this->paginationService->decodePaginationFields($args);
 
         // The rows must be counted before the offset and limit can be resolved
         $itemCount = $this->getItemCount($queryBuilder);

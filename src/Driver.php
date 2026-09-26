@@ -10,6 +10,7 @@ use Doctrine\DBAL\Query\QueryBuilder as DbalQueryBuilder;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type as GraphQLType;
 
 use function array_merge;
 use function assert;
@@ -92,16 +93,17 @@ final class Driver extends Container
     }
 
     /**
-     * Pagination for a connection
+     * The pagination arguments for a connection: first, after, last and before.
+     * Add them to the top level of a connection field's args.
      *
-     * @throws Error
+     * @return array<string, array{type: GraphQLType, description: string}>
      */
-    public function pagination(): object
+    public function pagination(): array
     {
-        $result = $this->type('pagination');
-        assert($result instanceof InputObjectType);
+        $paginationService = $this->get(Pagination\PaginationService::class);
+        assert($paginationService instanceof Pagination\PaginationService);
 
-        return $result;
+        return $paginationService->getArguments();
     }
 
     /**
@@ -140,7 +142,7 @@ final class Driver extends Container
 
     /**
      * Resolve a connection from a DBAL QueryBuilder.  The QueryBuilder is
-     * given the offset and limit calculated from the pagination argument.
+     * given the offset and limit calculated from the pagination arguments.
      * Used in conjunction with dbalConnection()
      *
      * @throws Error
@@ -165,7 +167,7 @@ final class Driver extends Container
     {
         return [
             'type' => $this->dbalConnection($type),
-            'args' => ['pagination' => $this->pagination()],
+            'args' => $this->pagination(),
             'resolve' => $this->dbalResolve($queryBuilder),
         ];
     }
@@ -194,10 +196,7 @@ final class Driver extends Container
     ): array {
         return [
             'type' => $this->connection($id, $entityDefinitionEventName),
-            'args' => [
-                'filter' => $this->filter($id),
-                'pagination' => $this->pagination(),
-            ],
+            'args' => ['filter' => $this->filter($id)] + $this->pagination(),
             'resolve' => $this->resolve($id, $resolveEventName),
         ];
     }

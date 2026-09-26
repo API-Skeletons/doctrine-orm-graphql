@@ -36,11 +36,11 @@ class InversedByCollectionTest extends TestCase
 
         // Query users and their recordings
         $query = '{
-            user(pagination: { first: 5 }) {
+            user(first: 5) {
                 edges {
                     node {
                         name
-                        recordings(pagination: { first: 10 }) {
+                        recordings(first: 10) {
                             edges {
                                 node {
                                     source
@@ -81,13 +81,13 @@ class InversedByCollectionTest extends TestCase
 
         // Query users with filtered recordings
         $query = '{
-            user(pagination: { first: 1 }) {
+            user(first: 1) {
                 edges {
                     node {
                         name
                         recordings(
                             filter: { source: { contains: "tape" } }
-                            pagination: { first: 5 }
+                            first: 5
                         ) {
                             edges {
                                 node {

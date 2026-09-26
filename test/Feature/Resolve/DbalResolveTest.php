@@ -14,6 +14,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 
+use function array_keys;
 use function base64_encode;
 use function count;
 
@@ -92,8 +93,7 @@ class DbalResolveTest extends TestCase
         $definition = $driver->dbalCompleteConnection($this->getObjectType(), $this->getQueryBuilder());
 
         $this->assertEquals('Connection_artistRow', $definition['type']->name);
-        $this->assertArrayHasKey('pagination', $definition['args']);
-        $this->assertEquals('Pagination', $definition['args']['pagination']->name);
+        $this->assertSame(['first', 'after', 'last', 'before'], array_keys($definition['args']));
         $this->assertInstanceOf(Closure::class, $definition['resolve']);
     }
 
@@ -110,7 +110,7 @@ class DbalResolveTest extends TestCase
                 'fields' => [
                     'artistRows' => [
                         'type' => $driver->dbalConnection($this->getObjectType()),
-                        'args' => ['pagination' => $driver->pagination()],
+                        'args' => $driver->pagination(),
                         'resolve' => $driver->dbalResolve($this->getQueryBuilder()),
                     ],
                 ],
@@ -119,7 +119,7 @@ class DbalResolveTest extends TestCase
 
         $query = '
           {
-            artistRows (pagination: { first: 2 }) {
+            artistRows (first: 2) {
               totalCount
               edges {
                 cursor
@@ -183,7 +183,7 @@ class DbalResolveTest extends TestCase
 
         $query = '
           {
-            artistRows (pagination: { first: 2 }) {
+            artistRows (first: 2) {
               totalCount
               pageInfo {
                 endCursor
@@ -215,7 +215,7 @@ class DbalResolveTest extends TestCase
 
         $query = '
           {
-            artistRows (pagination: { first: 1, after: "' . base64_encode('0') . '" }) {
+            artistRows (first: 1, after: "' . base64_encode('0') . '") {
               totalCount
               edges {
                 cursor
@@ -242,7 +242,7 @@ class DbalResolveTest extends TestCase
 
         $query = '
           {
-            artistRows (pagination: { last: 1 }) {
+            artistRows (last: 1) {
               totalCount
               pageInfo {
                 hasPreviousPage
@@ -277,7 +277,7 @@ class DbalResolveTest extends TestCase
 
         $query = '
           {
-            artistRows (pagination: { last: 10 }) {
+            artistRows (last: 10) {
               totalCount
               edges {
                 cursor
@@ -305,7 +305,7 @@ class DbalResolveTest extends TestCase
 
         $query = '
           {
-            artistRows (pagination: { last: 1, before: "' . base64_encode('2') . '" }) {
+            artistRows (last: 1, before: "' . base64_encode('2') . '") {
               edges {
                 cursor
                 node {
@@ -340,7 +340,7 @@ class DbalResolveTest extends TestCase
             ]),
         ]);
 
-        $limited = GraphQL::executeQuery($schema, '{ artistRows (pagination: { first: 1 }) { edges { node { id } } } }')
+        $limited = GraphQL::executeQuery($schema, '{ artistRows (first: 1) { edges { node { id } } } }')
             ->toArray()['data'];
         $this->assertEquals(1, count($limited['artistRows']['edges']));
 
