@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Pagination;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Pagination as PaginationException;
+use GraphQL\Type\Definition\Type;
 
 use function base64_decode;
 use function base64_encode;
@@ -25,14 +26,43 @@ use function min;
 final class PaginationService
 {
     /**
-     * Decode the pagination argument into integers
+     * The pagination arguments of the GraphQL Complete Connection Model.
+     * These are top level arguments of a connection field.
+     *
+     * @return array<string, array{type: Type, description: string}>
+     */
+    public function getArguments(): array
+    {
+        return [
+            'first' => [
+                'type'        => Type::int(),
+                'description' => 'Takes a non-negative integer.',
+            ],
+            'after' => [
+                'type'        => Type::string(),
+                'description' => 'Takes the cursor type.',
+            ],
+            'last' => [
+                'type'        => Type::int(),
+                'description' => 'Takes a non-negative integer.',
+            ],
+            'before' => [
+                'type'        => Type::string(),
+                'description' => 'Takes the cursor type.',
+            ],
+        ];
+    }
+
+    /**
+     * Decode the pagination arguments into integers
      *
      * A field which was not supplied is returned as null so that a cursor for
      * index zero may be distinguished from an absent argument.  The `after`
      * value is returned as the index of the first row to return, which is one
      * past the cursor it was decoded from.
      *
-     * @param array<string, mixed> $pagination
+     * @param mixed[] $pagination The connection field arguments.  Arguments other
+     *                           than first, after, last and before are ignored.
      *
      * @return array{first: int|null, last: int|null, before: int|null, after: int|null}
      *

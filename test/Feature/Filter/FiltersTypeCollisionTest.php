@@ -28,18 +28,12 @@ class FiltersTypeCollisionTest extends TestCase
                 'fields' => [
                     'performance1' => [
                         'type' => $driver1->connection(Performance::class),
-                        'args' => [
-                            'filter' => $driver1->filter(Performance::class),
-                            'pagination' => $driver1->pagination(),
-                        ],
+                        'args' => ['filter' => $driver1->filter(Performance::class)] + $driver1->pagination(),
                         'resolve' => $driver1->resolve(Performance::class),
                     ],
                     'performance2' => [
                         'type' => $driver2->connection(Performance::class),
-                        'args' => [
-                            'filter' => $driver2->filter(Performance::class),
-                            'pagination' => $driver2->pagination(),
-                        ],
+                        'args' => ['filter' => $driver2->filter(Performance::class)] + $driver2->pagination(),
                         'resolve' => $driver2->resolve(Performance::class),
                     ],
                 ],
@@ -89,10 +83,6 @@ class FiltersTypeCollisionTest extends TestCase
         $this->assertSame(
             $driver1->get(TypeContainer::class)->get('pageinfo'),
             $driver2->get(TypeContainer::class)->get('pageinfo'),
-        );
-        $this->assertSame(
-            $driver1->get(TypeContainer::class)->get('pagination'),
-            $driver2->get(TypeContainer::class)->get('pagination'),
         );
     }
 }

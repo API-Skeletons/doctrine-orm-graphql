@@ -39,9 +39,11 @@ ORM versions do not support ``doctrine/persistence`` 4.
 
 - Hydrator strategies receive the name of the field being extracted
 - ``ToString`` hydrator strategy
+- ``first``, ``after``, ``last`` and ``before`` are top-level connection arguments, as in the Complete Connection Model
 
 **Breaking Changes from 13.x**:
 
+- ``pagination`` argument removed; its fields are now top-level connection arguments
 - ``globalEnable`` and ``ignoreFields`` config options removed
 - See `upgrade guide <upgrade.html>`_ for migration instructions
 

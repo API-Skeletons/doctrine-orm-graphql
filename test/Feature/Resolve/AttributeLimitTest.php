@@ -25,10 +25,7 @@ class AttributeLimitTest extends TestCase
                 'fields' => [
                     'artist' => [
                         'type' => $driver->connection(Artist::class),
-                        'args' => [
-                            'filter' => $driver->filter(Artist::class),
-                            'pagination' => $driver->pagination(),
-                        ],
+                        'args' => ['filter' => $driver->filter(Artist::class)] + $driver->pagination(),
                         'resolve' => $driver->resolve(Artist::class),
                     ],
                 ],

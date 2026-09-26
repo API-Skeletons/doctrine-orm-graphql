@@ -161,7 +161,7 @@ class ResolveCollectionFactoryTest extends TestCase
               edges {
                 node {
                   id
-                  performances(pagination: { first: 2 }) {
+                  performances(first: 2) {
                     edges {
                       node {
                         venue
@@ -222,7 +222,7 @@ class ResolveCollectionFactoryTest extends TestCase
               edges {
                 node {
                   id
-                  performances(pagination: { last: 2 }) {
+                  performances(last: 2) {
                     edges {
                       node {
                         venue
@@ -284,7 +284,7 @@ class ResolveCollectionFactoryTest extends TestCase
               edges {
                 node {
                   id
-                  performances(pagination: { first: 1 }) {
+                  performances(first: 1) {
                     edges {
                       cursor
                       node {
@@ -313,7 +313,7 @@ class ResolveCollectionFactoryTest extends TestCase
               edges {
                 node {
                   id
-                  performances(pagination: { first: 1, after: $cursor }) {
+                  performances(first: 1, after: $cursor) {
                     edges {
                       node {
                         venue
@@ -367,7 +367,7 @@ class ResolveCollectionFactoryTest extends TestCase
               edges {
                 node {
                   id
-                  performances(pagination: { first: 3 }) {
+                  performances(first: 3) {
                     edges {
                       cursor
                       node {
@@ -396,7 +396,7 @@ class ResolveCollectionFactoryTest extends TestCase
               edges {
                 node {
                   id
-                  performances(pagination: { first: 1, before: $cursor }) {
+                  performances(first: 1, before: $cursor) {
                     edges {
                       node {
                         venue

@@ -111,14 +111,14 @@ class FilterQueryBuilderTest extends TestCase
                 'fields' => [
                     'artist' => [
                         'type' => $driver->connection(Artist::class),
-                        'args' => ['pagination' => $driver->pagination()],
+                        'args' => $driver->pagination(),
                         'resolve' => $driver->resolve(Artist::class, 'artist.querybuilder'),
                     ],
                 ],
             ]),
         ]);
 
-        $query  = '{ artist (pagination: { last: 2 }) { totalCount edges { node { id } } } }';
+        $query  = '{ artist (last: 2) { totalCount edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query)->toArray();
 
         $this->assertArrayNotHasKey('errors', $result);

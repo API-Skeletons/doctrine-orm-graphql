@@ -29,7 +29,7 @@ class PaginationTest extends TestCase
         ]);
 
         $query  = '{
-            performances (pagination: { first: 2 }) {
+            performances (first: 2) {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -70,7 +70,7 @@ class PaginationTest extends TestCase
         ]);
 
         $query  = '{
-            performances (pagination: { first: 2 after: "MQ==" }) {
+            performances (first: 2 after: "MQ==") {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -111,12 +111,12 @@ class PaginationTest extends TestCase
         ]);
 
         $query  = '{
-            artists (pagination: { first: 1 }) {
+            artists (first: 1) {
                 edges {
                     cursor
                     node {
                         id
-                        performances (pagination: { first: 2 after: "MQ==" }) {
+                        performances (first: 2 after: "MQ==") {
                             pageInfo {
                                 hasNextPage
                                 hasPreviousPage
@@ -166,7 +166,7 @@ class PaginationTest extends TestCase
         ]);
 
         $query  = '{
-            performance (pagination: { first: 2 after: "MQ=="}) {
+            performance (first: 2 after: "MQ==") {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -202,7 +202,7 @@ class PaginationTest extends TestCase
         ]);
 
         $query  = '{
-            performance (pagination: { last: 2 }) {
+            performance (last: 2) {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -238,7 +238,7 @@ class PaginationTest extends TestCase
         ]);
 
         $query  = '{
-            performance (pagination: { last: 2 before: "Nw=="}) {
+            performance (last: 2 before: "Nw==") {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -273,7 +273,7 @@ class PaginationTest extends TestCase
             ]),
         ]);
 
-        $query  = '{ performance ( pagination: { first: 3, after: "LTU=" } ) { edges { node { id } } } }';
+        $query  = '{ performance ( first: 3, after: "LTU=" ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query)->toArray();
 
         $this->assertArrayHasKey('errors', $result);

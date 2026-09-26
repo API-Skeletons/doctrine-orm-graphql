@@ -74,7 +74,7 @@ class PageInfoTest extends TestCase
         ]);
 
         $query  = '{
-            performances (pagination: { first: 2 }) {
+            performances (first: 2) {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -107,7 +107,7 @@ class PageInfoTest extends TestCase
         ]);
 
         $query  = '{
-            performance (pagination: { last: 2}) {
+            performance (last: 2) {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -156,7 +156,7 @@ class PageInfoTest extends TestCase
         ]);
 
         $query = '{
-            performance (pagination: { before: "MA==" }) {
+            performance (before: "MA==") {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage

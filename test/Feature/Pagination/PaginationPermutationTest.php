@@ -29,7 +29,8 @@ use function base64_encode;
  */
 class PaginationPermutationTest extends TestCase
 {
-    private const string QUERY = 'query ($pagination: Pagination) { rows (pagination: $pagination) { '
+    private const string QUERY = 'query ($first: Int, $after: String, $last: Int, $before: String) { '
+        . 'rows (first: $first, after: $after, last: $last, before: $before) { '
         . 'totalCount pageInfo { hasNextPage hasPreviousPage } edges { node { id } } } }';
 
     private static function cursor(int $index): string
@@ -153,8 +154,8 @@ class PaginationPermutationTest extends TestCase
             ]),
         ]);
 
-        $query = 'query ($pagination: Pagination) { artist { edges { node { '
-            . 'performances (pagination: $pagination) { totalCount '
+        $query = 'query ($first: Int, $after: String, $last: Int, $before: String) { artist { edges { node { '
+            . 'performances (first: $first, after: $after, last: $last, before: $before) { totalCount '
             . 'pageInfo { hasNextPage hasPreviousPage } edges { node { id } } } } } } }';
 
         $expectations = [
@@ -169,7 +170,7 @@ class PaginationPermutationTest extends TestCase
         ];
 
         foreach ($expectations as $description => [$pagination, $expectedIds, $hasNextPage, $hasPreviousPage]) {
-            $result = GraphQL::executeQuery($schema, $query, null, null, ['pagination' => $pagination])->toArray();
+            $result = GraphQL::executeQuery($schema, $query, null, null, $pagination)->toArray();
 
             $this->assertArrayNotHasKey('errors', $result, $description);
 
@@ -200,7 +201,7 @@ class PaginationPermutationTest extends TestCase
             ]),
         ]);
 
-        $query  = '{ artist { edges { node { performances (pagination: { last: 1000 }) '
+        $query  = '{ artist { edges { node { performances (last: 1000) '
             . '{ edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query)->toArray();
 
@@ -235,7 +236,7 @@ class PaginationPermutationTest extends TestCase
             ]),
         ]);
 
-        $result = GraphQL::executeQuery($schema, self::QUERY, null, null, ['pagination' => $pagination])->toArray();
+        $result = GraphQL::executeQuery($schema, self::QUERY, null, null, $pagination)->toArray();
 
         $this->assertArrayHasKey('errors', $result);
         $this->assertEquals($message, $result['errors'][0]['message']);
@@ -266,7 +267,7 @@ class PaginationPermutationTest extends TestCase
         bool $hasNextPage,
         bool $hasPreviousPage,
     ): void {
-        $result = GraphQL::executeQuery($schema, self::QUERY, null, null, ['pagination' => $pagination])->toArray();
+        $result = GraphQL::executeQuery($schema, self::QUERY, null, null, $pagination)->toArray();
 
         $this->assertArrayNotHasKey('errors', $result);
 

@@ -26,10 +26,7 @@ class IncludeFiltersTest extends TestCase
                 'fields' => [
                     'performances' => [
                         'type' => $driver->connection(Performance::class),
-                        'args' => [
-                            'filter' => $driver->filter(Performance::class),
-                            'pagination' => $driver->pagination(),
-                        ],
+                        'args' => ['filter' => $driver->filter(Performance::class)] + $driver->pagination(),
                         'resolve' => $driver->resolve(Performance::class),
                     ],
                 ],

@@ -10,6 +10,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
@@ -85,6 +86,7 @@ final class EntityTypeContainer extends Container
                         $container->get(FieldResolver::class),
                         $container->get(FilterFactory::class),
                         $container->get(HydratorContainer::class),
+                        $container->get(PaginationService::class),
                         $container->get(ResolveCollectionFactory::class),
                         $container->get(TypeContainer::class),
                         $metadata[$id],
