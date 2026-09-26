@@ -51,7 +51,7 @@ Add a custom hydrator strategy
 ==============================
 
 To add a custom hydrator strategy, create a class that implements the interface
-``ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\StrategyInterface``.  Add the class to the
+``ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\Strategy``.  Add the class to the
 hydrator strategy container after creating the driver.
 
 .. code-block:: php
@@ -71,14 +71,14 @@ The S3Url class would look something like this:
 
     namespace App\GraphQL\Hydrator\Strategy;
 
-    use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\StrategyInterface;
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\Strategy;
     use Illuminate\Support\Facades\Storage;
 
     /**
      * Resolve the token to an S3 url
      */
     class S3Url implements
-        StrategyInterface
+        Strategy
     {
         public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed
         {

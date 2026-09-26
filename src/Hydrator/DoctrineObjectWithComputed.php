@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
-use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\StrategyInterface;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\Strategy;
 use Doctrine\Laminas\Hydrator\DoctrineObject;
 use Laminas\Hydrator\Filter\FilterProviderInterface;
 use Override;
@@ -136,7 +136,7 @@ final class DoctrineObjectWithComputed extends DoctrineObject
 
     /**
      * Extract a value through its strategy, passing the field name to
-     * strategies which implement this library's StrategyInterface.
+     * strategies which implement this library's Strategy interface.
      *
      * The Laminas hydrator does not pass the field name to strategies.
      * Strategies are shared instances, so without the field name a strategy
@@ -153,7 +153,7 @@ final class DoctrineObjectWithComputed extends DoctrineObject
 
         $strategy = $this->getStrategy($name);
 
-        if ($strategy instanceof StrategyInterface) {
+        if ($strategy instanceof Strategy) {
             return $strategy->extract($value, $object, $name);
         }
 

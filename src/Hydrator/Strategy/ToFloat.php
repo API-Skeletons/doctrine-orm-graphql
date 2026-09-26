@@ -13,7 +13,7 @@ use function floatval;
  *
  * @returns float
  */
-final class ToFloat implements StrategyInterface
+final class ToFloat implements Strategy
 {
     #[Override]
     public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed

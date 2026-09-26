@@ -13,7 +13,7 @@ use function intval;
  *
  * @returns integer
  */
-final class ToInteger implements StrategyInterface
+final class ToInteger implements Strategy
 {
     #[Override]
     public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed

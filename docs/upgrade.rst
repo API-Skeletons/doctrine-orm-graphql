@@ -9,7 +9,7 @@ Hydrator strategies receive the field name
 ------------------------------------------
 
 This library now has its own
-``ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\StrategyInterface``, which
+``ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\Strategy`` interface, which
 extends ``Laminas\Hydrator\Strategy\StrategyInterface``.  Its ``extract()`` method
 takes a third argument, the Doctrine field name being extracted:
 

@@ -17,7 +17,7 @@ use Override;
  * Strategies which implement only the Laminas StrategyInterface are still
  * supported; they are called without the field name.
  */
-interface StrategyInterface extends LaminasStrategyInterface // phpcs:ignore SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming.SuperfluousSuffix
+interface Strategy extends LaminasStrategyInterface
 {
     /**
      * Converts the given value so that it can be extracted by the hydrator.
