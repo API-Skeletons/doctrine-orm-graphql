@@ -57,18 +57,18 @@ class DateTimeImmutableTest extends TestCase
 
     public function testSerializeString(): void
     {
-        $dateImmutableType = new DateTimeImmutable();
-        $result            = $dateImmutableType->serialize('2020-03-01T00:00:00+00:00');
+        $this->expectException(Error::class);
 
-        $this->assertEquals('2020-03-01T00:00:00+00:00', $result);
+        $dateImmutableType = new DateTimeImmutable();
+        $dateImmutableType->serialize('2020-03-01T00:00:00+00:00');
     }
 
     public function testSerializeNull(): void
     {
-        $dateImmutableType = new DateTimeImmutable();
-        $result            = $dateImmutableType->serialize(null);
+        $this->expectException(Error::class);
 
-        $this->assertNull($result);
+        $dateImmutableType = new DateTimeImmutable();
+        $dateImmutableType->serialize(null);
     }
 
     public function testBetween(): void

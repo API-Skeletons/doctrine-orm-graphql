@@ -98,6 +98,21 @@ If you set an ``alias`` on a to-one association, query and filter it by the
 alias.  This is a schema change for those fields; regenerate any client types
 built from the schema.
 
+Date and time scalars are strict about their values
+----------------------------------------------------
+
+The ``Date``, ``DateImmutable``, ``DateTime``, ``DateTimeImmutable``,
+``DateTimeTZ``, ``DateTimeTZImmutable``, ``Time`` and ``TimeImmutable``
+scalars now serialize any ``DateTimeInterface``, mutable or immutable, and
+throw ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization``
+for anything else.  Six of them previously returned a string unchanged and
+returned null for any other value, including the other ``DateTimeInterface``
+class.  If a resolver or computed field returns a formatted string for one of
+these types, return the date object instead.
+
+A ``Time`` or ``TimeImmutable`` value written as a literal in a query is now
+validated, as a variable already was.  An invalid time literal is an error.
+
 Date and time filters match date and time fields
 ------------------------------------------------
 

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SerializeDateTime;
 use DateTime as PHPDateTime;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 use Override;
 
+use function get_debug_type;
 use function is_string;
 use function preg_match;
 
@@ -19,21 +21,20 @@ use function preg_match;
  */
 final class Time extends ScalarType
 {
+    use SerializeDateTime;
+
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `Time` scalar type represents time data.'
     . 'The format is e.g. 24 hour:minutes:seconds.microseconds';
 
     #[Override]
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTime
     {
-        // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
             throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
-        // @codeCoverageIgnoreEnd
-
-        return $valueNode->value;
+        return $this->parseValue($valueNode->value);
     }
 
     /**
@@ -43,8 +44,7 @@ final class Time extends ScalarType
     public function parseValue(mixed $value): PHPDateTime
     {
         if (! is_string($value)) {
-            /** @psalm-suppress MixedOperand */
-            throw new TypeSerializationException('Time is not a string: ' . $value);
+            throw new TypeSerializationException('Time is not a string: ' . get_debug_type($value));
         }
 
         if (! preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])(\.\d{1,6})?$/', $value)) {
@@ -77,13 +77,10 @@ final class Time extends ScalarType
         return $time;
     }
 
+    /** @throws TypeSerializationException */
     #[Override]
-    public function serialize(mixed $value): string|null
+    public function serialize(mixed $value): string
     {
-        if ($value instanceof PHPDateTime) {
-            return $value->format('H:i:s.u');
-        }
-
-        return is_string($value) ? $value : null;
+        return $this->serializeDateTime($value, 'H:i:s.u');
     }
 }

@@ -52,12 +52,11 @@ class DateImmutableTest extends TestCase
         $dateImmutableType->serialize('invalid string');
     }
 
-    public function testSerializeNonDateTimeObject(): void
+    public function testSerializeAcceptsAMutableDateTime(): void
     {
-        $this->expectException(Error::class);
         $dateImmutableType = new DateImmutable();
 
-        $dateImmutableType->serialize(new PHPDateTime());
+        $this->assertSame('2004-02-12', $dateImmutableType->serialize(new PHPDateTime('2004-02-12 15:19:21')));
     }
 
     public function testBetween(): void

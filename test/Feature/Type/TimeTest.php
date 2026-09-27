@@ -55,18 +55,18 @@ class TimeTest extends TestCase
 
     public function testSerializeString(): void
     {
-        $timeType = new Time();
-        $result   = $timeType->serialize('20:12:15.123456');
+        $this->expectException(Error::class);
 
-        $this->assertEquals('20:12:15.123456', $result);
+        $timeType = new Time();
+        $timeType->serialize('20:12:15.123456');
     }
 
     public function testSerializeNull(): void
     {
-        $timeType = new Time();
-        $result   = $timeType->serialize(null);
+        $this->expectException(Error::class);
 
-        $this->assertNull($result);
+        $timeType = new Time();
+        $timeType->serialize(null);
     }
 
     public function testBetween(): void
