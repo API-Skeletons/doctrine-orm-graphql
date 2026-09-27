@@ -98,6 +98,14 @@ If you set an ``alias`` on a to-one association, query and filter it by the
 alias.  This is a schema change for those fields; regenerate any client types
 built from the schema.
 
+Date and time filters match date and time fields
+------------------------------------------------
+
+Filter values for date and time fields are bound as the field's Doctrine
+type.  A filter on a ``date``, ``date_immutable``, ``time`` or
+``time_immutable`` field previously matched no rows, because the value was
+bound as a ``datetime``.  No change is needed; these filters now work.
+
 The sort filter takes a SortDirection enum
 ------------------------------------------
 
