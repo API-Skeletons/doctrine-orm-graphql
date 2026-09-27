@@ -294,9 +294,10 @@ as detailed in `tips <tips.html>`_.
 input()
 -------
 
-This function creates an InputObjectType for the given entity.  There are three
-parameters:  The entity class name, an array of required fields, and an array
-of optional fields.
+This function creates an InputObjectType for the given entity.  There are four
+parameters:  The entity class name, an array of required fields, an array
+of optional fields, and an optional name for the type.  See
+`mutations <mutations.html>`_.
 
 
 type()

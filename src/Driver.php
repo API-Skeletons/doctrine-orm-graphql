@@ -173,15 +173,24 @@ final class Driver extends Container
     }
 
     /**
-     * @param string[] $requiredFields An optional list of just the required fields you want for the mutation.
-     * @param string[] $optionalFields An optional list of optional fields you want for the mutation.
+     * Return an InputObjectType for a mutation.  The same entity and fields
+     * always return the same type.
+     *
+     * @param string[]    $requiredFields An optional list of just the required fields you want for the mutation.
+     * @param string[]    $optionalFields An optional list of optional fields you want for the mutation.
+     * @param string|null $name           An optional name for the input type.  When it is not given the
+     *                                    name is derived from the entity and the fields.
      */
-    public function input(string $entityClass, array $requiredFields = [], array $optionalFields = []): InputObjectType
-    {
+    public function input(
+        string $entityClass,
+        array $requiredFields = [],
+        array $optionalFields = [],
+        string|null $name = null,
+    ): InputObjectType {
         $inputFactory = $this->get(Input\InputFactory::class);
         assert($inputFactory instanceof Input\InputFactory);
 
-        return $inputFactory->get($entityClass, $requiredFields, $optionalFields);
+        return $inputFactory->get($entityClass, $requiredFields, $optionalFields, $name);
     }
 
     /**

@@ -98,6 +98,20 @@ If you set an ``alias`` on a to-one association, query and filter it by the
 alias.  This is a schema change for those fields; regenerate any client types
 built from the schema.
 
+Input type names are stable
+---------------------------
+
+Input types were named ``<type>_Input_<uniqid>``, which changed on every
+build.  They are now named ``<type>_Input`` when no field lists are given and
+``<type>_Input_<hash of the fields>`` otherwise, so they are the same on every
+build.  Calling ``input()`` again with the same entity and fields returns the
+same type instead of a new one.
+
+``input()`` takes a new optional fourth parameter to name the type yourself,
+for example ``$driver->input(Artist::class, ['name'], [], 'CreateArtistInput')``.
+
+Regenerate any client types built from the schema.
+
 input() rejects field names it cannot use
 -----------------------------------------
 
