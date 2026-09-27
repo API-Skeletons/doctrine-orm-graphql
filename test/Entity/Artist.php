@@ -28,7 +28,7 @@ use function strtoupper;
 #[GraphQL\Entity(group: 'ExtractionMap', limit: 1)]
 #[GraphQL\Entity(group: 'ExtractionMapDuplicate', limit: 1)]
 #[GraphQL\Entity(group: 'computedFieldTest')]
-#[GraphQL\Entity(group: 'MappedSuperclassTest')]
+#[GraphQL\Entity(group: 'MappedSuperclassTest', description: 'Artists in a release')]
 #[GraphQL\Entity(group: 'MappedSuperclassByReferenceTest')]
 
 #[ORM\Entity]
