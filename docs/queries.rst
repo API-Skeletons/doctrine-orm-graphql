@@ -72,6 +72,11 @@ Provided Filters::
     sort         -  Sort the result by this field.  Value is the SortDirection enum, ASC or DESC.
     sortPriority -  Sort priority when multiple sort fields are used.  Value is an integer starting at 1.
 
+When several fields are sorted, fields with a ``sortPriority`` are sorted
+first, lowest priority first.  Fields without a ``sortPriority`` follow,
+ordered by field name, as are fields with the same priority.  A
+``sortPriority`` without a ``sort`` direction is an error.
+
 The format for using these filters is:
 
 .. code-block:: js

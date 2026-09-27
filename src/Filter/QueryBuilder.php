@@ -10,9 +10,8 @@ use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 
 use function array_flip;
 use function in_array;
-use function key;
 use function strcmp;
-use function uasort;
+use function uksort;
 use function uniqid;
 
 /**
@@ -21,7 +20,11 @@ use function uniqid;
  */
 final class QueryBuilder
 {
-    /** @var mixed[]  */
+    /**
+     * The sort direction and priority of each sorted field, keyed by field
+     *
+     * @var array<string, array{direction?: string, priority?: int}>
+     */
     private array $sortFields = [];
 
     /**
@@ -155,7 +158,6 @@ final class QueryBuilder
         // This method is used to set the sort direction for a field
         // It will be used to apply sorting later in the applySort method.
         // The SortDirection enum guarantees the direction is ASC or DESC.
-        /** @psalm-suppress MixedArrayAssignment */
         $this->sortFields[$field]['direction'] = $direction;
     }
 
@@ -167,7 +169,6 @@ final class QueryBuilder
 
         // This method is used to set the sort priority for a field
         // It will be used to apply sorting later in the applySort method
-        /** @psalm-suppress MixedArrayAssignment */
         $this->sortFields[$field]['priority'] = $priority;
     }
 
@@ -178,21 +179,30 @@ final class QueryBuilder
             return;
         }
 
-        // Sort fields by priority if set, otherwise by field name
-        /** @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion */
-        uasort($this->sortFields, static function ($a, $b) {
-            if (isset($a['priority']) && isset($b['priority'])) {
-                return $a['priority'] <=> $b['priority'];
+        // Fields with a priority come first, lowest priority first.  Fields
+        // without a priority follow.  Ties are ordered by field name.
+        $sortFields = $this->sortFields;
+        uksort($sortFields, static function (string $a, string $b) use ($sortFields): int {
+            $priorityA = $sortFields[$a]['priority'] ?? null;
+            $priorityB = $sortFields[$b]['priority'] ?? null;
+
+            if ($priorityA !== $priorityB) {
+                if ($priorityA === null) {
+                    return 1;
+                }
+
+                if ($priorityB === null) {
+                    return -1;
+                }
+
+                return $priorityA <=> $priorityB;
             }
 
-            return strcmp(key($a) ?? '', key($b) ?? '');
+            return strcmp($a, $b);
         });
 
-        $sortStrings = [];
-
-        /** @psalm-suppress MixedAssignment */
-        foreach ($this->sortFields as $field => $sort) {
-            // If the direction is not set, default to 'ASC'
+        foreach ($sortFields as $field => $sort) {
+            // A sortPriority without a sort direction is an error
             if (! isset($sort['direction'])) {
                 throw new FilterException(
                     "Sort direction for field '"
@@ -202,7 +212,6 @@ final class QueryBuilder
                 );
             }
 
-            /** @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion */
             $queryBuilder->addOrderBy($field, $sort['direction']);
         }
     }
