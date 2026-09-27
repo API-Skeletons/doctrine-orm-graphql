@@ -116,12 +116,12 @@ Shared Type Container
 
 If you have more than one driver and it uses a different group,
 and you use both drivers together in a single schema,
-you will have type collisions with the PageInfo type.
+you will have type collisions with the PageInfo and SortDirection types.
 The reason a collision occurs is because the
 GraphQL specification defines PageInfo as a `Reserved Type <https://relay.dev/graphql/connections.htm#sec-Reserved-Types>`_.
 
 The problem is each driver will have its own definition for
-this type and they are not identical at runtime in PHP.
+these types and they are not identical at runtime in PHP.
 To work around this you must use a shared type container:
 
 .. code-block:: php

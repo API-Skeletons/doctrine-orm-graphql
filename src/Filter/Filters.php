@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Between;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\SortDirection;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
 
 use function array_map;
+use function assert;
 use function is_string;
 
 /**
@@ -52,7 +55,7 @@ enum Filters: string
             self::IN           => 'In the array of values',
             self::NOTIN        => 'Not in the array of values',
             self::ISNULL       => 'Is null',
-            self::SORT         => 'Sort by field. ASC or DESC.',
+            self::SORT         => 'Sort by field.  ASC or DESC.',
             self::SORTPRIORITY => 'Specify the sort priority of a field.   Priorities are sorted lowest number first.  Sort must also be speciifed.',
         };
     }
@@ -62,7 +65,7 @@ enum Filters: string
      *
      * @param ScalarType|ListOfType<Type> $type
      */
-    public function type(ScalarType|ListOfType $type): Type
+    public function type(ScalarType|ListOfType $type, TypeContainer $typeContainer): Type
     {
         return match ($this) {
             self::EQ           => $type,
@@ -78,9 +81,21 @@ enum Filters: string
             self::IN           => Type::listOf($type),
             self::NOTIN        => Type::listOf($type),
             self::ISNULL       => Type::boolean(),
-            self::SORT         => Type::string(),
+            self::SORT         => $this->sortDirection($typeContainer),
             self::SORTPRIORITY => Type::int(),
         };
+    }
+
+    /**
+     * The SortDirection enum is shared through the TypeContainer because a
+     * schema may contain only one type of each name
+     */
+    private function sortDirection(TypeContainer $typeContainer): SortDirection
+    {
+        $sortDirection = $typeContainer->get('sortdirection');
+        assert($sortDirection instanceof SortDirection);
+
+        return $sortDirection;
     }
 
     /**

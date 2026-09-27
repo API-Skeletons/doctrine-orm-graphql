@@ -250,7 +250,7 @@ class CollectionFilterTest extends TestCase
 
     public function testsort(): void
     {
-        $query  = '{ artist { edges { node { performances ( filter: { id: { sort: "desc" } } ) { edges { node { id } } } } } } }';
+        $query  = '{ artist { edges { node { performances ( filter: { id: { sort: DESC } } ) { edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($this->schema, $query);
 
         $data = $result->toArray()['data'];
@@ -258,7 +258,7 @@ class CollectionFilterTest extends TestCase
         $this->assertEquals(5, count($data['artist']['edges'][0]['node']['performances']['edges']));
         $this->assertEquals(5, $data['artist']['edges'][0]['node']['performances']['edges'][0]['node']['id']);
 
-        $query  = '{ artist { edges { node { performances ( filter: {  venue: { sort: "asc" } } ) { edges { node { id } } } } } } }';
+        $query  = '{ artist { edges { node { performances ( filter: {  venue: { sort: ASC } } ) { edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($this->schema, $query);
 
         $data = $result->toArray()['data'];
@@ -266,7 +266,7 @@ class CollectionFilterTest extends TestCase
         $this->assertEquals(5, count($data['artist']['edges'][0]['node']['performances']['edges']));
         $this->assertEquals(5, $data['artist']['edges'][0]['node']['performances']['edges'][0]['node']['id']);
 
-        $query  = '{ artist { edges { node { performances ( filter: { venue: { sort: "desc" } } ) { edges { node { id } } } } } } }';
+        $query  = '{ artist { edges { node { performances ( filter: { venue: { sort: DESC } } ) { edges { node { id } } } } } } }';
         $result = GraphQL::executeQuery($this->schema, $query);
 
         $data = $result->toArray()['data'];

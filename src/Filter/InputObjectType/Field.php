@@ -36,7 +36,7 @@ class Field extends InputObjectType
         foreach ($allowedFilters as $filter) {
             $fields[$filter->value] = [
                 'name'        => $filter->value,
-                'type'        => $filter->type($type),
+                'type'        => $filter->type($type, $typeContainer),
                 'description' => $filter->description(),
             ];
 

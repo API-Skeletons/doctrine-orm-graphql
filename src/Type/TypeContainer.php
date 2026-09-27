@@ -36,6 +36,7 @@ final class TypeContainer extends Container
             ->set('datetimetz_immutable', static fn () => new DateTimeTZImmutable())
             ->set('time_immutable', static fn () => new TimeImmutable())
             ->set('pageinfo', static fn () => new PageInfo())
+            ->set('sortdirection', static fn () => new SortDirection())
             ->set('blob', static fn () => new Blob());
     }
 }

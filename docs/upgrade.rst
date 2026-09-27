@@ -98,6 +98,34 @@ If you set an ``alias`` on a to-one association, query and filter it by the
 alias.  This is a schema change for those fields; regenerate any client types
 built from the schema.
 
+The sort filter takes a SortDirection enum
+------------------------------------------
+
+The ``sort`` filter was a ``String``.  Any value was passed to Doctrine, so an
+invalid direction failed inside the query with a DQL error.  It is now the
+``SortDirection`` enum with the values ``ASC`` and ``DESC``, and an invalid
+value is rejected when the query is validated.  This is a schema change.
+
+Enum values are not quoted, and they are upper case:
+
+.. code-block:: js
+
+    # 13.x
+    filter: { name: { sort: "asc" } }
+
+    # 14.0
+    filter: { name: { sort: ASC } }
+
+Variables still pass the value as a string, ``{"direction": "ASC"}``, and are
+declared with the ``SortDirection`` type.  Lower case ``asc`` and ``desc``,
+which were accepted before, are rejected.
+
+If you use more than one driver in a schema, share the ``TypeContainer``
+between them as described in `tips <tips.html>`_, as you do for ``PageInfo``.
+
+``Filter\Filters::type()`` now takes the ``TypeContainer`` as a second
+parameter, from which the shared ``SortDirection`` type is fetched.
+
 Input type names are stable
 ---------------------------
 

@@ -283,7 +283,7 @@ class EntityFilterTest extends TestCase
     {
         $schema = $dataProvider();
 
-        $query  = '{ performance ( filter: {artist: { eq: 1 } id: { sort: "desc" sortPriority: 1 } } ) { edges { node { id } } } }';
+        $query  = '{ performance ( filter: {artist: { eq: 1 } id: { sort: DESC sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
@@ -291,7 +291,7 @@ class EntityFilterTest extends TestCase
         $this->assertEquals(5, count($data['performance']['edges']));
         $this->assertEquals(5, $data['performance']['edges'][0]['node']['id']);
 
-        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "asc" sortPriority: 1 } } ) { edges { node { id } } } }';
+        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: ASC sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
@@ -299,7 +299,7 @@ class EntityFilterTest extends TestCase
         $this->assertEquals(5, count($data['performance']['edges']));
         $this->assertEquals(5, $data['performance']['edges'][0]['node']['id']);
 
-        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: "desc" sortPriority: 1 } } ) { edges { node { id } } } }';
+        $query  = '{ performance ( filter: {artist: { eq: 1 } venue: { sort: DESC sortPriority: 1 } } ) { edges { node { id } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];
@@ -322,11 +322,11 @@ class EntityFilterTest extends TestCase
                 }
                 venue: {
                   eq: "E Center"
-                  sort: "asc"
+                  sort: ASC
                   sortPriority: 1
                 }
                 performanceDate: {
-                  sort: "asc"
+                  sort: ASC
                   sortPriority: 2
                 }
               }
@@ -355,11 +355,11 @@ class EntityFilterTest extends TestCase
                 }
                 venue: {
                   eq: "E Center"
-                  sort: "asc"
+                  sort: ASC
                   sortPriority: 1
                 }
                 performanceDate: {
-                  sort: "desc"
+                  sort: DESC
                   sortPriority: 2
                 }
               }
@@ -396,7 +396,7 @@ class EntityFilterTest extends TestCase
                   eq: 2
                 }
                 venue: {
-                  sort: "asc"
+                  sort: ASC
                 }
               }
             ) {
@@ -430,10 +430,10 @@ class EntityFilterTest extends TestCase
                 }
                 venue: {
                   eq: "E Center"
-                  sort: "asc"
+                  sort: ASC
                 }
                 performanceDate: {
-                  sort: "asc"
+                  sort: ASC
                 }
               }
             ) {
