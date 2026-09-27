@@ -8,6 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
@@ -59,6 +60,9 @@ class ExtractionMapTest extends TestCase
                       node {
                         key
                         date
+                        band {
+                          title
+                        }
                       }
                     }
                   }
@@ -73,6 +77,49 @@ class ExtractionMapTest extends TestCase
 
         $this->assertEquals(1, count($output['data']['artist']['edges']));
         $this->assertEquals(1, count($output['data']['artist']['edges'][0]['node']['gigs']['edges']));
+
+        // A to-one association is exposed under its alias and resolves
+        $performanceType = $driver->type(Performance::class);
+        $this->assertTrue($performanceType->hasField('band'));
+        $this->assertFalse($performanceType->hasField('artist'));
+        $this->assertSame(
+            'Grateful Dead',
+            $output['data']['artist']['edges'][0]['node']['gigs']['edges'][0]['node']['band']['title'],
+        );
+    }
+
+    /**
+     * The eq filter for an aliased to-one association is named by the alias
+     */
+    public function testToOneAssociationFilterUsesAlias(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'ExtractionMap']));
+
+        $artist = $this->getEntityManager()->getRepository(Artist::class)
+            ->findOneBy(['name' => 'Grateful Dead']);
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'performance' => $driver->completeConnection(Performance::class),
+                ],
+            ]),
+        ]);
+
+        $result = GraphQL::executeQuery(
+            $schema,
+            '{ performance (filter: { band: { eq: ' . $artist->getId() . ' } }) { totalCount edges { node { band { title } } } } }',
+        )->toArray();
+
+        $this->assertArrayNotHasKey('errors', $result);
+
+        $expected = $this->getEntityManager()->getRepository(Performance::class)->count(['artist' => $artist]);
+        $this->assertSame($expected, $result['data']['performance']['totalCount']);
+
+        foreach ($result['data']['performance']['edges'] as $edge) {
+            $this->assertSame('Grateful Dead', $edge['node']['band']['title']);
+        }
     }
 
     public function testDuplicateAliasOnSameEntity(): void

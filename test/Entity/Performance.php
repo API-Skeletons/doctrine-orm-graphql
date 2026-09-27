@@ -97,6 +97,7 @@ class Performance
     private Collection $recordings;
 
     #[GraphQL\Association(description: 'Artist entity')]
+    #[GraphQL\Association(group: 'ExtractionMap', alias: 'band')]
     #[ORM\ManyToOne(
         targetEntity: Artist::class,
         inversedBy: 'performances',

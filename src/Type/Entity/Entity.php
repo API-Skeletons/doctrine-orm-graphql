@@ -232,14 +232,18 @@ final class Entity
                     ClassMetadata::TO_ONE,
                 ])
             ) {
-                $targetEntity             = $associationMetadata['targetEntity'];
-                $fields[$associationName] = function () use ($targetEntity): array {
+                $targetEntity = $associationMetadata['targetEntity'];
+
+                // The hydrator extracts an aliased association under its alias
+                $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName): array {
                     /** @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall */
                     $entity = $this->entityTypeContainer->get($targetEntity);
 
+                    // The association's description, else the target entity's
                     return [
                         'type' => $entity->getObjectType(),
-                        'description' => $entity->getDescription(),
+                        'description' => $this->metadata['fields'][$associationName]['description']
+                            ?? $entity->getDescription(),
                     ];
                 };
 

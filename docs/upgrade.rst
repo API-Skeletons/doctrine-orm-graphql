@@ -72,6 +72,18 @@ always null.  Read ``getArgs()['first']``, ``['after']``, ``['last']`` and
 ``['before']`` instead.  This change does not raise an error, so search your
 listeners for ``'pagination'``.
 
+Aliases apply to to-one associations
+------------------------------------
+
+An ``alias`` on a to-one association (``ManyToOne`` or ``OneToOne``) was
+ignored when naming the GraphQL field, which kept the association name and
+always resolved to null.  The field and its ``eq`` filter are now named by the
+alias, as they already were for collections and fields.
+
+If you set an ``alias`` on a to-one association, query and filter it by the
+alias.  This is a schema change for those fields; regenerate any client types
+built from the schema.
+
 input() rejects field names it cannot use
 -----------------------------------------
 
