@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration as ConfigurationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeNotFound as TypeNotFoundException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SuggestSimilarString;
 use Closure;
@@ -15,7 +16,6 @@ use ReflectionException;
 
 use function array_keys;
 use function array_map;
-use function assert;
 use function strtolower;
 
 /**
@@ -100,7 +100,11 @@ abstract class Container implements ContainerInterface
         }
 
         $reflectionClass = new ReflectionClass($className);
-        assert($reflectionClass->implementsInterface(Buildable::class));
+        if (! $reflectionClass->implementsInterface(Buildable::class)) {
+            throw new ConfigurationException(
+                $className . ' cannot be built because it does not implement ' . Buildable::class . '.',
+            );
+        }
 
         /** @psalm-suppress MixedMethodCall */
         return $this

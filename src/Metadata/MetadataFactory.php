@@ -19,7 +19,6 @@ use ReflectionClass;
 use ReflectionProperty;
 use RuntimeException;
 
-use function assert;
 use function ctype_upper;
 use function in_array;
 use function lcfirst;
@@ -109,11 +108,13 @@ final class MetadataFactory
             $entityAttributeFound = true;
 
             // Only one matching instance per group is allowed
-            assert(
-                ! $entityInstance,
-                'Duplicate attribute found for entity '
-                . $reflectionClass->getName() . ', group ' . $instance->getGroup(),
-            );
+            if ($entityInstance) {
+                throw new MetadataException(
+                    'Duplicate attribute found for entity '
+                    . $reflectionClass->getName() . ', group ' . $instance->getGroup(),
+                );
+            }
+
             $entityInstance = $instance;
 
             // Save entity-level metadata
@@ -156,11 +157,13 @@ final class MetadataFactory
                 }
 
                 // Only one matching instance per group is allowed
-                assert(
-                    ! $fieldInstance,
-                    'Duplicate attribute found for field '
-                    . $fieldName . ', group ' . $instance->getGroup(),
-                );
+                if ($fieldInstance) {
+                    throw new MetadataException(
+                        'Duplicate attribute found for field '
+                        . $fieldName . ', group ' . $instance->getGroup(),
+                    );
+                }
+
                 $fieldInstance = $instance;
 
                 $fieldMetadata = [
@@ -204,11 +207,12 @@ final class MetadataFactory
                 }
 
                 // Only one matching instance per group is allowed
-                assert(
-                    ! $associationInstance,
-                    'Duplicate attribute found for association '
-                    . $associationName . ', group ' . $instance->getGroup(),
-                );
+                if ($associationInstance) {
+                    throw new MetadataException(
+                        'Duplicate attribute found for association '
+                        . $associationName . ', group ' . $instance->getGroup(),
+                    );
+                }
 
                 $associationInstance = $instance;
 
@@ -251,11 +255,13 @@ final class MetadataFactory
                 }
 
                 // Only one matching instance per group is allowed
-                assert(
-                    ! $computedFieldInstance,
-                    'Duplicate ComputedField attribute found for method '
-                    . $reflectionMethod->getName() . ', group ' . $instance->getGroup(),
-                );
+                if ($computedFieldInstance) {
+                    throw new MetadataException(
+                        'Duplicate ComputedField attribute found for method '
+                        . $reflectionMethod->getName() . ', group ' . $instance->getGroup(),
+                    );
+                }
+
                 $computedFieldInstance = $instance;
 
                 // Determine field name: use explicit name or derive from method name

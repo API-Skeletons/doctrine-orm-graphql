@@ -6,36 +6,61 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
-use AssertionError;
+use PHPUnit\Framework\Attributes\DataProvider;
 
+use function ini_get;
+use function ini_set;
+
+/**
+ * Two attributes for the same group on one entity, field, association or
+ * computed field is a metadata error.  The check does not depend on
+ * assertions, which are disabled in production.
+ */
 class DuplicateGroupTest extends TestCase
 {
-    public function testDuplicateEntityAttributeForGroup(): void
+    /** @return array<string, array{string, string, string}> */
+    public static function duplicateProvider(): array
     {
-        $this->expectException(AssertionError::class);
-
-        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DuplicateGroup']));
-
-        $driver->get(Metadata::class);
+        return [
+            'entity' => ['DuplicateGroup', '0', 'Duplicate attribute found for entity'],
+            'field' => ['DuplicateGroupField', '0', 'Duplicate attribute found for field name'],
+            'association' => ['DuplicateGroupAssociation', '0', 'Duplicate attribute found for association'],
+            'computed field' => [
+                'DuplicateGroupComputedField',
+                '0',
+                'Duplicate ComputedField attribute found for method getFullName',
+            ],
+            'entity, assertions on' => ['DuplicateGroup', '1', 'Duplicate attribute found for entity'],
+            'field, assertions on' => ['DuplicateGroupField', '1', 'Duplicate attribute found for field name'],
+        ];
     }
 
-    public function testDuplicateEntityAttributeForField(): void
-    {
-        $this->expectException(AssertionError::class);
+    #[DataProvider('duplicateProvider')]
+    public function testDuplicateAttributeThrowsMetadataException(
+        string $group,
+        string $assertions,
+        string $message,
+    ): void {
+        $previous = ini_get('zend.assertions');
+        // zend.assertions=-1 cannot be changed at runtime; assertions are already off
+        if ($previous !== '-1') {
+            ini_set('zend.assertions', $assertions);
+        }
 
-        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DuplicateGroupField']));
+        try {
+            $driver = new Driver($this->getEntityManager(), new Config(['group' => $group]));
 
-        $driver->get(Metadata::class);
-    }
+            $this->expectException(MetadataException::class);
+            $this->expectExceptionMessage($message);
 
-    public function testDuplicateEntityAttributeForAssociation(): void
-    {
-        $this->expectException(AssertionError::class);
-
-        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DuplicateGroupAssociation']));
-
-        $driver->get(Metadata::class);
+            $driver->get(Metadata::class);
+        } finally {
+            if ($previous !== '-1') {
+                ini_set('zend.assertions', (string) $previous);
+            }
+        }
     }
 }
