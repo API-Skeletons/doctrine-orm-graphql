@@ -88,6 +88,32 @@ closest exposed field when there is one::
 
   Field nmae is not a field of entity App\ORM\Entity\User. Did you mean "name"?
 
+
+Input Type Names
+================
+
+Input type names are stable, so they do not change between builds and are
+safe for schema diffs and client code generation.
+
+* With no field lists the type is named after the entity type with ``_Input``
+  appended.
+* With field lists a short hash of the fields is appended as well, so each set
+  of fields has its own name.  The order of the fields does not matter.
+
+Calling ``input()`` again for the same entity and fields returns the same
+type, so one input can be used by several mutations in a schema.
+
+To choose the name yourself, pass it as the fourth parameter.  This is
+recommended for inputs clients refer to:
+
+.. code-block:: php
+
+  $driver->input(Artist::class, ['name'], [], 'CreateArtistInput')
+
+The name must be a valid GraphQL name, and a name can only be used for one
+entity and set of fields.  Otherwise
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input`` is thrown.
+
 .. role:: raw-html(raw)
    :format: html
 

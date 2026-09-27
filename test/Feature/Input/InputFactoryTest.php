@@ -16,12 +16,13 @@ use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 
 use function array_keys;
+use function array_unique;
 
 class InputFactoryTest extends TestCase
 {
     /**
-     * TypeNames for inputs was EntityType_Input but that has been changed to
-     * EntityType_Input_uniqid to avoid collisions
+     * Two inputs for the same entity with different fields have different
+     * type names, so they can be used in one schema
      */
     public function testMultipeInputsWithSameEntity(): void
     {
@@ -607,5 +608,111 @@ class InputFactoryTest extends TestCase
         } catch (InputException $e) {
             $this->assertSame('Field zzzzzzzz is not a field of entity ' . User::class . '.', $e->getMessage());
         }
+    }
+
+    /**
+     * Input type names are derived from the fields, so they are the same on
+     * every build
+     */
+    public function testInputTypeNameIsDeterministic(): void
+    {
+        $driver1 = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+        $driver2 = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $this->assertSame(
+            $driver1->input(User::class, ['name'], ['email'])->name,
+            $driver2->input(User::class, ['name'], ['email'])->name,
+        );
+    }
+
+    public function testInputWithoutFieldListsIsNamedTypeInput(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $this->assertSame(
+            'ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_User_InputFactoryTest_Input',
+            $driver->input(User::class)->name,
+        );
+    }
+
+    /**
+     * The same call returns the same type, so it can be used by several
+     * mutations in one schema.  The order of the fields does not matter.
+     */
+    public function testSameFieldsReturnSameInputType(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $input = $driver->input(User::class, ['name', 'email']);
+
+        $this->assertSame($input, $driver->input(User::class, ['name', 'email']));
+        $this->assertSame($input, $driver->input(User::class, ['email', 'name']));
+
+        $schema = new Schema([
+            'query' => new ObjectType(['name' => 'query', 'fields' => ['user' => $driver->completeConnection(User::class)]]),
+            'mutation' => new ObjectType([
+                'name' => 'mutation',
+                'fields' => [
+                    'createUser' => [
+                        'type' => $driver->type(User::class),
+                        'args' => ['input' => Type::nonNull($driver->input(User::class, ['name', 'email']))],
+                    ],
+                    'updateUser' => [
+                        'type' => $driver->type(User::class),
+                        'args' => ['input' => Type::nonNull($driver->input(User::class, ['name', 'email']))],
+                    ],
+                ],
+            ]),
+        ]);
+
+        $schema->assertValid();
+    }
+
+    public function testDifferentFieldsReturnDifferentInputTypes(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $names = [
+            $driver->input(User::class)->name,
+            $driver->input(User::class, ['name'])->name,
+            $driver->input(User::class, ['email'])->name,
+            $driver->input(User::class, [], ['name'])->name,
+            $driver->input(User::class, ['name'], ['email'])->name,
+        ];
+
+        $this->assertSame($names, array_unique($names));
+    }
+
+    public function testInputWithName(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $input = $driver->input(User::class, ['name', 'email'], [], 'CreateUserInput');
+
+        $this->assertSame('CreateUserInput', $input->name);
+        $this->assertSame($input, $driver->input(User::class, ['email', 'name'], [], 'CreateUserInput'));
+        $this->assertNotSame($input, $driver->input(User::class, ['name', 'email']));
+    }
+
+    public function testInputNameReusedForDifferentFieldsThrowsException(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $driver->input(User::class, ['name'], [], 'UserInput');
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Input type name UserInput is already used for different fields');
+
+        $driver->input(User::class, ['email'], [], 'UserInput');
+    }
+
+    public function testInvalidInputNameThrowsException(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Input type name create-user is not a valid GraphQL name');
+
+        $driver->input(User::class, ['name'], [], 'create-user');
     }
 }

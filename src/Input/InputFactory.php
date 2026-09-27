@@ -19,11 +19,16 @@ use ReflectionClass;
 
 use function array_filter;
 use function array_merge;
+use function array_unique;
 use function array_values;
 use function assert;
 use function count;
 use function in_array;
-use function uniqid;
+use function md5;
+use function preg_match;
+use function serialize;
+use function sort;
+use function substr;
 
 /**
  * Create an input object type for a mutation
@@ -31,6 +36,14 @@ use function uniqid;
 final class InputFactory
 {
     use SuggestSimilarString;
+
+    /**
+     * Input types built so far, keyed by type name, with the entity and
+     * fields they were built for
+     *
+     * @var array<string, array{signature: string, type: InputObjectType}>
+     */
+    private array $inputTypes = [];
 
     public function __construct(
         protected readonly Config $config,
@@ -41,23 +54,88 @@ final class InputFactory
     }
 
     /**
-     * @param string[] $requiredFields An optional list of just the required fields you want for the mutation.
-     *                                 This allows specific fields per mutation.
-     * @param string[] $optionalFields An optional list of optional fields you want for the mutation.
-     *                                 This allows specific fields per mutation.
+     * @param string[]    $requiredFields An optional list of just the required fields you want for the mutation.
+     *                                    This allows specific fields per mutation.
+     * @param string[]    $optionalFields An optional list of optional fields you want for the mutation.
+     *                                    This allows specific fields per mutation.
+     * @param string|null $name           An optional name for the input type.  When it is not given the
+     *                                    name is derived from the entity and the fields.
      *
      * @throws Error
      */
-    public function get(string $id, array $requiredFields = [], array $optionalFields = []): InputObjectType
+    public function get(
+        string $id,
+        array $requiredFields = [],
+        array $optionalFields = [],
+        string|null $name = null,
+    ): InputObjectType {
+        /** @psalm-suppress MixedAssignment */
+        $targetEntity = $this->entityTypeContainer->get($id);
+        assert($targetEntity instanceof Entity);
+
+        // The order of the fields does not matter
+        $requiredFields = array_values(array_unique($requiredFields));
+        $optionalFields = array_values(array_unique($optionalFields));
+        sort($requiredFields);
+        sort($optionalFields);
+
+        $signature = serialize([$targetEntity->getEntityClass(), $requiredFields, $optionalFields]);
+        $name    ??= $this->getDefaultName($targetEntity, $requiredFields, $optionalFields);
+
+        if (isset($this->inputTypes[$name])) {
+            if ($this->inputTypes[$name]['signature'] !== $signature) {
+                throw new InputException(
+                    'Input type name ' . $name . ' is already used for different fields.',
+                );
+            }
+
+            return $this->inputTypes[$name]['type'];
+        }
+
+        if (! preg_match('/^[_a-zA-Z][_a-zA-Z0-9]*$/', $name)) {
+            throw new InputException('Input type name ' . $name . ' is not a valid GraphQL name.');
+        }
+
+        $type = $this->build($targetEntity, $requiredFields, $optionalFields, $name);
+
+        $this->inputTypes[$name] = ['signature' => $signature, 'type' => $type];
+
+        return $type;
+    }
+
+    /**
+     * An input with no field lists is named <type>_Input.  Otherwise a hash of
+     * the fields is appended, so each set of fields has its own stable name.
+     *
+     * @param string[] $requiredFields
+     * @param string[] $optionalFields
+     */
+    private function getDefaultName(Entity $targetEntity, array $requiredFields, array $optionalFields): string
     {
+        $name = $targetEntity->getTypeName() . '_Input';
+
+        if (! count($requiredFields) && ! count($optionalFields)) {
+            return $name;
+        }
+
+        return $name . '_' . substr(md5(serialize([$requiredFields, $optionalFields])), 0, 8);
+    }
+
+    /**
+     * @param string[] $requiredFields
+     * @param string[] $optionalFields
+     */
+    private function build(
+        Entity $targetEntity,
+        array $requiredFields,
+        array $optionalFields,
+        string $name,
+    ): InputObjectType {
         $self = $this;
 
         return (new ReflectionClass(InputObjectType::class))
-            ->newLazyGhost(static function (InputObjectType $object) use ($self, $id, $requiredFields, $optionalFields): void {
+            ->newLazyGhost(static function (InputObjectType $object) use ($self, $targetEntity, $requiredFields, $optionalFields, $name): void {
                 $fields = [];
-                /** @psalm-suppress MixedAssignment */
-                $targetEntity = $self->entityTypeContainer->get($id);
-                assert($targetEntity instanceof Entity);
 
                 $self->assertFieldsExist($targetEntity, array_merge($requiredFields, $optionalFields));
 
@@ -70,7 +148,7 @@ final class InputFactory
 
                 /** @psalm-suppress DirectConstructorCall */
                 $object->__construct([
-                    'name' => $targetEntity->getTypeName() . '_Input_' . uniqid(),
+                    'name' => $name,
                     'description' => $targetEntity->getDescription(),
                     'fields' => static fn () => $fields,
                 ]);
