@@ -25,9 +25,12 @@ use ReflectionClass;
 
 use function array_keys;
 use function array_merge;
+use function assert;
 use function count;
 use function in_array;
+use function is_string;
 use function ksort;
+use function preg_replace;
 use function ucwords;
 
 /**
@@ -140,9 +143,14 @@ final class Entity
         $fields = array_merge($fields, $this->addAssociations());
         $fields = array_merge($fields, $this->addComputedFields());
 
+        // A custom event name gives a distinct type.  It is appended to the type
+        // name with any character which is not valid in a GraphQL name replaced
         $typeName = $this->getTypeName();
         if ($this->eventName !== null) {
-            $typeName .= '.' . $this->eventName;
+            $eventTypeName = preg_replace('/[^_a-zA-Z0-9]/', '_', $this->eventName);
+            assert(is_string($eventTypeName));
+
+            $typeName .= '_' . $eventTypeName;
         }
 
         $definition = new Definition([
