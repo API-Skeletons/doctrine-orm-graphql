@@ -225,8 +225,13 @@ types for ``Entity::class`` will be affected by this event.
 The ``$driver->type()`` method takes a second, optional, event name parameter.
 When it is called with an event name, the event will replace the default
 ``Entity::class . '.definition'`` dispatched when the
-entity type is created.  The type name in GraphQL will be the entity name
-with the event name appended.
+entity type is created.  The type name in GraphQL will be the entity type name
+and the event name joined by an underscore.  Any character in the event name
+which is not valid in a GraphQL name is replaced with an underscore, so
+``$driver->type(Artist::class, 'artist.custom')`` has the type name of
+``Artist`` followed by ``_artist_custom``.  Two event names which differ only in those
+characters, such as ``artist.custom`` and ``artist_custom``, produce the same
+type name and cannot be used in the same schema.
 
 .. code-block:: php
 

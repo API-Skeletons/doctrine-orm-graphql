@@ -72,6 +72,20 @@ always null.  Read ``getArgs()['first']``, ``['after']``, ``['last']`` and
 ``['before']`` instead.  This change does not raise an error, so search your
 listeners for ``'pagination'``.
 
+Type names for custom event names are valid GraphQL names
+---------------------------------------------------------
+
+An entity type created with a custom event name, through ``$driver->type()``,
+``connection()`` or ``completeConnection()``, was named
+``<type name>.<event name>``.  A ``.`` is not valid in a GraphQL name, so the
+schema failed ``assertValid()``, schema printing and client code generation.
+
+The event name is now joined with an underscore, and any character which is
+not valid in a GraphQL name is replaced with an underscore:
+``artist_default.artist.custom`` becomes ``artist_default_artist_custom``.
+The ``Node_`` and ``Connection_`` types change with it.  The event dispatched
+is unchanged.  Regenerate any client types built from the schema.
+
 Aliases apply to to-one associations
 ------------------------------------
 

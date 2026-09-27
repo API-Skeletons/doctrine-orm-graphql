@@ -120,4 +120,31 @@ class EntityEventNameTest extends TestCase
         $this->assertEquals(5, $data['artists']['edges'][0]['node']['performanceCount']);
         $this->assertEquals(1, count($data['artists']['edges']));
     }
+
+    /**
+     * An event name may contain characters which are not valid in a GraphQL
+     * name.  They are replaced with an underscore so the entity, node and
+     * connection types have valid names and the schema validates.
+     */
+    public function testEventNameProducesValidTypeNames(): void
+    {
+        $driver = new Driver($this->getEntityManager());
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artist' => $driver->completeConnection(Artist::class, 'artist.custom-event'),
+                ],
+            ]),
+        ]);
+
+        $schema->assertValid();
+
+        $this->assertSame('artist_default_artist_custom_event', $driver->type(Artist::class, 'artist.custom-event')->name);
+        $this->assertSame(
+            'Connection_artist_default_artist_custom_event',
+            $driver->connection(Artist::class, 'artist.custom-event')->name,
+        );
+    }
 }
