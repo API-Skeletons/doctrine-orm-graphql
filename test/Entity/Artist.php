@@ -28,6 +28,8 @@ use function strtoupper;
 #[GraphQL\Entity(group: 'ExtractionMap', limit: 1)]
 #[GraphQL\Entity(group: 'ExtractionMapDuplicate', limit: 1)]
 #[GraphQL\Entity(group: 'computedFieldTest')]
+#[GraphQL\Entity(group: 'MappedSuperclassTest')]
+#[GraphQL\Entity(group: 'MappedSuperclassByReferenceTest')]
 
 #[ORM\Entity]
 class Artist
@@ -45,6 +47,8 @@ class Artist
     #[GraphQL\Field(group: 'ExtractionMap', alias: 'title')]
     #[GraphQL\Field(group: 'ExtractionMapDuplicate', alias: 'duplicate')]
     #[GraphQL\Field(group: 'computedFieldTest')]
+    #[GraphQL\Field(group: 'MappedSuperclassTest')]
+    #[GraphQL\Field(group: 'MappedSuperclassByReferenceTest')]
 
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
