@@ -7,13 +7,16 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata as MetadataEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\FindPropertyInHierarchy;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use League\Event\EventDispatcher;
 use ReflectionClass;
+use ReflectionProperty;
 use RuntimeException;
 
 use function assert;
@@ -31,6 +34,8 @@ use function substr;
  */
 final class MetadataFactory
 {
+    use FindPropertyInHierarchy;
+
     public function __construct(
         protected Metadata $metadata,
         protected readonly EntityManager $entityManager,
@@ -140,7 +145,7 @@ final class MetadataFactory
     ): void {
         foreach ($entityClassMetadata->getFieldNames() as $fieldName) {
             $fieldInstance   = null;
-            $reflectionField = $reflectionClass->getProperty($fieldName);
+            $reflectionField = $this->getMappedProperty($reflectionClass, $fieldName);
 
             foreach ($reflectionField->getAttributes(Attribute\Field::class) as $attribute) {
                 $instance = $attribute->newInstance();
@@ -188,7 +193,7 @@ final class MetadataFactory
 
         foreach ($associationNames as $associationName) {
             $associationInstance   = null;
-            $reflectionAssociation = $reflectionClass->getProperty($associationName);
+            $reflectionAssociation = $this->getMappedProperty($reflectionClass, $associationName);
 
             foreach ($reflectionAssociation->getAttributes(Attribute\Association::class) as $attribute) {
                 $instance = $attribute->newInstance();
@@ -281,6 +286,31 @@ final class MetadataFactory
                 $this->metadata[$reflectionClass->getName()]['computedFields'][$fieldName] = $computedFieldMetadata;
             }
         }
+    }
+
+    /**
+     * Find the property for a mapped field or association.  A mapped
+     * superclass or a parent entity may declare it.
+     *
+     * @param ReflectionClass<object> $reflectionClass
+     *
+     * @throws MetadataException
+     */
+    private function getMappedProperty(ReflectionClass $reflectionClass, string $propertyName): ReflectionProperty
+    {
+        $property = $this->findPropertyInHierarchy($reflectionClass, $propertyName);
+
+        if ($property !== null) {
+            return $property;
+        }
+
+        // Doctrine fails to load metadata for a mapped property which is not declared
+        // @codeCoverageIgnoreStart
+        throw new MetadataException(
+            'Property ' . $propertyName . ' is mapped for entity '
+            . $reflectionClass->getName() . ' but is not declared on it or any parent class',
+        );
+        // @codeCoverageIgnoreEnd
     }
 
     /**

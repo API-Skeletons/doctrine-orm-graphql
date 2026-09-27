@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Unit\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\DoctrineObjectWithComputed;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Album;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithMagicCall;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithMagicCallAndFilterProvider;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestReadonlyEntity;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Hydrator\Strategy\PrefixFieldName;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use Laminas\Hydrator\Strategy\StrategyInterface as LaminasStrategyInterface;
+use LogicException;
 
 use function func_num_args;
 use function strlen;
@@ -246,5 +249,72 @@ class DoctrineObjectWithComputedTest extends TestCase
 
         $this->assertSame('value!', $this->hydrator->extractValue('name', 'value'));
         $this->assertSame(2, $strategy->argumentCount);
+    }
+
+    /**
+     * A field rejected by a filter is not extracted by reference
+     */
+    public function testExtractByReferenceSkipsFilteredFields(): void
+    {
+        $hydrator = new DoctrineObjectWithComputed($this->getEntityManager(), false);
+        $hydrator->addFilter('blockName', static fn (string $property): bool => $property !== 'name');
+
+        $artist = $this->getEntityManager()
+            ->getRepository(Artist::class)
+            ->findOneBy(['name' => 'Grateful Dead']);
+
+        $result = $hydrator->extract($artist);
+
+        $this->assertArrayHasKey('id', $result);
+        $this->assertArrayNotHasKey('name', $result);
+    }
+
+    /**
+     * Data cannot be extracted by reference from a readonly class
+     */
+    public function testExtractByReferenceRejectsReadonlyClass(): void
+    {
+        $hydrator = new DoctrineObjectWithComputed($this->getEntityManager(), false);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('is readonly');
+
+        $hydrator->extract(new TestReadonlyEntity(1, 'readonly'));
+    }
+
+    /**
+     * An entity which provides its own filter is filtered by it when
+     * extracted by reference
+     */
+    public function testExtractByReferenceUsesEntityFilterWhenFilterProviderImplemented(): void
+    {
+        $em       = $this->getEntityManager();
+        $hydrator = new DoctrineObjectWithComputed($em, false);
+
+        $entity = (new TestEntityWithMagicCallAndFilterProvider())
+            ->setRegularField('regular value')
+            ->setMagicField('magic value');
+        $em->persist($entity);
+        $em->flush();
+
+        $result = $hydrator->extract($entity);
+
+        $this->assertSame('regular value', $result['regularField']);
+        $this->assertSame('magic value', $result['magicField']);
+    }
+
+    /**
+     * Uninitialized properties are skipped when extracting by reference,
+     * including private properties declared on a mapped superclass
+     */
+    public function testExtractByReferenceSkipsUninitializedProperties(): void
+    {
+        $hydrator = new DoctrineObjectWithComputed($this->getEntityManager(), false);
+
+        $result = $hydrator->extract((new Album())->setTitle('Unreleased'));
+
+        $this->assertSame('Unreleased', $result['title']);
+        $this->assertArrayNotHasKey('id', $result);
+        $this->assertArrayNotHasKey('trackCount', $result);
     }
 }

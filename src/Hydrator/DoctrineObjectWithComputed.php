@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\Strategy;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\FindPropertyInHierarchy;
 use Doctrine\Laminas\Hydrator\DoctrineObject;
 use Laminas\Hydrator\Filter\FilterProviderInterface;
+use LogicException;
 use Override;
 
 use function array_key_exists;
@@ -24,6 +27,8 @@ use function method_exists;
  */
 final class DoctrineObjectWithComputed extends DoctrineObject
 {
+    use FindPropertyInHierarchy;
+
     /**
      * Map of computed field names to extraction callables
      *
@@ -106,6 +111,66 @@ final class DoctrineObjectWithComputed extends DoctrineObject
             // Invoke getter via __call
             /** @psalm-suppress MixedMethodCall, MixedAssignment */
             $data[$dataFieldName] = $this->extractValue($fieldName, $object->$getter(), $object);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Extract values from an object using by-reference logic.
+     *
+     * The parent reads each property through the entity's own reflection
+     * class, which cannot see a private property declared on a mapped
+     * superclass or parent entity.  Walk the class hierarchy instead.
+     *
+     * @return array<string, mixed>
+     */
+    #[Override]
+    protected function extractByReference(object $object): array
+    {
+        // Psalm does not understand the ReflectionClass<covariant T> return
+        // type of Doctrine\Persistence\Mapping\ClassMetadata::getReflectionClass()
+        /** @psalm-suppress UndefinedDocblockClass */
+        $refl   = $this->getClassMetadata()->getReflectionClass();
+        $filter = $object instanceof FilterProviderInterface
+            ? $object->getFilter()
+            : $this->filterComposite;
+
+        // Data cannot be extracted from a readonly class, as the parent reports
+        if ($refl->isReadOnly()) {
+            throw new LogicException(
+                'this class "' . $object::class . '" is readonly, data can\'t be extracted',
+            );
+        }
+
+        $data = [];
+
+        foreach ($this->getFieldNames() as $fieldName) {
+            if ($filter && ! $filter->filter($fieldName)) {
+                continue;
+            }
+
+            /** @psalm-suppress InvalidArgument ReflectionClass<covariant T>, as above */
+            $reflProperty = $this->findPropertyInHierarchy($refl, $fieldName);
+
+            // Doctrine fails to load metadata for a mapped property which is not declared
+            // @codeCoverageIgnoreStart
+            if ($reflProperty === null) {
+                throw new HydratorException(
+                    'Property ' . $fieldName . ' is not declared on ' . $refl->getName() . ' or any parent class',
+                );
+            }
+
+            // @codeCoverageIgnoreEnd
+
+            // Readonly and uninitialized properties are skipped, as the parent does
+            if ($reflProperty->isReadOnly() || ! $reflProperty->isInitialized($object)) {
+                continue;
+            }
+
+            $dataFieldName = $this->computeExtractFieldName($fieldName);
+            /** @psalm-suppress MixedAssignment */
+            $data[$dataFieldName] = $this->extractValue($fieldName, $reflProperty->getValue($object), $object);
         }
 
         return $data;
