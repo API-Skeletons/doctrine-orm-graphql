@@ -76,6 +76,11 @@ The ``name`` input field will be typed according to its metadata configuration.
 Identifiers are excluded from the input field list because they should not be
 changed or added by a user.
 
+Only fields exposed with a ``#[Field]`` attribute in the driver's group can be
+input.  When no field lists are given, a column which is not exposed, such as a
+password, is left out.  Naming a field which is not exposed in the required or
+optional list throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input``.
+
 .. role:: raw-html(raw)
    :format: html
 

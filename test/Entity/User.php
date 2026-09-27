@@ -24,6 +24,7 @@ use function substr;
 #[GraphQL\Entity(group: 'CustomFieldStrategyTest')]
 #[GraphQL\Entity(group: 'InputFactoryTest')]
 #[GraphQL\Entity(group: 'InputFactoryAliasTest')]
+#[GraphQL\Entity(group: 'InputFactoryUnexposedTest')]
 #[GraphQL\Entity(group: 'StaticMetadata')]
 #[GraphQL\Entity(group: 'multiComputedTest')]
 #[GraphQL\Entity(group: 'computedFieldNameTest')]
@@ -37,6 +38,7 @@ class User
     #[GraphQL\Field(group: 'CustomFieldStrategyTest', hydratorStrategy: ToBoolean::class)]
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'InputFactoryAliasTest', alias: 'nameAlias')]
+    #[GraphQL\Field(group: 'InputFactoryUnexposedTest')]
     #[GraphQL\Field(group: 'StaticMetadata')]
     #[GraphQL\Field(group: 'multiComputedTest')]
     #[GraphQL\Field(group: 'computedFieldNameTest')]
@@ -48,6 +50,7 @@ class User
     #[GraphQL\Field(description: 'User email')]
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'InputFactoryAliasTest')]
+    #[GraphQL\Field(group: 'InputFactoryUnexposedTest')]
     #[GraphQL\Field(group: 'multiComputedTest')]
 
     #[ORM\Column(type: 'string', nullable: false)]
@@ -66,6 +69,7 @@ class User
     #[GraphQL\Field(description: 'Primary key', group: 'testNonDefaultGroup')]
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'InputFactoryAliasTest')]
+    #[GraphQL\Field(group: 'InputFactoryUnexposedTest')]
 
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]

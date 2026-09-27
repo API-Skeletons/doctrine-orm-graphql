@@ -85,6 +85,13 @@ final class InputFactory
                 continue;
             }
 
+            if (! $this->isExposed($targetEntity, $fieldName)) {
+                throw new InputException(
+                    'Field ' . $fieldName . ' is not exposed for entity ' . $targetEntity->getEntityClass()
+                    . ' in group ' . $this->config->getGroup() . ' and cannot be used as input.',
+                );
+            }
+
             /**
              * Do not include identifiers as input.  In the majority of cases there will be
              * no reason to set or update an identifier.  For the case where an identifier
@@ -120,6 +127,13 @@ final class InputFactory
         foreach ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->getFieldNames() as $fieldName) {
             if (! in_array($fieldName, $requiredFields)) {
                 continue;
+            }
+
+            if (! $this->isExposed($targetEntity, $fieldName)) {
+                throw new InputException(
+                    'Field ' . $fieldName . ' is not exposed for entity ' . $targetEntity->getEntityClass()
+                    . ' in group ' . $this->config->getGroup() . ' and cannot be used as input.',
+                );
             }
 
             /**
@@ -160,6 +174,11 @@ final class InputFactory
                 continue;
             }
 
+            // A column which is not exposed in this group is not part of the input
+            if (! $this->isExposed($targetEntity, $fieldName)) {
+                continue;
+            }
+
             $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
@@ -168,5 +187,14 @@ final class InputFactory
                 'type' => Type::nonNull($this->typeContainer->get($targetEntity->getMetadata()['fields'][$fieldName]['type'])),
             ]);
         }
+    }
+
+    /**
+     * Whether a field is exposed by a #[Field] attribute in the configured group
+     */
+    private function isExposed(Entity $targetEntity, string $fieldName): bool
+    {
+        /** @psalm-suppress MixedArrayAccess */
+        return isset($targetEntity->getMetadata()['fields'][$fieldName]);
     }
 }
