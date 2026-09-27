@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SerializeDateTime;
 use DateTimeImmutable as PHPDateTimeTZImmutable;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 use Override;
 
+use function get_debug_type;
 use function is_string;
 
 /**
@@ -18,6 +20,8 @@ use function is_string;
  */
 final class DateTimeTZImmutable extends ScalarType
 {
+    use SerializeDateTime;
+
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `datetimetz_immutable` scalar type represents datetime data.'
     . 'The format is ISO-8601 e.g. 2004-02-12T15:19:21+00:00';
@@ -25,12 +29,9 @@ final class DateTimeTZImmutable extends ScalarType
     #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTimeTZImmutable
     {
-        // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
             throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
-
-        // @codeCoverageIgnoreEnd
 
         return $this->parseValue($valueNode->value);
     }
@@ -39,8 +40,7 @@ final class DateTimeTZImmutable extends ScalarType
     public function parseValue(mixed $value): PHPDateTimeTZImmutable
     {
         if (! is_string($value)) {
-            /** @psalm-suppress MixedOperand */
-            throw new TypeSerializationException('datetimetz_immutable is not a string: ' . $value);
+            throw new TypeSerializationException('datetimetz_immutable is not a string: ' . get_debug_type($value));
         }
 
         $data = PHPDateTimeTZImmutable::createFromFormat(PHPDateTimeTZImmutable::ATOM, $value);
@@ -52,13 +52,10 @@ final class DateTimeTZImmutable extends ScalarType
         return $data;
     }
 
+    /** @throws TypeSerializationException */
     #[Override]
-    public function serialize(mixed $value): string|null
+    public function serialize(mixed $value): string
     {
-        if ($value instanceof PHPDateTimeTZImmutable) {
-            return $value->format(PHPDateTimeTZImmutable::ATOM);
-        }
-
-        return is_string($value) ? $value : null;
+        return $this->serializeDateTime($value, PHPDateTimeTZImmutable::ATOM);
     }
 }

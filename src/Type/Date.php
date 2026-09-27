@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SerializeDateTime;
 use DateTime;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 use Override;
 
+use function get_debug_type;
 use function is_string;
 use function preg_match;
 
@@ -19,18 +21,17 @@ use function preg_match;
  */
 final class Date extends ScalarType
 {
+    use SerializeDateTime;
+
     public string|null $description = 'The `Date` scalar type represents datetime data.'
     . 'The format is e.g. 2004-02-12.';
 
     #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): DateTime
     {
-        // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
             throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
-
-        // @codeCoverageIgnoreEnd
 
         return $this->parseValue($valueNode->value);
     }
@@ -39,8 +40,7 @@ final class Date extends ScalarType
     public function parseValue(mixed $value): DateTime
     {
         if (! is_string($value)) {
-            /** @psalm-suppress MixedOperand */
-            throw new TypeSerializationException('Date is not a string: ' . $value);
+            throw new TypeSerializationException('Date is not a string: ' . get_debug_type($value));
         }
 
         if (! preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $value)) {
@@ -59,17 +59,10 @@ final class Date extends ScalarType
         return $date;
     }
 
+    /** @throws TypeSerializationException */
     #[Override]
     public function serialize(mixed $value): string
     {
-        if (is_string($value)) {
-            throw new TypeSerializationException('Expected DateTime object.  Got string.');
-        }
-
-        if (! $value instanceof DateTime) {
-            throw new TypeSerializationException('Expected DateTime object.  Got ' . $value::class);
-        }
-
-        return $value->format('Y-m-d');
+        return $this->serializeDateTime($value, 'Y-m-d');
     }
 }

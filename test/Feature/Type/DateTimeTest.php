@@ -57,18 +57,18 @@ class DateTimeTest extends TestCase
 
     public function testSerializeString(): void
     {
-        $dateTimeType = new DateTimeType();
-        $result       = $dateTimeType->serialize('2020-03-01T00:00:00+00:00');
+        $this->expectException(Error::class);
 
-        $this->assertEquals('2020-03-01T00:00:00+00:00', $result);
+        $dateTimeType = new DateTimeType();
+        $dateTimeType->serialize('2020-03-01T00:00:00+00:00');
     }
 
     public function testSerializeNull(): void
     {
-        $dateTimeType = new DateTimeType();
-        $result       = $dateTimeType->serialize(null);
+        $this->expectException(Error::class);
 
-        $this->assertNull($result);
+        $dateTimeType = new DateTimeType();
+        $dateTimeType->serialize(null);
     }
 
     public function testBetween(): void

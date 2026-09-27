@@ -56,18 +56,18 @@ class TimeImmutableTest extends TestCase
 
     public function testSerializeString(): void
     {
-        $timeImmutable = new TimeImmutable();
-        $result        = $timeImmutable->serialize('20:12:15.123456');
+        $this->expectException(Error::class);
 
-        $this->assertEquals('20:12:15.123456', $result);
+        $timeImmutable = new TimeImmutable();
+        $timeImmutable->serialize('20:12:15.123456');
     }
 
     public function testSerializeNull(): void
     {
-        $timeImmutable = new TimeImmutable();
-        $result        = $timeImmutable->serialize(null);
+        $this->expectException(Error::class);
 
-        $this->assertNull($result);
+        $timeImmutable = new TimeImmutable();
+        $timeImmutable->serialize(null);
     }
 
     public function testBetween(): void

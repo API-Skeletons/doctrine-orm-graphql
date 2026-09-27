@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
-use DateTimeImmutable as PHPDateTime;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SerializeDateTime;
+use DateTimeImmutable as PHPDateTimeImmutable;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 use Override;
 
+use function get_debug_type;
 use function is_string;
 use function preg_match;
 
@@ -19,29 +21,27 @@ use function preg_match;
  */
 final class TimeImmutable extends ScalarType
 {
+    use SerializeDateTime;
+
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
-    public string|null $description = 'The `Time` scalar type represents time data.'
+    public string|null $description = 'The `TimeImmutable` scalar type represents time data.'
     . 'The format is e.g. 24 hour:minutes:seconds';
 
     #[Override]
-    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
+    public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTimeImmutable
     {
-        // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
             throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
-        // @codeCoverageIgnoreEnd
-
-        return $valueNode->value;
+        return $this->parseValue($valueNode->value);
     }
 
     #[Override]
-    public function parseValue(mixed $value): PHPDateTime|false
+    public function parseValue(mixed $value): PHPDateTimeImmutable
     {
         if (! is_string($value)) {
-            /** @psalm-suppress MixedOperand */
-            throw new TypeSerializationException('Time is not a string: ' . $value);
+            throw new TypeSerializationException('Time is not a string: ' . get_debug_type($value));
         }
 
         if (! preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])(\.\d{1,6})?$/', $value)) {
@@ -49,20 +49,23 @@ final class TimeImmutable extends ScalarType
         }
 
         // If time does not have milliseconds, parse without
-        if (preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])$/', $value)) {
-            return PHPDateTime::createFromFormat('H:i:s', $value);
+        $format = preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])$/', $value) ? 'H:i:s' : 'H:i:s.u';
+        $time   = PHPDateTimeImmutable::createFromFormat($format, $value);
+
+        // @codeCoverageIgnoreStart
+        if ($time === false) {
+            throw new TypeSerializationException('Time format does not match ' . $format . '.');
         }
 
-        return PHPDateTime::createFromFormat('H:i:s.u', $value);
+        // @codeCoverageIgnoreEnd
+
+        return $time;
     }
 
+    /** @throws TypeSerializationException */
     #[Override]
-    public function serialize(mixed $value): string|null
+    public function serialize(mixed $value): string
     {
-        if ($value instanceof PHPDateTime) {
-            return $value->format('H:i:s.u');
-        }
-
-        return is_string($value) ? $value : null;
+        return $this->serializeDateTime($value, 'H:i:s.u');
     }
 }
