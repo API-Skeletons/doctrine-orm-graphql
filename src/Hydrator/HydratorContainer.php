@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\ORM\EntityManager;
@@ -69,10 +70,13 @@ final class HydratorContainer extends Container
                 foreach ($metadata['fields'] as $fieldName => $fieldMetadata) {
                     /** @psalm-suppress MixedArrayAccess, MixedArgument */
                     $implements = class_implements($fieldMetadata['hydratorStrategy']);
-                    assert(
-                        in_array(StrategyInterface::class, $implements !== false ? $implements : []),
-                        'Strategy must implement ' . StrategyInterface::class,
-                    );
+                    if (! in_array(StrategyInterface::class, $implements !== false ? $implements : [])) {
+                        /** @psalm-suppress MixedArrayAccess, MixedOperand */
+                        throw new HydratorException(
+                            'Hydrator strategy ' . $fieldMetadata['hydratorStrategy'] . ' for field ' . $fieldName
+                            . ' of entity ' . $entity->getEntityClass() . ' must implement ' . StrategyInterface::class,
+                        );
+                    }
 
                     /** @psalm-suppress MixedArgument, MixedArrayAccess */
                     $object->addStrategy($fieldName, $self->get($fieldMetadata['hydratorStrategy']));

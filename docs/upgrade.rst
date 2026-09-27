@@ -98,6 +98,28 @@ If you set an ``alias`` on a to-one association, query and filter it by the
 alias.  This is a schema change for those fields; regenerate any client types
 built from the schema.
 
+Configuration errors are checked in production
+----------------------------------------------
+
+Several configuration checks used ``assert()``, which is disabled in
+production when ``zend.assertions`` is ``-1``.  With assertions disabled a
+duplicate attribute was silently accepted, the last one winning.  These checks
+now throw in every environment:
+
+* Two ``#[Entity]``, ``#[Field]``, ``#[Association]`` or ``#[ComputedField]``
+  attributes for the same group on one entity, field, association or method
+  throw ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``, which was
+  an ``AssertionError``.
+* A ``hydratorStrategy`` which does not implement
+  ``Laminas\Hydrator\Strategy\StrategyInterface`` throws
+  ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator``.
+* Building a type with ``TypeContainer::build()`` from a class which does not
+  implement ``Buildable`` throws
+  ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration``.
+
+If your development environment ran with assertions enabled you have already
+seen these errors.  Otherwise, fix any duplicate attributes they report.
+
 Date and time scalars are strict about their values
 ----------------------------------------------------
 

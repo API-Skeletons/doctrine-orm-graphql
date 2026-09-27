@@ -22,6 +22,7 @@ use function strtoupper;
 #[GraphQL\Entity(group: 'DuplicateGroup')]
 #[GraphQL\Entity(group: 'DuplicateGroupField')]
 #[GraphQL\Entity(group: 'DuplicateGroupAssociation')]
+#[GraphQL\Entity(group: 'DuplicateGroupComputedField')]
 #[GraphQL\Entity(group: 'CriteriaEvent')]
 #[GraphQL\Entity(group: 'AttributeLimit')]
 #[GraphQL\Entity(group: 'LimitTest', limit: 2)]
@@ -168,6 +169,8 @@ class Artist
         group: 'computedFieldTest',
         description: 'Full display name',
     )]
+    #[GraphQL\ComputedField(type: 'string', group: 'DuplicateGroupComputedField')]
+    #[GraphQL\ComputedField(type: 'string', group: 'DuplicateGroupComputedField')]
     public function getFullName(): string
     {
         return strtoupper($this->name);

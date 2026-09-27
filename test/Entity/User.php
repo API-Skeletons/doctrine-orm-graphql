@@ -11,6 +11,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToBoolean;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use stdClass;
 
 use function strpos;
 use function substr;
@@ -25,6 +26,7 @@ use function substr;
 #[GraphQL\Entity(group: 'InputFactoryTest')]
 #[GraphQL\Entity(group: 'InputFactoryAliasTest')]
 #[GraphQL\Entity(group: 'InputFactoryUnexposedTest')]
+#[GraphQL\Entity(group: 'InvalidHydratorStrategyTest')]
 #[GraphQL\Entity(group: 'StaticMetadata')]
 #[GraphQL\Entity(group: 'multiComputedTest')]
 #[GraphQL\Entity(group: 'computedFieldNameTest')]
@@ -51,6 +53,7 @@ class User
     #[GraphQL\Field(group: 'InputFactoryTest')]
     #[GraphQL\Field(group: 'InputFactoryAliasTest')]
     #[GraphQL\Field(group: 'InputFactoryUnexposedTest')]
+    #[GraphQL\Field(group: 'InvalidHydratorStrategyTest', hydratorStrategy: stdClass::class)]
     #[GraphQL\Field(group: 'multiComputedTest')]
 
     #[ORM\Column(type: 'string', nullable: false)]
