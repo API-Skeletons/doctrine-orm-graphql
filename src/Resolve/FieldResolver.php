@@ -11,10 +11,10 @@ use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use Doctrine\Persistence\Proxy;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use WeakMap;
 
 use function assert;
 use function is_object;
-use function spl_object_hash;
 
 /**
  * A field resolver that uses the Doctrine Laminas hydrator to extract values
@@ -22,16 +22,19 @@ use function spl_object_hash;
 final class FieldResolver
 {
     /**
-     * Cache all hydrator extract operations based on spl object hash
+     * Hydrator extract results keyed by the entity they were extracted from.
+     * A WeakMap releases an entry when its entity is freed, so the values
+     * never outlive the entity or are served to another object.
      *
-     * @var array<string, array<array-key, mixed>>
+     * @var WeakMap<object, array<array-key, mixed>>
      */
-    private array $extractValues = [];
+    private WeakMap $extractValues;
 
     public function __construct(
         protected readonly Config $config,
         protected readonly EntityTypeContainer $entityTypeContainer,
     ) {
+        $this->extractValues = self::newExtractCache();
     }
 
     /** @throws Error */
@@ -47,40 +50,36 @@ final class FieldResolver
             // @codeCoverageIgnoreEnd
         }
 
-        $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
+        // A hit is decided by the entity, not the field, so a null field is
+        // served from the extract rather than extracting again
+        $values = $this->extractValues[$source] ?? null;
 
-        $entityClass   = $defaultProxyClassNameResolver->getClass($source);
-        $splObjectHash = spl_object_hash($source);
-
-        /**
-         * For disabled hydrator cache, store only the last hydrator result and reuse for consecutive calls
-         * then drop the cache if it doesn't hit.
-         */
-        if (! $this->config->getUseHydratorCache()) {
-            if (isset($this->extractValues[$splObjectHash])) {
-                return $this->extractValues[$splObjectHash][$info->fieldName] ?? null;
+        if ($values === null) {
+            /**
+             * For disabled hydrator cache, keep only the last extract so it is
+             * reused for the consecutive fields of one entity
+             */
+            if (! $this->config->getUseHydratorCache()) {
+                $this->extractValues = self::newExtractCache();
             }
 
-            $this->extractValues = [];
-
             /** @psalm-suppress MixedAssignment */
-            $entity = $this->entityTypeContainer->get($entityClass);
+            $entity = $this->entityTypeContainer->get((new DefaultProxyClassNameResolver())->getClass($source));
             assert($entity instanceof Entity);
-            $this->extractValues[$splObjectHash] = $entity->getHydrator()->extract($source);
-
-            return $this->extractValues[$splObjectHash][$info->fieldName] ?? null;
+            $values                       = $entity->getHydrator()->extract($source);
+            $this->extractValues[$source] = $values;
         }
 
-        // Use full hydrator cache
-        if (isset($this->extractValues[$splObjectHash][$info->fieldName])) {
-            return $this->extractValues[$splObjectHash][$info->fieldName] ?? null;
-        }
+        return $values[$info->fieldName] ?? null;
+    }
 
-        /** @psalm-suppress MixedAssignment */
-        $entity = $this->entityTypeContainer->get($entityClass);
-        assert($entity instanceof Entity);
-        $this->extractValues[$splObjectHash] = $entity->getHydrator()->extract($source);
+    /** @return WeakMap<object, array<array-key, mixed>> */
+    private static function newExtractCache(): WeakMap
+    {
+        // The template types of an empty WeakMap cannot be inferred
+        /** @var WeakMap<object, array<array-key, mixed>> $cache */
+        $cache = new WeakMap();
 
-        return $this->extractValues[$splObjectHash][$info->fieldName] ?? null;
+        return $cache;
     }
 }

@@ -34,9 +34,9 @@ final class Config
     protected readonly string|null $groupSuffix;
 
     /**
-     * @var bool When set to true hydrator results will be cached for the
-     *           duration of the request thereby saving multiple extracts for
-     *           the same entity.
+     * @var bool When set to true hydrator results will be cached for as
+     *           long as the entity they were extracted from exists, thereby
+     *           saving multiple extracts for the same entity.
      */
     protected readonly bool $useHydratorCache;
 
