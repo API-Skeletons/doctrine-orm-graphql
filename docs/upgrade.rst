@@ -17,9 +17,13 @@ takes a third argument, the Doctrine field name being extracted:
 
     public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed;
 
-All strategies supplied with this library implement the new interface.  If you
-extend the abstract ``Collection`` strategy and override ``extract()``, add the
-``$fieldName`` parameter to your method signature.
+All strategies supplied with this library implement the new interface.
+
+The abstract ``Hydrator\Strategy\Collection`` strategy is removed.  It was a
+copy of Doctrine's internal ``AbstractCollectionStrategy``.  A custom strategy
+for a collection-valued association must implement
+``Doctrine\Laminas\Hydrator\Strategy\CollectionStrategyInterface`` and this
+library's ``Strategy`` interface, as ``AssociationDefault`` does.
 
 Custom strategies which implement only the Laminas interface continue to work
 unchanged and are called without the field name.  See
