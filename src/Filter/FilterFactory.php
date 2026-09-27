@@ -226,9 +226,12 @@ final class FilterFactory
                 $this->typeContainer->set($filterTypeName, new Association($this->typeContainer, Type::id(), [Filters::EQ]));
             }
 
-            // eq filter is for association id from parent entity
-            $fields[$associationName] = [
-                'name' => $associationName,
+            // eq filter is for association id from parent entity; an aliased
+            // association is filtered by its alias, as its field is named
+            $alias = $targetEntity->getExtractionMap()[$associationName] ?? null;
+
+            $fields[$alias ?? $associationName] = [
+                'name' => $alias ?? $associationName,
                 'type' => $this->typeContainer->get($filterTypeName),
                 'description' => 'Association Filters',
             ];
