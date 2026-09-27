@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
@@ -13,10 +14,8 @@ use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
-use Throwable;
 
 use function count;
-use function print_r;
 
 /**
  * This test uses aliases for fields and associations
@@ -124,12 +123,31 @@ class ExtractionMapTest extends TestCase
 
     public function testDuplicateAliasOnSameEntity(): void
     {
-        $this->expectException(Throwable::class);
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage('Duplicate alias "duplicate"');
 
         $config = new Config(['group' => 'ExtractionMapDuplicate']);
         $driver = new Driver($this->getEntityManager(), $config);
 
-        $artistEntityType = $driver->get(EntityTypeContainer::class)->get(Artist::class);
-        print_r($artistEntityType->getExtractionMap());
+        $driver->get(EntityTypeContainer::class)->get(Artist::class)->getExtractionMap();
+    }
+
+    /**
+     * A duplicate alias is reported on every call, not only the first; a
+     * failed build must not leave a partial map behind
+     */
+    public function testDuplicateAliasIsReportedOnEveryCall(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'ExtractionMapDuplicate']));
+        $artist = $driver->get(EntityTypeContainer::class)->get(Artist::class);
+
+        for ($call = 1; $call <= 2; $call++) {
+            try {
+                $artist->getExtractionMap();
+                $this->fail('Call ' . $call . ' returned an extraction map');
+            } catch (MetadataException $e) {
+                $this->assertStringContainsString('Duplicate alias "duplicate"', $e->getMessage());
+            }
+        }
     }
 }

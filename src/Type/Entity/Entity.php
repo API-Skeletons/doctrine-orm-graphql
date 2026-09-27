@@ -23,10 +23,8 @@ use Laminas\Hydrator\HydratorInterface;
 use League\Event\EventDispatcher;
 use ReflectionClass;
 
-use function array_keys;
 use function array_merge;
 use function assert;
-use function count;
 use function in_array;
 use function is_string;
 use function ksort;
@@ -38,8 +36,13 @@ use function ucwords;
  */
 final class Entity
 {
-    /** @var array<string, string> */
-    protected array $extractionMap        = [];
+    /**
+     * The extraction map, built once.  Null until it is built, so an empty map
+     * for an entity without aliases is cached as well.
+     *
+     * @var array<string, string>|null
+     */
+    protected array|null $extractionMap   = null;
     protected ObjectType|null $objectType = null;
 
     /** @param array<string, mixed> $metadata */
@@ -103,9 +106,12 @@ final class Entity
      */
     public function getExtractionMap(): array
     {
-        if (count($this->extractionMap)) {
+        if ($this->extractionMap !== null) {
             return $this->extractionMap;
         }
+
+        // Build into a local so a duplicate alias does not leave a partial map
+        $extractionMap = [];
 
         foreach ($this->metadata['fields'] as $fieldName => $fieldMetadata) {
             if (! isset($fieldMetadata['alias'])) {
@@ -113,15 +119,17 @@ final class Entity
             }
 
             // Don't allow duplicate aliases
-            if (in_array($fieldMetadata['alias'], $this->extractionMap)) {
+            if (in_array($fieldMetadata['alias'], $extractionMap)) {
                 throw new MetadataException(
                     'Duplicate alias "' . $fieldMetadata['alias'] . '" found for field ' . $fieldName .
                     ' in entity ' . $this->getEntityClass() . '. Each field alias must be unique.',
                 );
             }
 
-            $this->extractionMap[$fieldName] = $fieldMetadata['alias'];
+            $extractionMap[$fieldName] = $fieldMetadata['alias'];
         }
+
+        $this->extractionMap = $extractionMap;
 
         return $this->extractionMap;
     }
@@ -202,7 +210,7 @@ final class Entity
         $classMetadata = $this->entityManager->getClassMetadata($this->getEntityClass());
 
         foreach ($classMetadata->getFieldNames() as $fieldName) {
-            if (! in_array($fieldName, array_keys($this->metadata['fields']))) {
+            if (! isset($this->metadata['fields'][$fieldName])) {
                 continue;
             }
 
@@ -228,7 +236,7 @@ final class Entity
         $classMetadata = $this->entityManager->getClassMetadata($this->getEntityClass());
 
         foreach ($classMetadata->getAssociationNames() as $associationName) {
-            if (! in_array($associationName, array_keys($this->metadata['fields']))) {
+            if (! isset($this->metadata['fields'][$associationName])) {
                 continue;
             }
 
