@@ -6,14 +6,17 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Json;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
+use GraphQL\Language\AST\IntValueNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function count;
 
@@ -53,6 +56,58 @@ class JsonTest extends TestCase
         $result      = $jsonType->parseLiteral($node);
 
         $this->assertEquals(['field' => 'value'], $result);
+    }
+
+    /**
+     * Every JSON document is valid input, not only objects and arrays
+     *
+     * @return array<string, array{string, mixed}>
+     */
+    public static function jsonDocumentProvider(): array
+    {
+        return [
+            'object' => ['{"a": 1}', ['a' => 1]],
+            'array' => ['[1, 2]', [1, 2]],
+            'null' => ['null', null],
+            'integer' => ['5', 5],
+            'float' => ['1.5', 1.5],
+            'string' => ['"text"', 'text'],
+            'true' => ['true', true],
+            'false' => ['false', false],
+        ];
+    }
+
+    #[DataProvider('jsonDocumentProvider')]
+    public function testParseValueAcceptsEveryJsonDocument(string $json, mixed $expected): void
+    {
+        $this->assertSame($expected, (new Json())->parseValue($json));
+    }
+
+    public function testParseValueReportsTheTypeOfANonString(): void
+    {
+        $this->expectException(TypeSerializationException::class);
+        $this->expectExceptionMessage('JSON is not a string: array');
+
+        (new Json())->parseValue(['a' => 1]);
+    }
+
+    public function testParseValueReportsTheJsonError(): void
+    {
+        $this->expectException(TypeSerializationException::class);
+        $this->expectExceptionMessage('Could not parse JSON data: Syntax error');
+
+        (new Json())->parseValue('{bad');
+    }
+
+    public function testParseLiteralRejectsANonStringLiteral(): void
+    {
+        $node        = new IntValueNode([]);
+        $node->value = '5';
+
+        $this->expectException(TypeSerializationException::class);
+        $this->expectExceptionMessage('Query error: Can only parse strings got: IntValue');
+
+        (new Json())->parseLiteral($node);
     }
 
     public function testSerializeFails(): void
