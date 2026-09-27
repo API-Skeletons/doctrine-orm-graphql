@@ -103,9 +103,12 @@ This can aid reading of the documentation created by GraphQL.
 useHydratorCache
 ----------------
 
-When set to true hydrator results will be cached for
-the duration of the request thereby saving possible multiple extracts for
-the same entity.  Default is ``false``
+When set to true hydrator results will be cached for as long as the entity
+they were extracted from exists, thereby saving possible multiple extracts for
+the same entity.  An entity is normally kept by Doctrine until the entity
+manager is cleared, so clear it between requests in a long running process.
+Values of an entity changed after it was extracted are not seen until it is
+freed.  Default is ``false``
 
 
 useQueryResultCache

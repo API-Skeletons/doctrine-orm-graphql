@@ -73,9 +73,9 @@ final class ConfigBuilder
     /**
      * Enable hydrator caching
      *
-     * When set to true hydrator results will be cached for the
-     * duration of the request thereby saving multiple extracts
-     * for the same entity.
+     * When set to true hydrator results will be cached for as long
+     * as the entity they were extracted from exists, thereby saving
+     * multiple extracts for the same entity.
      */
     public function useHydratorCache(bool $enable = true): self
     {
