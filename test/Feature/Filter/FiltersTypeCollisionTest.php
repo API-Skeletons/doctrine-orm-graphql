@@ -84,5 +84,9 @@ class FiltersTypeCollisionTest extends TestCase
             $driver1->get(TypeContainer::class)->get('pageinfo'),
             $driver2->get(TypeContainer::class)->get('pageinfo'),
         );
+        $this->assertSame(
+            $driver1->get(TypeContainer::class)->get('sortdirection'),
+            $driver2->get(TypeContainer::class)->get('sortdirection'),
+        );
     }
 }

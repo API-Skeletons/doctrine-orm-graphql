@@ -69,7 +69,7 @@ Provided Filters::
     startswith   -  Strings only. A like query from the beginning of the value `like 'value%'`
     endswith     -  Strings only. A like query from the end of the value `like '%value'`
     isnull       -  If `true` return results where the field is null.
-    sort         -  Sort the result by this field.  Value is 'asc' or 'desc'
+    sort         -  Sort the result by this field.  Value is the SortDirection enum, ASC or DESC.
     sortPriority -  Sort priority when multiple sort fields are used.  Value is an integer starting at 1.
 
 The format for using these filters is:
@@ -83,6 +83,13 @@ For isnull the parameter is a boolean
 .. code-block:: js
 
     filter: { name: { isnull: false  } }
+
+For sort the value is an enum, so it is not quoted.  Any other value is
+rejected when the query is validated.
+
+.. code-block:: js
+
+    filter: { name: { sort: DESC } }
 
 For in and notin an array of values is expected
 
@@ -106,7 +113,7 @@ To select a list of years
       artists ( filter: { id: { eq: 2 } } ) {
         edges {
           node {
-            performances ( filter: { year: { sort: "asc" } } ) {
+            performances ( filter: { year: { sort: ASC } } ) {
               edges {
                 node {
                   year

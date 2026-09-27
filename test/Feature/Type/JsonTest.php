@@ -75,7 +75,7 @@ class JsonTest extends TestCase
             ]),
         ]);
 
-        $query  = '{ typetest ( filter: { testJson: { sort: "ASC" } } ) { edges { node { id testJson } } } }';
+        $query  = '{ typetest ( filter: { testJson: { sort: ASC } } ) { edges { node { id testJson } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         $data = $result->toArray()['data'];

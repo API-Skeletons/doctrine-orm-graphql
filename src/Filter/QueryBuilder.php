@@ -12,7 +12,6 @@ use function array_flip;
 use function in_array;
 use function key;
 use function strcmp;
-use function strtoupper;
 use function uasort;
 use function uniqid;
 
@@ -154,9 +153,10 @@ final class QueryBuilder
         }
 
         // This method is used to set the sort direction for a field
-        // It will be used to apply sorting later in the applySort method
+        // It will be used to apply sorting later in the applySort method.
+        // The SortDirection enum guarantees the direction is ASC or DESC.
         /** @psalm-suppress MixedArrayAssignment */
-        $this->sortFields[$field]['direction'] = strtoupper($direction);
+        $this->sortFields[$field]['direction'] = $direction;
     }
 
     protected function sortPriority(string $field, int $priority, DoctrineQueryBuilder $queryBuilder): void

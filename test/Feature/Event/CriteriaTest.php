@@ -136,7 +136,7 @@ class CriteriaTest extends TestCase
                 node {
                   id
                   name
-                  performances (filter: { venue: { sort: "DESC" } } ) {
+                  performances (filter: { venue: { sort: DESC } } ) {
                     edges {
                       node {
                         id
