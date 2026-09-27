@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Input;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input as InputException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SuggestSimilarString;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
@@ -16,6 +17,9 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use ReflectionClass;
 
+use function array_filter;
+use function array_merge;
+use function array_values;
 use function assert;
 use function count;
 use function in_array;
@@ -26,6 +30,8 @@ use function uniqid;
  */
 final class InputFactory
 {
+    use SuggestSimilarString;
+
     public function __construct(
         protected readonly Config $config,
         protected readonly EntityManager $entityManager,
@@ -52,6 +58,8 @@ final class InputFactory
                 /** @psalm-suppress MixedAssignment */
                 $targetEntity = $self->entityTypeContainer->get($id);
                 assert($targetEntity instanceof Entity);
+
+                $self->assertFieldsExist($targetEntity, array_merge($requiredFields, $optionalFields));
 
                 if (! count($requiredFields) && ! count($optionalFields)) {
                     $self->addAllFieldsAsRequired($targetEntity, $fields);
@@ -196,5 +204,38 @@ final class InputFactory
     {
         /** @psalm-suppress MixedArrayAccess */
         return isset($targetEntity->getMetadata()['fields'][$fieldName]);
+    }
+
+    /**
+     * Every name in the required and optional lists must be a field of the
+     * entity.  A typo would otherwise be silently ignored.
+     *
+     * @param string[] $fieldNames
+     *
+     * @throws InputException
+     */
+    private function assertFieldsExist(Entity $targetEntity, array $fieldNames): void
+    {
+        $entityFieldNames = $this->entityManager
+            ->getClassMetadata($targetEntity->getEntityClass())
+            ->getFieldNames();
+
+        foreach ($fieldNames as $fieldName) {
+            if (in_array($fieldName, $entityFieldNames, true)) {
+                continue;
+            }
+
+            // Suggest only fields which can be input
+            $exposedFieldNames = array_values(array_filter(
+                $entityFieldNames,
+                fn (string $name): bool => $this->isExposed($targetEntity, $name),
+            ));
+            $suggestion        = $this->findSimilarString($fieldName, $exposedFieldNames);
+
+            throw new InputException(
+                'Field ' . $fieldName . ' is not a field of entity ' . $targetEntity->getEntityClass() . '.'
+                . ($suggestion !== null ? ' Did you mean "' . $suggestion . '"?' : ''),
+            );
+        }
     }
 }

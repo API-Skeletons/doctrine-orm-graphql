@@ -569,4 +569,43 @@ class InputFactoryTest extends TestCase
 
         $driver->input(User::class, [], ['password'])->getFields();
     }
+
+    /**
+     * A name which is not a field of the entity, such as a typo, is an error
+     * with a suggestion rather than being silently ignored
+     */
+    public function testInputWithUnknownRequiredFieldThrowsExceptionWithSuggestion(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Field nmae is not a field of entity ' . User::class . '. Did you mean "name"?');
+
+        $driver->input(User::class, ['nmae'])->getFields();
+    }
+
+    public function testInputWithUnknownOptionalFieldThrowsException(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Field nmae is not a field of entity ' . User::class . '. Did you mean "name"?');
+
+        $driver->input(User::class, ['email'], ['nmae'])->getFields();
+    }
+
+    /**
+     * No suggestion is made when nothing is similar
+     */
+    public function testInputWithUnknownFieldAndNoSimilarFieldThrowsException(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        try {
+            $driver->input(User::class, ['zzzzzzzz'])->getFields();
+            $this->fail('An exception was expected');
+        } catch (InputException $e) {
+            $this->assertSame('Field zzzzzzzz is not a field of entity ' . User::class . '.', $e->getMessage());
+        }
+    }
 }

@@ -72,6 +72,18 @@ always null.  Read ``getArgs()['first']``, ``['after']``, ``['last']`` and
 ``['before']`` instead.  This change does not raise an error, so search your
 listeners for ``'pagination'``.
 
+input() rejects field names it cannot use
+-----------------------------------------
+
+``$driver->input()`` previously ignored a name in the required or optional
+list which was not a field of the entity, such as a typo or an association
+name.  It now throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input``,
+suggesting the closest exposed field.  Naming a field which is not exposed in
+the driver's group also throws; it previously failed with a ``TypeError``.
+
+The exception is thrown when the input type is first used, normally while the
+schema is built.  Remove any names it reports from your ``input()`` calls.
+
 globalEnable and ignoreFields are removed
 -----------------------------------------
 
