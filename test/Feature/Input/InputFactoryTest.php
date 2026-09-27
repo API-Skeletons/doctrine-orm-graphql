@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Input;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input as InputException;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use Doctrine\ORM\EntityManager;
@@ -13,6 +14,8 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+
+use function array_keys;
 
 class InputFactoryTest extends TestCase
 {
@@ -526,5 +529,83 @@ class InputFactoryTest extends TestCase
         $output = $result->toArray();
 
         $this->assertEquals($output['errors'][0]['message'], 'Identifier id is an invalid input. Identifiers should not be included in mutation input.');
+    }
+
+    /**
+     * With no field lists, a column which is not exposed in the group is
+     * left out of the input rather than crashing the build
+     */
+    public function testInputWithAllFieldsSkipsUnexposedField(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryUnexposedTest']));
+
+        $input = $driver->input(User::class);
+
+        $this->assertEqualsCanonicalizing(['name', 'email'], array_keys($input->getFields()));
+    }
+
+    /**
+     * Naming a column which is not exposed in the group is an error
+     */
+    public function testInputWithUnexposedRequiredFieldThrowsException(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryUnexposedTest']));
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Field password is not exposed');
+
+        $driver->input(User::class, ['password'])->getFields();
+    }
+
+    /**
+     * Naming a column which is not exposed in the group is an error
+     */
+    public function testInputWithUnexposedOptionalFieldThrowsException(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryUnexposedTest']));
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Field password is not exposed');
+
+        $driver->input(User::class, [], ['password'])->getFields();
+    }
+
+    /**
+     * A name which is not a field of the entity, such as a typo, is an error
+     * with a suggestion rather than being silently ignored
+     */
+    public function testInputWithUnknownRequiredFieldThrowsExceptionWithSuggestion(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Field nmae is not a field of entity ' . User::class . '. Did you mean "name"?');
+
+        $driver->input(User::class, ['nmae'])->getFields();
+    }
+
+    public function testInputWithUnknownOptionalFieldThrowsException(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Field nmae is not a field of entity ' . User::class . '. Did you mean "name"?');
+
+        $driver->input(User::class, ['email'], ['nmae'])->getFields();
+    }
+
+    /**
+     * No suggestion is made when nothing is similar
+     */
+    public function testInputWithUnknownFieldAndNoSimilarFieldThrowsException(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
+
+        try {
+            $driver->input(User::class, ['zzzzzzzz'])->getFields();
+            $this->fail('An exception was expected');
+        } catch (InputException $e) {
+            $this->assertSame('Field zzzzzzzz is not a field of entity ' . User::class . '.', $e->getMessage());
+        }
     }
 }

@@ -76,6 +76,18 @@ The ``name`` input field will be typed according to its metadata configuration.
 Identifiers are excluded from the input field list because they should not be
 changed or added by a user.
 
+Only fields exposed with a ``#[Field]`` attribute in the driver's group can be
+input.  When no field lists are given, a column which is not exposed, such as a
+password, is left out.  Naming a field which is not exposed in the required or
+optional list throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input``.
+
+Every name in the required and optional lists must be a field of the entity.
+Associations cannot be input.  An unknown name, such as a typo, throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input``, which suggests the
+closest exposed field when there is one::
+
+  Field nmae is not a field of entity App\ORM\Entity\User. Did you mean "name"?
+
 .. role:: raw-html(raw)
    :format: html
 
