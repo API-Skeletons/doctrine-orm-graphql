@@ -165,6 +165,13 @@ these types, return the date object instead.
 A ``Time`` or ``TimeImmutable`` value written as a literal in a query is now
 validated, as a variable already was.  An invalid time literal is an error.
 
+Many-to-many collections return their own members
+-------------------------------------------------
+
+A many-to-many collection on the owning side returned every row of the target
+entity for every source, and one on the inverse side failed with a Doctrine
+semantic error.  Both now return the members of the source's own collection.
+
 Connections are ordered by identifier
 -------------------------------------
 

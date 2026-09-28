@@ -15,6 +15,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Closure;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -118,25 +119,19 @@ final class ResolveCollectionFactory
         $queryBuilder->select('entity')
             ->from($targetClassName, 'entity');
 
-        // Handle different association types
-        if (isset($association['joinTable'])) {
-            // Many-to-many relationship (owning side with join table)
-            // Use Doctrine's association mapping instead of manual join table handling
-            $queryBuilder->innerJoin($entityClassName, 'source', 'WITH', ':source MEMBER OF source.' . $associationName);
-            $queryBuilder->setParameter('source', $source);
-        } elseif (isset($association['mappedBy'])) {
-            // One-to-many: target entity has the foreign key
+        // Restrict the rows to the source's collection
+        if ($association['type'] === ClassMetadata::ONE_TO_MANY) {
+            // One-to-many: the target entity holds the foreign key
             $queryBuilder->where('entity.' . $association['mappedBy'] . ' = :source');
-            $queryBuilder->setParameter('source', $source);
-            // @codeCoverageIgnoreStart
-        } elseif (isset($association['inversedBy'])) {
-            // Many-to-one from the owning side (less common for collections)
-            // This is defensively handled here for completeness
-            $queryBuilder->innerJoin($entityClassName, 'source', 'WITH', 'source.' . $associationName . ' = entity');
-            $queryBuilder->where('source = :source');
-            $queryBuilder->setParameter('source', $source);
-            // @codeCoverageIgnoreEnd
+        } else {
+            // Many-to-many, from either side: the target must be a member of
+            // this source's collection
+            $queryBuilder
+                ->innerJoin($entityClassName, 'source', 'WITH', 'entity MEMBER OF source.' . $associationName)
+                ->where('source = :source');
         }
+
+        $queryBuilder->setParameter('source', $source);
 
         // Apply filters using QueryBuilder
         $queryBuilderFilter = new QueryBuilderFilter();
