@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\OrderByIdentifier;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use Closure;
 use Doctrine\ORM\EntityManager;
@@ -24,6 +25,8 @@ use function count;
  */
 final class ResolveEntityFactory
 {
+    use OrderByIdentifier;
+
     public function __construct(
         protected readonly Config $config,
         protected readonly EntityManager $entityManager,
@@ -120,6 +123,7 @@ final class ResolveEntityFactory
         $results = [];
 
         if ($offsetAndLimit['limit'] > 0) {
+            $this->orderByIdentifier($queryBuilder);
             $queryBuilder->setFirstResult($offsetAndLimit['offset']);
             $queryBuilder->setMaxResults($offsetAndLimit['limit']);
 

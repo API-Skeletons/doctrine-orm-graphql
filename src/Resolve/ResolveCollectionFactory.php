@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\OrderByIdentifier;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
@@ -33,6 +34,8 @@ use function is_string;
  */
 final class ResolveCollectionFactory
 {
+    use OrderByIdentifier;
+
     public function __construct(
         protected readonly EntityManager $entityManager,
         protected readonly Config $config,
@@ -207,6 +210,7 @@ final class ResolveCollectionFactory
         $results = [];
 
         if ($offsetAndLimit['limit'] > 0) {
+            $this->orderByIdentifier($queryBuilder);
             $queryBuilder->setFirstResult($offsetAndLimit['offset']);
             $queryBuilder->setMaxResults($offsetAndLimit['limit']);
 

@@ -165,6 +165,18 @@ these types, return the date object instead.
 A ``Time`` or ``TimeImmutable`` value written as a literal in a query is now
 validated, as a variable already was.  An invalid time literal is an error.
 
+Connections are ordered by identifier
+-------------------------------------
+
+Entity connections and collections had no ``ORDER BY`` unless the ``sort``
+filter was used.  SQL does not guarantee the order of rows without one, so
+pages fetched with ``first`` and ``after`` could overlap or skip rows.
+
+The identifier is now always the last ordering: rows without a ``sort`` are
+returned in identifier order, and rows which sort equally are ordered by
+identifier.  Ordering added by a QueryBuilder event listener comes before the
+identifier, so it still decides the order.
+
 Field filters apply to their own field only
 -------------------------------------------
 
