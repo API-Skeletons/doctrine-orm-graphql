@@ -487,6 +487,6 @@ class EntityFilterTest extends TestCase
 
         $data = $result->toArray()['errors'];
 
-        $this->assertEquals("Sort direction for field 'entity.venue' is not set but a sortPriority was. Please use the 'sort' filter to set the direction.", $data[0]['message']);
+        $this->assertEquals("Sort direction for field 'venue' is not set but a sortPriority was. Please use the 'sort' filter to set the direction.", $data[0]['message']);
     }
 }

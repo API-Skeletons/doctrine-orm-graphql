@@ -9,11 +9,13 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 use function array_is_list;
+use function array_keys;
 use function array_map;
 use function date;
 use function implode;
@@ -119,5 +121,48 @@ class DateTimeFilterTest extends TestCase
         }
 
         return '{ ' . implode(' ', $fields) . ' }';
+    }
+
+    /**
+     * Every date and time field has the same filters; the text filters do not
+     * apply to them
+     */
+    public function testDateAndTimeFieldsHaveNoTextFilters(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));
+        $filter = $driver->filter(TypeTest::class);
+        $this->assertInstanceOf(InputObjectType::class, $filter);
+
+        $expected = [
+            'eq',
+            'neq',
+            'lt',
+            'lte',
+            'gt',
+            'gte',
+            'between',
+            'in',
+            'notin',
+            'isnull',
+            'sort',
+            'sortPriority',
+        ];
+
+        $fields = [
+            'testDate',
+            'testDateImmutable',
+            'testDateTime',
+            'testDateTimeImmutable',
+            'testDateTimeTZ',
+            'testDateTimeTZImmutable',
+            'testTime',
+            'testTimeImmutable',
+        ];
+
+        foreach ($fields as $field) {
+            $fieldFilter = $filter->getField($field)->getType();
+            $this->assertInstanceOf(InputObjectType::class, $fieldFilter);
+            $this->assertSame($expected, array_keys($fieldFilter->getFields()), $field);
+        }
     }
 }

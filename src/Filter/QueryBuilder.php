@@ -20,7 +20,6 @@ use function is_array;
 use function strcmp;
 use function strtr;
 use function uksort;
-use function uniqid;
 
 /**
  * This class is used to add filters to a Doctrine QueryBuilder based on the
@@ -59,6 +58,17 @@ final class QueryBuilder
     private array $sortFields = [];
 
     /**
+     * The GraphQL name of each filtered field, keyed by its query builder field,
+     * for errors
+     *
+     * @var array<string, string>
+     */
+    private array $fieldNames = [];
+
+    /** The number of parameters named */
+    private int $parameterCount = 0;
+
+    /**
      * Add where clauses to a QueryBuilder based on the FilterType of the entity
      *
      * @param array<string, mixed|array<string, mixed>> $filterTypes
@@ -70,19 +80,40 @@ final class QueryBuilder
         DoctrineQueryBuilder $queryBuilder,
         Entity $entity,
     ): void {
-        foreach ($filterTypes as $field => $filters) {
+        foreach ($filterTypes as $fieldName => $filters) {
             // Resolve aliases
-            $field             = array_flip($entity->getExtractionMap())[$field] ?? $field;
+            $field             = array_flip($entity->getExtractionMap())[$fieldName] ?? $fieldName;
             $queryBuilderField = 'entity.' . $field;
             $fieldType         = $this->getFieldType($queryBuilder, $entity, $field);
+
+            $this->fieldNames[$queryBuilderField] = $fieldName;
 
             foreach ($filters as $filter => $value) {
                 $filter = Filters::from($filter);
 
                 // A filter given null is not applied, as a field or filter
-                // given null is not.  eq, neq, in and notin compare to null.
-                if ($value === null && ! in_array($filter, [Filters::EQ, Filters::NEQ, Filters::IN, Filters::NOTIN])) {
+                // given null is not.  eq, neq, in and notin would compare to
+                // null, which matches nothing, so they are an error.
+                if ($value === null) {
+                    if (in_array($filter, [Filters::EQ, Filters::NEQ, Filters::IN, Filters::NOTIN], true)) {
+                        throw new FilterException(
+                            "Filter '" . $filter->value . "' of field '" . $fieldName . "' cannot be null.  "
+                            . "Use the 'isnull' filter to match null values.",
+                        );
+                    }
+
                     continue;
+                }
+
+                // A comparison to null matches nothing
+                if (
+                    (in_array($filter, [Filters::IN, Filters::NOTIN], true) && is_array($value) && in_array(null, $value, true))
+                    || ($filter === Filters::BETWEEN && is_array($value) && (($value['from'] ?? null) === null || ($value['to'] ?? null) === null))
+                ) {
+                    throw new FilterException(
+                        "Filter '" . $filter->value . "' of field '" . $fieldName . "' cannot contain null.  "
+                        . "Use the 'isnull' filter to match null values.",
+                    );
                 }
 
                 // Every value is not in an empty list.  DBAL expands an empty
@@ -126,7 +157,7 @@ final class QueryBuilder
      */
     protected function default(string $filterValue, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
     {
-        $parameter = 'p' . uniqid();
+        $parameter = $this->parameter($queryBuilder);
         $queryBuilder
             ->andWhere(
                 $queryBuilder->expr()->$filterValue($field, ':' . $parameter),
@@ -137,8 +168,8 @@ final class QueryBuilder
     /** @param array<string, mixed> $value */
     protected function between(string $field, array $value, DoctrineQueryBuilder $queryBuilder): void
     {
-        $from = 'p' . uniqid();
-        $to   = 'p' . uniqid();
+        $from = $this->parameter($queryBuilder);
+        $to   = $this->parameter($queryBuilder);
         $queryBuilder
             ->andWhere(
                 $queryBuilder->expr()->between(
@@ -172,10 +203,23 @@ final class QueryBuilder
      */
     private function like(string $field, string $pattern, DoctrineQueryBuilder $queryBuilder): void
     {
-        $parameter = 'p' . uniqid();
+        $parameter = $this->parameter($queryBuilder);
         $queryBuilder
             ->andWhere($field . ' LIKE :' . $parameter . " ESCAPE '" . self::LIKE_ESCAPE . "'")
             ->setParameter($parameter, $pattern);
+    }
+
+    /**
+     * A new parameter name.  A QueryBuilder event listener may have bound a
+     * parameter of the same name, so a bound name is skipped.
+     */
+    private function parameter(DoctrineQueryBuilder $queryBuilder): string
+    {
+        do {
+            $name = 'filter' . ++$this->parameterCount;
+        } while ($queryBuilder->getParameter($name) !== null);
+
+        return $name;
     }
 
     /**
@@ -306,7 +350,7 @@ final class QueryBuilder
             if (! isset($sort['direction'])) {
                 throw new FilterException(
                     "Sort direction for field '"
-                    . $field
+                    . ($this->fieldNames[$field] ?? $field)
                     . "' is not set but a sortPriority was. "
                     . "Please use the 'sort' filter to set the direction.",
                 );

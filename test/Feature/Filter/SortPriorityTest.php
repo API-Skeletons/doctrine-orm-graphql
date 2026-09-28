@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Filter;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Filter as FilterException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as FilterQueryBuilder;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
@@ -83,5 +85,23 @@ class SortPriorityTest extends TestCase
             $expectedOrderBy,
             array_map(static fn (OrderBy $orderBy): string => (string) $orderBy, $queryBuilder->getDQLPart('orderBy')),
         );
+    }
+
+    /**
+     * The error names the field as the client did, by its alias
+     */
+    public function testSortPriorityWithoutSortNamesTheAlias(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'ExtractionMap']));
+        $entity = $driver->get(EntityTypeContainer::class)->get(Performance::class);
+
+        $queryBuilder = $this->getEntityManager()->createQueryBuilder()
+            ->select('entity')
+            ->from(Performance::class, 'entity');
+
+        $this->expectException(FilterException::class);
+        $this->expectExceptionMessage("Sort direction for field 'date' is not set but a sortPriority was.");
+
+        (new FilterQueryBuilder())->apply(['date' => ['sortPriority' => 1]], $queryBuilder, $entity);
     }
 }

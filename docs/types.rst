@@ -117,6 +117,11 @@ A ``dateinterval`` is stored as a string, which does not order as the duration
 does, so it has only the ``eq``, ``neq``, ``in``, ``notin`` and ``isnull``
 filters.
 
+A field mapped with an ``enumType`` is represented by the value of the enum,
+the value stored in the database, as the field's type.  An input or filter
+value of it is also the value; use ``Enum::from()`` to convert it before
+setting it on an entity.  A custom hydrator strategy is given the enum case.
+
 See also `Doctrine Mapping Types <https://www.doctrine-project.org/projects/doctrine-orm/en/2.16/reference/basic-mapping.html#doctrine-mapping-types>`_.
 
 Using Types

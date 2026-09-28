@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\DoctrineObjectWithComputed;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use Doctrine\Persistence\Proxy;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Laminas\Hydrator\HydratorInterface;
 use WeakMap;
 
+use function array_key_exists;
 use function assert;
 use function is_object;
 
@@ -64,10 +67,22 @@ final class FieldResolver
                 $this->extractValues = self::newExtractCache();
             }
 
-            $entity = $this->entityTypeContainer->get((new DefaultProxyClassNameResolver())->getClass($source));
-            assert($entity instanceof Entity);
-            $values                       = $entity->getHydrator()->extract($source);
+            // Computed fields are not extracted here; each is computed when queried
+            $hydrator                     = $this->getHydrator($source);
+            $values                       = $hydrator instanceof DoctrineObjectWithComputed
+                ? $hydrator->extractFields($source)
+                : $hydrator->extract($source);
             $this->extractValues[$source] = $values;
+        }
+
+        if (! array_key_exists($info->fieldName, $values)) {
+            $hydrator = $this->getHydrator($source);
+
+            if ($hydrator instanceof DoctrineObjectWithComputed && $hydrator->hasComputedField($info->fieldName)) {
+                /** @psalm-suppress MixedAssignment */
+                $values[$info->fieldName]     = $hydrator->extractComputedField($source, $info->fieldName);
+                $this->extractValues[$source] = $values;
+            }
         }
 
         // A field's value may be of any type
@@ -80,6 +95,14 @@ final class FieldResolver
         }
 
         return $value;
+    }
+
+    private function getHydrator(object $source): HydratorInterface
+    {
+        $entity = $this->entityTypeContainer->get((new DefaultProxyClassNameResolver())->getClass($source));
+        assert($entity instanceof Entity);
+
+        return $entity->getHydrator();
     }
 
     /** @return WeakMap<object, array<array-key, mixed>> */

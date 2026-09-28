@@ -5,6 +5,31 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Comparing to null is an error
+-----------------------------
+
+``eq: null``, ``neq: null``, ``in`` or ``notin`` given null or a list
+containing null, and ``between`` with a null or missing ``from`` or ``to``
+compared to null in SQL, which matches nothing, so they silently returned no
+rows.  They are now an error which names the filter and field.  Use
+``isnull`` to match null values.
+
+date_immutable fields have no text filters
+------------------------------------------
+
+A ``date_immutable`` field was given ``contains``, ``startswith`` and
+``endswith``, which no other date or time field has.  They are removed.  This
+is a schema change.
+
+JSON fields have only the isnull filter
+---------------------------------------
+
+A JSON field was given every filter, but none except ``isnull`` worked: ``eq``
+failed with a SQL error and the others compared decoded JSON with the stored
+JSON text.  Its filter type now has only ``isnull``.  This is a schema change.
+A field whose filters are all excluded is now left out of the filter type
+rather than given an input type with no fields, which is invalid.
+
 Impossible dates are rejected
 -----------------------------
 

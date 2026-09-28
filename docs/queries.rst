@@ -79,8 +79,13 @@ ordered by field name, as are fields with the same priority.  A
 
 A filter given ``null``, such as ``isnull: null`` or an optional variable
 which is null, is not applied, as a field or filter argument given ``null`` is
-not.  ``eq``, ``neq``, ``in`` and ``notin`` are the exception: they compare to
-the null value.  Use ``isnull`` to find null values.
+not.  ``eq``, ``neq``, ``in`` and ``notin`` are the exception.  A comparison
+to null matches nothing, so ``eq``, ``neq``, ``in`` or ``notin`` given null, an
+``in`` or ``notin`` list containing null, and a ``between`` without both
+``from`` and ``to`` are an error.  Use ``isnull`` to find null values.
+
+A JSON field has only the ``isnull`` filter; a filter value is decoded JSON,
+which does not compare to the stored JSON text.  A blob field has no filters.
 
 ``contains``, ``startswith`` and ``endswith`` match their value literally.
 The LIKE wildcards ``%`` and ``_`` in the value are escaped, so

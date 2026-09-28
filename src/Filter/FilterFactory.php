@@ -154,6 +154,11 @@ final class FilterFactory
             // Remove filters that are not allowed for this field type
             $filteredFilters = $this->filterFiltersByType($fieldAllowedFilters, $type);
 
+            // An input object must have a field
+            if (! $filteredFilters) {
+                continue;
+            }
+
             // ScalarType field filters are named by their field type
             // and a hash of the allowed filters
             $filterTypeName = 'Filters_' . $type->name() . '_' . md5(serialize($filteredFilters));
@@ -277,6 +282,7 @@ final class FilterFactory
         } elseif (
             in_array($type->name(), [
                 'Date',
+                'DateImmutable',
                 'DateTime',
                 'DateTimeImmutable',
                 'DateTimeTZ',
@@ -300,6 +306,10 @@ final class FilterFactory
             $filterCollection->removeElement(Filters::ENDSWITH);
             $filterCollection->removeElement(Filters::SORT);
             $filterCollection->removeElement(Filters::SORTPRIORITY);
+        } elseif ($type->name() === 'Json') {
+            // A filter value is decoded JSON, which does not compare to the
+            // stored JSON text, so only isnull applies
+            $filterCollection = new ArrayCollection(in_array(Filters::ISNULL, $filters, true) ? [Filters::ISNULL] : []);
         }
 
         return $filterCollection->toArray();
