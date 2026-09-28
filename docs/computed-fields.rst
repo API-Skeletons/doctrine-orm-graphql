@@ -133,11 +133,14 @@ How Computed Fields Work
 
 Computed fields are:
 
-* **Integrated with the hydrator** - Values are extracted along with regular fields
-* **Cached per request** - If you enable ``useHydratorCache``, computed values are cached
+* **Lazy evaluated** - The method is called only when the field is requested in a
+  GraphQL query, and once for each entity however many times the query requests it
+* **Integrated with the hydrator** - The hydrator's ``extract()`` returns computed values
+  with the regular fields
+* **Cached** - If you enable ``useHydratorCache``, a computed value is cached with the
+  entity's other values for as long as the entity exists
 * **Not filterable** - Computed fields cannot be used in database filters since they're
   calculated in PHP, not at the database level
-* **Lazy evaluated** - Only computed when explicitly requested in a GraphQL query
 
 Filtering Limitations
 ---------------------

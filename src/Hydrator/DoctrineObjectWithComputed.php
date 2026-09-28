@@ -21,9 +21,9 @@ use function method_exists;
 /**
  * Extends DoctrineObject hydrator to support computed fields
  *
- * Computed fields are extracted by calling entity methods and merging
- * the results with regular field extraction. This maintains a single
- * resolution path through the FieldResolver.
+ * Computed fields are extracted by calling entity methods.  extract()
+ * merges them with the regular fields; the FieldResolver extracts the regular
+ * fields and computes a computed field only when it is queried.
  */
 final class DoctrineObjectWithComputed extends DoctrineObject
 {
@@ -178,24 +178,42 @@ final class DoctrineObjectWithComputed extends DoctrineObject
     /**
      * Extract values from object, including computed fields
      *
-     * This method calls the parent extract() to get regular Doctrine fields,
-     * then adds computed field values by calling registered extractors.
+     * This method extracts the regular Doctrine fields, then adds computed
+     * field values by calling registered extractors.
      *
      * @return array<array-key, mixed>
      */
     #[Override]
     public function extract(object $object): array
     {
-        // Extract regular Doctrine fields using parent logic
-        $data = parent::extract($object);
+        $data = $this->extractFields($object);
 
-        // Add computed field values
-        foreach ($this->computedFields as $fieldName => $extractor) {
+        foreach ($this->getComputedFieldNames() as $fieldName) {
             /** @psalm-suppress MixedAssignment */
-            $data[$fieldName] = $extractor($object);
+            $data[$fieldName] = $this->extractComputedField($object, $fieldName);
         }
 
         return $data;
+    }
+
+    /**
+     * Extract the regular Doctrine fields, without computing any computed
+     * field.  A computed field may be costly, so the FieldResolver computes
+     * one only when it is queried.
+     *
+     * @return array<array-key, mixed>
+     */
+    public function extractFields(object $object): array
+    {
+        return parent::extract($object);
+    }
+
+    /**
+     * Compute a registered computed field
+     */
+    public function extractComputedField(object $object, string $fieldName): mixed
+    {
+        return ($this->computedFields[$fieldName])($object);
     }
 
     /**
