@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Filter as FilterException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
+use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -32,9 +33,11 @@ final class QueryBuilder
      */
     private const string LIKE_ESCAPE = '!';
 
+    // datetime_utc and datetime_utc_immutable are DBAL 4 types
     private const array MUTABLE_TYPES = [
         Types::DATE_MUTABLE,
         Types::DATETIME_MUTABLE,
+        'datetime_utc',
         Types::DATETIMETZ_MUTABLE,
         Types::TIME_MUTABLE,
     ];
@@ -42,6 +45,7 @@ final class QueryBuilder
     private const array IMMUTABLE_TYPES = [
         Types::DATE_IMMUTABLE,
         Types::DATETIME_IMMUTABLE,
+        'datetime_utc_immutable',
         Types::DATETIMETZ_IMMUTABLE,
         Types::TIME_IMMUTABLE,
     ];
@@ -254,10 +258,11 @@ final class QueryBuilder
     }
 
     /**
-     * Convert a date or time filter value to the database value of the field's
-     * Doctrine type.  Bound untyped, Doctrine would bind it as a datetime,
-     * which does not match a date or time column.  Arrays, as for between
-     * and in, are converted element by element.
+     * Convert a date, time or interval filter value to the database value of
+     * the field's Doctrine type.  Bound untyped, Doctrine would bind a date or
+     * time as a datetime, which does not match a date or time column, and could
+     * not bind an interval.  Arrays, as for between and in, are converted
+     * element by element.
      */
     private function toDatabaseValue(mixed $value, string|null $fieldType, DoctrineQueryBuilder $queryBuilder): mixed
     {
@@ -271,14 +276,14 @@ final class QueryBuilder
             return $value;
         }
 
-        if (! $value instanceof DateTimeInterface || $fieldType === null) {
+        if ((! $value instanceof DateTimeInterface && ! $value instanceof DateInterval) || $fieldType === null) {
             return $value;
         }
 
         // DBAL's date and time types accept only their own DateTimeInterface class
-        if (in_array($fieldType, self::IMMUTABLE_TYPES, true)) {
+        if ($value instanceof DateTimeInterface && in_array($fieldType, self::IMMUTABLE_TYPES, true)) {
             $value = DateTimeImmutable::createFromInterface($value);
-        } elseif (in_array($fieldType, self::MUTABLE_TYPES, true)) {
+        } elseif ($value instanceof DateTimeInterface && in_array($fieldType, self::MUTABLE_TYPES, true)) {
             $value = DateTime::createFromInterface($value);
         }
 

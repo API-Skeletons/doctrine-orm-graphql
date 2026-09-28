@@ -294,6 +294,18 @@ final class FilterFactory
             $filterCollection->removeElement(Filters::CONTAINS);
             $filterCollection->removeElement(Filters::STARTSWITH);
             $filterCollection->removeElement(Filters::ENDSWITH);
+        } elseif ($type->name() === 'DateInterval') {
+            // Stored as a string, which does not order as the duration does
+            $filterCollection->removeElement(Filters::LT);
+            $filterCollection->removeElement(Filters::LTE);
+            $filterCollection->removeElement(Filters::GT);
+            $filterCollection->removeElement(Filters::GTE);
+            $filterCollection->removeElement(Filters::BETWEEN);
+            $filterCollection->removeElement(Filters::CONTAINS);
+            $filterCollection->removeElement(Filters::STARTSWITH);
+            $filterCollection->removeElement(Filters::ENDSWITH);
+            $filterCollection->removeElement(Filters::SORT);
+            $filterCollection->removeElement(Filters::SORTPRIORITY);
         } elseif ($type->name() === 'Json') {
             // A filter value is decoded JSON, which does not compare to the
             // stored JSON text, so only isnull applies

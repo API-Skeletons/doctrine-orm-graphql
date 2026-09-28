@@ -15,12 +15,18 @@ Data Type Mappings
    :widths: 33 33 34
    :header-rows: 1
 
-   * - GraphQL and Doctrine
+   * - Doctrine (GraphQL type if another)
      - PHP
      - Javascript
+   * - ascii_string
+     - string
+     - string
    * - bigint
      - string
      - integer or string
+   * - binary (as Blob)
+     - string (binary)
+     - Base64 encoded string
    * - blob
      - string (binary)
      - Base64 encoded string
@@ -33,12 +39,21 @@ Data Type Mappings
    * - date_immutable
      - DateTimeImmutable
      - string as Y-m-d
+   * - dateinterval
+     - DateInterval
+     - ISO 8601 duration string, e.g. P1DT2H or -P1D
    * - datetime
      - DateTime
      - ISO 8601 date string
    * - datetime_immutable
      - DateTimeImmutable
      - ISO 8601 date string
+   * - datetime_utc (as datetime)
+     - DateTime
+     - ISO 8601 date string in UTC
+   * - datetime_utc_immutable (as datetime_immutable)
+     - DateTimeImmutable
+     - ISO 8601 date string in UTC
    * - datetimetz
      - DateTime
      - ISO 8601 date string
@@ -48,18 +63,33 @@ Data Type Mappings
    * - decimal
      - string
      - float
+   * - enum
+     - string
+     - string
    * - float
      - float
      - float
+   * - guid
+     - string
+     - string
    * - int & integer
      - integer
      - integer
    * - json
-     - string
+     - array
      - string of json
+   * - json_object, jsonb and jsonb_object (as json)
+     - stdClass or array
+     - string of json
+   * - number
+     - ``BcMath\Number``
+     - string
    * - simple_array
      - array of strings
      - array of strings
+   * - smallfloat
+     - float
+     - float
    * - smallint
      - integer
      - integer
@@ -75,6 +105,17 @@ Data Type Mappings
    * - time_immutable
      - DateTimeImmutable
      - string as H:i:s or H:i:s.u
+
+``datetime_utc``, ``datetime_utc_immutable``, ``enum``, ``json_object``,
+``jsonb``, ``jsonb_object``, ``number`` and ``smallfloat`` are types of DBAL 4.
+
+A ``number`` is a string in GraphQL, which keeps its precision.  An input or
+filter value of it is also a string; convert it to a ``BcMath\Number`` before
+setting it on an entity.
+
+A ``dateinterval`` is stored as a string, which does not order as the duration
+does, so it has only the ``eq``, ``neq``, ``in``, ``notin`` and ``isnull``
+filters.
 
 A field mapped with an ``enumType`` is represented by the value of the enum,
 the value stored in the database, as the field's type.  An input or filter
