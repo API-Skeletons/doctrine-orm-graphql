@@ -5,6 +5,15 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+JSON fields have only the isnull filter
+---------------------------------------
+
+A JSON field was given every filter, but none except ``isnull`` worked: ``eq``
+failed with a SQL error and the others compared decoded JSON with the stored
+JSON text.  Its filter type now has only ``isnull``.  This is a schema change.
+A field whose filters are all excluded is now left out of the filter type
+rather than given an input type with no fields, which is invalid.
+
 Impossible dates are rejected
 -----------------------------
 

@@ -7,6 +7,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Json;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
@@ -14,11 +15,12 @@ use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Language\AST\IntValueNode;
 use GraphQL\Language\AST\StringValueNode;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-use function count;
+use function array_keys;
 
 class JsonTest extends TestCase
 {
@@ -118,7 +120,11 @@ class JsonTest extends TestCase
         $jsonType->serialize(['name' => "\xB1\x31"]);
     }
 
-    public function testContains(): void
+    /**
+     * A filter value is decoded JSON, which does not compare to the stored JSON
+     * text, so a JSON field has only the isnull filter
+     */
+    public function testOnlyIsnullFilter(): void
     {
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DataTypesTest']));
         $schema = new Schema([
@@ -130,12 +136,39 @@ class JsonTest extends TestCase
             ]),
         ]);
 
-        $query  = '{ typetest ( filter: { testJson: { sort: ASC } } ) { edges { node { id testJson } } } }';
-        $result = GraphQL::executeQuery($schema, $query);
+        $filter = $driver->filter(TypeTest::class);
+        $this->assertInstanceOf(InputObjectType::class, $filter);
+        $testJson = $filter->getField('testJson')->getType();
+        $this->assertInstanceOf(InputObjectType::class, $testJson);
+        $this->assertSame(['isnull'], array_keys($testJson->getFields()));
 
-        $data = $result->toArray()['data'];
+        foreach (['false' => 1, 'true' => 0] as $isnull => $count) {
+            $query  = '{ typetest ( filter: { testJson: { isnull: ' . $isnull . ' } } ) { edges { node { id } } } }';
+            $result = GraphQL::executeQuery($schema, $query)->toArray();
 
-        $this->assertEquals(1, count($data['typetest']['edges']));
-        $this->assertEquals(1, $data['typetest']['edges'][0]['node']['id']);
+            $this->assertArrayNotHasKey('errors', $result);
+            $this->assertCount($count, $result['data']['typetest']['edges']);
+        }
+
+        $query  = '{ typetest ( filter: { testJson: { eq: "{}" } } ) { edges { node { id } } } }';
+        $result = GraphQL::executeQuery($schema, $query)->toArray();
+        $this->assertSame('Field "eq" is not defined by type "' . $testJson->name() . '".', $result['errors'][0]['message']);
+    }
+
+    /**
+     * A field whose filters are all excluded has no filter field; an input
+     * object must have a field
+     */
+    public function testFieldWithoutFiltersIsOmitted(): void
+    {
+        $driver = new Driver(
+            $this->getEntityManager(),
+            new Config(['group' => 'DataTypesTest', 'excludeFilters' => [Filters::ISNULL]]),
+        );
+
+        $filter = $driver->filter(TypeTest::class);
+        $this->assertInstanceOf(InputObjectType::class, $filter);
+        $this->assertNull($filter->findField('testJson'));
+        $this->assertNotNull($filter->findField('testText'));
     }
 }
