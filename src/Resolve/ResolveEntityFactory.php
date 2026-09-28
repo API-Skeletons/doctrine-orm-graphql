@@ -8,7 +8,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Cache\QueryResultCache;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use Closure;
@@ -29,7 +28,6 @@ final class ResolveEntityFactory
         protected readonly Config $config,
         protected readonly EntityManager $entityManager,
         protected readonly EventDispatcher $eventDispatcher,
-        protected readonly Metadata $metadata,
         protected readonly PaginationService $paginationService,
         protected readonly QueryResultCache $queryResultCache,
     ) {
@@ -80,8 +78,7 @@ final class ResolveEntityFactory
         );
 
         // Get the limit for this entity
-        /** @psalm-suppress MixedAssignment, MixedArrayAccess */
-        $limit = $this->metadata[$entity->getEntityClass()]['limit'] ?: $this->config->getLimit();
+        $limit = $entity->getEntityMetadata()->limit ?: $this->config->getLimit();
 
         /**
          * Fire the event dispatcher using the passed event name.

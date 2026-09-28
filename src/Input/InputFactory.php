@@ -193,8 +193,8 @@ final class InputFactory
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
                 'name' => $alias ?? $fieldName,
-                'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
-                'type' => $this->typeContainer->get($targetEntity->getMetadata()['fields'][$fieldName]['type']),
+                'description' => (string) $targetEntity->getEntityMetadata()->fields[$fieldName]->description,
+                'type' => $this->typeContainer->get($targetEntity->getEntityMetadata()->fields[$fieldName]->type),
             ]);
         }
     }
@@ -235,9 +235,9 @@ final class InputFactory
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
                 'name' => $alias ?? $fieldName,
-                'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
+                'description' => (string) $targetEntity->getEntityMetadata()->fields[$fieldName]->description,
                 'type' => Type::nonNull($this->typeContainer->get(
-                    $targetEntity->getMetadata()['fields'][$fieldName]['type'],
+                    $targetEntity->getEntityMetadata()->fields[$fieldName]->type,
                 )),
             ]);
         }
@@ -269,8 +269,8 @@ final class InputFactory
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
                 'name' => $alias ?? $fieldName,
-                'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
-                'type' => Type::nonNull($this->typeContainer->get($targetEntity->getMetadata()['fields'][$fieldName]['type'])),
+                'description' => (string) $targetEntity->getEntityMetadata()->fields[$fieldName]->description,
+                'type' => Type::nonNull($this->typeContainer->get($targetEntity->getEntityMetadata()->fields[$fieldName]->type)),
             ]);
         }
     }
@@ -280,8 +280,7 @@ final class InputFactory
      */
     private function isExposed(Entity $targetEntity, string $fieldName): bool
     {
-        /** @psalm-suppress MixedArrayAccess */
-        return isset($targetEntity->getMetadata()['fields'][$fieldName]);
+        return isset($targetEntity->getEntityMetadata()->fields[$fieldName]);
     }
 
     /**

@@ -98,7 +98,6 @@ trait Services
                             $self->get(Type\TypeContainer::class),
                             $self->get(EntityTypeContainer::class),
                             $self->get(EventDispatcher::class),
-                            $self->get(Metadata::class),
                             $self->get(Pagination\PaginationService::class),
                             $self->get(Cache\QueryResultCache::class),
                         );
@@ -113,7 +112,6 @@ trait Services
                             $self->get(Config::class),
                             $self->get(EntityManager::class),
                             $self->get(EventDispatcher::class),
-                            $self->get(Metadata::class),
                             $self->get(Pagination\PaginationService::class),
                             $self->get(Cache\QueryResultCache::class),
                         );
