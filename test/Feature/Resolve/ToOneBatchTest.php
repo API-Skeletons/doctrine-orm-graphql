@@ -63,15 +63,21 @@ class ToOneBatchTest extends QueryCountingTestCase
         $this->assertSame(3, $batchedQueries);
     }
 
+    /**
+     * The artists are loaded by the root connection, so resolving each
+     * performance's artist costs no query
+     */
     public function testLoadedTargetsCostNoQueries(): void
     {
-        $query = '{ artist { edges { node { name performances { edges { node { venue artist { name } } } } } } } }';
+        $withArtist    = '{ artist { edges { node { name performances { edges { node { venue artist { name } } } } } } } }';
+        $withoutArtist = '{ artist { edges { node { name performances { edges { node { venue } } } } } } }';
 
-        [$unbatched, $unbatchedQueries] = $this->execute(false, $query);
-        [$batched, $batchedQueries]     = $this->execute(true, $query);
+        [$unbatched]                   = $this->execute(false, $withArtist);
+        [$batched, $withArtistQueries] = $this->execute(true, $withArtist);
+        [, $withoutArtistQueries]      = $this->execute(true, $withoutArtist);
 
         $this->assertSame($unbatched, $batched);
-        $this->assertSame($unbatchedQueries, $batchedQueries);
+        $this->assertSame($withoutArtistQueries, $withArtistQueries);
     }
 
     public function testIdentifiersAreLoadedInChunks(): void
