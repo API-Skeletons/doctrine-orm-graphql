@@ -77,6 +77,11 @@ first, lowest priority first.  Fields without a ``sortPriority`` follow,
 ordered by field name, as are fields with the same priority.  A
 ``sortPriority`` without a ``sort`` direction is an error.
 
+A filter given ``null``, such as ``isnull: null`` or an optional variable
+which is null, is not applied, as a field or filter argument given ``null`` is
+not.  ``eq``, ``neq``, ``in`` and ``notin`` are the exception: they compare to
+the null value.  Use ``isnull`` to find null values.
+
 ``contains``, ``startswith`` and ``endswith`` match their value literally.
 The LIKE wildcards ``%`` and ``_`` in the value are escaped, so
 ``contains: "100%"`` matches only values containing ``100%``.
