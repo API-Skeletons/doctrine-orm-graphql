@@ -145,15 +145,28 @@ freed.  Default is ``false``
 useQueryResultCache
 -------------------
 
-When set to true query results will be cached for
-the duration of the request thereby preventing duplicate database queries
-with identical SQL and parameters. This is particularly useful for:
+When set to true query results will be cached, thereby preventing duplicate
+database queries with identical SQL and parameters. This is particularly
+useful for:
 
 - Circular references in the graph
 - Queries accessing the same entity multiple times
 - Duplicate association queries
 
-The cache is request-scoped and automatically cleared after each request.
+The results are entities of the entity manager, so the cache is cleared
+whenever the entity manager is cleared or flushed.  A mutation that flushes
+therefore does not leave stale results.  Clear the entity manager between
+requests in a long running process, or the cache, like the entity manager,
+keeps results from earlier requests.  Changes made outside the entity manager,
+such as by another process, are not seen until the cache is cleared.  The
+cache can also be cleared directly:
+
+.. code-block:: php
+
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Cache\QueryResultCache;
+
+  $driver->get(QueryResultCache::class)->clear();
+
 Performance benefits are most noticeable with complex, nested GraphQL queries
 that may execute the same database query multiple times.
 

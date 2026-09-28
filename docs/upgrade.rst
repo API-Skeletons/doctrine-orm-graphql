@@ -5,6 +5,16 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+The query result cache is cleared with the entity manager
+---------------------------------------------------------
+
+With ``useQueryResultCache`` enabled, cached results were kept for the life of
+the driver.  They were served after the entity manager was cleared and after a
+mutation flushed, so a long running process returned stale, detached entities
+and the cache grew without limit.  The cache is now cleared whenever the entity
+manager is cleared or flushed.  Clear the entity manager between requests, as
+a long running process should already do.
+
 Cached metadata carries a format version
 ----------------------------------------
 
