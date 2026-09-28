@@ -215,6 +215,14 @@ class EntityMetadataTest extends TestCase
                 },
                 'Metadata for entity ' . User::class . ' key fields must be an array, string given.',
             ],
+            'entity class does not exist' => [
+                static function (array $user): array {
+                    $user['entityClass'] = 'App\\Removed\\Entity';
+
+                    return $user;
+                },
+                'Metadata names entity App\\Removed\\Entity but the class does not exist.',
+            ],
             'missing entityClass' => [
                 static function (array $user): array {
                     unset($user['entityClass']);

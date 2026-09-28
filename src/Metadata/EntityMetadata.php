@@ -6,6 +6,8 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 
+use function class_exists;
+
 /**
  * The metadata of an entity exposed with #[Entity]
  *
@@ -18,6 +20,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 final readonly class EntityMetadata
 {
     /**
+     * @param class-string                         $entityClass
      * @param list<string>                         $excludeFilters
      * @param array<string, FieldMetadata>         $fields
      * @param array<string, AssociationMetadata>   $associations
@@ -45,7 +48,12 @@ final readonly class EntityMetadata
     {
         $reader      = new ArrayReader($array, 'an entity');
         $entityClass = $reader->string('entityClass');
-        $reader      = new ArrayReader($array, 'entity ' . $entityClass);
+
+        if (! class_exists($entityClass)) {
+            throw new MetadataException('Metadata names entity ' . $entityClass . ' but the class does not exist.');
+        }
+
+        $reader = new ArrayReader($array, 'entity ' . $entityClass);
 
         $fields       = [];
         $associations = [];
