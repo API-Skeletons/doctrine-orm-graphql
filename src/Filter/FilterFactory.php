@@ -60,7 +60,7 @@ final class FilterFactory
             : 'Filter_' . $targetEntity->getTypeName();
 
         if ($this->typeContainer->has($typeName)) {
-            /** @psalm-suppress MixedReturnStatement, MixedInferredReturnType */
+            /** @psalm-suppress MixedReturnStatement */
             return $this->typeContainer->get($typeName);
         }
 
@@ -112,8 +112,6 @@ final class FilterFactory
      * @param Filters[] $allowedFilters
      *
      * @return array<string, mixed[]>
-     *
-     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment
      */
     protected function addFields(Entity $targetEntity, array $allowedFilters): array
     {

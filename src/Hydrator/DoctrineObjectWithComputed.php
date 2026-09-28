@@ -130,7 +130,6 @@ final class DoctrineObjectWithComputed extends DoctrineObject
     {
         // Psalm does not understand the ReflectionClass<covariant T> return
         // type of Doctrine\Persistence\Mapping\ClassMetadata::getReflectionClass()
-        /** @psalm-suppress UndefinedDocblockClass */
         $refl   = $this->getClassMetadata()->getReflectionClass();
         $filter = $object instanceof FilterProviderInterface
             ? $object->getFilter()

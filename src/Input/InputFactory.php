@@ -69,7 +69,6 @@ final class InputFactory
         array $optionalFields = [],
         string|null $name = null,
     ): InputObjectType {
-        /** @psalm-suppress MixedAssignment */
         $targetEntity = $this->entityTypeContainer->get($id);
         assert($targetEntity instanceof Entity);
 
@@ -159,7 +158,7 @@ final class InputFactory
      * @param string[]                            $optionalFields
      * @param array<int|string, InputObjectField> $fields
      *
-     * @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion
+     * @psalm-suppress MixedArgumentTypeCoercion
      */
     protected function addOptionalFields(
         Entity $targetEntity,
@@ -203,7 +202,7 @@ final class InputFactory
      * @param string[]                            $requiredFields
      * @param array<int|string, InputObjectField> $fields
      *
-     * @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion
+     * @psalm-suppress MixedArgument
      */
     protected function addRequiredFields(
         Entity $targetEntity,

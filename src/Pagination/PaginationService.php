@@ -229,7 +229,6 @@ final class PaginationService
 
         /** @psalm-suppress MixedAssignment */
         foreach ($items as $item) {
-            /** @psalm-suppress MixedAssignment */
             $edges[] = [
                 'node'   => $item,
                 'cursor' => base64_encode((string) ($index + $offset)),

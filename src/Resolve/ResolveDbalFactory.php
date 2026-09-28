@@ -47,7 +47,6 @@ final class ResolveDbalFactory
     public function buildPagination(QueryBuilder $queryBuilder, array $args): array
     {
         // Decode pagination fields
-        /** @psalm-suppress MixedArgument */
         $paginationFields = $this->paginationService->decodePaginationFields($args);
 
         // The rows must be counted before the offset and limit can be resolved

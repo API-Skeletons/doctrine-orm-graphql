@@ -63,7 +63,6 @@ final class FieldResolver
                 $this->extractValues = self::newExtractCache();
             }
 
-            /** @psalm-suppress MixedAssignment */
             $entity = $this->entityTypeContainer->get((new DefaultProxyClassNameResolver())->getClass($source));
             assert($entity instanceof Entity);
             $values                       = $entity->getHydrator()->extract($source);

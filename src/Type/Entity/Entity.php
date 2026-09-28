@@ -69,7 +69,7 @@ final class Entity
         $this->entityMetadata = EntityMetadata::fromArray($metadata);
     }
 
-    /** @psalm-suppress MixedReturnStatement, MixedInferredReturnType */
+    /** @psalm-suppress MixedReturnStatement */
     public function getHydrator(): HydratorInterface
     {
         return $this->hydratorContainer->get($this->getEntityClass());
@@ -198,7 +198,7 @@ final class Entity
             ksort($definition['fields']);
         }
 
-        /** @psalm-suppress InvalidArgument, ArgumentTypeCoercion */
+        /** @psalm-suppress ArgumentTypeCoercion */
         $this->objectType = (new ReflectionClass(ObjectType::class))
             ->newLazyGhost(static function (ObjectType $object) use ($definition): void {
                 /** @psalm-suppress DirectConstructorCall */
@@ -233,7 +233,7 @@ final class Entity
     /**
      * @return array<string, mixed>
      *
-     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment, MixedMethodCall
+     * @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall
      */
     protected function addAssociations(): array
     {
@@ -259,7 +259,6 @@ final class Entity
 
                 // The hydrator extracts an aliased association under its alias
                 $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $graphqlAssociation): array {
-                    /** @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall */
                     $entity = $this->entityTypeContainer->get($targetEntity);
 
                     // The association's description, else the target entity's
@@ -276,7 +275,6 @@ final class Entity
             $targetEntity = $associationMetadata['targetEntity'];
 
             $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName, $graphqlAssociation): array {
-                /** @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall, MixedArrayAccess */
                 $entity    = $this->entityTypeContainer->get($targetEntity);
                 $shortName = $this->getTypeName() . '_' . ucwords($associationName);
 

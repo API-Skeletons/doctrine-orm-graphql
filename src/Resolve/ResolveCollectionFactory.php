@@ -56,7 +56,6 @@ final class ResolveCollectionFactory
             $targetCollectionName = $info->fieldName;
             /** @psalm-suppress MixedMethodCall, MixedArgument */
             if (in_array($info->fieldName, $this->entityTypeContainer->get($entityClassName)->getExtractionMap())) {
-                /** @psalm-suppress MixedMethodCall, MixedArgument */
                 $targetCollectionName = array_flip($this->entityTypeContainer
                     ->get($entityClassName)->getExtractionMap())[$info->fieldName] ?? $info->fieldName;
             }
@@ -67,7 +66,6 @@ final class ResolveCollectionFactory
                 ->getAssociationTargetClass($targetCollectionName);
 
             // Get the target entity
-            /** @psalm-suppress MixedAssignment */
             $targetEntity = $this->entityTypeContainer->get($targetClassName);
             assert($targetEntity instanceof Entity);
 
@@ -96,7 +94,7 @@ final class ResolveCollectionFactory
     /**
      * @return mixed[]
      *
-     * @psalm-suppress MixedOperand, MixedArgument, MixedArrayAccess, MixedAssignment
+     * @psalm-suppress MixedOperand
      */
     protected function buildPagination(
         Entity $entity,
@@ -145,7 +143,7 @@ final class ResolveCollectionFactory
         }
 
         // Decode pagination fields
-        /** @psalm-suppress MixedArgument, MixedArrayAccess */
+        /** @psalm-suppress MixedArgument */
         $paginationFields = $this->paginationService->decodePaginationFields(
             $resolve['args'] ?? [],
         );
@@ -217,7 +215,7 @@ final class ResolveCollectionFactory
         }
 
         // Build edges
-        /** @psalm-suppress PossiblyInvalidArgument, MixedArgument */
+        /** @psalm-suppress PossiblyInvalidArgument */
         $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
 
         // Build cursors
@@ -261,7 +259,6 @@ final class ResolveCollectionFactory
         /** @psalm-suppress MixedArgument */
         $this->queryResultCache->set($query, $results);
 
-        /** @psalm-suppress MixedReturnStatement */
         return $results;
     }
 }

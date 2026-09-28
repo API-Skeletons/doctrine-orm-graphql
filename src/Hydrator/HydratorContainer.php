@@ -52,8 +52,7 @@ final class HydratorContainer extends Container
         $hydrator = (new ReflectionClass(DoctrineObjectWithComputed::class))
             ->newLazyGhost(static function (DoctrineObjectWithComputed $object) use ($self, $id): void {
                 $entityManager = $self->entityManager;
-                /** @psalm-suppress MixedAssignment */
-                $entity = $self->entityTypeContainer->get($id);
+                $entity        = $self->entityTypeContainer->get($id);
                 assert($entity instanceof Entity);
                 $entityMetadata = $entity->getEntityMetadata();
 
