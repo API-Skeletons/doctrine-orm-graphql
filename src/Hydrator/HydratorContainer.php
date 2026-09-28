@@ -52,50 +52,41 @@ final class HydratorContainer extends Container
         $hydrator = (new ReflectionClass(DoctrineObjectWithComputed::class))
             ->newLazyGhost(static function (DoctrineObjectWithComputed $object) use ($self, $id): void {
                 $entityManager = $self->entityManager;
-                /** @psalm-suppress MixedAssignment */
-                $entity = $self->entityTypeContainer->get($id);
+                $entity        = $self->entityTypeContainer->get($id);
                 assert($entity instanceof Entity);
-                $metadata = $entity->getMetadata();
-                /** @psalm-suppress MixedArrayAccess, MixedAssignment */
-                $byValue = $metadata['byValue'];
+                $entityMetadata = $entity->getEntityMetadata();
 
-                /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                /** @psalm-suppress DirectConstructorCall */
                 $object->__construct(
                     $entityManager,
-                    $byValue,
+                    $entityMetadata->byValue,
                 );
 
-                // Create field strategy and assign to hydrator
-                /** @psalm-suppress MixedArrayAccess, MixedAssignment */
-                foreach ($metadata['fields'] as $fieldName => $fieldMetadata) {
-                    /** @psalm-suppress MixedArrayAccess, MixedArgument */
-                    $implements = class_implements($fieldMetadata['hydratorStrategy']);
+                // Create field and association strategies and assign them to the hydrator
+                $fields = [...$entityMetadata->fields, ...$entityMetadata->associations];
+                foreach ($fields as $fieldName => $fieldMetadata) {
+                    $implements = class_implements($fieldMetadata->hydratorStrategy);
                     if (! in_array(StrategyInterface::class, $implements !== false ? $implements : [])) {
-                        /** @psalm-suppress MixedArrayAccess, MixedOperand */
                         throw new HydratorException(
-                            'Hydrator strategy ' . $fieldMetadata['hydratorStrategy'] . ' for field ' . $fieldName
+                            'Hydrator strategy ' . $fieldMetadata->hydratorStrategy . ' for field ' . $fieldName
                             . ' of entity ' . $entity->getEntityClass() . ' must implement ' . StrategyInterface::class,
                         );
                     }
 
-                    /** @psalm-suppress MixedArgument, MixedArrayAccess */
-                    $object->addStrategy($fieldName, $self->get($fieldMetadata['hydratorStrategy']));
+                    /** @psalm-suppress MixedArgument */
+                    $object->addStrategy($fieldName, $self->get($fieldMetadata->hydratorStrategy));
                 }
 
                 // Register computed fields
-                if (isset($metadata['computedFields'])) {
-                    /** @psalm-suppress MixedArrayAccess, MixedAssignment */
-                    foreach ($metadata['computedFields'] as $fieldName => $computedFieldMetadata) {
-                        /** @psalm-suppress MixedArrayAccess */
-                        $methodName = $computedFieldMetadata['method'];
+                foreach ($entityMetadata->computedFields as $fieldName => $computedFieldMetadata) {
+                    $methodName = $computedFieldMetadata->method;
 
-                        // Create extractor closure that calls the entity method
-                        /** @psalm-suppress MixedArgument, MixedMethodCall */
-                        $object->addComputedField(
-                            $fieldName,
-                            static fn (object $entity): mixed => $entity->$methodName(),
-                        );
-                    }
+                    // Create extractor closure that calls the entity method
+                    /** @psalm-suppress MixedMethodCall */
+                    $object->addComputedField(
+                        $fieldName,
+                        static fn (object $entity): mixed => $entity->$methodName(),
+                    );
                 }
 
                 // Create naming strategy for aliases and assign to hydrator

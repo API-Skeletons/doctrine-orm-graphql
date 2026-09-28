@@ -12,6 +12,8 @@ use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 
+use function array_keys;
+
 class IncludeFiltersTest extends TestCase
 {
     public function testIncludeFilters(): void
@@ -164,7 +166,10 @@ class IncludeFiltersTest extends TestCase
         ';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "Filters_String_2b95866a5016efda298ddbf2e3ed5c14". Did you mean "neq"?', $error->getMessage());
+            $this->assertMatchesRegularExpression(
+                '/^Field "eq" is not defined by type "Filters_String_[0-9a-f]{32}"\\. Did you mean "neq"\\?$/',
+                $error->getMessage(),
+            );
         }
 
         // Test entity>association level included filters
@@ -226,5 +231,25 @@ class IncludeFiltersTest extends TestCase
         foreach ($result->errors as $error) {
             $this->assertEquals('Field "eq" is not defined by type "Filters_String_daeebc957d3b444810fef662f84b89e8".', $error->getMessage());
         }
+    }
+
+    /**
+     * Each field's include and exclude filters apply to that field only.
+     * city, which comes before state, includes only eq and neq; state must
+     * keep the entity's contains.
+     */
+    public function testFieldFiltersDoNotAffectOtherFields(): void
+    {
+        $driver  = new Driver($this->getEntityManager(), new Config(['group' => 'IncludeFiltersTest']));
+        $filters = $driver->filter(Performance::class);
+
+        $this->assertEqualsCanonicalizing(
+            ['eq', 'neq'],
+            array_keys($filters->getField('city')->getType()->getFields()),
+        );
+        $this->assertEqualsCanonicalizing(
+            ['neq', 'contains'],
+            array_keys($filters->getField('state')->getType()->getFields()),
+        );
     }
 }

@@ -76,7 +76,7 @@ final class EntityTypeContainer extends Container
                 ->newLazyGhost(static function (Entity $object) use ($container, $id, $eventName): void {
                     $metadata = $container->get(Metadata::class);
                     assert($metadata instanceof Metadata);
-                    /** @psalm-suppress DirectConstructorCall, MixedArgument, MixedArrayAccess */
+                    /** @psalm-suppress DirectConstructorCall, MixedArgument */
                     $object->__construct(
                         $eventName,
                         $container->get(Config::class),

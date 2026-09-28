@@ -86,7 +86,6 @@ final class QueryBuilder
                 }
 
                 if ($filter === Filters::ISNULL) {
-                    /** @psalm-suppress MixedArgument */
                     $this->isnull($queryBuilderField, $value, $queryBuilder);
                     continue;
                 }

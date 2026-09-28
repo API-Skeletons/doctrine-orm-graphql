@@ -12,6 +12,7 @@ use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
 
 use function array_map;
+use function array_values;
 use function assert;
 use function is_string;
 
@@ -118,19 +119,21 @@ enum Filters: string
     }
 
     /**
-     * Covert an array of enum values to an array of strings
+     * Convert an array of enum values to a list of strings.  The filters may
+     * come from array_udiff() or array_uintersect(), which keep their keys, so
+     * the result is re-indexed.
      *
      * @param Filters[] $filters
      *
-     * @return string[]
+     * @return list<string>
      */
     public static function toStringArray(array $filters): array
     {
-        return array_map(
+        return array_values(array_map(
             static function (Filters $filter) {
                 return $filter->value;
             },
             $filters,
-        );
+        ));
     }
 }

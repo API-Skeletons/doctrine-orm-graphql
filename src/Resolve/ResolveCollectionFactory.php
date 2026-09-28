@@ -8,7 +8,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Cache\QueryResultCache;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
@@ -41,7 +40,6 @@ final class ResolveCollectionFactory
         protected readonly TypeContainer $typeContainer,
         protected readonly EntityTypeContainer $entityTypeContainer,
         protected readonly EventDispatcher $eventDispatcher,
-        protected readonly Metadata $metadata,
         protected readonly PaginationService $paginationService,
         protected readonly QueryResultCache $queryResultCache,
     ) {
@@ -58,7 +56,6 @@ final class ResolveCollectionFactory
             $targetCollectionName = $info->fieldName;
             /** @psalm-suppress MixedMethodCall, MixedArgument */
             if (in_array($info->fieldName, $this->entityTypeContainer->get($entityClassName)->getExtractionMap())) {
-                /** @psalm-suppress MixedMethodCall, MixedArgument */
                 $targetCollectionName = array_flip($this->entityTypeContainer
                     ->get($entityClassName)->getExtractionMap())[$info->fieldName] ?? $info->fieldName;
             }
@@ -69,16 +66,15 @@ final class ResolveCollectionFactory
                 ->getAssociationTargetClass($targetCollectionName);
 
             // Get the target entity
-            /** @psalm-suppress MixedAssignment */
             $targetEntity = $this->entityTypeContainer->get($targetClassName);
             assert($targetEntity instanceof Entity);
 
-            // Get event name
-            /** @psalm-suppress MixedAssignment, MixedArrayAccess */
-            $eventName = $this->metadata[$entityClassName]['fields'][$targetCollectionName]['eventName'];
-            assert(is_string($eventName) || $eventName === null);
-
             assert(is_string($targetCollectionName));
+
+            // Get event name
+            $sourceEntity = $this->entityTypeContainer->get($entityClassName);
+            assert($sourceEntity instanceof Entity);
+            $eventName = $sourceEntity->getEntityMetadata()->associations[$targetCollectionName]->eventName ?? null;
 
             return $this->buildPagination(
                 entity: $targetEntity,
@@ -98,7 +94,7 @@ final class ResolveCollectionFactory
     /**
      * @return mixed[]
      *
-     * @psalm-suppress MixedOperand, MixedArgument, MixedArrayAccess, MixedAssignment
+     * @psalm-suppress MixedOperand
      */
     protected function buildPagination(
         Entity $entity,
@@ -147,23 +143,22 @@ final class ResolveCollectionFactory
         }
 
         // Decode pagination fields
-        /** @psalm-suppress MixedArgument, MixedArrayAccess */
+        /** @psalm-suppress MixedArgument */
         $paginationFields = $this->paginationService->decodePaginationFields(
             $resolve['args'] ?? [],
         );
 
-        // Get the limit for this association
-        /** @psalm-suppress MixedAssignment, MixedArrayAccess */
-        $limit = $this->metadata[$targetClassName]['limit'] ?? null;
-        /** @psalm-suppress MixedAssignment, MixedArrayAccess */
-        $associationLimit = $this->metadata[$entityClassName]['fields'][$associationName]['limit'] ?? null;
+        // Get the limit for this association: the association's own limit,
+        // else the target entity's, else the configured limit
+        $sourceEntity = $this->entityTypeContainer->get($entityClassName);
+        assert($sourceEntity instanceof Entity);
+        $associationLimit = $sourceEntity->getEntityMetadata()->associations[$associationName]->limit ?? null;
 
-        if ($associationLimit !== null && $associationLimit !== 0) {
-            /** @psalm-suppress MixedAssignment */
-            $limit = $associationLimit;
-        }
+        $limit = $associationLimit !== null && $associationLimit !== 0
+            ? $associationLimit
+            : $entity->getEntityMetadata()->limit;
 
-        if ($limit === null || $limit === 0) {
+        if ($limit === 0) {
             $limit = $this->config->getLimit();
         }
 
@@ -220,7 +215,7 @@ final class ResolveCollectionFactory
         }
 
         // Build edges
-        /** @psalm-suppress PossiblyInvalidArgument, MixedArgument */
+        /** @psalm-suppress PossiblyInvalidArgument */
         $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
 
         // Build cursors
@@ -264,7 +259,6 @@ final class ResolveCollectionFactory
         /** @psalm-suppress MixedArgument */
         $this->queryResultCache->set($query, $results);
 
-        /** @psalm-suppress MixedReturnStatement */
         return $results;
     }
 }

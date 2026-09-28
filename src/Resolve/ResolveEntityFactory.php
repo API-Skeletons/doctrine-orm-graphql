@@ -8,7 +8,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Cache\QueryResultCache;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use Closure;
@@ -29,7 +28,6 @@ final class ResolveEntityFactory
         protected readonly Config $config,
         protected readonly EntityManager $entityManager,
         protected readonly EventDispatcher $eventDispatcher,
-        protected readonly Metadata $metadata,
         protected readonly PaginationService $paginationService,
         protected readonly QueryResultCache $queryResultCache,
     ) {
@@ -62,11 +60,7 @@ final class ResolveEntityFactory
         };
     }
 
-    /**
-     * @return mixed[]
-     *
-     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment
-     */
+    /** @return mixed[] */
     public function buildPagination(
         Entity $entity,
         QueryBuilder $queryBuilder,
@@ -74,14 +68,13 @@ final class ResolveEntityFactory
         mixed ...$resolve,
     ): array {
         // Decode pagination fields
-        /** @psalm-suppress MixedArgument, MixedArrayAccess */
+        /** @psalm-suppress MixedArgument */
         $paginationFields = $this->paginationService->decodePaginationFields(
             $resolve['args'] ?? [],
         );
 
         // Get the limit for this entity
-        /** @psalm-suppress MixedAssignment, MixedArrayAccess */
-        $limit = $this->metadata[$entity->getEntityClass()]['limit'] ?: $this->config->getLimit();
+        $limit = $entity->getEntityMetadata()->limit ?: $this->config->getLimit();
 
         /**
          * Fire the event dispatcher using the passed event name.
@@ -92,7 +85,6 @@ final class ResolveEntityFactory
          * offset and limit rather than the final ones.
          */
         if ($eventName !== null) {
-            /** @psalm-suppress MixedArgument */
             $requested = $this->paginationService->calculateRequestedOffsetAndLimit(
                 $paginationFields,
                 $limit,
@@ -131,12 +123,11 @@ final class ResolveEntityFactory
             $queryBuilder->setFirstResult($offsetAndLimit['offset']);
             $queryBuilder->setMaxResults($offsetAndLimit['limit']);
 
-            /** @psalm-suppress MixedAssignment */
             $results = $this->getResults($queryBuilder);
         }
 
         // Build edges
-        /** @psalm-suppress PossiblyInvalidArgument, MixedArgument */
+        /** @psalm-suppress PossiblyInvalidArgument */
         $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
 
         // Build cursors
@@ -180,7 +171,6 @@ final class ResolveEntityFactory
         /** @psalm-suppress MixedArgument */
         $this->queryResultCache->set($query, $results);
 
-        /** @psalm-suppress MixedReturnStatement */
         return $results;
     }
 }

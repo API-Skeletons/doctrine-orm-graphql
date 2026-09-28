@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\EntityMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
@@ -44,8 +45,13 @@ final class Entity
      */
     protected array|null $extractionMap   = null;
     protected ObjectType|null $objectType = null;
+    private readonly EntityMetadata $entityMetadata;
 
-    /** @param array<string, mixed> $metadata */
+    /**
+     * @param array<array-key, mixed> $metadata The entity's metadata array
+     *
+     * @throws MetadataException
+     */
     public function __construct(
         private string|null $eventName,
         protected readonly Config $config,
@@ -60,40 +66,45 @@ final class Entity
         protected readonly TypeContainer $typeContainer,
         protected readonly array $metadata,
     ) {
+        $this->entityMetadata = EntityMetadata::fromArray($metadata);
     }
 
-    /** @psalm-suppress MixedReturnStatement, MixedInferredReturnType */
+    /** @psalm-suppress MixedReturnStatement */
     public function getHydrator(): HydratorInterface
     {
         return $this->hydratorContainer->get($this->getEntityClass());
     }
 
-    /** @psalm-suppress MixedReturnStatement */
     public function getTypeName(): string
     {
-        return $this->metadata['typeName'];
+        return $this->entityMetadata->typeName;
     }
 
-    /** @psalm-suppress MixedReturnStatement */
     public function getDescription(): string|null
     {
-        return $this->metadata['description'];
+        return $this->entityMetadata->description;
     }
 
-    /** @return mixed[] */
+    /**
+     * The entity's metadata array, including any keys a metadata.build
+     * listener added
+     *
+     * @return mixed[]
+     */
     public function getMetadata(): array
     {
         return $this->metadata;
     }
 
-    /**
-     * @return class-string
-     *
-     * @psalm-suppress MixedReturnStatement
-     */
+    public function getEntityMetadata(): EntityMetadata
+    {
+        return $this->entityMetadata;
+    }
+
+    /** @return class-string */
     public function getEntityClass(): string
     {
-        return $this->metadata['entityClass'];
+        return $this->entityMetadata->entityClass;
     }
 
     /**
@@ -101,8 +112,6 @@ final class Entity
      * naming strategy in the hydrator
      *
      * @return array<string, string>
-     *
-     * @psalm-suppress MixedReturnTypeCoercion, MixedAssignment, MixedArrayAccess, MixedOperand, MixedArrayOffset, MixedPropertyTypeCoercion
      */
     public function getExtractionMap(): array
     {
@@ -113,20 +122,21 @@ final class Entity
         // Build into a local so a duplicate alias does not leave a partial map
         $extractionMap = [];
 
-        foreach ($this->metadata['fields'] as $fieldName => $fieldMetadata) {
-            if (! isset($fieldMetadata['alias'])) {
+        $fields = [...$this->entityMetadata->fields, ...$this->entityMetadata->associations];
+        foreach ($fields as $fieldName => $fieldMetadata) {
+            if ($fieldMetadata->alias === null) {
                 continue;
             }
 
             // Don't allow duplicate aliases
-            if (in_array($fieldMetadata['alias'], $extractionMap)) {
+            if (in_array($fieldMetadata->alias, $extractionMap, true)) {
                 throw new MetadataException(
-                    'Duplicate alias "' . $fieldMetadata['alias'] . '" found for field ' . $fieldName .
+                    'Duplicate alias "' . $fieldMetadata->alias . '" found for field ' . $fieldName .
                     ' in entity ' . $this->getEntityClass() . '. Each field alias must be unique.',
                 );
             }
 
-            $extractionMap[$fieldName] = $fieldMetadata['alias'];
+            $extractionMap[$fieldName] = $fieldMetadata->alias;
         }
 
         $this->extractionMap = $extractionMap;
@@ -188,7 +198,7 @@ final class Entity
             ksort($definition['fields']);
         }
 
-        /** @psalm-suppress InvalidArgument, ArgumentTypeCoercion */
+        /** @psalm-suppress ArgumentTypeCoercion */
         $this->objectType = (new ReflectionClass(ObjectType::class))
             ->newLazyGhost(static function (ObjectType $object) use ($definition): void {
                 /** @psalm-suppress DirectConstructorCall */
@@ -198,11 +208,7 @@ final class Entity
         return $this->objectType;
     }
 
-    /**
-     * @return array<string, mixed>
-     *
-     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedArrayOffset
-     */
+    /** @return array<string, mixed> */
     protected function addFields(): array
     {
         $fields = [];
@@ -210,14 +216,14 @@ final class Entity
         $classMetadata = $this->entityManager->getClassMetadata($this->getEntityClass());
 
         foreach ($classMetadata->getFieldNames() as $fieldName) {
-            if (! isset($this->metadata['fields'][$fieldName])) {
+            $fieldMetadata = $this->entityMetadata->fields[$fieldName] ?? null;
+            if ($fieldMetadata === null) {
                 continue;
             }
 
             $fields[$this->getExtractionMap()[$fieldName] ?? $fieldName] = [
-                'type' => $this->typeContainer
-                    ->get($this->getmetadata()['fields'][$fieldName]['type']),
-                'description' => $this->metadata['fields'][$fieldName]['description'],
+                'type' => $this->typeContainer->get($fieldMetadata->type),
+                'description' => $fieldMetadata->description,
             ];
         }
 
@@ -227,7 +233,7 @@ final class Entity
     /**
      * @return array<string, mixed>
      *
-     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment, MixedMethodCall
+     * @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall
      */
     protected function addAssociations(): array
     {
@@ -236,7 +242,8 @@ final class Entity
         $classMetadata = $this->entityManager->getClassMetadata($this->getEntityClass());
 
         foreach ($classMetadata->getAssociationNames() as $associationName) {
-            if (! isset($this->metadata['fields'][$associationName])) {
+            $graphqlAssociation = $this->entityMetadata->associations[$associationName] ?? null;
+            if ($graphqlAssociation === null) {
                 continue;
             }
 
@@ -251,15 +258,13 @@ final class Entity
                 $targetEntity = $associationMetadata['targetEntity'];
 
                 // The hydrator extracts an aliased association under its alias
-                $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName): array {
-                    /** @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall */
+                $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $graphqlAssociation): array {
                     $entity = $this->entityTypeContainer->get($targetEntity);
 
                     // The association's description, else the target entity's
                     return [
                         'type' => $entity->getObjectType(),
-                        'description' => $this->metadata['fields'][$associationName]['description']
-                            ?? $entity->getDescription(),
+                        'description' => $graphqlAssociation->description ?? $entity->getDescription(),
                     ];
                 };
 
@@ -269,8 +274,7 @@ final class Entity
             // Collections
             $targetEntity = $associationMetadata['targetEntity'];
 
-            $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName): array {
-                /** @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall, MixedArrayAccess */
+            $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $associationName, $graphqlAssociation): array {
                 $entity    = $this->entityTypeContainer->get($targetEntity);
                 $shortName = $this->getTypeName() . '_' . ucwords($associationName);
 
@@ -285,10 +289,10 @@ final class Entity
                             $entity,
                             $this,
                             $associationName,
-                            $this->metadata['fields'][$associationName],
+                            $graphqlAssociation,
                         ),
                     ] + $this->paginationService->getArguments(),
-                    'description' => $this->metadata['fields'][$associationName]['description'],
+                    'description' => $graphqlAssociation->description,
                     'resolve' => $this->resolveCollectionFactory->get($entity),
                 ];
             };
@@ -301,22 +305,15 @@ final class Entity
      * Add computed fields to the GraphQL type
      *
      * @return array<string, mixed>
-     *
-     * @psalm-suppress MixedAssignment, MixedArrayAccess, MixedArrayOffset, MixedArgument, MixedReturnTypeCoercion
      */
     protected function addComputedFields(): array
     {
         $fields = [];
 
-        // Check if computed fields exist in metadata
-        if (! isset($this->metadata['computedFields'])) {
-            return $fields;
-        }
-
-        foreach ($this->metadata['computedFields'] as $fieldName => $computedFieldMetadata) {
+        foreach ($this->entityMetadata->computedFields as $fieldName => $computedFieldMetadata) {
             $fields[$fieldName] = [
-                'type' => $this->typeContainer->get($computedFieldMetadata['type']),
-                'description' => $computedFieldMetadata['description'],
+                'type' => $this->typeContainer->get($computedFieldMetadata->type),
+                'description' => $computedFieldMetadata->description,
             ];
         }
 

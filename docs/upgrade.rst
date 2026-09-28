@@ -5,6 +5,21 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Cached metadata carries a format version
+----------------------------------------
+
+Metadata is now cached with ``$driver->get(Metadata::class)->toArray()``,
+which adds a ``__version`` key to the array, rather than ``getArrayCopy()``.
+The ``Driver`` requires that key when it is given cached metadata, and throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` without it.
+
+* Regenerate metadata caches written by 13.x or with ``getArrayCopy()``.
+* Change the caching code to use ``toArray()``; see `metadata <metadata.html>`_.
+* Add ``'__version' => Metadata::FORMAT_VERSION`` to metadata you write by
+  hand.
+
+The shape of each entity's metadata is unchanged.
+
 symfony/var-exporter is no longer required
 ------------------------------------------
 
@@ -128,6 +143,9 @@ now throw in every environment:
 * Building a type with ``TypeContainer::build()`` from a class which does not
   implement ``Buildable`` throws
   ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration``.
+* A ``#[ComputedField]`` whose name collides with a field throws
+  ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``, which was a
+  ``RuntimeException``.
 
 If your development environment ran with assertions enabled you have already
 seen these errors.  Otherwise, fix any duplicate attributes they report.
@@ -146,6 +164,16 @@ these types, return the date object instead.
 
 A ``Time`` or ``TimeImmutable`` value written as a literal in a query is now
 validated, as a variable already was.  An invalid time literal is an error.
+
+Field filters apply to their own field only
+-------------------------------------------
+
+The ``includeFilters`` and ``excludeFilters`` of one ``#[Field]`` also removed
+those filters from every field of the entity processed after it.  A field now
+has the entity's filters limited only by its own attribute, so some fields
+gain filters they were missing.  This is a schema change: the filter input
+types of those fields gain fields and their generated names change.
+Regenerate any client types built from the schema.
 
 Date and time filters match date and time fields
 ------------------------------------------------

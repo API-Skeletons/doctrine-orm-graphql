@@ -7,6 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Association;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\AssociationMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -19,7 +20,6 @@ use League\Event\EventDispatcher;
 use ReflectionClass;
 
 use function array_filter;
-use function array_keys;
 use function array_merge;
 use function array_udiff;
 use function array_unique;
@@ -45,31 +45,28 @@ final class FilterFactory
     }
 
     /**
-     * Return an InputObjectType of filters for the target entity
-     *
-     * @param mixed[]|null $associationMetadata
+     * Return an InputObjectType of filters for the target entity.  For a
+     * collection, the owning entity, association name and the association's
+     * metadata are given.
      */
     public function get(
         Entity $targetEntity,
         Entity|null $owningEntity = null,
         string|null $associationName = null,
-        array|null $associationMetadata = null,
+        AssociationMetadata|null $associationMetadata = null,
     ): GraphQLInputObjectType {
         $typeName = $owningEntity ?
             'Filter_' . $owningEntity->getTypeName() . '_' . ucwords((string) $associationName)
             : 'Filter_' . $targetEntity->getTypeName();
 
         if ($this->typeContainer->has($typeName)) {
-            /** @psalm-suppress MixedReturnStatement, MixedInferredReturnType */
+            /** @psalm-suppress MixedReturnStatement */
             return $this->typeContainer->get($typeName);
         }
 
-        $entityMetadata = $targetEntity->getMetadata();
-
-        /** @psalm-suppress MixedArgument */
         $excludedFilters = array_unique(
             array_merge(
-                Filters::fromArray($entityMetadata['excludeFilters'] ?? []),
+                Filters::fromArray($targetEntity->getEntityMetadata()->excludeFilters),
                 Filters::fromArray($this->config->getExcludeFilters()),
             ),
             SORT_REGULAR,
@@ -82,9 +79,8 @@ final class FilterFactory
         });
 
         // Limit association filters
-        if ($associationName !== null) {
-            /** @psalm-suppress MixedArgument */
-            $excludeFilters = Filters::fromArray($associationMetadata['excludeFilters'] ?? []);
+        if ($associationMetadata !== null) {
+            $excludeFilters = Filters::fromArray($associationMetadata->excludeFilters);
             $allowedFilters = array_filter($allowedFilters, static function ($value) use ($excludeFilters) {
                 return ! in_array($value, $excludeFilters);
             });
@@ -116,24 +112,21 @@ final class FilterFactory
      * @param Filters[] $allowedFilters
      *
      * @return array<string, mixed[]>
-     *
-     * @psalm-suppress MixedArgument, MixedArrayAccess, MixedAssignment
      */
     protected function addFields(Entity $targetEntity, array $allowedFilters): array
     {
         $fields = [];
 
-        $classMetadata  = $this->entityManager->getClassMetadata($targetEntity->getEntityClass());
-        $entityMetadata = $targetEntity->getMetadata();
+        $classMetadata = $this->entityManager->getClassMetadata($targetEntity->getEntityClass());
 
         foreach ($classMetadata->getFieldNames() as $fieldName) {
             // Only process fields that are in the graphql metadata
-            if (! in_array($fieldName, array_keys($entityMetadata['fields']))) {
+            $fieldMetadata = $targetEntity->getEntityMetadata()->fields[$fieldName] ?? null;
+            if ($fieldMetadata === null) {
                 continue;
             }
 
-            $type = $this->typeContainer
-                ->get($entityMetadata['fields'][$fieldName]['type']);
+            $type = $this->typeContainer->get($fieldMetadata->type);
 
             // Custom types may hit this condition
             if (! $type instanceof ScalarType) {
@@ -145,13 +138,12 @@ final class FilterFactory
                 continue;
             }
 
-            // Limit field filters
-            if (
-                isset($entityMetadata['fields'][$fieldName]['excludeFilters'])
-                && count($entityMetadata['fields'][$fieldName]['excludeFilters'])
-            ) {
-                $fieldExcludeFilters = Filters::fromArray($entityMetadata['fields'][$fieldName]['excludeFilters']);
-                $allowedFilters      = array_filter(
+            // Limit field filters.  These apply to this field only, so they
+            // are removed from a copy of the entity's allowed filters.
+            $fieldAllowedFilters = $allowedFilters;
+            if (count($fieldMetadata->excludeFilters)) {
+                $fieldExcludeFilters = Filters::fromArray($fieldMetadata->excludeFilters);
+                $fieldAllowedFilters = array_filter(
                     $allowedFilters,
                     static function ($value) use ($fieldExcludeFilters) {
                         return ! in_array($value, $fieldExcludeFilters);
@@ -160,7 +152,7 @@ final class FilterFactory
             }
 
             // Remove filters that are not allowed for this field type
-            $filteredFilters = $this->filterFiltersByType($allowedFilters, $type);
+            $filteredFilters = $this->filterFiltersByType($fieldAllowedFilters, $type);
 
             // ScalarType field filters are named by their field type
             // and a hash of the allowed filters
@@ -197,13 +189,12 @@ final class FilterFactory
     {
         $fields = [];
 
-        $classMetadata  = $this->entityManager->getClassMetadata($targetEntity->getEntityClass());
-        $entityMetadata = $targetEntity->getMetadata();
+        $classMetadata = $this->entityManager->getClassMetadata($targetEntity->getEntityClass());
 
         // Add eq filter for to-one associations
         foreach ($classMetadata->getAssociationNames() as $associationName) {
-            // Only process fields which are in the graphql metadata
-            if (! isset($entityMetadata['fields'][$associationName])) {
+            // Only process associations which are in the graphql metadata
+            if (! isset($targetEntity->getEntityMetadata()->associations[$associationName])) {
                 continue;
             }
 

@@ -69,7 +69,6 @@ final class InputFactory
         array $optionalFields = [],
         string|null $name = null,
     ): InputObjectType {
-        /** @psalm-suppress MixedAssignment */
         $targetEntity = $this->entityTypeContainer->get($id);
         assert($targetEntity instanceof Entity);
 
@@ -159,7 +158,7 @@ final class InputFactory
      * @param string[]                            $optionalFields
      * @param array<int|string, InputObjectField> $fields
      *
-     * @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion
+     * @psalm-suppress MixedArgumentTypeCoercion
      */
     protected function addOptionalFields(
         Entity $targetEntity,
@@ -193,8 +192,8 @@ final class InputFactory
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
                 'name' => $alias ?? $fieldName,
-                'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
-                'type' => $this->typeContainer->get($targetEntity->getMetadata()['fields'][$fieldName]['type']),
+                'description' => (string) $targetEntity->getEntityMetadata()->fields[$fieldName]->description,
+                'type' => $this->typeContainer->get($targetEntity->getEntityMetadata()->fields[$fieldName]->type),
             ]);
         }
     }
@@ -203,7 +202,7 @@ final class InputFactory
      * @param string[]                            $requiredFields
      * @param array<int|string, InputObjectField> $fields
      *
-     * @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion
+     * @psalm-suppress MixedArgument
      */
     protected function addRequiredFields(
         Entity $targetEntity,
@@ -235,9 +234,9 @@ final class InputFactory
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
                 'name' => $alias ?? $fieldName,
-                'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
+                'description' => (string) $targetEntity->getEntityMetadata()->fields[$fieldName]->description,
                 'type' => Type::nonNull($this->typeContainer->get(
-                    $targetEntity->getMetadata()['fields'][$fieldName]['type'],
+                    $targetEntity->getEntityMetadata()->fields[$fieldName]->type,
                 )),
             ]);
         }
@@ -269,8 +268,8 @@ final class InputFactory
 
             $fields[$alias ?? $fieldName] = new InputObjectField([
                 'name' => $alias ?? $fieldName,
-                'description' => (string) $targetEntity->getMetadata()['fields'][$fieldName]['description'],
-                'type' => Type::nonNull($this->typeContainer->get($targetEntity->getMetadata()['fields'][$fieldName]['type'])),
+                'description' => (string) $targetEntity->getEntityMetadata()->fields[$fieldName]->description,
+                'type' => Type::nonNull($this->typeContainer->get($targetEntity->getEntityMetadata()->fields[$fieldName]->type)),
             ]);
         }
     }
@@ -280,8 +279,7 @@ final class InputFactory
      */
     private function isExposed(Entity $targetEntity, string $fieldName): bool
     {
-        /** @psalm-suppress MixedArrayAccess */
-        return isset($targetEntity->getMetadata()['fields'][$fieldName]);
+        return isset($targetEntity->getEntityMetadata()->fields[$fieldName]);
     }
 
     /**
