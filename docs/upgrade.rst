@@ -5,6 +5,21 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Cached metadata carries a format version
+----------------------------------------
+
+Metadata is now cached with ``$driver->get(Metadata::class)->toArray()``,
+which adds a ``__version`` key to the array, rather than ``getArrayCopy()``.
+The ``Driver`` requires that key when it is given cached metadata, and throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` without it.
+
+* Regenerate metadata caches written by 13.x or with ``getArrayCopy()``.
+* Change the caching code to use ``toArray()``; see `metadata <metadata.html>`_.
+* Add ``'__version' => Metadata::FORMAT_VERSION`` to metadata you write by
+  hand.
+
+The shape of each entity's metadata is unchanged.
+
 symfony/var-exporter is no longer required
 ------------------------------------------
 

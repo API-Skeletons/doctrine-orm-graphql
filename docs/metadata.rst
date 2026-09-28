@@ -8,7 +8,7 @@ Modifying the metadata is an advanced feature.
 
 The metadata is an array with a key for each enabled entity class name.
 See this unit test
-https://github.com/API-Skeletons/doctrine-orm-graphql/blob/12.0.x/test/Feature/Metadata/CachingTest.php
+https://github.com/API-Skeletons/doctrine-orm-graphql/blob/14.0.x/test/Feature/Metadata/CachingTest.php
 
 Caching Metadata
 ================
@@ -28,12 +28,19 @@ rebuilding it with each request.
   if (! $metadata) {
       $driver = new Driver($entityManager);
 
-      $metadata = $driver->get('metadata');
-      $cache->set('GraphQLMetadata', $metadata->getArrayCopy());
+      $cache->set('GraphQLMetadata', $driver->get(Metadata::class)->toArray());
   } else {
       // The second parameter is the Config object
       $driver = new Driver($entityManager, null, $metadata);
   }
+
+``toArray()`` exports the metadata as an array of scalars and arrays, so any
+cache can store it, including ``var_export()`` to a PHP file.  The export
+includes a format version, ``Metadata::FORMAT_VERSION``.  The driver rejects a
+cache written in another format, or without a version, with
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``; regenerate the cache
+when that happens.  Use ``toArray()`` rather than ``getArrayCopy()``, which does
+not include the version.
 
 .. role:: raw-html(raw)
    :format: html

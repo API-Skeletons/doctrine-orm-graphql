@@ -25,7 +25,7 @@ trait Services
         readonly array $metadataArray = [],
     ) {
         $self     = $this;
-        $metadata = new Metadata($metadataArray);
+        $metadata = Metadata::fromArray($metadataArray);
 
         $this
             ->set(EntityManager::class, $entityManager)
