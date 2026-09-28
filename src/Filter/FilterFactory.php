@@ -152,7 +152,7 @@ final class FilterFactory
             }
 
             // Remove filters that are not allowed for this field type
-            $filteredFilters = $this->filterFiltersByType($fieldAllowedFilters, $type);
+            $filteredFilters = $this->filterFiltersByType($fieldAllowedFilters, $type, $fieldMetadata->type);
 
             // An input object must have a field
             if (! $filteredFilters) {
@@ -240,14 +240,16 @@ final class FilterFactory
      * Filter the allowed filters based on the field type
      *
      * @param Filters[] $filters
+     * @param string    $fieldType The field's type in the metadata
      *
      * @return Filters[]
      */
-    protected function filterFiltersByType(array $filters, ScalarType $type): array
+    protected function filterFiltersByType(array $filters, ScalarType $type, string|null $fieldType = null): array
     {
         $filterCollection = new ArrayCollection($filters);
 
-        // Numbers
+        // Numbers.  A bigint is a String, which keeps its precision, but it is
+        // a number.
         if (
             in_array($type->name(), [
                 'Float',
@@ -255,6 +257,7 @@ final class FilterFactory
                 'Int',
                 'Integer',
             ])
+            || $fieldType === 'bigint'
         ) {
             $filterCollection->removeElement(Filters::CONTAINS);
             $filterCollection->removeElement(Filters::STARTSWITH);

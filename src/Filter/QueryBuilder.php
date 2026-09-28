@@ -17,6 +17,9 @@ use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use function array_flip;
 use function in_array;
 use function is_array;
+use function is_int;
+use function is_string;
+use function preg_match;
 use function strcmp;
 use function strtr;
 use function uksort;
@@ -113,6 +116,17 @@ final class QueryBuilder
                     throw new FilterException(
                         "Filter '" . $filter->value . "' of field '" . $fieldName . "' cannot contain null.  "
                         . "Use the 'isnull' filter to match null values.",
+                    );
+                }
+
+                // A bigint is a String, so its value is checked to be an integer
+                if (
+                    $fieldType === Types::BIGINT
+                    && ! in_array($filter, [Filters::ISNULL, Filters::SORT, Filters::SORTPRIORITY], true)
+                    && ! $this->isInteger($value)
+                ) {
+                    throw new FilterException(
+                        "Filter '" . $filter->value . "' of field '" . $fieldName . "' must be an integer.",
                     );
                 }
 
@@ -220,6 +234,27 @@ final class QueryBuilder
         } while ($queryBuilder->getParameter($name) !== null);
 
         return $name;
+    }
+
+    /**
+     * Whether a filter value, or each value of a list or between, is an integer
+     * or an integer string
+     */
+    private function isInteger(mixed $value): bool
+    {
+        if (is_array($value)) {
+            // Filter values are GraphQL input, so their elements are mixed
+            /** @psalm-suppress MixedAssignment */
+            foreach ($value as $item) {
+                if (! $this->isInteger($item)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return is_int($value) || (is_string($value) && preg_match('/^-?[0-9]+$/', $value) === 1);
     }
 
     /**
