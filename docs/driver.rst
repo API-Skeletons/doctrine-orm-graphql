@@ -119,8 +119,12 @@ to
 limit
 -----
 
-A hard limit for all queries throughout the entities.  Use this
-to prevent abuse of GraphQL.  Default is 1000.
+The most rows a connection returns, whatever pagination is requested.  Use
+this to prevent abuse of GraphQL.  Default is 1000.
+
+This is the default limit.  An entity's ``limit`` replaces it for queries of
+that entity, and an association's ``limit`` replaces both for that
+association, even when larger.  See `attributes <attributes.html>`_.
 
 
 sortFields
@@ -320,7 +324,7 @@ The ``totalCount`` is computed by replacing the select of the QueryBuilder
 with ``COUNT(*)``.  A QueryBuilder using ``GROUP BY`` or ``DISTINCT`` will not
 report the correct ``totalCount``.
 
-The hard ``limit`` from the ``Config`` applies to these functions.
+The ``limit`` from the ``Config`` applies to these functions.
 
 
 filter()

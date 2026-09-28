@@ -54,8 +54,10 @@ Optional parameters are:
 * ``includeFilters`` - An array of filters to include from available
   filters for all fields and associations in the entity.  ``includeFilters``
   and ``excludeFilters`` are mutually exclusive.
-* ``limit`` - A hard limit for all queries on this entity.  Use this
-  to prevent abuse of GraphQL.  Defaults to global config ``limit``.
+* ``limit`` - The most rows a query of this entity returns.  Use this
+  to prevent abuse of GraphQL.  It replaces the config ``limit``, even when
+  larger; an association's ``limit`` replaces it in turn.  Defaults to the
+  config ``limit``.
 * ``typeName`` - A name to reference the type for GraphQL.
 
 The following parameters are specific to the hydrator used to extract
@@ -134,8 +136,9 @@ associated with.  Associations of the to many variety will become connections.
 * ``includeFilters`` - An array of filters to include from available
   filters for all fields in the association.  ``includeFilters``
   and ``excludeFilters`` are mutually exclusive.
-* ``limit`` - A limit for subqueries.  This value overrides the Entity configured
-  limit.
+* ``limit`` - The most rows the association returns for each entity.  This
+  value replaces the target entity's ``limit`` and the config ``limit``, even
+  when larger.
 * ``hydratorStrategy`` - A custom hydrator strategy class.
   Class must be injected into the HydratorFactory container.  See `containers <containers.html>`_
 
