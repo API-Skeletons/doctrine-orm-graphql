@@ -282,6 +282,7 @@ final class FilterFactory
         } elseif (
             in_array($type->name(), [
                 'Date',
+                'DateImmutable',
                 'DateTime',
                 'DateTimeImmutable',
                 'DateTimeTZ',

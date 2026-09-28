@@ -5,6 +5,13 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+date_immutable fields have no text filters
+------------------------------------------
+
+A ``date_immutable`` field was given ``contains``, ``startswith`` and
+``endswith``, which no other date or time field has.  They are removed.  This
+is a schema change.
+
 JSON fields have only the isnull filter
 ---------------------------------------
 
