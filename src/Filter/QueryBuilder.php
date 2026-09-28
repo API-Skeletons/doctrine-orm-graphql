@@ -55,6 +55,14 @@ final class QueryBuilder
     private array $sortFields = [];
 
     /**
+     * The GraphQL name of each filtered field, keyed by its query builder field,
+     * for errors
+     *
+     * @var array<string, string>
+     */
+    private array $fieldNames = [];
+
+    /**
      * Add where clauses to a QueryBuilder based on the FilterType of the entity
      *
      * @param array<string, mixed|array<string, mixed>> $filterTypes
@@ -66,11 +74,13 @@ final class QueryBuilder
         DoctrineQueryBuilder $queryBuilder,
         Entity $entity,
     ): void {
-        foreach ($filterTypes as $field => $filters) {
+        foreach ($filterTypes as $fieldName => $filters) {
             // Resolve aliases
-            $field             = array_flip($entity->getExtractionMap())[$field] ?? $field;
+            $field             = array_flip($entity->getExtractionMap())[$fieldName] ?? $fieldName;
             $queryBuilderField = 'entity.' . $field;
             $fieldType         = $this->getFieldType($queryBuilder, $entity, $field);
+
+            $this->fieldNames[$queryBuilderField] = $fieldName;
 
             foreach ($filters as $filter => $value) {
                 $filter = Filters::from($filter);
@@ -301,7 +311,7 @@ final class QueryBuilder
             if (! isset($sort['direction'])) {
                 throw new FilterException(
                     "Sort direction for field '"
-                    . $field
+                    . ($this->fieldNames[$field] ?? $field)
                     . "' is not set but a sortPriority was. "
                     . "Please use the 'sort' filter to set the direction.",
                 );
