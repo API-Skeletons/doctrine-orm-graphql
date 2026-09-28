@@ -75,7 +75,8 @@ Key containers:
 
 Metadata is extracted from entity attributes and stored in a `Metadata` object (ArrayObject wrapper):
 - `MetadataFactory` builds metadata from PHP attributes on entities
-- Metadata is cached per entity and includes field mappings, association mappings, limits, filters, etc.
+- The `Metadata` ArrayObject holds the array form, keyed by entity class; it is what the `metadata.build` event modifies and what is cached. `Metadata::toArray()` exports it with `'__version' => Metadata::FORMAT_VERSION` (a format version, bumped only when the array's shape changes) and the Driver requires that version when given cached metadata
+- Code reads typed value objects built from the array: `Metadata\EntityMetadata` with `FieldMetadata`, `AssociationMetadata` and `ComputedFieldMetadata`, via `Entity::getEntityMetadata()`. Their `fromArray()` validates every key and `toArray()` reproduces the array exactly. `Entity::getMetadata()` still returns the array
 
 Attributes are in `src/Attribute/`:
 - `#[Entity]` - Marks an entity for GraphQL exposure
@@ -109,6 +110,12 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `ResolveEntityFactory` creates resolve closures for entity queries
 - `ResolveCollectionFactory` creates resolve closures for associations
 - `FieldResolver` resolves individual fields
+- Connections are ordered by the root entity's identifier after any other ordering (`Trait\OrderByIdentifier`), added after the QueryBuilder event so a listener's ordering comes first
+- Batching (`batchAssociations`, on by default) returns `GraphQL\Deferred`:
+  - `ToOneLoader` loads unloaded to-one proxies with one `IN` query per class
+  - `ResolveCollectionFactory` groups sources resolving the same association with the same arguments into a `CollectionBatch`: one GROUP BY count query, then all rows with one query when they number no more than `batchLimit` (many-to-many fetches source/target id pairs, then the targets, because Doctrine returns an entity once however many rows it is in), else a query per source
+  - Not batched: associations with an `eventName` (their QueryBuilder event is per source) and composite identifiers
+  - `CollectionBatchTest` checks batched results against per-source results for every form of pagination
 - Uses Doctrine Laminas Hydrator for extracting entity data to arrays
 - Supports extraction strategies (FieldDefault, AssociationDefault, ToBoolean, ToFloat, ToInteger, ToString)
 - Strategies implement `Hydrator\Strategy\Strategy` interface, which extends the Laminas interface; `extract()` receives the Doctrine field name (not the GraphQL alias) as a third argument. Strategies are shared instances in `HydratorContainer`. Laminas-only strategies are still called with two arguments.
@@ -119,6 +126,8 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 `Config` class (src/Config.php) supports:
 - `group` - Allows multiple GraphQL schemas from same entities
 - `groupSuffix` - Custom suffix for type names
+- `batchAssociations` - Load associations in batches (default true)
+- `batchLimit` - Most rows a batched collection field fetches with one query (default 1000)
 - `useHydratorCache` - Cache hydrator results for as long as the entity exists
 - `useQueryResultCache` - Cache query results for identical SQL and parameters
 - `limit` - Hard limit for collections (default: 1000)

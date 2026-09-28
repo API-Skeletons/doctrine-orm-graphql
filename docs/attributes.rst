@@ -124,9 +124,11 @@ associated with.  Associations of the to many variety will become connections.
 
     #[GraphQL\Association(excludeFilters: [Filters::CONTAINS, Filters::STARTSWITH, Filters::ENDSWITH])]
 
-* ``criteriaEventName`` - An event to fire when resolving this collection.
-  Additional filters can be added to the criteria.  An example of this use is for
-  associations with soft deletes.
+* ``eventName`` - A QueryBuilder event to dispatch when resolving this
+  collection, so a listener can modify its query.  An example of this use is for
+  associations with soft deletes.  The event is dispatched for each row, so an
+  association with an event name is not `batched <driver.html#batchassociations>`_.
+  See `events <events.html>`_.
 * ``group`` - You can have multiple GraphQL configurations organzied by
   ``group``.
 * ``includeFilters`` - An array of filters to include from available

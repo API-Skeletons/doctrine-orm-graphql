@@ -96,7 +96,11 @@ Association QueryBuilder Event
 
 When an association is resolved from an entity or another association, you may
 listen to the QueryBuilder Event to add additional filtering via QueryBuilder
-modifications if you assign an event name in the ``criteriaEventName`` attribute.
+modifications if you assign an event name in the ``eventName`` parameter of the
+``#[Association]`` attribute.  The event is dispatched once for each row the
+association is resolved for, with that row as ``getObjectValue()``, so an
+association with an event name is not
+`batched <driver.html#batchassociations>`_.
 
 This approach provides database-level filtering with full index support, eliminating
 the need to load entire collections into memory.
@@ -117,7 +121,7 @@ the need to load entire collections into memory.
       #[GraphQL\Field]
       public $name;
 
-      #[GraphQL\Association(criteriaEventName: self::class . '.performances')]
+      #[GraphQL\Association(eventName: self::class . '.performances')]
       public $performances;
   }
 
@@ -166,7 +170,7 @@ Migration from 12.x
     // 12.x - OLD APPROACH (removed in 13.x)
     use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Criteria;
 
-    #[GraphQL\Association(criteriaEventName: Artist::class . '.performances.criteria')]
+    #[GraphQL\Association(eventName: Artist::class . '.performances.criteria')]
     public $performances;
 
     $driver->get(EventDispatcher::class)->subscribeTo(
@@ -185,7 +189,7 @@ Migration from 12.x
     // 13.x - NEW APPROACH (required)
     use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
 
-    #[GraphQL\Association(criteriaEventName: Artist::class . '.performances')]
+    #[GraphQL\Association(eventName: Artist::class . '.performances')]
     public $performances;
 
     $driver->get(EventDispatcher::class)->subscribeTo(
