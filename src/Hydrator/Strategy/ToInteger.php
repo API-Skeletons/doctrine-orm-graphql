@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 
+use BackedEnum;
 use Override;
 
 use function intval;
@@ -22,6 +23,11 @@ final class ToInteger implements Strategy
             // @codeCoverageIgnoreStart
             return $value;
             // @codeCoverageIgnoreEnd
+        }
+
+        // Doctrine hydrates a field mapped with an enumType to a case of the enum
+        if ($value instanceof BackedEnum) {
+            $value = $value->value;
         }
 
         return intval($value);
