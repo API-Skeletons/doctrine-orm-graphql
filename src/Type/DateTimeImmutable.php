@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\RejectInvalidDateTime;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SerializeDateTime;
 use DateTimeImmutable as PHPDateTimeImmutable;
 use GraphQL\Language\AST\Node as ASTNode;
@@ -20,6 +21,7 @@ use function is_string;
  */
 final class DateTimeImmutable extends ScalarType
 {
+    use RejectInvalidDateTime;
     use SerializeDateTime;
 
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
@@ -48,6 +50,8 @@ final class DateTimeImmutable extends ScalarType
         if ($data === false) {
             throw new TypeSerializationException('datetime_immutable format does not match ISO 8601.');
         }
+
+        $this->rejectInvalidDateTime($value);
 
         return $data;
     }

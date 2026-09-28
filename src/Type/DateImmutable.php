@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\RejectInvalidDateTime;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SerializeDateTime;
 use DateTimeImmutable;
 use GraphQL\Language\AST\Node as ASTNode;
@@ -21,6 +22,7 @@ use function preg_match;
  */
 final class DateImmutable extends ScalarType
 {
+    use RejectInvalidDateTime;
     use SerializeDateTime;
 
     public string|null $description = 'The `date_immutable` scalar type represents datetime data.'
@@ -55,6 +57,8 @@ final class DateImmutable extends ScalarType
         }
 
         // @codeCoverageIgnoreEnd
+
+        $this->rejectInvalidDateTime($value);
 
         return $date;
     }
