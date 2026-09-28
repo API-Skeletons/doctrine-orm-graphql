@@ -47,6 +47,13 @@ final class Config
      */
     protected readonly bool $useQueryResultCache;
 
+    /**
+     * @var bool When set to true, associations are loaded in batches: all the
+     *           unloaded to-one associations and all the collections of a
+     *           field are loaded together rather than once per row.
+     */
+    protected readonly bool $batchAssociations;
+
     /** @var int A hard limit for fetching any collection within the schema */
     protected readonly int $limit;
 
@@ -86,6 +93,7 @@ final class Config
             'groupSuffix' => null,
             'useHydratorCache' => false,
             'useQueryResultCache' => false,
+            'batchAssociations' => true,
             'limit' => 1000,
             'globalByValue' => null,
             'entityPrefix' => null,
@@ -93,7 +101,7 @@ final class Config
             'excludeFilters' => [],
         ];
 
-        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, limit: int, globalByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, limit: int, globalByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
         $mergedConfig = array_merge($default, $config);
 
         foreach ($mergedConfig as $field => $value) {
@@ -110,6 +118,7 @@ final class Config
         $this->groupSuffix         = $mergedConfig['groupSuffix'];
         $this->useHydratorCache    = $mergedConfig['useHydratorCache'];
         $this->useQueryResultCache = $mergedConfig['useQueryResultCache'];
+        $this->batchAssociations   = $mergedConfig['batchAssociations'];
         $this->limit               = $mergedConfig['limit'];
         $this->globalByValue       = $mergedConfig['globalByValue'];
         $this->entityPrefix        = $mergedConfig['entityPrefix'];
@@ -135,6 +144,11 @@ final class Config
     public function getUseQueryResultCache(): bool
     {
         return $this->useQueryResultCache;
+    }
+
+    public function getBatchAssociations(): bool
+    {
+        return $this->batchAssociations;
     }
 
     public function getLimit(): int

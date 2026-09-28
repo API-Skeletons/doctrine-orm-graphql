@@ -83,8 +83,18 @@ trait Services
                         $object->__construct(
                             $self->get(Config::class),
                             $self->get(Type\Entity\EntityTypeContainer::class),
+                            $self->get(Resolve\ToOneLoader::class),
                         );
                     }),
+            )
+            ->set(
+                Resolve\ToOneLoader::class,
+                static function (Container $container) {
+                    $entityManager = $container->get(EntityManager::class);
+                    assert($entityManager instanceof EntityManager);
+
+                    return new Resolve\ToOneLoader($entityManager);
+                },
             )
             ->set(
                 Resolve\ResolveCollectionFactory::class,

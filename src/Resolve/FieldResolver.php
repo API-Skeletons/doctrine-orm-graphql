@@ -33,6 +33,7 @@ final class FieldResolver
     public function __construct(
         protected readonly Config $config,
         protected readonly EntityTypeContainer $entityTypeContainer,
+        protected readonly ToOneLoader $toOneLoader,
     ) {
         $this->extractValues = self::newExtractCache();
     }
@@ -69,7 +70,16 @@ final class FieldResolver
             $this->extractValues[$source] = $values;
         }
 
-        return $values[$info->fieldName] ?? null;
+        // A field's value may be of any type
+        /** @psalm-suppress MixedAssignment */
+        $value = $values[$info->fieldName] ?? null;
+
+        // An unloaded to-one association is loaded in a batch with the others
+        if ($this->config->getBatchAssociations() && is_object($value)) {
+            return $this->toOneLoader->defer($value);
+        }
+
+        return $value;
     }
 
     /** @return WeakMap<object, array<array-key, mixed>> */
