@@ -12,6 +12,7 @@ use Override;
 
 use function base64_decode;
 use function base64_encode;
+use function get_debug_type;
 use function is_resource;
 use function is_string;
 use function stream_get_contents;
@@ -26,23 +27,18 @@ final class Blob extends ScalarType
     #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
     {
-        // @codeCoverageIgnoreStart
         if (! $valueNode instanceof StringValueNode) {
             throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
 
-        // @codeCoverageIgnoreEnd
-
-        /** @psalm-suppress MixedReturnStatement */
         return $this->parseValue($valueNode->value);
     }
 
     #[Override]
-    public function parseValue(mixed $value): mixed
+    public function parseValue(mixed $value): string
     {
         if (! is_string($value)) {
-            /** @psalm-suppress MixedOperand */
-            throw new TypeSerializationException('Blob field as base64 is not a string: ' . $value);
+            throw new TypeSerializationException('Blob field as base64 is not a string: ' . get_debug_type($value));
         }
 
         $data = base64_decode($value, true);
@@ -54,11 +50,12 @@ final class Blob extends ScalarType
         return $data;
     }
 
+    /** @throws TypeSerializationException */
     #[Override]
-    public function serialize(mixed $value): mixed
+    public function serialize(mixed $value): string|null
     {
-        if (! $value) {
-            return $value;
+        if ($value === null) {
+            return null;
         }
 
         if (is_resource($value)) {
@@ -66,13 +63,17 @@ final class Blob extends ScalarType
 
             // @codeCoverageIgnoreStart
             if ($value === false) {
-                return null;
+                throw new TypeSerializationException('Blob stream could not be read');
             }
 
             // @codeCoverageIgnoreEnd
         }
 
-        /** @psalm-suppress MixedArgument */
+        // Every string is encoded, including a falsy one such as "0"
+        if (! is_string($value)) {
+            throw new TypeSerializationException('Expected a string or stream for Blob.  Got ' . get_debug_type($value) . '.');
+        }
+
         return base64_encode($value);
     }
 }
