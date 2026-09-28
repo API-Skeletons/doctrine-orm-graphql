@@ -62,8 +62,8 @@ Provided Filters::
     lt           -  Less Than
     gte          -  Greater Than or Equal To
     lte          -  Less Than or Equal To
-    in           -  Filter for values in an array
-    notin        -  Filter for values not in an array
+    in           -  Filter for values in an array.  An empty array matches nothing.
+    notin        -  Filter for values not in an array.  An empty array matches everything.
     between      -  Filter between `from` and `to` values.  Good substitute for DateTime Equals.
     contains     -  Strings only. Similar to a Like query as `like '%value%'`
     startswith   -  Strings only. A like query from the beginning of the value `like 'value%'`
