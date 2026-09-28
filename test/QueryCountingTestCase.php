@@ -11,7 +11,6 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
 use Psr\Log\AbstractLogger;
-use Stringable;
 
 use function count;
 use function method_exists;
@@ -35,8 +34,13 @@ abstract class QueryCountingTestCase extends TestCase
         }
 
         $logger = new class extends AbstractLogger {
-            /** @param mixed[] $context */
-            public function log(mixed $level, string|Stringable $message, array $context = []): void
+            /**
+             * The parameters are untyped in psr/log 1 and typed in 2 and 3;
+             * mixed is compatible with all of them
+             *
+             * @param mixed[] $context
+             */
+            public function log(mixed $level, mixed $message, array $context = []): void
             {
                 if (! isset($context['sql'])) {
                     return;
