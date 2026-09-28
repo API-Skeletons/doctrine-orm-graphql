@@ -5,6 +5,14 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+symfony/var-exporter is no longer required
+------------------------------------------
+
+This library never used ``symfony/var-exporter``, so it is no longer a
+requirement.  Doctrine ORM 3 still requires it and installs it.  If you use
+Doctrine ORM 2 with lazy ghost objects enabled, which need it, require
+``symfony/var-exporter`` in your own project.
+
 Hydrator strategies receive the field name
 ------------------------------------------
 
