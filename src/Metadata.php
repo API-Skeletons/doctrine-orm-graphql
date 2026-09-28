@@ -9,14 +9,20 @@ use ArrayObject;
 
 use function array_key_exists;
 use function get_debug_type;
+use function implode;
+use function is_array;
+use function is_bool;
 use function is_int;
+use function is_string;
+use function var_export;
 
 /**
  * This exists to wrap the metadata information
  *
  * The metadata is an array keyed by entity class.  toArray() exports it with
- * a format version so it can be cached, and fromArray() reads that export
- * back, rejecting a cache written in another format.
+ * a format version and the config it was built with so it can be cached, and
+ * fromArray() reads that export back, rejecting a cache written in another
+ * format.  A driver rejects cached metadata built with another config.
  *
  * @extends ArrayObject<string, mixed>
  */
@@ -30,14 +36,84 @@ final class Metadata extends ArrayObject
 
     public const string VERSION_KEY = '__version';
 
+    public const string CONFIG_KEY = '__config';
+
     /**
-     * Export the metadata, with its format version, for caching
+     * The config values the metadata was built with
+     *
+     * @var array{group: string, groupSuffix: string|null, entityPrefix: string|null, extractByValue: bool|null}|null
+     */
+    private array|null $builtWith = null;
+
+    /**
+     * The config values which the metadata depends on: the group selects the
+     * attributes, the group suffix and entity prefix form the type names, and
+     * extractByValue replaces each entity's byValue
+     *
+     * @return array{group: string, groupSuffix: string|null, entityPrefix: string|null, extractByValue: bool|null}
+     */
+    public static function configOf(Config $config): array
+    {
+        return [
+            'group' => $config->getGroup(),
+            'groupSuffix' => $config->getGroupSuffix(),
+            'entityPrefix' => $config->getEntityPrefix(),
+            'extractByValue' => $config->getExtractByValue(),
+        ];
+    }
+
+    /**
+     * Record the config the metadata was built with
+     */
+    public function setBuiltWith(Config $config): void
+    {
+        $this->builtWith = self::configOf($config);
+    }
+
+    /**
+     * Metadata read from a cache must have been built with the same config
+     * values, or its type names, attributes and byValue do not match the
+     * config
+     *
+     * @throws MetadataException
+     */
+    public function assertBuiltWith(Config $config): void
+    {
+        $differences = [];
+
+        foreach (self::configOf($config) as $key => $value) {
+            $builtWith = $this->builtWith[$key] ?? null;
+
+            if ($builtWith === $value) {
+                continue;
+            }
+
+            $differences[] = $key . ' ' . var_export($builtWith, true) . ' rather than ' . var_export($value, true);
+        }
+
+        if ($differences) {
+            throw new MetadataException(
+                'Cached metadata was built with ' . implode(', ', $differences) . '.  Regenerate it with '
+                . '$driver->get(Metadata::class)->toArray() using this config.',
+            );
+        }
+    }
+
+    /**
+     * Export the metadata, with its format version and the config it was
+     * built with, for caching
      *
      * @return array<string, mixed>
+     *
+     * @throws MetadataException
      */
     public function toArray(): array
     {
-        return [self::VERSION_KEY => self::FORMAT_VERSION] + $this->getArrayCopy();
+        if ($this->builtWith === null) {
+            throw new MetadataException('Metadata which was not built by a driver cannot be exported.');
+        }
+
+        return [self::VERSION_KEY => self::FORMAT_VERSION, self::CONFIG_KEY => $this->builtWith] + $this->getArrayCopy();
     }
 
     /**
@@ -71,8 +147,38 @@ final class Metadata extends ArrayObject
             );
         }
 
-        unset($array[self::VERSION_KEY]);
+        $builtWith      = $array[self::CONFIG_KEY] ?? null;
+        $group          = is_array($builtWith) ? $builtWith['group'] ?? null : null;
+        $groupSuffix    = is_array($builtWith) ? $builtWith['groupSuffix'] ?? null : null;
+        $entityPrefix   = is_array($builtWith) ? $builtWith['entityPrefix'] ?? null : null;
+        $extractByValue = is_array($builtWith) ? $builtWith['extractByValue'] ?? null : null;
 
-        return new self($array);
+        if (
+            ! is_array($builtWith)
+            || ! array_key_exists('groupSuffix', $builtWith)
+            || ! array_key_exists('entityPrefix', $builtWith)
+            || ! array_key_exists('extractByValue', $builtWith)
+            || ! is_string($group)
+            || ($groupSuffix !== null && ! is_string($groupSuffix))
+            || ($entityPrefix !== null && ! is_string($entityPrefix))
+            || ($extractByValue !== null && ! is_bool($extractByValue))
+        ) {
+            throw new MetadataException(
+                'Cached metadata has no valid ' . self::CONFIG_KEY . ' key of the config it was built with.  '
+                . 'Regenerate it with $driver->get(Metadata::class)->toArray().',
+            );
+        }
+
+        unset($array[self::VERSION_KEY], $array[self::CONFIG_KEY]);
+
+        $metadata            = new self($array);
+        $metadata->builtWith = [
+            'group' => $group,
+            'groupSuffix' => $groupSuffix,
+            'entityPrefix' => $entityPrefix,
+            'extractByValue' => $extractByValue,
+        ];
+
+        return $metadata;
     }
 }

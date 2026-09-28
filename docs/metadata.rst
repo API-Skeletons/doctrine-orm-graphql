@@ -42,6 +42,13 @@ cache written in another format, or without a version, with
 when that happens.  Use ``toArray()`` rather than ``getArrayCopy()``, which does
 not include the version.
 
+The export also records, under a ``__config`` key, the config values the
+metadata depends on: ``group``, ``groupSuffix``, ``entityPrefix`` and
+``extractByValue``.  A driver given cached metadata built with other values
+throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` naming them,
+rather than serving another group's types.  Cache the metadata of each config
+separately, for example with the group in the cache key.
+
 .. role:: raw-html(raw)
    :format: html
 

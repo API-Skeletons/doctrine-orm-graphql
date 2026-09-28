@@ -67,8 +67,14 @@ The ``Driver`` requires that key when it is given cached metadata, and throws
 
 * Regenerate metadata caches written by 13.x or with ``getArrayCopy()``.
 * Change the caching code to use ``toArray()``; see `metadata <metadata.html>`_.
-* Add ``'__version' => Metadata::FORMAT_VERSION`` to metadata you write by
-  hand.
+* Add ``'__version' => Metadata::FORMAT_VERSION`` and ``'__config'``, the
+  ``Metadata::configOf($config)`` values of the config the metadata is for, to
+  metadata you write by hand.
+
+The export records the config values the metadata depends on: ``group``,
+``groupSuffix``, ``entityPrefix`` and ``extractByValue``.  A driver given
+cached metadata built with other values throws, rather than silently serving
+another group's types, names and limits.
 
 The shape of each entity's metadata is unchanged.
 

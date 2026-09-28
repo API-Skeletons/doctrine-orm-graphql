@@ -68,7 +68,7 @@ class EntityMetadataTest extends TestCase
             }
 
             foreach ($exported as $entityClass => $entityArray) {
-                if ($entityClass === Metadata::VERSION_KEY) {
+                if ($entityClass === Metadata::VERSION_KEY || $entityClass === Metadata::CONFIG_KEY) {
                     continue;
                 }
 

@@ -48,8 +48,12 @@ final class MetadataFactory
     public function getMetadata(): Metadata
     {
         if ($this->metadata->count()) {
+            $this->metadata->assertBuiltWith($this->config);
+
             return $this->metadata;
         }
+
+        $this->metadata->setBuiltWith($this->config);
 
         // Fetch all entity classes from the entity manager
         $entityClasses = [];
