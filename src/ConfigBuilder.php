@@ -28,7 +28,7 @@ final class ConfigBuilder
     private bool $batchAssociations   = true;
     private int $batchLimit           = 1000;
     private int $limit                = 1000;
-    private bool|null $globalByValue  = null;
+    private bool|null $extractByValue = null;
     private string|null $entityPrefix = null;
     private bool|null $sortFields     = null;
     /** @var Filters[] */
@@ -151,7 +151,7 @@ final class ConfigBuilder
      */
     public function extractByValue(bool $byValue = true): self
     {
-        $this->globalByValue = $byValue;
+        $this->extractByValue = $byValue;
 
         return $this;
     }
@@ -161,7 +161,7 @@ final class ConfigBuilder
      */
     public function extractByReference(): self
     {
-        $this->globalByValue = false;
+        $this->extractByValue = false;
 
         return $this;
     }
@@ -225,7 +225,7 @@ final class ConfigBuilder
             'batchAssociations' => $this->batchAssociations,
             'batchLimit' => $this->batchLimit,
             'limit' => $this->limit,
-            'globalByValue' => $this->globalByValue,
+            'extractByValue' => $this->extractByValue,
             'entityPrefix' => $this->entityPrefix,
             'sortFields' => $this->sortFields,
             'excludeFilters' => $this->excludeFilters,

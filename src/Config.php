@@ -70,7 +70,7 @@ final class Config
      *                all hydrators will extract by reference.  This overrides
      *                per-entity attribute configuration.
      */
-    protected readonly bool|null $globalByValue;
+    protected readonly bool|null $extractByValue;
 
     /**
      * @var string|null When set, the entityPrefix will be removed from each
@@ -103,13 +103,13 @@ final class Config
             'batchAssociations' => true,
             'batchLimit' => 1000,
             'limit' => 1000,
-            'globalByValue' => null,
+            'extractByValue' => null,
             'entityPrefix' => null,
             'sortFields' => null,
             'excludeFilters' => [],
         ];
 
-        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, globalByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
         $mergedConfig = array_merge($default, $config);
 
         foreach ($mergedConfig as $field => $value) {
@@ -129,7 +129,7 @@ final class Config
         $this->batchAssociations   = $mergedConfig['batchAssociations'];
         $this->batchLimit          = $mergedConfig['batchLimit'];
         $this->limit               = $mergedConfig['limit'];
-        $this->globalByValue       = $mergedConfig['globalByValue'];
+        $this->extractByValue      = $mergedConfig['extractByValue'];
         $this->entityPrefix        = $mergedConfig['entityPrefix'];
         $this->sortFields          = $mergedConfig['sortFields'];
         $this->excludeFilters      = $mergedConfig['excludeFilters'];
@@ -170,9 +170,9 @@ final class Config
         return $this->limit;
     }
 
-    public function getGlobalByValue(): bool|null
+    public function getExtractByValue(): bool|null
     {
-        return $this->globalByValue;
+        return $this->extractByValue;
     }
 
     public function getEntityPrefix(): string|null

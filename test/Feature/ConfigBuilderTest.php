@@ -97,31 +97,31 @@ class ConfigBuilderTest extends TestCase
         $this->assertEquals(500, $config->getLimit());
     }
 
-    public function testExtractByValueSetsGlobalByValue(): void
+    public function testExtractByValueSetsExtractByValue(): void
     {
         $config = ConfigBuilder::create()
             ->extractByValue()
             ->build();
 
-        $this->assertTrue($config->getGlobalByValue());
+        $this->assertTrue($config->getExtractByValue());
     }
 
-    public function testExtractByValueWithFalseSetsGlobalByValue(): void
+    public function testExtractByValueWithFalseSetsExtractByValue(): void
     {
         $config = ConfigBuilder::create()
             ->extractByValue(false)
             ->build();
 
-        $this->assertFalse($config->getGlobalByValue());
+        $this->assertFalse($config->getExtractByValue());
     }
 
-    public function testExtractByReferenceSetsGlobalByValue(): void
+    public function testExtractByReferenceSetsExtractByValue(): void
     {
         $config = ConfigBuilder::create()
             ->extractByReference()
             ->build();
 
-        $this->assertFalse($config->getGlobalByValue());
+        $this->assertFalse($config->getExtractByValue());
     }
 
     public function testWithEntityPrefixSetsEntityPrefix(): void
@@ -199,7 +199,7 @@ class ConfigBuilderTest extends TestCase
         $this->assertTrue($config->getUseHydratorCache());
         $this->assertTrue($config->getUseQueryResultCache());
         $this->assertEquals(100, $config->getLimit());
-        $this->assertTrue($config->getGlobalByValue());
+        $this->assertTrue($config->getExtractByValue());
         $this->assertEquals('App\\', $config->getEntityPrefix());
         $this->assertTrue($config->getSortFields());
         $this->assertEquals([Filters::CONTAINS], $config->getExcludeFilters());
@@ -215,7 +215,7 @@ class ConfigBuilderTest extends TestCase
         $this->assertFalse($config->getUseHydratorCache());
         $this->assertFalse($config->getUseQueryResultCache());
         $this->assertEquals(1000, $config->getLimit());
-        $this->assertNull($config->getGlobalByValue());
+        $this->assertNull($config->getExtractByValue());
         $this->assertNull($config->getEntityPrefix());
         $this->assertNull($config->getSortFields());
         $this->assertEquals([], $config->getExcludeFilters());

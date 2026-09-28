@@ -21,7 +21,7 @@ Creating a Driver with all config options
       'entityPrefix' => 'App\\ORM\\Entity\\',
       'group' => 'customGroup',
       'groupSuffix' => 'customGroupSuffix',
-      'globalByValue' => true,
+      'extractByValue' => true,
       'limit' => 500,
       'sortFields' => true,
       'useHydratorCache' => true,
@@ -87,6 +87,15 @@ An array of filters to exclude from all available filters for all fields
 and associations for all entities.
 
 
+extractByValue
+--------------
+
+This overrides the ``byValue`` entity attribute globally.  When set to true
+all hydrators will extract by value.  When set to false all hydrators will
+extract by reference.  When not set the individual entity attribute value
+is used and that is, by default, extract by value.
+
+
 group
 -----
 
@@ -105,15 +114,6 @@ a different suffix or an empty suffix.  When used in combination with
 ``App_ORM_Entity_Artist_groupname``
 to
 ``Artist``
-
-
-globalByValue
--------------
-
-This overrides the ``byValue`` entity attribute globally.  When set to true
-all hydrators will extract by value.  When set to false all hydrators will
-extract by reference.  When not set the individual entity attribute value
-is used and that is, by default, extract by value.
 
 
 limit
