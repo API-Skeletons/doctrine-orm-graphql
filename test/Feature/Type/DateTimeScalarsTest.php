@@ -15,6 +15,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Time;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TimeImmutable;
 use DateTime as PHPDateTime;
 use DateTimeImmutable as PHPDateTimeImmutable;
+use DateTimeInterface;
 use GraphQL\Language\AST\IntValueNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
@@ -182,5 +183,89 @@ class DateTimeScalarsTest extends TestCase
         $this->expectExceptionMessage('is not a string: array');
 
         (new $scalarClass())->parseValue(['2004-02-12']);
+    }
+
+    /**
+     * Dates and times which do not exist, and which PHP would roll over
+     *
+     * @return array<string, array{class-string<ScalarType>, string}>
+     */
+    public static function impossibleProvider(): array
+    {
+        $dates     = [
+            'February 31' => '2004-02-31',
+            'February 29 of a common year' => '2003-02-29',
+            'April 31' => '2004-04-31',
+        ];
+        $dateTimes = [
+            'February 31' => '2004-02-31T00:00:00+00:00',
+            'month 13' => '2004-13-01T00:00:00+00:00',
+            'hour 25' => '2004-02-12T25:00:00+00:00',
+            'minute 61' => '2004-02-12T15:61:00+00:00',
+            'second 61' => '2004-02-12T15:19:61+00:00',
+        ];
+
+        $cases = [];
+        foreach ([Date::class, DateImmutable::class] as $class) {
+            foreach ($dates as $name => $value) {
+                $cases[$class . ', ' . $name] = [$class, $value];
+            }
+        }
+
+        $dateTimeClasses = [DateTime::class, DateTimeImmutable::class, DateTimeTZ::class, DateTimeTZImmutable::class];
+        foreach ($dateTimeClasses as $class) {
+            foreach ($dateTimes as $name => $value) {
+                $cases[$class . ', ' . $name] = [$class, $value];
+            }
+        }
+
+        return $cases;
+    }
+
+    /** @param class-string<ScalarType> $class */
+    #[DataProvider('impossibleProvider')]
+    public function testImpossibleValueIsRejected(string $class, string $value): void
+    {
+        $this->expectException(TypeSerializationException::class);
+        $this->expectExceptionMessage($value . ' is not a valid date or time.');
+
+        (new $class())->parseValue($value);
+    }
+
+    /** @param class-string<ScalarType> $class */
+    #[DataProvider('impossibleProvider')]
+    public function testImpossibleLiteralIsRejected(string $class, string $value): void
+    {
+        $this->expectException(TypeSerializationException::class);
+        $this->expectExceptionMessage($value . ' is not a valid date or time.');
+
+        (new $class())->parseLiteral(new StringValueNode(['value' => $value]));
+    }
+
+    /**
+     * February 29 of a leap year exists
+     *
+     * @return array<string, array{class-string<ScalarType>, string, string}>
+     */
+    public static function leapDayProvider(): array
+    {
+        return [
+            'Date' => [Date::class, '2004-02-29', 'Y-m-d'],
+            'DateImmutable' => [DateImmutable::class, '2004-02-29', 'Y-m-d'],
+            'DateTime' => [DateTime::class, '2004-02-29T23:59:59+00:00', PHPDateTime::ATOM],
+            'DateTimeImmutable' => [DateTimeImmutable::class, '2004-02-29T23:59:59+00:00', PHPDateTime::ATOM],
+            'DateTimeTZ' => [DateTimeTZ::class, '2004-02-29T23:59:59+05:30', PHPDateTime::ATOM],
+            'DateTimeTZImmutable' => [DateTimeTZImmutable::class, '2004-02-29T23:59:59+05:30', PHPDateTime::ATOM],
+        ];
+    }
+
+    /** @param class-string<ScalarType> $class */
+    #[DataProvider('leapDayProvider')]
+    public function testLeapDayIsAccepted(string $class, string $value, string $format): void
+    {
+        $parsed = (new $class())->parseValue($value);
+
+        $this->assertInstanceOf(DateTimeInterface::class, $parsed);
+        $this->assertSame($value, $parsed->format($format));
     }
 }

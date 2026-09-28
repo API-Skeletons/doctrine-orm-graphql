@@ -5,6 +5,14 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Impossible dates are rejected
+-----------------------------
+
+The ``Date``, ``DateTime`` and ``DateTimeTZ`` scalars, and their immutable
+versions, accepted a date or time which does not exist and rolled it over:
+``2004-02-31`` became 2004-03-02 and ``T25:00:00`` the next day.  Such a value
+is now an error.
+
 LIKE filters match wildcards literally
 --------------------------------------
 
