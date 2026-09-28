@@ -165,6 +165,16 @@ these types, return the date object instead.
 A ``Time`` or ``TimeImmutable`` value written as a literal in a query is now
 validated, as a variable already was.  An invalid time literal is an error.
 
+Field filters apply to their own field only
+-------------------------------------------
+
+The ``includeFilters`` and ``excludeFilters`` of one ``#[Field]`` also removed
+those filters from every field of the entity processed after it.  A field now
+has the entity's filters limited only by its own attribute, so some fields
+gain filters they were missing.  This is a schema change: the filter input
+types of those fields gain fields and their generated names change.
+Regenerate any client types built from the schema.
+
 Date and time filters match date and time fields
 ------------------------------------------------
 

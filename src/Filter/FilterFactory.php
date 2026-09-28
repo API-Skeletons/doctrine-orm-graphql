@@ -138,10 +138,12 @@ final class FilterFactory
                 continue;
             }
 
-            // Limit field filters
+            // Limit field filters.  These apply to this field only, so they
+            // are removed from a copy of the entity's allowed filters.
+            $fieldAllowedFilters = $allowedFilters;
             if (count($fieldMetadata->excludeFilters)) {
                 $fieldExcludeFilters = Filters::fromArray($fieldMetadata->excludeFilters);
-                $allowedFilters      = array_filter(
+                $fieldAllowedFilters = array_filter(
                     $allowedFilters,
                     static function ($value) use ($fieldExcludeFilters) {
                         return ! in_array($value, $fieldExcludeFilters);
@@ -150,7 +152,7 @@ final class FilterFactory
             }
 
             // Remove filters that are not allowed for this field type
-            $filteredFilters = $this->filterFiltersByType($allowedFilters, $type);
+            $filteredFilters = $this->filterFiltersByType($fieldAllowedFilters, $type);
 
             // ScalarType field filters are named by their field type
             // and a hash of the allowed filters

@@ -60,4 +60,20 @@ class ExcludeFiltersTest extends TestCase
             $this->assertEquals('Field "contains" is not defined by type "Filters_String_3d2660e0d014aec30b0fc5d8fef65535". Did you mean "notin"?', $error->getMessage());
         }
     }
+
+    /**
+     * A field's excludeFilters apply to that field only.  Artist name, which
+     * comes before id, excludes eq; id must still have eq.
+     */
+    public function testFieldExcludeFiltersDoNotAffectOtherFields(): void
+    {
+        $driver  = new Driver($this->getEntityManager(), new Config(['group' => 'ExcludeFiltersTest']));
+        $filters = $driver->filter(Artist::class);
+
+        $this->assertArrayNotHasKey('eq', $filters->getField('name')->getType()->getFields());
+        $this->assertArrayHasKey('eq', $filters->getField('id')->getType()->getFields());
+
+        // The entity's excludeFilters still apply to every field
+        $this->assertArrayNotHasKey('neq', $filters->getField('id')->getType()->getFields());
+    }
 }
