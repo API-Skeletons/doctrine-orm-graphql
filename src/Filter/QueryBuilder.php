@@ -81,6 +81,12 @@ final class QueryBuilder
                     continue;
                 }
 
+                // Every value is not in an empty list.  DBAL expands an empty
+                // list to NULL, and NOT IN (NULL) matches nothing.
+                if ($filter === Filters::NOTIN && $value === []) {
+                    continue;
+                }
+
                 $value = $this->toDatabaseValue($value, $fieldType, $queryBuilder);
 
                 if (
