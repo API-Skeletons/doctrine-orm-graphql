@@ -143,6 +143,9 @@ now throw in every environment:
 * Building a type with ``TypeContainer::build()`` from a class which does not
   implement ``Buildable`` throws
   ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration``.
+* A ``#[ComputedField]`` whose name collides with a field throws
+  ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``, which was a
+  ``RuntimeException``.
 
 If your development environment ran with assertions enabled you have already
 seen these errors.  Otherwise, fix any duplicate attributes they report.

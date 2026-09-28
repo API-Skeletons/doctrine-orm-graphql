@@ -17,7 +17,6 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use League\Event\EventDispatcher;
 use ReflectionClass;
 use ReflectionProperty;
-use RuntimeException;
 
 use function ctype_upper;
 use function in_array;
@@ -269,7 +268,7 @@ final class MetadataFactory
 
                 // Validate no collision with existing fields
                 if (isset($this->metadata[$reflectionClass->getName()]['fields'][$fieldName])) {
-                    throw new RuntimeException(
+                    throw new MetadataException(
                         'Computed field "' . $fieldName . '" collides with existing field in entity '
                         . $reflectionClass->getName(),
                     );

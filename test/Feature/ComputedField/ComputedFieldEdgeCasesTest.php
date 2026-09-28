@@ -6,18 +6,18 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\ComputedField;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithCollision;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithGetMethod;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithIsMethod;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithPlainMethod;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
-use RuntimeException;
 
 class ComputedFieldEdgeCasesTest extends TestCase
 {
     public function testComputedFieldNameCollisionThrowsException(): void
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(MetadataException::class);
         $this->expectExceptionMessage('Computed field "name" collides with existing field in entity');
 
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'collisionTest']));
