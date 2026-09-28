@@ -74,7 +74,14 @@ final class QueryBuilder
 
             foreach ($filters as $filter => $value) {
                 $filter = Filters::from($filter);
-                $value  = $this->toDatabaseValue($value, $fieldType, $queryBuilder);
+
+                // A filter given null is not applied, as a field or filter
+                // given null is not.  eq, neq, in and notin compare to null.
+                if ($value === null && ! in_array($filter, [Filters::EQ, Filters::NEQ, Filters::IN, Filters::NOTIN])) {
+                    continue;
+                }
+
+                $value = $this->toDatabaseValue($value, $fieldType, $queryBuilder);
 
                 if (
                     in_array($filter, [
