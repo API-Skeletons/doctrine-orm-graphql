@@ -5,6 +5,14 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+bigint fields have the number filters
+-------------------------------------
+
+A ``bigint`` field is a ``String``, so it was given the string filters,
+including ``contains``, ``startswith`` and ``endswith`` but not ``lt``,
+``lte``, ``gt``, ``gte`` or ``between``.  It now has the number filters, and a
+comparison value which is not an integer is an error.  This is a schema change.
+
 Comparing to null is an error
 -----------------------------
 
