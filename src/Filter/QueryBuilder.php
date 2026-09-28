@@ -19,7 +19,6 @@ use function is_array;
 use function strcmp;
 use function strtr;
 use function uksort;
-use function uniqid;
 
 /**
  * This class is used to add filters to a Doctrine QueryBuilder based on the
@@ -61,6 +60,9 @@ final class QueryBuilder
      * @var array<string, string>
      */
     private array $fieldNames = [];
+
+    /** The number of parameters named */
+    private int $parameterCount = 0;
 
     /**
      * Add where clauses to a QueryBuilder based on the FilterType of the entity
@@ -151,7 +153,7 @@ final class QueryBuilder
      */
     protected function default(string $filterValue, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
     {
-        $parameter = 'p' . uniqid();
+        $parameter = $this->parameter($queryBuilder);
         $queryBuilder
             ->andWhere(
                 $queryBuilder->expr()->$filterValue($field, ':' . $parameter),
@@ -162,8 +164,8 @@ final class QueryBuilder
     /** @param array<string, mixed> $value */
     protected function between(string $field, array $value, DoctrineQueryBuilder $queryBuilder): void
     {
-        $from = 'p' . uniqid();
-        $to   = 'p' . uniqid();
+        $from = $this->parameter($queryBuilder);
+        $to   = $this->parameter($queryBuilder);
         $queryBuilder
             ->andWhere(
                 $queryBuilder->expr()->between(
@@ -197,10 +199,23 @@ final class QueryBuilder
      */
     private function like(string $field, string $pattern, DoctrineQueryBuilder $queryBuilder): void
     {
-        $parameter = 'p' . uniqid();
+        $parameter = $this->parameter($queryBuilder);
         $queryBuilder
             ->andWhere($field . ' LIKE :' . $parameter . " ESCAPE '" . self::LIKE_ESCAPE . "'")
             ->setParameter($parameter, $pattern);
+    }
+
+    /**
+     * A new parameter name.  A QueryBuilder event listener may have bound a
+     * parameter of the same name, so a bound name is skipped.
+     */
+    private function parameter(DoctrineQueryBuilder $queryBuilder): string
+    {
+        do {
+            $name = 'filter' . ++$this->parameterCount;
+        } while ($queryBuilder->getParameter($name) !== null);
+
+        return $name;
     }
 
     /**
