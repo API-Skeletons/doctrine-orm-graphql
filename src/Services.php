@@ -47,7 +47,18 @@ trait Services
             )
             ->set(
                 Cache\QueryResultCache::class,
-                static fn () => new Cache\QueryResultCache(),
+                static function (Container $container) use ($entityManager): Cache\QueryResultCache {
+                    $cache  = new Cache\QueryResultCache();
+                    $config = $container->get(Config::class);
+                    assert($config instanceof Config);
+
+                    // The cache lasts until the entity manager is cleared or flushed
+                    if ($config->getUseQueryResultCache()) {
+                        Cache\QueryResultCacheListener::register($entityManager, $cache);
+                    }
+
+                    return $cache;
+                },
             )
             ->set(
                 Type\Entity\EntityTypeContainer::class,

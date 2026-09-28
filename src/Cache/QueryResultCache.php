@@ -13,17 +13,17 @@ use function md5;
 use function serialize;
 
 /**
- * Request-scoped cache for query results.
+ * Cache for query results.
  *
  * Caches query results based on SQL + parameters signature to prevent
- * duplicate database queries within a single GraphQL request. This is
- * particularly useful for:
+ * duplicate database queries. This is particularly useful for:
  * - Circular references in the graph
  * - Queries accessing the same entity multiple times
  * - Duplicate association queries
  *
- * The cache is stored in memory and is automatically cleared after
- * the request completes.
+ * The results are entities of the entity manager, so when the cache is
+ * enabled it is cleared whenever the entity manager is cleared or flushed.
+ * Clear the entity manager between requests in a long running process.
  */
 final class QueryResultCache
 {
@@ -123,11 +123,11 @@ final class QueryResultCache
         $sql        = is_array($sql) ? implode(';', $sql) : $sql;
         $parameters = $query->getParameters()->toArray();
 
-        // Normalize parameters for consistent cache keys
+        // Entities are keyed by their identifiers, as they are bound
         $normalizedParams = [];
         foreach ($parameters as $param) {
             /** @psalm-suppress MixedAssignment */
-            $normalizedParams[$param->getName()] = $param->getValue();
+            $normalizedParams[$param->getName()] = $query->processParameterValue($param->getValue());
         }
 
         return md5($sql . serialize($normalizedParams));

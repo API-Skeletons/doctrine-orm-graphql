@@ -8,10 +8,15 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Cache\QueryResultCache;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
+use Doctrine\ORM\Events;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
+
+use function count;
+use function gc_collect_cycles;
 
 class QueryResultCacheIntegrationTest extends TestCase
 {
@@ -64,10 +69,8 @@ class QueryResultCacheIntegrationTest extends TestCase
 
         $stats = $cache->getStats();
 
-        // Should have cache hits now (second execution should hit cache)
-        // Note: This test verifies the cache is working, but the exact number
-        // of hits depends on the internal query structure
-        $this->assertGreaterThanOrEqual(0, $stats['hits']);
+        // The second execution is served from the cache
+        $this->assertGreaterThan(0, $stats['hits']);
     }
 
     public function testQueryResultCacheDisabledByDefault(): void
@@ -250,5 +253,119 @@ class QueryResultCacheIntegrationTest extends TestCase
         $this->assertEquals(0, $stats['size']);
         $this->assertEquals(0, $stats['hits']);
         $this->assertEquals(0, $stats['misses']);
+    }
+
+    private function schema(Driver $driver): Schema
+    {
+        return new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'artists' => $driver->completeConnection(Artist::class),
+                ],
+            ]),
+        ]);
+    }
+
+    private function listenerCount(): int
+    {
+        return count(self::$entityManager->getEventManager()->getListeners(Events::onClear));
+    }
+
+    /**
+     * Rows changed outside the entity manager are seen once it is cleared
+     */
+    public function testClearingTheEntityManagerClearsTheCache(): void
+    {
+        $driver = new Driver(self::$entityManager, new Config(['useQueryResultCache' => true]));
+        $schema = $this->schema($driver);
+        $query  = '{ artists(filter: { name: { eq: "Phish" } }) { edges { node { id name } } } }';
+
+        $result = GraphQL::executeQuery($schema, $query)->toArray();
+        $this->assertSame('Phish', $result['data']['artists']['edges'][0]['node']['name']);
+
+        self::$entityManager->getConnection()->executeStatement(
+            "UPDATE artist SET name = 'Phish' WHERE name = 'Grateful Dead'",
+        );
+        self::$entityManager->clear();
+
+        $this->assertSame(0, $driver->get(QueryResultCache::class)->getStats()['size']);
+
+        $result = GraphQL::executeQuery($schema, $query)->toArray();
+        $this->assertCount(2, $result['data']['artists']['edges']);
+    }
+
+    /**
+     * A flush, as by a mutation, clears the cache
+     */
+    public function testFlushClearsTheCache(): void
+    {
+        $driver = new Driver(self::$entityManager, new Config(['useQueryResultCache' => true]));
+        $schema = $this->schema($driver);
+
+        GraphQL::executeQuery($schema, '{ artists { edges { node { id name } } } }');
+
+        $cache = $driver->get(QueryResultCache::class);
+        $this->assertGreaterThan(0, $cache->getStats()['size']);
+
+        $artist = self::$entityManager->getRepository(Artist::class)->findOneBy(['name' => 'Phish']);
+        $this->assertInstanceOf(Artist::class, $artist);
+        $artist->setName('Trey');
+        self::$entityManager->flush();
+
+        $this->assertSame(0, $cache->getStats()['size']);
+
+        $result = GraphQL::executeQuery($schema, '{ artists(filter: { name: { eq: "Phish" } }) { edges { node { id } } } }')
+            ->toArray();
+        $this->assertCount(0, $result['data']['artists']['edges']);
+    }
+
+    /**
+     * The cache does not outlive its driver; its listener is then removed
+     */
+    public function testListenerOfAFreedCacheIsRemoved(): void
+    {
+        $listeners = $this->listenerCount();
+
+        // Executing a schema is not needed; webonyx keeps the last one it
+        // executed, and with it the driver
+        $driver = new Driver(self::$entityManager, new Config(['useQueryResultCache' => true]));
+        $driver->get(QueryResultCache::class);
+        $this->assertSame($listeners + 1, $this->listenerCount());
+
+        unset($driver);
+        gc_collect_cycles();
+        self::$entityManager->clear();
+
+        $this->assertSame($listeners, $this->listenerCount());
+    }
+
+    public function testDisabledCacheRegistersNoListener(): void
+    {
+        $listeners = $this->listenerCount();
+
+        $driver = new Driver(self::$entityManager, new Config(['useQueryResultCache' => false]));
+        GraphQL::executeQuery($this->schema($driver), '{ artists { edges { node { id } } } }');
+
+        $this->assertSame($listeners, $this->listenerCount());
+    }
+
+    /**
+     * An entity parameter is keyed by its identifier rather than by its state
+     */
+    public function testEntityParametersAreKeyedByIdentifier(): void
+    {
+        $cache  = new QueryResultCache();
+        $artist = self::$entityManager->getRepository(Artist::class)->findOneBy(['name' => 'Phish']);
+        $this->assertInstanceOf(Artist::class, $artist);
+
+        $dql = 'SELECT p FROM ' . Performance::class . ' p WHERE p.artist = :artist';
+
+        $query = self::$entityManager->createQuery($dql)->setParameter('artist', $artist);
+        $cache->set($query, $query->getResult());
+
+        $artist->setName('Changed');
+
+        $this->assertTrue($cache->has(self::$entityManager->createQuery($dql)->setParameter('artist', $artist)));
     }
 }
