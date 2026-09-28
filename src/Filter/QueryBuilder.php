@@ -17,6 +17,7 @@ use function array_flip;
 use function in_array;
 use function is_array;
 use function strcmp;
+use function strtr;
 use function uksort;
 use function uniqid;
 
@@ -26,6 +27,12 @@ use function uniqid;
  */
 final class QueryBuilder
 {
+    /**
+     * The LIKE escape character.  Not a backslash, which MySQL also treats as
+     * an escape within the string literal.
+     */
+    private const string LIKE_ESCAPE = '!';
+
     private const array MUTABLE_TYPES = [
         Types::DATE_MUTABLE,
         Types::DATETIME_MUTABLE,
@@ -129,32 +136,41 @@ final class QueryBuilder
 
     protected function contains(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
     {
-        $parameter = 'p' . uniqid();
-        $queryBuilder
-            ->andWhere(
-                $queryBuilder->expr()->like($field, ':' . $parameter),
-            )
-            ->setParameter($parameter, '%' . $value . '%');
+        $this->like($field, '%' . $this->escapeLike($value) . '%', $queryBuilder);
     }
 
     protected function startsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
     {
-        $parameter = 'p' . uniqid();
-        $queryBuilder
-            ->andWhere(
-                $queryBuilder->expr()->like($field, ':' . $parameter),
-            )
-            ->setParameter($parameter, $value . '%');
+        $this->like($field, $this->escapeLike($value) . '%', $queryBuilder);
     }
 
     protected function endsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
     {
+        $this->like($field, '%' . $this->escapeLike($value), $queryBuilder);
+    }
+
+    /**
+     * Match a LIKE pattern.  Wildcards in the value are escaped, so it matches
+     * only itself.
+     */
+    private function like(string $field, string $pattern, DoctrineQueryBuilder $queryBuilder): void
+    {
         $parameter = 'p' . uniqid();
         $queryBuilder
-            ->andWhere(
-                $queryBuilder->expr()->like($field, ':' . $parameter),
-            )
-            ->setParameter($parameter, '%' . $value);
+            ->andWhere($field . ' LIKE :' . $parameter . " ESCAPE '" . self::LIKE_ESCAPE . "'")
+            ->setParameter($parameter, $pattern);
+    }
+
+    /**
+     * Escape the LIKE wildcards % and _, and the escape character itself
+     */
+    private function escapeLike(string $value): string
+    {
+        return strtr($value, [
+            self::LIKE_ESCAPE => self::LIKE_ESCAPE . self::LIKE_ESCAPE,
+            '%' => self::LIKE_ESCAPE . '%',
+            '_' => self::LIKE_ESCAPE . '_',
+        ]);
     }
 
     protected function isnull(string $field, bool $value, DoctrineQueryBuilder $queryBuilder): void
