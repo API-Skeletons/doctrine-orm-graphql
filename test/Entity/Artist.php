@@ -30,6 +30,7 @@ use function strtoupper;
 #[GraphQL\Entity(group: 'ExtractionMapDuplicate', limit: 1)]
 #[GraphQL\Entity(group: 'computedFieldTest')]
 #[GraphQL\Entity(group: 'MappedSuperclassTest', description: 'Artists in a release')]
+#[GraphQL\Entity(group: 'CompositeKeyTest')]
 #[GraphQL\Entity(group: 'MappedSuperclassByReferenceTest')]
 
 #[ORM\Entity]
@@ -50,6 +51,7 @@ class Artist
     #[GraphQL\Field(group: 'computedFieldTest')]
     #[GraphQL\Field(group: 'MappedSuperclassTest')]
     #[GraphQL\Field(group: 'MappedSuperclassByReferenceTest')]
+    #[GraphQL\Field(group: 'CompositeKeyTest')]
 
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;
@@ -63,6 +65,7 @@ class Artist
     #[GraphQL\Field(group: 'ExtractionMapDuplicate', alias: 'duplicate')]
     #[GraphQL\Field(group: 'computedFieldTest')]
 
+    #[GraphQL\Field(group: 'CompositeKeyTest')]
     #[ORM\Id]
     #[ORM\Column(type: 'bigint')]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -92,7 +95,8 @@ class Artist
      */
     public function __construct()
     {
-        $this->performances = new ArrayCollection();
+        $this->performances         = new ArrayCollection();
+        $this->compositeKeyEntities = new ArrayCollection();
     }
 
     /**
@@ -159,6 +163,17 @@ class Artist
     public function getPerformances(): Collection
     {
         return $this->performances;
+    }
+
+    /** @var Collection<int, TestCompositeKeyEntity> */
+    #[GraphQL\Association(group: 'CompositeKeyTest')]
+    #[ORM\OneToMany(targetEntity: TestCompositeKeyEntity::class, mappedBy: 'artist')]
+    private Collection $compositeKeyEntities;
+
+    /** @return Collection<int, TestCompositeKeyEntity> */
+    public function getCompositeKeyEntities(): Collection
+    {
+        return $this->compositeKeyEntities;
     }
 
     /**

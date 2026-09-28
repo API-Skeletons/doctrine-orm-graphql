@@ -232,4 +232,22 @@ class ConfigBuilderTest extends TestCase
         $this->assertNotSame($config1, $config2);
         $this->assertEquals('group2', $config2->getGroup());
     }
+
+    public function testBatchAssociationsIsOnByDefault(): void
+    {
+        $this->assertTrue(ConfigBuilder::create()->build()->getBatchAssociations());
+        $this->assertTrue((new Config())->getBatchAssociations());
+    }
+
+    public function testBatchAssociationsCanBeTurnedOff(): void
+    {
+        $this->assertFalse(ConfigBuilder::create()->batchAssociations(false)->build()->getBatchAssociations());
+        $this->assertTrue(ConfigBuilder::create()->batchAssociations()->build()->getBatchAssociations());
+    }
+
+    public function testBatchLimit(): void
+    {
+        $this->assertSame(1000, ConfigBuilder::create()->build()->getBatchLimit());
+        $this->assertSame(250, ConfigBuilder::create()->withBatchLimit(250)->build()->getBatchLimit());
+    }
 }

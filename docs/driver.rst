@@ -16,6 +16,8 @@ Creating a Driver with all config options
   use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 
   $driver = new Driver($entityManager, new Config([
+      'batchAssociations' => true,
+      'batchLimit' => 1000,
       'entityPrefix' => 'App\\ORM\\Entity\\',
       'group' => 'customGroup',
       'groupSuffix' => 'customGroupSuffix',
@@ -24,7 +26,7 @@ Creating a Driver with all config options
       'sortFields' => true,
       'useHydratorCache' => true,
       'useQueryResultCache' => true,
-      'excludeFilters' => [Filters::LIKE],
+      'excludeFilters' => [Filters::CONTAINS],
   ]);
 
 
@@ -36,6 +38,35 @@ The ``Driver`` takes a second, optional, argument of type
 an array parameter.
 
 The parameter options are:
+
+
+batchAssociations
+-----------------
+
+When set to true, associations are loaded in batches rather than once for
+each row.  Default is ``true``.
+
+* The unloaded to-one associations of a field are loaded with one query per
+  entity class.
+* The rows of a one-to-many or many-to-many collection field are counted with
+  one query for all the rows it is resolved for, and fetched with one more
+  (two for many-to-many), within the ``batchLimit``.
+
+A query then costs a fixed number of queries however many rows it returns.
+The results are the same as without batching.
+
+A collection is not batched when its association has an ``eventName``, so its
+`QueryBuilder event <events.html>`_ is still dispatched for each row, or when
+its source or target entity has a composite identifier.
+
+
+batchLimit
+----------
+
+The most rows a batched collection field fetches with one query.  When the
+rows of all the rows a collection field is resolved for number more than
+this, each row's page is queried separately; they are still counted with one
+query.  Default is 1000.
 
 
 entityPrefix

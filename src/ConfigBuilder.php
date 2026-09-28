@@ -25,6 +25,8 @@ final class ConfigBuilder
     private string|null $groupSuffix  = null;
     private bool $useHydratorCache    = false;
     private bool $useQueryResultCache = false;
+    private bool $batchAssociations   = true;
+    private int $batchLimit           = 1000;
     private int $limit                = 1000;
     private bool|null $globalByValue  = null;
     private string|null $entityPrefix = null;
@@ -94,6 +96,34 @@ final class ConfigBuilder
     public function useQueryResultCache(bool $enable = true): self
     {
         $this->useQueryResultCache = $enable;
+
+        return $this;
+    }
+
+    /**
+     * Load associations in batches
+     *
+     * When set to true, the default, all the unloaded to-one associations and
+     * all the collections of a field are loaded together rather than once per
+     * row.
+     */
+    public function batchAssociations(bool $enable = true): self
+    {
+        $this->batchAssociations = $enable;
+
+        return $this;
+    }
+
+    /**
+     * Set the most rows a batched collection field fetches with one query
+     *
+     * When the rows of all the sources in a batched collection field number
+     * no more than this, they are fetched with one query and paginated in
+     * PHP.  Otherwise each source's page is queried.
+     */
+    public function withBatchLimit(int $batchLimit): self
+    {
+        $this->batchLimit = $batchLimit;
 
         return $this;
     }
@@ -192,6 +222,8 @@ final class ConfigBuilder
             'groupSuffix' => $this->groupSuffix,
             'useHydratorCache' => $this->useHydratorCache,
             'useQueryResultCache' => $this->useQueryResultCache,
+            'batchAssociations' => $this->batchAssociations,
+            'batchLimit' => $this->batchLimit,
             'limit' => $this->limit,
             'globalByValue' => $this->globalByValue,
             'entityPrefix' => $this->entityPrefix,

@@ -165,6 +165,46 @@ these types, return the date object instead.
 A ``Time`` or ``TimeImmutable`` value written as a literal in a query is now
 validated, as a variable already was.  An invalid time literal is an error.
 
+Associations are loaded in batches
+----------------------------------
+
+Associations are now loaded in batches, which is on by default.  Unloaded
+to-one associations are loaded with one query per entity class, and a
+collection field is counted and fetched with a fixed number of queries
+however many rows it is resolved for.  Artists with their performances take
+4 queries instead of 10, and two levels of collections 6 instead of 22.  The
+results are the same.
+
+A collection whose association has an ``eventName`` is not batched, so its
+QueryBuilder event is still dispatched for each row with that row as
+``getObjectValue()``.
+
+Resolvers now return ``GraphQL\Deferred`` for batched fields, which
+``GraphQL::executeQuery()`` resolves.  If you execute queries with your own
+promise adapter, it must support ``Deferred``.
+
+To turn batching off, set ``'batchAssociations' => false``.  See
+`batchAssociations and batchLimit <driver.html#batchassociations>`_.
+
+Many-to-many collections return their own members
+-------------------------------------------------
+
+A many-to-many collection on the owning side returned every row of the target
+entity for every source, and one on the inverse side failed with a Doctrine
+semantic error.  Both now return the members of the source's own collection.
+
+Connections are ordered by identifier
+-------------------------------------
+
+Entity connections and collections had no ``ORDER BY`` unless the ``sort``
+filter was used.  SQL does not guarantee the order of rows without one, so
+pages fetched with ``first`` and ``after`` could overlap or skip rows.
+
+The identifier is now always the last ordering: rows without a ``sort`` are
+returned in identifier order, and rows which sort equally are ordered by
+identifier.  Ordering added by a QueryBuilder event listener comes before the
+identifier, so it still decides the order.
+
 Field filters apply to their own field only
 -------------------------------------------
 
@@ -368,8 +408,8 @@ Events. This change provides:
 
 **Migration Required**
 
-If you use ``criteriaEventName`` in your ``#[Association]`` attributes, you must
-update your event listeners:
+If you use ``criteriaEventName`` in your ``#[Association]`` attributes, rename
+it to ``eventName`` and update your event listeners:
 
 **Old (12.x)**:
 
@@ -395,7 +435,7 @@ update your event listeners:
 
     use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder;
 
-    #[GraphQL\Association(criteriaEventName: Artist::class . '.performances')]
+    #[GraphQL\Association(eventName: Artist::class . '.performances')]
     public $performances;
 
     $driver->get(EventDispatcher::class)->subscribeTo(

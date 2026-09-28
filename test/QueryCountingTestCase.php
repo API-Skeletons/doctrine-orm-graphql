@@ -1,0 +1,86 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL;
+
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Logging\Middleware;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\ORMSetup;
+use Doctrine\ORM\Tools\SchemaTool;
+use Psr\Log\AbstractLogger;
+
+use function count;
+use function method_exists;
+
+/**
+ * A TestCase whose connection records the SQL of every statement it executes
+ */
+abstract class QueryCountingTestCase extends TestCase
+{
+    /** @var string[] */
+    private static array $sql = [];
+
+    public function setUp(): void
+    {
+        $config = ORMSetup::createAttributeMetadataConfiguration(
+            paths: [__DIR__ . '/Entity'],
+            isDevMode: true,
+        );
+        if (method_exists($config, 'enableNativeLazyObjects')) {
+            $config->enableNativeLazyObjects(true);
+        }
+
+        $logger = new class extends AbstractLogger {
+            /**
+             * The parameters are untyped in psr/log 1 and typed in 2 and 3;
+             * mixed is compatible with all of them
+             *
+             * @param mixed[] $context
+             */
+            public function log(mixed $level, mixed $message, array $context = []): void
+            {
+                if (! isset($context['sql'])) {
+                    return;
+                }
+
+                QueryCountingTestCase::record((string) $context['sql']);
+            }
+        };
+
+        $connection = DriverManager::getConnection(
+            ['driver' => 'pdo_sqlite', 'memory' => true],
+            (new Configuration())->setMiddlewares([new Middleware($logger)]),
+        );
+
+        self::$entityManager = new EntityManager($connection, $config);
+        (new SchemaTool(self::$entityManager))->createSchema(self::$entityManager->getMetadataFactory()->getAllMetadata());
+
+        $this->populateData();
+        $this->resetQueries();
+    }
+
+    /** @internal Called by the logger */
+    public static function record(string $sql): void
+    {
+        self::$sql[] = $sql;
+    }
+
+    protected function resetQueries(): void
+    {
+        self::$sql = [];
+    }
+
+    protected function queryCount(): int
+    {
+        return count(self::$sql);
+    }
+
+    /** @return string[] */
+    protected function queries(): array
+    {
+        return self::$sql;
+    }
+}
