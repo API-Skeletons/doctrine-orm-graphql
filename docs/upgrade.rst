@@ -5,6 +5,15 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Comparing to null is an error
+-----------------------------
+
+``eq: null``, ``neq: null``, ``in`` or ``notin`` given null or a list
+containing null, and ``between`` with a null or missing ``from`` or ``to``
+compared to null in SQL, which matches nothing, so they silently returned no
+rows.  They are now an error which names the filter and field.  Use
+``isnull`` to match null values.
+
 date_immutable fields have no text filters
 ------------------------------------------
 
