@@ -54,7 +54,7 @@ The `Driver` class (src/Driver.php) is the main entry point. It extends `Contain
 - `filter(string $id)` - Get filter InputObjectType for an entity
 - `pagination()` - Get the pagination arguments (`first`, `after`, `last`, `before`) to add to the top level of a connection's args
 - `resolve(string $id)` - Get resolve closure for an entity
-- `input(string $entityClass, array $requiredFields, array $optionalFields)` - Create InputObjectType for mutations
+- `input(string $entityClass, array $requiredFields, array $optionalFields, ?string $name)` - Create InputObjectType for mutations; the same entity and fields return the same type, with a stable name
 - `completeConnection(string $id)` - Returns a complete GraphQL endpoint definition with type, args, and resolve
 
 ### Container System
@@ -89,8 +89,7 @@ Attributes are in `src/Attribute/`:
 Uses league/event (v3.0) for PSR-14 event dispatching. Key events in `src/Event/`:
 
 - `EntityDefinition` - Fired when an entity GraphQL type is created (allows modification of type definition)
-- `QueryBuilder` - Fired when QueryBuilder is created for entity resolution (allows custom query modifications)
-- `Criteria` - Fired for association filtering
+- `QueryBuilder` - Fired when QueryBuilder is created for entity and collection resolution (allows custom query modifications)
 - `Metadata` - Fired when metadata is built
 
 Events can have custom event names via `$eventName` parameter in Driver methods.
@@ -100,7 +99,8 @@ Events can have custom event names via `$eventName` parameter in Driver methods.
 Filters are auto-generated for all exposed fields and associations (src/Filter/):
 
 - `FilterFactory` creates filter InputObjectTypes
-- `Filters` enum defines available filter types (eq, neq, lt, lte, gt, gte, isnull, between, in, notin, startwith, endswith, contains, sort, sortPriority)
+- `Filters` enum defines available filter types (eq, neq, lt, lte, gt, gte, between, contains, startswith, endswith, in, notin, isnull, sort, sortPriority); `sort` takes the `SortDirection` enum (ASC, DESC)
+- Date and time filter values are bound as the field's Doctrine type
 - Filters are context-aware based on field type
 - Can be excluded globally via Config or per-entity/field via attributes
 
@@ -119,7 +119,8 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 `Config` class (src/Config.php) supports:
 - `group` - Allows multiple GraphQL schemas from same entities
 - `groupSuffix` - Custom suffix for type names
-- `useHydratorCache` - Cache hydrator results per request
+- `useHydratorCache` - Cache hydrator results for as long as the entity exists
+- `useQueryResultCache` - Cache query results for identical SQL and parameters
 - `limit` - Hard limit for collections (default: 1000)
 - `globalByValue` - Extract by value vs reference
 - `entityPrefix` - Remove prefix from type names
@@ -154,7 +155,7 @@ Test organization:
 
 - PHP 8.4+ required
 - Doctrine ORM 2.20.9+ or 3.0+ required (`^2.20.9 || ^3.0`); on PHP 8.5 the lowest installable ORM is 3.3.1. CI tests ORM 2.20.9, 3.0.0 and ^3.0
-- Default branch is `main`; version 14 (breaking changes) is based on `14.0.x`
+- Default branch is `14.0.x`, the next release (upstream is `API-Skeletons/doctrine-orm-graphql`; `origin` is a fork)
 - Record breaking changes in the "13.x to 14.0" section of `docs/upgrade.rst`
 - This library is framework-agnostic (can be used with Laravel, Symfony, etc.)
 - Type names are suffixed with group name by default (can be customized via groupSuffix config)
