@@ -20,6 +20,22 @@ The ``Driver`` requires that key when it is given cached metadata, and throws
 
 The shape of each entity's metadata is unchanged.
 
+globalByValue is renamed extractByValue
+---------------------------------------
+
+The ``globalByValue`` config option is renamed ``extractByValue``, matching
+``ConfigBuilder::extractByValue()``, and ``Config::getGlobalByValue()`` is
+renamed ``Config::getExtractByValue()``.  Its meaning is unchanged.  The old
+name throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration``.
+
+.. code-block:: php
+
+    // 13.x
+    new Config(['globalByValue' => false]);
+
+    // 14.0
+    new Config(['extractByValue' => false]);
+
 symfony/var-exporter is no longer required
 ------------------------------------------
 

@@ -146,7 +146,7 @@ attributes, a query of performances is now possible:
 
 Keep reading to learn how to create
 `multiple attribute groups <driver.html#group>`_,
-`extract entities by reference or by value <driver.html#globalbyvalue>`_,
+`extract entities by reference or by value <driver.html#extractbyvalue>`_,
 `cache attribute metadata <metadata.html#caching-metadata>`_,
 `implement custom types <custom-doctrine-types.html>`_,
 `alias fields <attributes.html#field>`_,

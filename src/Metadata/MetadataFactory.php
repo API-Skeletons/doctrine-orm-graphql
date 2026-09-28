@@ -119,7 +119,7 @@ final class MetadataFactory
             // Save entity-level metadata
             $this->metadata[$reflectionClass->getName()] = [
                 'entityClass' => $reflectionClass->getName(),
-                'byValue' => $this->config->getGlobalByValue() ?? $instance->getByValue(),
+                'byValue' => $this->config->getExtractByValue() ?? $instance->getByValue(),
                 'limit' => $instance->getLimit(),
                 'fields' => [],
                 'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),
