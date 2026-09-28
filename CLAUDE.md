@@ -130,7 +130,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `batchLimit` - Most rows a batched collection field fetches with one query (default 1000)
 - `useHydratorCache` - Cache hydrator results for as long as the entity exists
 - `useQueryResultCache` - Cache query results for identical SQL and parameters until the entity manager is cleared or flushed (`Cache\QueryResultCacheListener`)
-- `limit` - Hard limit for collections (default: 1000)
+- `limit` - Default limit on the rows of a connection (default: 1000); an entity's `limit`, then an association's, replaces it, even when larger
 - `extractByValue` - Extract by value vs reference for every entity, overriding the `byValue` entity attribute
 - `entityPrefix` - Remove prefix from type names
 - `sortFields` - Sort fields alphabetically
