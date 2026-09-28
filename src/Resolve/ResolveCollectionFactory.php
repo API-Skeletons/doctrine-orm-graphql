@@ -26,6 +26,8 @@ use Throwable;
 
 use function array_chunk;
 use function array_flip;
+use function array_slice;
+use function array_sum;
 use function array_values;
 use function assert;
 use function class_exists;
@@ -259,8 +261,10 @@ final class ResolveCollectionFactory
     }
 
     /**
-     * Resolve the connection of every source in a batch: one query counts
-     * the rows of every source, then each source's page is queried.
+     * Resolve the connection of every source in a batch.  One query counts
+     * the rows of every source.  When the rows number no more than the batch
+     * limit, one query fetches them all and each source's page is taken from
+     * its own rows; otherwise each source's page is queried.
      */
     private function loadBatch(CollectionBatch $batch): void
     {
@@ -270,25 +274,205 @@ final class ResolveCollectionFactory
         $limit            = $this->getLimit($batch->targetEntity, $batch->sourceClassName, $batch->associationName);
         $itemCounts       = $this->countBatch($batch);
 
+        // Each source's page, from its own number of rows
+        $pages     = [];
+        $needsRows = false;
+        foreach ($batch->getSources() as [, $identifier]) {
+            $page = $this->paginationService->calculateOffsetAndLimit(
+                $paginationFields,
+                $limit,
+                $itemCounts[(string) $identifier] ?? 0,
+            );
+
+            $pages[(string) $identifier] = $page;
+            $needsRows                   = $needsRows || $page['limit'] > 0;
+        }
+
+        $pageRows = $needsRows && array_sum($itemCounts) <= $this->config->getBatchLimit()
+            ? $this->fetchBatchPages($batch, $pages)
+            : null;
+
         foreach ($batch->getSources() as [$source, $identifier]) {
-            $itemCount      = $itemCounts[(string) $identifier] ?? 0;
-            $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit($paginationFields, $limit, $itemCount);
+            $page = $pages[(string) $identifier];
 
             $results = [];
 
-            if ($offsetAndLimit['limit'] > 0) {
+            if ($pageRows !== null) {
+                $results = $pageRows[(string) $identifier] ?? [];
+            } elseif ($page['limit'] > 0) {
                 $queryBuilder = $this->createQueryBuilder($batch->targetClassName);
                 $this->restrictToSource($queryBuilder, $batch->sourceClassName, $batch->associationName, $source);
                 $this->applyFilters($queryBuilder, $batch->args, $batch->targetEntity);
                 $this->orderByIdentifier($queryBuilder);
-                $queryBuilder->setFirstResult($offsetAndLimit['offset']);
-                $queryBuilder->setMaxResults($offsetAndLimit['limit']);
+                $queryBuilder->setFirstResult($page['offset']);
+                $queryBuilder->setMaxResults($page['limit']);
 
                 $results = $this->getResults($queryBuilder);
             }
 
-            $batch->setResult($source, $this->buildResponse($results, $offsetAndLimit['offset'], $itemCount));
+            $batch->setResult($source, $this->buildResponse($results, $page['offset'], $itemCounts[(string) $identifier] ?? 0));
         }
+    }
+
+    /**
+     * Fetch the page of every source in a batch.  The rows of every source are
+     * fetched in order with one query per chunk of sources; the order is the
+     * order each source's own query would have, so each source's page is a
+     * slice of its own rows.
+     *
+     * @param array<string, array{offset: int, limit: int}> $pages The page of each source, by identifier
+     *
+     * @return array<string, list<mixed>> The rows of each source's page, by identifier
+     */
+    private function fetchBatchPages(CollectionBatch $batch, array $pages): array
+    {
+        $association = $this->entityManager->getClassMetadata($batch->sourceClassName)
+            ->getAssociationMapping($batch->associationName);
+
+        if ($association['type'] === ClassMetadata::MANY_TO_MANY) {
+            return $this->fetchBatchManyToManyPages($batch, $pages);
+        }
+
+        $rowsBySource = [];
+
+        foreach (array_chunk($this->getBatchIdentifiers($batch), self::CHUNK_SIZE) as $chunk) {
+            $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent);
+            $queryBuilder->addSelect($parent['select'] . ' AS parent');
+
+            /** @var array<array{0: object, parent: int|string}> $rows */
+            $rows = $this->getResults($queryBuilder);
+            foreach ($rows as $row) {
+                $rowsBySource[(string) $row['parent']][] = $row[0];
+            }
+        }
+
+        return $this->slicePages($rowsBySource, $pages);
+    }
+
+    /**
+     * Take each source's page from its rows
+     *
+     * @param array<string, list<T>>                        $rowsBySource
+     * @param array<string, array{offset: int, limit: int}> $pages
+     *
+     * @return array<string, list<T>>
+     *
+     * @template T
+     */
+    private function slicePages(array $rowsBySource, array $pages): array
+    {
+        $pageRows = [];
+        foreach ($pages as $identifier => $page) {
+            $pageRows[$identifier] = $page['limit'] > 0
+                ? array_slice($rowsBySource[$identifier] ?? [], $page['offset'], $page['limit'])
+                : [];
+        }
+
+        return $pageRows;
+    }
+
+    /**
+     * A target of a many-to-many collection may belong to several sources.
+     * Doctrine returns an entity once however many rows it is in, so the
+     * source and target identifiers are fetched as scalars, each source's page
+     * is taken from them, and only the targets on a page are loaded.
+     *
+     * @param array<string, array{offset: int, limit: int}> $pages The page of each source, by identifier
+     *
+     * @return array<string, list<mixed>> The rows of each source's page, by identifier
+     */
+    private function fetchBatchManyToManyPages(CollectionBatch $batch, array $pages): array
+    {
+        $targetMetadata = $this->entityManager->getClassMetadata($batch->targetClassName);
+        $targetId       = $targetMetadata->getSingleIdentifierFieldName();
+
+        $pairs = [];
+        foreach (array_chunk($this->getBatchIdentifiers($batch), self::CHUNK_SIZE) as $chunk) {
+            $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent);
+            $queryBuilder
+                ->select($parent['select'] . ' AS parent')
+                ->addSelect('entity.' . $targetId . ' AS target');
+
+            /** @var array<array{parent: int|string, target: int|string}> $rows */
+            $rows = $queryBuilder->getQuery()->getScalarResult();
+            foreach ($rows as $row) {
+                $pairs[(string) $row['parent']][] = $row['target'];
+            }
+        }
+
+        $pageTargetIds = $this->slicePages($pairs, $pages);
+
+        // Load each target on a page once
+        $targetIds = [];
+        foreach ($pageTargetIds as $ids) {
+            foreach ($ids as $id) {
+                $targetIds[(string) $id] = $id;
+            }
+        }
+
+        $targets = [];
+        foreach (array_chunk(array_values($targetIds), self::CHUNK_SIZE) as $chunk) {
+            /** @var list<object> $entities */
+            $entities = $this->createQueryBuilder($batch->targetClassName)
+                ->where('entity.' . $targetId . ' IN (:targets)')
+                ->setParameter('targets', $chunk)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($entities as $entity) {
+                /** @psalm-suppress MixedArrayOffset An identifier may be of any type */
+                $targets[(string) $targetMetadata->getIdentifierValues($entity)[$targetId]] = $entity;
+            }
+        }
+
+        $pageRows = [];
+        foreach ($pageTargetIds as $identifier => $ids) {
+            $pageRows[$identifier] = [];
+            foreach ($ids as $id) {
+                $pageRows[$identifier][] = $targets[(string) $id];
+            }
+        }
+
+        return $pageRows;
+    }
+
+    /**
+     * A query for the rows of a chunk of a batch's sources, filtered and
+     * ordered.  $parent receives the expressions for each row's source.
+     *
+     * @param list<int|string>                            $identifiers
+     * @param array{select: string, groupBy: string}|null $parent
+     *
+     * @param-out array{select: string, groupBy: string} $parent
+     */
+    private function createBatchQueryBuilder(CollectionBatch $batch, array $identifiers, array|null &$parent): QueryBuilder
+    {
+        $queryBuilder = $this->createQueryBuilder($batch->targetClassName);
+        $parent       = $this->restrictToSources(
+            $queryBuilder,
+            $batch->sourceClassName,
+            $batch->associationName,
+            $identifiers,
+        );
+        $this->applyFilters($queryBuilder, $batch->args, $batch->targetEntity);
+        $this->orderByIdentifier($queryBuilder);
+
+        return $queryBuilder;
+    }
+
+    /**
+     * The distinct identifiers of the sources in a batch
+     *
+     * @return list<int|string>
+     */
+    private function getBatchIdentifiers(CollectionBatch $batch): array
+    {
+        $identifiers = [];
+        foreach ($batch->getSources() as [, $identifier]) {
+            $identifiers[(string) $identifier] = $identifier;
+        }
+
+        return array_values($identifiers);
     }
 
     /**
@@ -299,14 +483,9 @@ final class ResolveCollectionFactory
      */
     private function countBatch(CollectionBatch $batch): array
     {
-        $identifiers = [];
-        foreach ($batch->getSources() as [, $identifier]) {
-            $identifiers[(string) $identifier] = $identifier;
-        }
-
         $itemCounts = [];
 
-        foreach (array_chunk(array_values($identifiers), self::CHUNK_SIZE) as $chunk) {
+        foreach (array_chunk($this->getBatchIdentifiers($batch), self::CHUNK_SIZE) as $chunk) {
             $queryBuilder = $this->createQueryBuilder($batch->targetClassName);
             $parent       = $this->restrictToSources(
                 $queryBuilder,

@@ -244,4 +244,10 @@ class ConfigBuilderTest extends TestCase
         $this->assertFalse(ConfigBuilder::create()->batchAssociations(false)->build()->getBatchAssociations());
         $this->assertTrue(ConfigBuilder::create()->batchAssociations()->build()->getBatchAssociations());
     }
+
+    public function testBatchLimit(): void
+    {
+        $this->assertSame(1000, ConfigBuilder::create()->build()->getBatchLimit());
+        $this->assertSame(250, ConfigBuilder::create()->withBatchLimit(250)->build()->getBatchLimit());
+    }
 }

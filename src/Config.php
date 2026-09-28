@@ -54,6 +54,13 @@ final class Config
      */
     protected readonly bool $batchAssociations;
 
+    /**
+     * @var int When the rows of all the sources in a batched collection field
+     *          number no more than this, they are fetched with one query and
+     *          paginated in PHP.  Otherwise each source's page is queried.
+     */
+    protected readonly int $batchLimit;
+
     /** @var int A hard limit for fetching any collection within the schema */
     protected readonly int $limit;
 
@@ -94,6 +101,7 @@ final class Config
             'useHydratorCache' => false,
             'useQueryResultCache' => false,
             'batchAssociations' => true,
+            'batchLimit' => 1000,
             'limit' => 1000,
             'globalByValue' => null,
             'entityPrefix' => null,
@@ -101,7 +109,7 @@ final class Config
             'excludeFilters' => [],
         ];
 
-        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, limit: int, globalByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, globalByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
         $mergedConfig = array_merge($default, $config);
 
         foreach ($mergedConfig as $field => $value) {
@@ -119,6 +127,7 @@ final class Config
         $this->useHydratorCache    = $mergedConfig['useHydratorCache'];
         $this->useQueryResultCache = $mergedConfig['useQueryResultCache'];
         $this->batchAssociations   = $mergedConfig['batchAssociations'];
+        $this->batchLimit          = $mergedConfig['batchLimit'];
         $this->limit               = $mergedConfig['limit'];
         $this->globalByValue       = $mergedConfig['globalByValue'];
         $this->entityPrefix        = $mergedConfig['entityPrefix'];
@@ -149,6 +158,11 @@ final class Config
     public function getBatchAssociations(): bool
     {
         return $this->batchAssociations;
+    }
+
+    public function getBatchLimit(): int
+    {
+        return $this->batchLimit;
     }
 
     public function getLimit(): int

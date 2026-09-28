@@ -124,11 +124,15 @@ class CollectionBatchTest extends QueryCountingTestCase
     public function testBatchedResultsMatchPerParentResults(string $query): void
     {
         [$perParent, $perParentQueries] = $this->execute(['batchAssociations' => false], $query);
-        [$batched, $batchedQueries]     = $this->execute(['batchAssociations' => true], $query);
-
         $this->assertArrayNotHasKey('errors', $perParent);
-        $this->assertSame($perParent, $batched);
-        $this->assertLessThanOrEqual($perParentQueries, $batchedQueries);
+
+        // Rows fetched for the whole batch, and rows queried for each source
+        foreach ([1000, 0] as $batchLimit) {
+            [$batched, $batchedQueries] = $this->execute(['batchAssociations' => true, 'batchLimit' => $batchLimit], $query);
+
+            $this->assertSame($perParent, $batched, 'batchLimit ' . $batchLimit);
+            $this->assertLessThanOrEqual($perParentQueries, $batchedQueries, 'batchLimit ' . $batchLimit);
+        }
     }
 
     /**
@@ -175,5 +179,53 @@ class CollectionBatchTest extends QueryCountingTestCase
 
         $this->assertSame(2, $totals[$artists[0]->getId()]);
         $this->assertSame(1, $totals[$artists[1]->getId()]);
+    }
+
+    /** @return array<string, array{string, int, int}> */
+    public static function queryCountProvider(): array
+    {
+        return [
+            // query => [per source, batched]
+            'one-to-many' => ['{ artist { edges { node { performances { edges { node { id } } } } } } }', 10, 4],
+            'nested' => [
+                '{ artist { edges { node { performances { edges { node { recordings { edges { node { id } } } } } } } } } }',
+                22,
+                6,
+            ],
+            'many-to-many' => ['{ user { edges { node { recordings { edges { node { id } } } } } } }', 6, 5],
+            'to-one' => ['{ performance { edges { node { artist { name } } } } }', 6, 3],
+        ];
+    }
+
+    /**
+     * A collection field costs a count and a row query, and a many-to-many
+     * collection a query for the targets on its pages, however many sources
+     */
+    #[DataProvider('queryCountProvider')]
+    public function testQueryCount(string $query, int $perSourceQueries, int $batchedQueries): void
+    {
+        [, $perSource] = $this->execute(['batchAssociations' => false], $query);
+        [, $batched]   = $this->execute(['batchAssociations' => true], $query);
+
+        $this->assertSame($perSourceQueries, $perSource);
+        $this->assertSame($batchedQueries, $batched);
+    }
+
+    /**
+     * Above the batch limit, each source's page is queried separately
+     */
+    public function testRowsAboveTheBatchLimitAreQueriedPerSource(): void
+    {
+        // Ten performances among four artists, each of which has some
+        $query = '{ artist { edges { node { performances { edges { node { id } } } } } } }';
+
+        [$underLimit, $underLimitQueries] = $this->execute(['batchLimit' => 10], $query);
+        [$overLimit, $overLimitQueries]   = $this->execute(['batchLimit' => 9], $query);
+
+        $this->assertSame($underLimit, $overLimit);
+        // The artists, their count, and their performances with one query or
+        // with one query per artist
+        $this->assertSame(2 + 1 + 1, $underLimitQueries);
+        $this->assertSame(2 + 1 + 4, $overLimitQueries);
     }
 }
