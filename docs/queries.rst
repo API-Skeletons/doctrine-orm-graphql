@@ -77,6 +77,10 @@ first, lowest priority first.  Fields without a ``sortPriority`` follow,
 ordered by field name, as are fields with the same priority.  A
 ``sortPriority`` without a ``sort`` direction is an error.
 
+``contains``, ``startswith`` and ``endswith`` match their value literally.
+The LIKE wildcards ``%`` and ``_`` in the value are escaped, so
+``contains: "100%"`` matches only values containing ``100%``.
+
 The format for using these filters is:
 
 .. code-block:: js

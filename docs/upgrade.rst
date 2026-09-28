@@ -5,6 +5,15 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+LIKE filters match wildcards literally
+--------------------------------------
+
+``contains``, ``startswith`` and ``endswith`` passed their value into a LIKE
+pattern unescaped, so ``%`` and ``_`` in the value acted as wildcards:
+``contains: "%"`` matched every non-null value.  They are now escaped and match
+only themselves.  A client which relied on sending wildcards must use another
+filter.
+
 The query result cache is cleared with the entity manager
 ---------------------------------------------------------
 
