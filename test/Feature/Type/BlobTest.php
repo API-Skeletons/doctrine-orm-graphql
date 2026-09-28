@@ -12,15 +12,20 @@ use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
+use GraphQL\Language\AST\IntValueNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function base64_decode;
 use function base64_encode;
 use function count;
 use function file_get_contents;
+use function fopen;
+use function fwrite;
+use function rewind;
 
 class BlobTest extends TestCase
 {
@@ -85,6 +90,59 @@ class BlobTest extends TestCase
         $result = $blobType->serialize(null);
 
         $this->assertNull($result);
+    }
+
+    /**
+     * A falsy string is still binary data
+     *
+     * @return array<string, array{string}>
+     */
+    public static function falsyProvider(): array
+    {
+        return [
+            'zero' => ['0'],
+            'empty' => [''],
+        ];
+    }
+
+    #[DataProvider('falsyProvider')]
+    public function testSerializeFalsyString(string $value): void
+    {
+        $this->assertSame(base64_encode($value), (new Blob())->serialize($value));
+    }
+
+    public function testSerializeStream(): void
+    {
+        $stream = fopen('php://memory', 'r+');
+        $this->assertIsResource($stream);
+        fwrite($stream, "\x00binary");
+        rewind($stream);
+
+        $this->assertSame(base64_encode("\x00binary"), (new Blob())->serialize($stream));
+    }
+
+    public function testSerializeRejectsNonString(): void
+    {
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('Expected a string or stream for Blob.  Got array.');
+
+        (new Blob())->serialize(['data']);
+    }
+
+    public function testParseValueReportsTheTypeOfANonString(): void
+    {
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('Blob field as base64 is not a string: array');
+
+        (new Blob())->parseValue(['data']);
+    }
+
+    public function testParseLiteralRejectsANonStringLiteral(): void
+    {
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('Query error: Can only parse strings got: IntValue');
+
+        (new Blob())->parseLiteral(new IntValueNode(['value' => '1']));
     }
 
     public function testBlobQuery(): void
