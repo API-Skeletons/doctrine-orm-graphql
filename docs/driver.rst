@@ -35,7 +35,9 @@ Config
 
 The ``Driver`` takes a second, optional, argument of type
 ``ApiSkeletons\Doctrine\ORM\GraphQL\Config``.  The constructor of ``Config`` takes
-an array parameter.
+an array parameter.  An unknown option, or a value of the wrong type or out of
+range, throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration``
+naming the option.
 
 The parameter options are:
 
@@ -64,9 +66,10 @@ batchLimit
 ----------
 
 The most rows a batched collection field fetches with one query.  When the
-rows of all the rows a collection field is resolved for number more than
-this, each row's page is queried separately; they are still counted with one
-query.  Default is 1000.
+rows of all the sources a collection field is resolved for number more than
+this, each source's page is queried separately; they are still counted with
+one query.  It must be at least 0; 0 queries each source's page separately.
+Default is 1000.
 
 
 entityPrefix
@@ -120,7 +123,7 @@ limit
 -----
 
 The most rows a connection returns, whatever pagination is requested.  Use
-this to prevent abuse of GraphQL.  Default is 1000.
+this to prevent abuse of GraphQL.  It must be at least 1.  Default is 1000.
 
 This is the default limit.  An entity's ``limit`` replaces it for queries of
 that entity, and an association's ``limit`` replaces both for that

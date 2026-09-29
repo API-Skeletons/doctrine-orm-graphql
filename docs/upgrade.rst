@@ -5,6 +5,18 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Config values are validated
+---------------------------
+
+``Config`` checked the names of its options but not their values.  A value of
+the wrong type threw PHP's ``TypeError``, a ``limit`` of 0 or less removed the
+limit, and a negative ``batchLimit`` was accepted.  Each value is now checked
+and an invalid one throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration``
+naming the option: ``limit`` must be at least 1, ``batchLimit`` at least 0,
+``group`` may not be empty, and each of ``excludeFilters`` must be a
+``Filters`` case or its value.  ``Config::getExcludeFilters()`` returns
+``Filters`` cases, as documented, when they were given as values.
+
 Connection types are registered by their own name
 -------------------------------------------------
 
