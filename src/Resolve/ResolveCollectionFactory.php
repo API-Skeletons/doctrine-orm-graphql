@@ -111,7 +111,6 @@ final class ResolveCollectionFactory
             return $this->buildPagination(
                 entity: $targetEntity,
                 entityClassName: $entityClassName,
-                targetClassName: $targetClassName,
                 associationName: $targetCollectionName,
                 source: $source,
                 eventName: $eventName,
@@ -127,19 +126,21 @@ final class ResolveCollectionFactory
     protected function buildPagination(
         Entity $entity,
         string $entityClassName,
-        string $targetClassName,
         string $associationName,
         mixed $source,
         string|null $eventName,
         mixed ...$resolve,
     ): array {
         assert(class_exists($entityClassName));
-        assert(class_exists($targetClassName));
 
-        $queryBuilder = $this->createQueryBuilder($targetClassName);
-        $this->restrictToSource($queryBuilder, $entityClassName, $associationName, $source);
         /** @psalm-suppress MixedArgument */
-        $this->applyFilters($queryBuilder, $resolve['args'] ?? [], $entity);
+        $queryBuilder = $this->createSourceQueryBuilder(
+            $entity,
+            $entityClassName,
+            $associationName,
+            $source,
+            $resolve['args'] ?? [],
+        );
 
         // Decode pagination fields
         /** @psalm-suppress MixedArgument */
@@ -186,13 +187,7 @@ final class ResolveCollectionFactory
             // does not exist in ORM 2.x or ORM < 3.7. Keep Paginator until those are dropped.
             /** @psalm-suppress DeprecatedClass */
             static fn (): int => (new Paginator($queryBuilder->getQuery()))->count(),
-            function (int $offset, int $limit) use ($queryBuilder): array {
-                $this->orderByIdentifier($queryBuilder);
-                $queryBuilder->setFirstResult($offset);
-                $queryBuilder->setMaxResults($limit);
-
-                return $this->getResults($queryBuilder);
-            },
+            fn (int $offset, int $limit): array => $this->fetchPage($queryBuilder, $offset, $limit),
         );
     }
 
@@ -314,16 +309,17 @@ final class ResolveCollectionFactory
 
                     return $itemCounts[(string) $identifier] ?? 0;
                 },
-                function (int $offset, int $limit) use ($batch, $source): array {
-                    $queryBuilder = $this->createQueryBuilder($batch->targetClassName);
-                    $this->restrictToSource($queryBuilder, $batch->sourceClassName, $batch->associationName, $source);
-                    $this->applyFilters($queryBuilder, $batch->args, $batch->targetEntity);
-                    $this->orderByIdentifier($queryBuilder);
-                    $queryBuilder->setFirstResult($offset);
-                    $queryBuilder->setMaxResults($limit);
-
-                    return $this->getResults($queryBuilder);
-                },
+                fn (int $offset, int $limit): array => $this->fetchPage(
+                    $this->createSourceQueryBuilder(
+                        $batch->targetEntity,
+                        $batch->sourceClassName,
+                        $batch->associationName,
+                        $source,
+                        $batch->args,
+                    ),
+                    $offset,
+                    $limit,
+                ),
             ));
         }
     }
@@ -345,6 +341,7 @@ final class ResolveCollectionFactory
         $targetIds = [];
         foreach (array_chunk($this->getBatchIdentifiers($batch), self::CHUNK_SIZE) as $chunk) {
             $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent);
+            $this->orderByIdentifier($queryBuilder);
             $queryBuilder
                 ->select($parent['select'] . ' AS parent')
                 ->addSelect('entity.' . $targetId . ' AS target')
@@ -437,8 +434,8 @@ final class ResolveCollectionFactory
     }
 
     /**
-     * A query for the rows of a chunk of a batch's sources, filtered and
-     * ordered.  $parent receives the expressions for each row's source.
+     * A query for the rows of a chunk of a batch's sources, filtered.
+     * $parent receives the expressions for each row's source.
      *
      * @param list<int|string>                            $identifiers
      * @param array{select: string, groupBy: string}|null $parent
@@ -455,7 +452,6 @@ final class ResolveCollectionFactory
             $identifiers,
         );
         $this->applyFilters($queryBuilder, $batch->args, $batch->targetEntity);
-        $this->orderByIdentifier($queryBuilder);
 
         return $queryBuilder;
     }
@@ -486,16 +482,9 @@ final class ResolveCollectionFactory
         $itemCounts = [];
 
         foreach (array_chunk($this->getBatchIdentifiers($batch), self::CHUNK_SIZE) as $chunk) {
-            $queryBuilder = $this->createQueryBuilder($batch->targetClassName);
-            $parent       = $this->restrictToSources(
-                $queryBuilder,
-                $batch->sourceClassName,
-                $batch->associationName,
-                $chunk,
-            );
-            $this->applyFilters($queryBuilder, $batch->args, $batch->targetEntity);
+            $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent);
 
-            // An aggregate query is not ordered
+            // An aggregate query is not ordered, as a sort filter would order it
             $queryBuilder->resetDQLPart('orderBy');
             $queryBuilder
                 ->select($parent['select'] . ' AS parent')
@@ -532,6 +521,40 @@ final class ResolveCollectionFactory
         $identifier = $sourceMetadata->getIdentifierValues($source)[$sourceMetadata->getSingleIdentifierFieldName()] ?? null;
 
         return is_int($identifier) || is_string($identifier) ? $identifier : null;
+    }
+
+    /**
+     * A query for one source's collection, filtered
+     *
+     * @param class-string            $sourceClassName
+     * @param array<array-key, mixed> $args
+     */
+    private function createSourceQueryBuilder(
+        Entity $targetEntity,
+        string $sourceClassName,
+        string $associationName,
+        mixed $source,
+        array $args,
+    ): QueryBuilder {
+        $queryBuilder = $this->createQueryBuilder($targetEntity->getEntityClass());
+        $this->restrictToSource($queryBuilder, $sourceClassName, $associationName, $source);
+        $this->applyFilters($queryBuilder, $args, $targetEntity);
+
+        return $queryBuilder;
+    }
+
+    /**
+     * Fetch a page of a query, ordered by identifier after any other ordering
+     *
+     * @return mixed[]
+     */
+    private function fetchPage(QueryBuilder $queryBuilder, int $offset, int $limit): array
+    {
+        $this->orderByIdentifier($queryBuilder);
+        $queryBuilder->setFirstResult($offset);
+        $queryBuilder->setMaxResults($limit);
+
+        return $this->getResults($queryBuilder);
     }
 
     /** @param class-string $targetClassName */
