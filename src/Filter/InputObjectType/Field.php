@@ -7,14 +7,11 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\Type;
 
 use function md5;
 use function serialize;
 use function substr;
-use function uniqid;
 
 /**
  * This class is used to create an InputObjectType of filters for a field
@@ -22,13 +19,10 @@ use function uniqid;
  */
 class Field extends InputObjectType
 {
-    /**
-     * @param ScalarType|ListOfType<Type> $type
-     * @param Filters[]                   $allowedFilters
-     */
+    /** @param Filters[] $allowedFilters */
     public function __construct(
         readonly TypeContainer $typeContainer,
-        readonly ScalarType|ListOfType $type,
+        readonly ScalarType $type,
         readonly array $allowedFilters,
     ) {
         /** @var array<string, array<string, mixed>> $fields */
@@ -40,27 +34,6 @@ class Field extends InputObjectType
                 'type'        => $filter->type($type, $typeContainer),
                 'description' => $filter->description(),
             ];
-
-            // Custom types may hit this condition
-            // @codeCoverageIgnoreStart
-            if (! $type instanceof ScalarType) {
-                continue;
-            }
-
-            // @codeCoverageIgnoreEnd
-
-            // Between is a special case filter.
-            // To avoid creating a new Between type for each field,
-            // check if the Between type exists and reuse it.
-            if (! $fields[$filter->value]['type'] instanceof Between) {
-                continue;
-            }
-
-            if (! $typeContainer->has('Between_' . $type->name())) {
-                $typeContainer->set('Between_' . $type->name(), new Between($type));
-            }
-
-            $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
         }
 
         parent::__construct([ // @phpstan-ignore argument.type
@@ -74,13 +47,10 @@ class Field extends InputObjectType
      * Field filters are named by their field type and a short hash of the
      * allowed filters
      *
-     * @param ScalarType|ListOfType<Type> $type
-     * @param Filters[]                   $allowedFilters
+     * @param Filters[] $allowedFilters
      */
-    public static function nameFor(ScalarType|ListOfType $type, array $allowedFilters): string
+    public static function nameFor(ScalarType $type, array $allowedFilters): string
     {
-        $typeName = $type instanceof ScalarType ? $type->name() : uniqid();
-
-        return 'Filters_' . $typeName . '_' . substr(md5(serialize($allowedFilters)), 0, 8);
+        return 'Filters_' . $type->name() . '_' . substr(md5(serialize($allowedFilters)), 0, 8);
     }
 }

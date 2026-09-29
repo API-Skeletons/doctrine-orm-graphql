@@ -5,6 +5,17 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Filter types are of scalar types
+--------------------------------
+
+Filters are built only for fields of a scalar type, so ``Filters::type()``,
+``Field::nameFor()`` and the constructors of the ``Field``, ``Association`` and
+``Between`` filter input types take a ``ScalarType`` rather than a
+``ScalarType`` or ``ListOfType``.  The unused list type branches, which named
+a type with ``uniqid()``, are removed.  ``Filters::type()`` returns the
+``Between`` type of a scalar type shared through the ``TypeContainer``, as the
+filter factory did, rather than a new one.
+
 totalCount is counted only when it is requested
 -----------------------------------------------
 
