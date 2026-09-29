@@ -78,6 +78,11 @@ data from Doctrine entities.  The hydrator library is
   extract values by reference.  If you have getters and setters for all your
   fields then extracting by value will use those.  Extracting by reference
   will reflect the entities and extract the values from the properties.
+  Extracting by value, every exposed field and association must have a
+  ``getField()`` or ``isField()`` method (or the entity a ``__call`` method);
+  a field without one throws
+  ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator`` when the type is
+  built, as it would otherwise always be ``null``.
   More information here:
   `By Value and By Reference <https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.0/by-value-by-reference.html#by-value-and-by-reference>`_
 

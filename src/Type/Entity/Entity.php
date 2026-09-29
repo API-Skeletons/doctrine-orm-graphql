@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
@@ -17,6 +18,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Closure;
+use Doctrine\Inflector\InflectorFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
@@ -25,12 +27,17 @@ use Laminas\Hydrator\HydratorInterface;
 use League\Event\EventDispatcher;
 use ReflectionClass;
 
+use function array_keys;
 use function array_merge;
 use function assert;
+use function ctype_upper;
+use function get_class_methods;
 use function in_array;
 use function is_string;
 use function ksort;
 use function preg_replace;
+use function str_starts_with;
+use function substr;
 use function ucwords;
 
 /**
@@ -181,6 +188,8 @@ final class Entity
             return $this->objectType;
         }
 
+        $this->assertExtractable();
+
         $fields = $this->addFields();
         $fields = array_merge($fields, $this->addAssociations());
         $fields = array_merge($fields, $this->addComputedFields());
@@ -230,6 +239,47 @@ final class Entity
             });
 
         return $this->objectType;
+    }
+
+    /**
+     * Extracting by value, the hydrator reads a field with its getter, and
+     * silently leaves out a field without one, which would always be null.
+     * The getter is found as the hydrator finds it: getField(), isField(), a
+     * field named isField() itself, or __call.
+     *
+     * @throws HydratorException
+     */
+    private function assertExtractable(): void
+    {
+        if (! $this->entityMetadata->extractByValue) {
+            return;
+        }
+
+        $methods = get_class_methods($this->getEntityClass());
+        if (in_array('__call', $methods, true)) {
+            return;
+        }
+
+        $inflector = InflectorFactory::create()->build();
+
+        foreach (array_keys([...$this->entityMetadata->fields, ...$this->entityMetadata->associations]) as $fieldName) {
+            $getter = 'get' . $inflector->classify($fieldName);
+            $isser  = 'is' . $inflector->classify($fieldName);
+
+            if (
+                in_array($getter, $methods, true)
+                || in_array($isser, $methods, true)
+                || (str_starts_with($fieldName, 'is') && ctype_upper(substr($fieldName, 2, 1)) && in_array($fieldName, $methods, true))
+            ) {
+                continue;
+            }
+
+            throw new HydratorException(
+                'Field ' . $fieldName . ' of entity ' . $this->getEntityClass() . ' has no ' . $getter . '() or '
+                . $isser . '() method, which extracting by value reads it with.  Add one, or extract the entity '
+                . 'by reference with extractByValue: false.',
+            );
+        }
     }
 
     /** @return array<string, mixed> */

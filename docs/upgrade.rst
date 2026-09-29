@@ -5,6 +5,16 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+A field without a getter is an error when extracting by value
+-------------------------------------------------------------
+
+Extracting by value, the default, the hydrator reads each field with its
+getter and silently left out a field without one, which was then always
+``null``.  Building the type of an entity with an exposed field or association
+which has no ``getField()`` or ``isField()`` method, and no ``__call``, now
+throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator``.  Add the
+getter, or extract the entity by reference with ``extractByValue: false``.
+
 Date-times are converted to the default timezone
 ------------------------------------------------
 
