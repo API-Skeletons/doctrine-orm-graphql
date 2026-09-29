@@ -305,7 +305,7 @@ final class Entity
                 return [
                     'type' => $this->typeContainer->build(
                         Connection::class,
-                        $shortName,
+                        Connection::nameFor($shortName),
                         $entity->getObjectType(),
                     ),
                     'args' => [

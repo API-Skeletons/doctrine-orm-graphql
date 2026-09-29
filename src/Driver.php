@@ -34,7 +34,7 @@ final class Driver extends Container
         assert($typeContainer instanceof Type\TypeContainer);
 
         /** @psalm-suppress MixedReturnStatement */
-        return $typeContainer->build(Type\Connection::class, $objectType->name, $objectType);
+        return $typeContainer->build(Type\Connection::class, Type\Connection::nameFor($objectType->name), $objectType);
     }
 
     /**
@@ -134,7 +134,7 @@ final class Driver extends Container
         $typeContainer = $this->get(Type\TypeContainer::class);
         assert($typeContainer instanceof Type\TypeContainer);
 
-        $connection = $typeContainer->build(Type\Connection::class, $type->name, $type);
+        $connection = $typeContainer->build(Type\Connection::class, Type\Connection::nameFor($type->name), $type);
         assert($connection instanceof ObjectType);
 
         return $connection;

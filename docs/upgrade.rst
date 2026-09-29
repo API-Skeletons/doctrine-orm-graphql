@@ -5,6 +5,28 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Connection types are registered by their own name
+-------------------------------------------------
+
+A connection type was registered in the ``TypeContainer`` by the name of the
+type it connects rather than its own, so ``$driver->type()`` of an entity's
+type name returned its connection, and ``dbalConnection()`` of a row type named
+as a registered type, such as ``datetime``, returned that type.  A connection
+is now registered by its own name, ``Connection_`` and the name of the type it
+connects.  Type names in the schema are unchanged.
+
+Code which builds a connection itself passes the connection's name:
+
+.. code-block:: php
+
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
+
+    // 13.x
+    $typeContainer->build(Connection::class, $objectType->name, $objectType);
+
+    // 14.0
+    $typeContainer->build(Connection::class, Connection::nameFor($objectType->name), $objectType);
+
 Field names must be unique
 --------------------------
 
