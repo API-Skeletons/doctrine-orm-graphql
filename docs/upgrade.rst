@@ -5,6 +5,21 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+The Driver has no public properties
+-----------------------------------
+
+The ``Driver`` constructor's arguments were public read-only properties:
+``$driver->entityManager``, ``$driver->config`` and ``$driver->metadataArray``.
+``$driver->config`` was ``null`` when no ``Config`` was given, although the
+driver used a default one.  They are no longer properties.  Get the services
+from the driver instead:
+
+.. code-block:: php
+
+    $driver->service(EntityManager::class);
+    $driver->service(Config::class);
+    $driver->service(Metadata::class);
+
 Driver methods have specific return types
 -----------------------------------------
 
