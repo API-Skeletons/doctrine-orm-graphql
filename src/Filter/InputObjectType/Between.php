@@ -6,24 +6,17 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType;
 
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\Type;
-
-use function uniqid;
 
 /**
  * This Type is a special case filter that takes two arguments
  */
 final class Between extends InputObjectType
 {
-    /** @param ScalarType|ListOfType<Type> $type */
-    public function __construct(readonly ScalarType|ListOfType $type)
+    public function __construct(readonly ScalarType $type)
     {
-        $name = $type instanceof ScalarType ? $type->name() : uniqid();
-
         parent::__construct([
-            'name' => 'Between_' . $name,
+            'name' => 'Between_' . $type->name(),
             'description' => 'Between `from` and `to`',
             'fields' =>  [
                 'from' => new InputObjectField([

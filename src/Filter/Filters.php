@@ -7,7 +7,6 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Between;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\SortDirection;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
-use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
 
@@ -62,11 +61,9 @@ enum Filters: string
     }
 
     /**
-     * Fetch the GraphQL type for the filter
-     *
-     * @param ScalarType|ListOfType<Type> $type
+     * Fetch the GraphQL type for the filter of a field of the scalar type
      */
-    public function type(ScalarType|ListOfType $type, TypeContainer $typeContainer): Type
+    public function type(ScalarType $type, TypeContainer $typeContainer): Type
     {
         return match ($this) {
             self::EQ           => $type,
@@ -75,7 +72,7 @@ enum Filters: string
             self::LTE          => $type,
             self::GT           => $type,
             self::GTE          => $type,
-            self::BETWEEN      => new Between($type),
+            self::BETWEEN      => $this->between($type, $typeContainer),
             self::CONTAINS     => $type,
             self::STARTSWITH   => $type,
             self::ENDSWITH     => $type,
@@ -85,6 +82,24 @@ enum Filters: string
             self::SORT         => $this->sortDirection($typeContainer),
             self::SORTPRIORITY => Type::int(),
         };
+    }
+
+    /**
+     * The Between type of a scalar type is shared through the TypeContainer
+     * because a schema may contain only one type of each name
+     */
+    private function between(ScalarType $type, TypeContainer $typeContainer): Between
+    {
+        $name = 'Between_' . $type->name();
+
+        if (! $typeContainer->has($name)) {
+            $typeContainer->set($name, new Between($type));
+        }
+
+        $between = $typeContainer->get($name);
+        assert($between instanceof Between);
+
+        return $between;
     }
 
     /**
