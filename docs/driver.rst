@@ -50,9 +50,10 @@ each row.  Default is ``true``.
 
 * The unloaded to-one associations of a field are loaded with one query per
   entity class.
-* The rows of a one-to-many or many-to-many collection field are counted with
-  one query for all the rows it is resolved for, and fetched with one more
-  (two for many-to-many), within the ``batchLimit``.
+* The identifiers of the rows of a one-to-many or many-to-many collection
+  field are fetched with one query for all the rows it is resolved for,
+  within the ``batchLimit``.  They give each row's count and page, and one more
+  query loads only the entities on a page.
 
 A query then costs a fixed number of queries however many rows it returns.
 The results are the same as without batching.
@@ -65,11 +66,11 @@ its source or target entity has a composite identifier.
 batchLimit
 ----------
 
-The most rows a batched collection field fetches with one query.  When the
-rows of all the sources a collection field is resolved for number more than
-this, each source's page is queried separately; they are still counted with
-one query.  It must be at least 0; 0 queries each source's page separately.
-Default is 1000.
+The most row identifiers a batched collection field fetches with one query.
+When the rows of all the sources a collection field is resolved for number
+more than this, each source's page is queried separately, and the rows are
+counted with one query only when a page needs the count.  It must be at least
+0; 0 queries each source's page separately.  Default is 1000.
 
 
 entityPrefix

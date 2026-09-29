@@ -7,6 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Cache\QueryResultCache;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Pagination as PaginationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\OrderByIdentifier;
@@ -27,7 +28,6 @@ use Throwable;
 use function array_chunk;
 use function array_flip;
 use function array_slice;
-use function array_sum;
 use function array_values;
 use function assert;
 use function class_exists;
@@ -110,6 +110,7 @@ final class ResolveCollectionFactory
                     $source,
                     $sourceIdentifier,
                     $args,
+                    $info,
                 );
             }
 
@@ -192,7 +193,7 @@ final class ResolveCollectionFactory
         return $this->paginationService->paginate(
             $paginationFields,
             $limit,
-            $info,
+            $this->paginationService->needsCount($paginationFields, $info),
             // Paginator is deprecated as of ORM 3.7 in favour of OffsetPaginator, which
             // does not exist in ORM 2.x or ORM < 3.7. Keep Paginator until those are dropped.
             /** @psalm-suppress DeprecatedClass */
@@ -222,6 +223,7 @@ final class ResolveCollectionFactory
         object $source,
         int|string $sourceIdentifier,
         array $args,
+        ResolveInfo $info,
     ): Deferred {
         $key = $sourceClassName . "\0" . $associationName . "\0" . serialize($args);
 
@@ -232,7 +234,7 @@ final class ResolveCollectionFactory
             $associationName,
             $args,
         );
-        $batch->add($source, $sourceIdentifier);
+        $batch->add($source, $sourceIdentifier, $this->needsCount($args, $info));
 
         return new Deferred(function () use ($key, $batch, $source): array {
             if (! $batch->isLoaded()) {
@@ -255,10 +257,30 @@ final class ResolveCollectionFactory
     }
 
     /**
-     * Resolve the connection of every source in a batch.  One query counts
-     * the rows of every source.  When the rows number no more than the batch
-     * limit, one query fetches them all and each source's page is taken from
-     * its own rows; otherwise each source's page is queried.
+     * Whether a source's page needs the number of its rows.  An invalid
+     * pagination argument is reported when the batch is loaded, for every
+     * source, so here it is only counted.
+     *
+     * @param array<array-key, mixed> $args
+     */
+    private function needsCount(array $args, ResolveInfo $info): bool
+    {
+        try {
+            return $this->paginationService->needsCount($this->paginationService->decodePaginationFields($args), $info);
+        } catch (PaginationException) {
+            return true;
+        }
+    }
+
+    /**
+     * Resolve the connection of every source in a batch.
+     *
+     * The source and target identifiers of every row are fetched, up to the
+     * batch limit, with one query per chunk of sources.  They give each
+     * source's number of rows and its page, and one query per chunk loads the
+     * targets on a page.  Rows of which there are more than the batch limit
+     * are paged for each source instead, and counted with one query only when
+     * a page needs the count.
      */
     private function loadBatch(CollectionBatch $batch): void
     {
@@ -266,81 +288,95 @@ final class ResolveCollectionFactory
 
         $paginationFields = $this->paginationService->decodePaginationFields($batch->args);
         $limit            = $this->getLimit($batch->targetEntity, $batch->sourceClassName, $batch->associationName);
-        $itemCounts       = $this->countBatch($batch);
+        $targetIds        = $this->fetchBatchTargetIds($batch);
 
-        // Each source's page, from its own number of rows
-        $pages     = [];
-        $needsRows = false;
-        foreach ($batch->getSources() as [, $identifier]) {
-            $page = $this->paginationService->calculateOffsetAndLimit(
-                $paginationFields,
-                $limit,
-                $itemCounts[(string) $identifier] ?? 0,
-            );
-
-            $pages[(string) $identifier] = $page;
-            $needsRows                   = $needsRows || $page['limit'] > 0;
-        }
-
-        $pageRows = $needsRows && array_sum($itemCounts) <= $this->config->getBatchLimit()
-            ? $this->fetchBatchPages($batch, $pages)
-            : null;
-
-        foreach ($batch->getSources() as [$source, $identifier]) {
-            $page = $pages[(string) $identifier];
-
-            $results = [];
-
-            if ($pageRows !== null) {
-                $results = $pageRows[(string) $identifier] ?? [];
-            } elseif ($page['limit'] > 0) {
-                $queryBuilder = $this->createQueryBuilder($batch->targetClassName);
-                $this->restrictToSource($queryBuilder, $batch->sourceClassName, $batch->associationName, $source);
-                $this->applyFilters($queryBuilder, $batch->args, $batch->targetEntity);
-                $this->orderByIdentifier($queryBuilder);
-                $queryBuilder->setFirstResult($page['offset']);
-                $queryBuilder->setMaxResults($page['limit']);
-
-                $results = $this->getResults($queryBuilder);
+        if ($targetIds !== null) {
+            $pages = [];
+            foreach ($batch->getSources() as [, $identifier]) {
+                $pages[(string) $identifier] = $this->paginationService->calculateOffsetAndLimit(
+                    $paginationFields,
+                    $limit,
+                    count($targetIds[(string) $identifier] ?? []),
+                );
             }
 
-            $batch->setResult($source, $this->buildResponse($results, $page['offset'], $itemCounts[(string) $identifier] ?? 0));
+            $pageTargets = $this->loadTargets($batch->targetClassName, $this->slicePages($targetIds, $pages));
+
+            foreach ($batch->getSources() as [$source, $identifier]) {
+                $batch->setResult($source, $this->buildResponse(
+                    $pageTargets[(string) $identifier] ?? [],
+                    $pages[(string) $identifier]['offset'],
+                    count($targetIds[(string) $identifier] ?? []),
+                ));
+            }
+
+            return;
+        }
+
+        // Too many rows to fetch at once: each source's page is queried
+        $itemCounts = null;
+
+        foreach ($batch->getSources() as [$source, $identifier]) {
+            $batch->setResult($source, $this->paginationService->paginate(
+                $paginationFields,
+                $limit,
+                $batch->needsCount(),
+                function () use ($batch, $identifier, &$itemCounts): int {
+                    $itemCounts ??= $this->countBatch($batch);
+
+                    return $itemCounts[(string) $identifier] ?? 0;
+                },
+                function (int $offset, int $limit) use ($batch, $source): array {
+                    $queryBuilder = $this->createQueryBuilder($batch->targetClassName);
+                    $this->restrictToSource($queryBuilder, $batch->sourceClassName, $batch->associationName, $source);
+                    $this->applyFilters($queryBuilder, $batch->args, $batch->targetEntity);
+                    $this->orderByIdentifier($queryBuilder);
+                    $queryBuilder->setFirstResult($offset);
+                    $queryBuilder->setMaxResults($limit);
+
+                    return $this->getResults($queryBuilder);
+                },
+            ));
         }
     }
 
     /**
-     * Fetch the page of every source in a batch.  The rows of every source are
-     * fetched in order with one query per chunk of sources; the order is the
-     * order each source's own query would have, so each source's page is a
-     * slice of its own rows.
+     * The target identifiers of every source in a batch, in order, as each
+     * source's own query would return its rows; or null when they number
+     * more than the batch limit.  Only identifiers are fetched, so no entity
+     * is loaded which is not on a page, and a target in several sources'
+     * collections is fetched for each of them.
      *
-     * @param array<string, array{offset: int, limit: int}> $pages The page of each source, by identifier
-     *
-     * @return array<string, list<mixed>> The rows of each source's page, by identifier
+     * @return array<string, list<int|string>>|null The target identifiers, by source identifier
      */
-    private function fetchBatchPages(CollectionBatch $batch, array $pages): array
+    private function fetchBatchTargetIds(CollectionBatch $batch): array|null
     {
-        $association = $this->entityManager->getClassMetadata($batch->sourceClassName)
-            ->getAssociationMapping($batch->associationName);
+        $targetId  = $this->entityManager->getClassMetadata($batch->targetClassName)->getSingleIdentifierFieldName();
+        $remaining = $this->config->getBatchLimit();
 
-        if ($association['type'] === ClassMetadata::MANY_TO_MANY) {
-            return $this->fetchBatchManyToManyPages($batch, $pages);
-        }
-
-        $rowsBySource = [];
-
+        $targetIds = [];
         foreach (array_chunk($this->getBatchIdentifiers($batch), self::CHUNK_SIZE) as $chunk) {
             $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent);
-            $queryBuilder->addSelect($parent['select'] . ' AS parent');
+            $queryBuilder
+                ->select($parent['select'] . ' AS parent')
+                ->addSelect('entity.' . $targetId . ' AS target')
+                ->setMaxResults($remaining + 1);
 
-            /** @var array<array{0: object, parent: int|string}> $rows */
-            $rows = $this->getResults($queryBuilder);
+            /** @var array<array{parent: int|string, target: int|string}> $rows */
+            $rows = $queryBuilder->getQuery()->getScalarResult();
+
+            if (count($rows) > $remaining) {
+                return null;
+            }
+
+            $remaining -= count($rows);
+
             foreach ($rows as $row) {
-                $rowsBySource[(string) $row['parent']][] = $row[0];
+                $targetIds[(string) $row['parent']][] = $row['target'];
             }
         }
 
-        return $this->slicePages($rowsBySource, $pages);
+        return $targetIds;
     }
 
     /**
@@ -366,37 +402,19 @@ final class ResolveCollectionFactory
     }
 
     /**
-     * A target of a many-to-many collection may belong to several sources.
-     * Doctrine returns an entity once however many rows it is in, so the
-     * source and target identifiers are fetched as scalars, each source's page
-     * is taken from them, and only the targets on a page are loaded.
+     * Load the targets on each source's page, each target once, with one
+     * query per chunk of identifiers
      *
-     * @param array<string, array{offset: int, limit: int}> $pages The page of each source, by identifier
+     * @param class-string                    $targetClassName
+     * @param array<string, list<int|string>> $pageTargetIds   The target identifiers of each page, by source identifier
      *
-     * @return array<string, list<mixed>> The rows of each source's page, by identifier
+     * @return array<string, list<object>> The targets of each page, in order, by source identifier
      */
-    private function fetchBatchManyToManyPages(CollectionBatch $batch, array $pages): array
+    private function loadTargets(string $targetClassName, array $pageTargetIds): array
     {
-        $targetMetadata = $this->entityManager->getClassMetadata($batch->targetClassName);
+        $targetMetadata = $this->entityManager->getClassMetadata($targetClassName);
         $targetId       = $targetMetadata->getSingleIdentifierFieldName();
 
-        $pairs = [];
-        foreach (array_chunk($this->getBatchIdentifiers($batch), self::CHUNK_SIZE) as $chunk) {
-            $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent);
-            $queryBuilder
-                ->select($parent['select'] . ' AS parent')
-                ->addSelect('entity.' . $targetId . ' AS target');
-
-            /** @var array<array{parent: int|string, target: int|string}> $rows */
-            $rows = $queryBuilder->getQuery()->getScalarResult();
-            foreach ($rows as $row) {
-                $pairs[(string) $row['parent']][] = $row['target'];
-            }
-        }
-
-        $pageTargetIds = $this->slicePages($pairs, $pages);
-
-        // Load each target on a page once
         $targetIds = [];
         foreach ($pageTargetIds as $ids) {
             foreach ($ids as $id) {
@@ -407,11 +425,11 @@ final class ResolveCollectionFactory
         $targets = [];
         foreach (array_chunk(array_values($targetIds), self::CHUNK_SIZE) as $chunk) {
             /** @var list<object> $entities */
-            $entities = $this->createQueryBuilder($batch->targetClassName)
-                ->where('entity.' . $targetId . ' IN (:targets)')
-                ->setParameter('targets', $chunk)
-                ->getQuery()
-                ->getResult();
+            $entities = $this->getResults(
+                $this->createQueryBuilder($targetClassName)
+                    ->where('entity.' . $targetId . ' IN (:targets)')
+                    ->setParameter('targets', $chunk),
+            );
 
             foreach ($entities as $entity) {
                 /** @psalm-suppress MixedArrayOffset An identifier may be of any type */
@@ -419,15 +437,15 @@ final class ResolveCollectionFactory
             }
         }
 
-        $pageRows = [];
+        $pageTargets = [];
         foreach ($pageTargetIds as $identifier => $ids) {
-            $pageRows[$identifier] = [];
+            $pageTargets[$identifier] = [];
             foreach ($ids as $id) {
-                $pageRows[$identifier][] = $targets[(string) $id];
+                $pageTargets[$identifier][] = $targets[(string) $id];
             }
         }
 
-        return $pageRows;
+        return $pageTargets;
     }
 
     /**

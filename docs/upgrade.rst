@@ -353,10 +353,11 @@ Associations are loaded in batches
 
 Associations are now loaded in batches, which is on by default.  Unloaded
 to-one associations are loaded with one query per entity class, and a
-collection field is counted and fetched with a fixed number of queries
-however many rows it is resolved for.  Artists with their performances take
-4 queries instead of 10, and two levels of collections 6 instead of 22.  The
-results are the same.
+collection field is resolved with a fixed number of queries however many rows
+it is resolved for: one for the identifiers of its rows, which give each
+row's count and page, and one for the entities on the pages.  Artists with
+their performances take 3 queries instead of 10, and two levels of
+collections 5 instead of 22.  The results are the same.
 
 A collection whose association has an ``eventName`` is not batched, so its
 QueryBuilder event is still dispatched for each row with that row as

@@ -28,6 +28,9 @@ final class CollectionBatch
 
     private bool $loaded = false;
 
+    /** Whether a source's page needs the number of its rows */
+    private bool $needsCount = false;
+
     /** Thrown while loading, and so for every source */
     private Throwable|null $error = null;
 
@@ -45,9 +48,19 @@ final class CollectionBatch
     ) {
     }
 
-    public function add(object $source, int|string $identifier): void
+    public function add(object $source, int|string $identifier, bool $needsCount): void
     {
         $this->sources[spl_object_id($source)] = [$source, $identifier];
+        $this->needsCount                      = $this->needsCount || $needsCount;
+    }
+
+    /**
+     * Whether the page of any source needs the number of its rows: for
+     * totalCount, for a backward page, or for first: 0
+     */
+    public function needsCount(): bool
+    {
+        return $this->needsCount;
     }
 
     /** @return array<int, array{object, int|string}> */

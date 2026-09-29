@@ -167,6 +167,7 @@ final class PaginationService
      * there is a next page.
      *
      * @param array{first: int|null, last: int|null, before: int|null, after: int|null} $paginationFields
+     * @param bool                                                                      $needsCount       Whether the page needs the count; see needsCount()
      * @param callable(): int                                                           $count            The number of rows
      * @param callable(int, int): array<array-key, mixed>                               $fetch            The rows at an offset, up to a limit
      *
@@ -175,11 +176,11 @@ final class PaginationService
     public function paginate(
         array $paginationFields,
         int $defaultLimit,
-        ResolveInfo|null $info,
+        bool $needsCount,
         callable $count,
         callable $fetch,
     ): array {
-        if ($this->needsCount($paginationFields, $info)) {
+        if ($needsCount) {
             $itemCount = $count();
             $page      = $this->calculateOffsetAndLimit($paginationFields, $defaultLimit, $itemCount);
             $results   = $page['limit'] > 0 ? array_values($fetch($page['offset'], $page['limit'])) : [];

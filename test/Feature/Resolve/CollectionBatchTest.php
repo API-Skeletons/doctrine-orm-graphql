@@ -17,6 +17,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+use function array_sum;
 use function base64_encode;
 use function sprintf;
 
@@ -193,16 +194,16 @@ class CollectionBatchTest extends QueryCountingTestCase
                 15,
                 5,
             ],
-            'many-to-many' => ['{ user { edges { node { recordings { edges { node { id } } } } } } }', 3, 4],
+            'many-to-many' => ['{ user { edges { node { recordings { edges { node { id } } } } } } }', 3, 3],
             'to-one' => ['{ performance { edges { node { artist { name } } } } }', 5, 2],
         ];
     }
 
     /**
-     * A batched collection field costs a count and a row query, and a
-     * many-to-many collection a query for the targets on its pages, however
-     * many sources.  A connection resolved per source costs a row query, and a
-     * count only when it is needed.
+     * A batched collection field costs a query for the identifiers of its rows
+     * and a query for the targets on its pages, however many sources.  A
+     * connection resolved per source costs a row query, and a count only when
+     * it is needed.
      */
     #[DataProvider('queryCountProvider')]
     public function testQueryCount(string $query, int $perSourceQueries, int $batchedQueries): void
@@ -226,9 +227,52 @@ class CollectionBatchTest extends QueryCountingTestCase
         [$overLimit, $overLimitQueries]   = $this->execute(['batchLimit' => 9], $query);
 
         $this->assertSame($underLimit, $overLimit);
-        // The artists, the count of their performances, and their performances
-        // with one query or with one query per artist
+        // The artists, the identifiers of their performances, and their
+        // performances with one query, or with one query per artist when the
+        // identifiers number more than the batch limit
         $this->assertSame(1 + 1 + 1, $underLimitQueries);
         $this->assertSame(1 + 1 + 4, $overLimitQueries);
+    }
+
+    /**
+     * Only the targets on a page are loaded: one performance for each of the
+     * four artists, not all ten
+     */
+    public function testOnlyTheTargetsOnAPageAreLoaded(): void
+    {
+        $query = '{ artist { edges { node { performances(first: 1) { totalCount edges { node { id } } } } } } }';
+
+        [$result] = $this->execute(['batchAssociations' => true], $query);
+
+        $this->assertArrayNotHasKey('errors', $result);
+        $identityMap = $this->getEntityManager()->getUnitOfWork()->getIdentityMap();
+        $this->assertCount(4, $identityMap[Performance::class]);
+
+        $totals = [];
+        foreach ($result['data']['artist']['edges'] as $edge) {
+            $this->assertCount(1, $edge['node']['performances']['edges']);
+            $totals[] = $edge['node']['performances']['totalCount'];
+        }
+
+        $this->assertSame(10, array_sum($totals));
+    }
+
+    /**
+     * Above the batch limit, the rows are counted with one query only when
+     * a page needs the count
+     */
+    public function testRowsAboveTheBatchLimitAreCountedWhenNeeded(): void
+    {
+        $query = '{ artist { edges { node { performances { %s edges { node { id } } } } } } }';
+
+        [$withTotal, $withTotalQueries] = $this->execute(['batchLimit' => 9], sprintf($query, 'totalCount'));
+        [$perSource]                    = $this->execute(['batchAssociations' => false], sprintf($query, 'totalCount'));
+        [, $withoutTotalQueries]        = $this->execute(['batchLimit' => 9], sprintf($query, ''));
+
+        $this->assertSame($perSource, $withTotal);
+        // The artists, the identifiers of their performances, their count,
+        // and a page for each artist; without totalCount, no count
+        $this->assertSame(1 + 1 + 1 + 4, $withTotalQueries);
+        $this->assertSame(1 + 1 + 4, $withoutTotalQueries);
     }
 }

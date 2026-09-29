@@ -113,7 +113,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - Connections are ordered by the root entity's identifier after any other ordering (`Trait\OrderByIdentifier`), added after the QueryBuilder event so a listener's ordering comes first
 - Batching (`batchAssociations`, on by default) returns `GraphQL\Deferred`:
   - `ToOneLoader` loads unloaded to-one proxies with one `IN` query per class
-  - `ResolveCollectionFactory` groups sources resolving the same association with the same arguments into a `CollectionBatch`: one GROUP BY count query, then all rows with one query when they number no more than `batchLimit` (many-to-many fetches source/target id pairs, then the targets, because Doctrine returns an entity once however many rows it is in), else a query per source
+  - `ResolveCollectionFactory` groups sources resolving the same association with the same arguments into a `CollectionBatch`: one query fetches the source/target id pairs of every row, capped at `batchLimit` (pairs, because Doctrine returns an entity once however many rows it is in); they give each source's count and page, and one query loads only the targets on a page. Over `batchLimit`, each source's page is queried, with one GROUP BY count query only when a page needs it
   - Not batched: associations with an `eventName` (their QueryBuilder event is per source) and composite identifiers
   - `CollectionBatchTest` checks batched results against per-source results for every form of pagination
 - Uses Doctrine Laminas Hydrator for extracting entity data to arrays
@@ -127,7 +127,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `group` - Allows multiple GraphQL schemas from same entities
 - `groupSuffix` - Custom suffix for type names
 - `batchAssociations` - Load associations in batches (default true)
-- `batchLimit` - Most rows a batched collection field fetches with one query (default 1000)
+- `batchLimit` - Most row id pairs a batched collection field fetches with one query (default 1000)
 - `useHydratorCache` - Cache hydrator results for as long as the entity exists
 - `useQueryResultCache` - Cache query results for identical SQL and parameters until the entity manager is cleared or flushed (`Cache\QueryResultCacheListener`)
 - `limit` - Default limit on the rows of a connection (default: 1000); an entity's `limit`, then an association's, replaces it, even when larger
