@@ -8,6 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSeriali
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
+use GraphQL\Utils\AST;
 use JsonException;
 use Override;
 
@@ -21,19 +22,30 @@ use const JSON_THROW_ON_ERROR;
 /**
  * This class is used to create a Json type
  *
- * The value is exchanged as a string containing a JSON document.  Any JSON
- * document is valid: an object, an array, a string, a number, a boolean or
- * null.
+ * With JsonFormat::String, the default, the value is exchanged as a string
+ * containing a JSON document.  With JsonFormat::Object it is exchanged as the
+ * value itself.  Any JSON value is valid: an object, an array, a string, a
+ * number, a boolean or null.
  */
 final class Json extends ScalarType
 {
-    // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
-    public string|null $description = 'The `json` scalar type represents json data.';
+    public function __construct(private readonly JsonFormat $format = JsonFormat::String)
+    {
+        parent::__construct([
+            'description' => $format === JsonFormat::String
+                ? 'The `Json` scalar type represents JSON data as a string containing a JSON document.'
+                : 'The `Json` scalar type represents JSON data as the value itself.',
+        ]);
+    }
 
     /** @throws TypeSerializationException */
     #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): mixed
     {
+        if ($this->format === JsonFormat::Object) {
+            return AST::valueFromASTUntyped($valueNode, $variables);
+        }
+
         if (! $valueNode instanceof StringValueNode) {
             throw new TypeSerializationException('Query error: Can only parse strings got: ' . $valueNode->kind, $valueNode);
         }
@@ -45,6 +57,10 @@ final class Json extends ScalarType
     #[Override]
     public function parseValue(mixed $value): mixed
     {
+        if ($this->format === JsonFormat::Object) {
+            return $value;
+        }
+
         if (! is_string($value)) {
             throw new TypeSerializationException('JSON is not a string: ' . get_debug_type($value));
         }
@@ -58,12 +74,14 @@ final class Json extends ScalarType
 
     /** @throws TypeSerializationException */
     #[Override]
-    public function serialize(mixed $value): string
+    public function serialize(mixed $value): mixed
     {
         try {
-            return json_encode($value, JSON_THROW_ON_ERROR);
+            $json = json_encode($value, JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new TypeSerializationException('Could not serialize JSON data: ' . $e->getMessage(), null, $e);
         }
+
+        return $this->format === JsonFormat::String ? $json : $value;
     }
 }

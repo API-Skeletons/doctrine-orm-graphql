@@ -14,6 +14,7 @@ Creating a Driver with all config options
   use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
   use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Type\JsonFormat;
 
   $driver = new Driver($entityManager, new Config([
       'batchAssociations' => true,
@@ -27,6 +28,7 @@ Creating a Driver with all config options
       'useHydratorCache' => true,
       'useQueryResultCache' => true,
       'excludeFilters' => [Filters::CONTAINS],
+      'formatJsonAs' => JsonFormat::Object,
   ]);
 
 
@@ -98,6 +100,27 @@ This overrides the ``extractByValue`` entity attribute globally.  When set to tr
 all hydrators will extract by value.  When set to false all hydrators will
 extract by reference.  When not set the individual entity attribute value
 is used and that is, by default, extract by value.
+
+
+formatJsonAs
+------------
+
+How the ``Json`` scalar exchanges a JSON value with a client, a
+``ApiSkeletons\Doctrine\ORM\GraphQL\Type\JsonFormat`` case or its value.
+
+* ``JsonFormat::String``, the default: as a string containing a JSON document,
+  such as ``"{\"to\":\"json\"}"``.  A client decodes it, and sends a JSON value
+  as such a string.
+* ``JsonFormat::Object``: as the value itself, such as ``{"to": "json"}``.  A
+  client sends a JSON value as a variable or as a GraphQL literal, such as
+  ``{ to: "json", tags: [1, 2] }``.
+
+It applies to every field, argument and input field of the ``Json`` type,
+which includes the ``json``, ``json_object``, ``jsonb`` and ``jsonb_object``
+Doctrine types.  With ``JsonFormat::Object``, an empty PHP array is sent as
+``[]``, as PHP cannot tell an empty object from an empty list; a
+``json_object`` or ``jsonb_object`` field, which Doctrine reads as an object,
+is sent as ``{}``.
 
 
 group

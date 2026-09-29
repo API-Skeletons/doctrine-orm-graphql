@@ -6,8 +6,10 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration as ConfigurationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\JsonFormat;
 
 use function array_keys;
+use function array_map;
 use function array_merge;
 use function assert;
 use function get_debug_type;
@@ -99,6 +101,13 @@ final class Config
     protected readonly array $excludeFilters;
 
     /**
+     * @var JsonFormat How the Json scalar exchanges a JSON value: as a string
+     *                 containing a JSON document, the default, or as the
+     *                 value itself
+     */
+    protected readonly JsonFormat $formatJsonAs;
+
+    /**
      * The types each setting may have, as get_debug_type() names them
      */
     private const array TYPES = [
@@ -113,6 +122,7 @@ final class Config
         'entityPrefix' => ['string', 'null'],
         'sortFields' => ['bool', 'null'],
         'excludeFilters' => ['array'],
+        'formatJsonAs' => [JsonFormat::class, 'string'],
     ];
 
     /** @param mixed[] $config */
@@ -130,6 +140,7 @@ final class Config
             'entityPrefix' => null,
             'sortFields' => null,
             'excludeFilters' => [],
+            'formatJsonAs' => JsonFormat::String,
         ];
 
         $mergedConfig = array_merge($default, $config);
@@ -157,6 +168,7 @@ final class Config
         $this->entityPrefix        = $mergedConfig['entityPrefix'];
         $this->sortFields          = $mergedConfig['sortFields'];
         $this->excludeFilters      = $mergedConfig['excludeFilters'];
+        $this->formatJsonAs        = $mergedConfig['formatJsonAs'];
     }
 
     /**
@@ -165,7 +177,7 @@ final class Config
      *
      * @param array<array-key, mixed> $config
      *
-     * @return array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]}
+     * @return array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[], formatJsonAs: JsonFormat}
      *
      * @throws ConfigurationException
      */
@@ -217,7 +229,15 @@ final class Config
 
         $config['excludeFilters'] = $excludeFilters;
 
-        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $validated */
+        // A format may be given as a JsonFormat case or its value
+        if (is_string($config['formatJsonAs'])) {
+            $config['formatJsonAs'] = JsonFormat::tryFrom($config['formatJsonAs']) ?? throw new ConfigurationException(
+                'Invalid configuration value for formatJsonAs: "' . $config['formatJsonAs'] . '" is not a JSON format.',
+                array_map(static fn (JsonFormat $format): string => $format->value, JsonFormat::cases()),
+            );
+        }
+
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[], formatJsonAs: JsonFormat} $validated */
         $validated = $config;
 
         return $validated;
@@ -277,5 +297,10 @@ final class Config
     public function getExcludeFilters(): array
     {
         return $this->excludeFilters;
+    }
+
+    public function getFormatJsonAs(): JsonFormat
+    {
+        return $this->formatJsonAs;
     }
 }
