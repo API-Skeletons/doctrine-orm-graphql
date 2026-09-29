@@ -10,6 +10,8 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
 use stdClass;
 
 use function ini_get;
@@ -23,7 +25,7 @@ class TypeContainerTest extends TestCase
         $typeContainer = $driver->get(TypeContainer::class);
 
         $objectType = $driver->type(Artist::class);
-        $connection = $typeContainer->build(Connection::class, $objectType->name, $objectType);
+        $connection = $typeContainer->build(Connection::class, Connection::nameFor($objectType->name), $objectType);
         $this->assertEquals('Connection_' . $objectType->name, $connection->name);
     }
 
@@ -33,8 +35,8 @@ class TypeContainerTest extends TestCase
         $typeContainer = $driver->get(TypeContainer::class);
 
         $objectType  = $driver->type(Artist::class);
-        $connection1 = $typeContainer->build(Connection::class, $objectType->name, $objectType);
-        $connection2 = $typeContainer->build(Connection::class, $objectType->name, $objectType);
+        $connection1 = $typeContainer->build(Connection::class, Connection::nameFor($objectType->name), $objectType);
+        $connection2 = $typeContainer->build(Connection::class, Connection::nameFor($objectType->name), $objectType);
 
         $this->assertSame($connection1, $connection2);
     }
@@ -63,5 +65,41 @@ class TypeContainerTest extends TestCase
                 ini_set('zend.assertions', (string) $previous);
             }
         }
+    }
+
+    /**
+     * A connection is registered by its own name, not the name of the type
+     * it connects
+     */
+    public function testConnectionIsRegisteredByItsName(): void
+    {
+        $driver        = new Driver($this->getEntityManager());
+        $typeContainer = $driver->get(TypeContainer::class);
+
+        $objectType = $driver->type(Artist::class);
+        $connection = $driver->connection(Artist::class);
+
+        $this->assertSame('Connection_' . $objectType->name, $connection->name);
+        $this->assertTrue($typeContainer->has('Connection_' . $objectType->name));
+        $this->assertFalse($typeContainer->has($objectType->name));
+    }
+
+    /**
+     * A DBAL row type named as a registered type is given a connection, and
+     * the registered type is unchanged
+     */
+    public function testDbalConnectionOfARowNamedAsAType(): void
+    {
+        $driver   = new Driver($this->getEntityManager());
+        $dateTime = $driver->type('datetime');
+
+        $connection = $driver->dbalConnection(new ObjectType([
+            'name' => 'datetime',
+            'fields' => ['id' => Type::int()],
+        ]));
+
+        $this->assertInstanceOf(Connection::class, $connection);
+        $this->assertSame('Connection_datetime', $connection->name);
+        $this->assertSame($dateTime, $driver->type('datetime'));
     }
 }
