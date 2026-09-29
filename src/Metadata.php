@@ -48,7 +48,7 @@ final class Metadata extends ArrayObject
     /**
      * The config values which the metadata depends on: the group selects the
      * attributes, the group suffix and entity prefix form the type names, and
-     * extractByValue replaces each entity's byValue
+     * the extractByValue option replaces the extractByValue of each entity
      *
      * @return array{group: string, groupSuffix: string|null, entityPrefix: string|null, extractByValue: bool|null}
      */
@@ -72,7 +72,7 @@ final class Metadata extends ArrayObject
 
     /**
      * Metadata read from a cache must have been built with the same config
-     * values, or its type names, attributes and byValue do not match the
+     * values, or its type names, attributes and extractByValue do not match the
      * config
      *
      * @throws MetadataException

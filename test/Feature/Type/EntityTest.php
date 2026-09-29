@@ -36,7 +36,7 @@ class EntityTest extends TestCase
 
         $metadata = $entity->getMetadata();
 
-        $this->assertEquals(1, $metadata['byValue']);
+        $this->assertEquals(1, $metadata['extractByValue']);
 
         $this->assertEquals(
             ToInteger::class,

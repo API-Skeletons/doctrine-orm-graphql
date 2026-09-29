@@ -28,7 +28,7 @@ final readonly class EntityMetadata
      */
     public function __construct(
         public string $entityClass,
-        public bool $byValue,
+        public bool $extractByValue,
         public int $limit,
         public array $excludeFilters,
         public string|null $description,
@@ -81,7 +81,7 @@ final readonly class EntityMetadata
 
         return new self(
             $entityClass,
-            $reader->bool('byValue'),
+            $reader->bool('extractByValue'),
             $reader->int('limit'),
             $reader->stringList('excludeFilters'),
             $reader->nullableString('description'),
@@ -110,7 +110,7 @@ final readonly class EntityMetadata
 
         $array = [
             'entityClass' => $this->entityClass,
-            'byValue' => $this->byValue,
+            'extractByValue' => $this->extractByValue,
             'limit' => $this->limit,
             'fields' => $fields,
             'excludeFilters' => $this->excludeFilters,

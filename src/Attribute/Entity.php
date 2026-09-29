@@ -21,7 +21,7 @@ final class Entity
      */
     public function __construct(
         private readonly string $group = 'default',
-        private readonly bool $byValue = true,
+        private readonly bool $extractByValue = true,
         private readonly int $limit = 0,
         private readonly string|null $description = null,
         private readonly string|null $typeName = null,
@@ -35,9 +35,9 @@ final class Entity
         return $this->group;
     }
 
-    public function getByValue(): bool
+    public function getExtractByValue(): bool
     {
-        return $this->byValue;
+        return $this->extractByValue;
     }
 
     public function getLimit(): int

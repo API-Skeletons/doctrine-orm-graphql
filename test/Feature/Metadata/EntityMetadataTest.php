@@ -145,11 +145,11 @@ class EntityMetadataTest extends TestCase
             ],
             'wrong entity type' => [
                 static function (array $user): array {
-                    $user['byValue'] = 'yes';
+                    $user['extractByValue'] = 'yes';
 
                     return $user;
                 },
-                'Metadata for entity ' . User::class . ' key byValue must be a bool, string given.',
+                'Metadata for entity ' . User::class . ' key extractByValue must be a bool, string given.',
             ],
             'wrong field type' => [
                 static function (array $user): array {

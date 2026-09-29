@@ -90,7 +90,7 @@ and associations for all entities.
 extractByValue
 --------------
 
-This overrides the ``byValue`` entity attribute globally.  When set to true
+This overrides the ``extractByValue`` entity attribute globally.  When set to true
 all hydrators will extract by value.  When set to false all hydrators will
 extract by reference.  When not set the individual entity attribute value
 is used and that is, by default, extract by value.

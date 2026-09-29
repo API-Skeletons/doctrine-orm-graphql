@@ -149,9 +149,9 @@ final class ConfigBuilder
      * all hydrators will extract by reference. This overrides
      * per-entity attribute configuration.
      */
-    public function extractByValue(bool $byValue = true): self
+    public function extractByValue(bool $enable = true): self
     {
-        $this->extractByValue = $byValue;
+        $this->extractByValue = $enable;
 
         return $this;
     }

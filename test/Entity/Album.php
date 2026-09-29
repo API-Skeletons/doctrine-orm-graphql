@@ -8,7 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use Doctrine\ORM\Mapping as ORM;
 
 #[GraphQL\Entity(group: 'MappedSuperclassTest')]
-#[GraphQL\Entity(group: 'MappedSuperclassByReferenceTest', byValue: false)]
+#[GraphQL\Entity(group: 'MappedSuperclassByReferenceTest', extractByValue: false)]
 #[ORM\Entity]
 class Album extends AbstractRelease
 {
