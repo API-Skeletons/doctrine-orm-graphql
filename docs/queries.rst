@@ -292,6 +292,89 @@ Invalid arguments
 cursor which cannot be decoded is reported to the client as a GraphQL error
 rather than silently ignored.
 
+
+Limiting Query Cost
+===================
+
+The ``limit`` caps the rows of each connection, but not of a query.  Each
+nested connection can return up to its limit for every row of the connection
+it is nested in, so a query nesting three collections with the default limit
+of 1000 could ask for 1000 x 1000 x 1000 rows.  Batching keeps the number of
+database queries small, not the number of rows.
+
+webonyx/graphql-php can reject such a query before it runs with its
+``QueryDepth`` and ``QueryComplexity`` validation rules.  Add them to every
+query:
+
+.. code-block:: php
+
+    use GraphQL\Validator\DocumentValidator;
+    use GraphQL\Validator\Rules\QueryComplexity;
+    use GraphQL\Validator\Rules\QueryDepth;
+
+    DocumentValidator::addRule(new QueryDepth(8));
+    DocumentValidator::addRule(new QueryComplexity(1000));
+
+or to one execution:
+
+.. code-block:: php
+
+    $result = GraphQL::executeQuery(
+        schema: $schema,
+        source: $query,
+        variableValues: $variables,
+        validationRules: [
+            ...DocumentValidator::allRules(),
+            new QueryDepth(8),
+            new QueryComplexity(1000),
+        ],
+    );
+
+``QueryDepth`` counts the levels of a query below its top-level fields.
+``artists { edges { node { name } } }`` has a depth of 2, and each connection
+nested in it adds 3: its field, ``edges`` and ``node``.  ``QueryDepth(5)``
+therefore allows one level of nested connections and ``QueryDepth(8)`` two.
+
+``QueryComplexity`` counts each field of a query as 1 unless the field has a
+``complexity`` function.  Give a connection field one which multiplies the
+cost of its fields by the rows it may return: its ``first`` or ``last``
+argument, else its limit, 1000 here:
+
+.. code-block:: php
+
+    'artists' => [
+        ...$driver->completeConnection(Artist::class),
+        'complexity' => static fn (int $childrenComplexity, array $args): int
+            => $childrenComplexity * ($args['first'] ?? $args['last'] ?? 1000),
+    ],
+
+The connection of an association is defined by the driver as a function
+returning its definition.  Add its ``complexity`` in an
+`EntityDefinition event <events.html>`_ listener:
+
+.. code-block:: php
+
+    $driver->get(EventDispatcher::class)->subscribeTo(
+        Artist::class . '.definition',
+        static function (EntityDefinition $event): void {
+            $definition   = $event->getDefinition();
+            $fields       = $definition['fields']();
+            $performances = $fields['performances'];
+
+            $fields['performances'] = static fn (): array => [
+                ...$performances(),
+                'complexity' => static fn (int $childrenComplexity, array $args): int
+                    => $childrenComplexity * ($args['first'] ?? $args['last'] ?? 1000),
+            ];
+
+            $definition['fields'] = $fields;
+        },
+    );
+
+With both, ``artists { edges { node { performances { edges { node { venue } } } } } }``
+costs 3,002,000 and is rejected by ``QueryComplexity(1000)``, and the same query
+with ``first: 5`` for each connection is allowed.
+
 .. role:: raw-html(raw)
    :format: html
 

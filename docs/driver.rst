@@ -125,6 +125,8 @@ limit
 
 The most rows a connection returns, whatever pagination is requested.  Use
 this to prevent abuse of GraphQL.  It must be at least 1.  Default is 1000.
+It caps each connection, not a query of nested connections; see
+`Limiting Query Cost <queries.html#limiting-query-cost>`_.
 
 This is the default limit.  An entity's ``limit`` replaces it for queries of
 that entity, and an association's ``limit`` replaces both for that
