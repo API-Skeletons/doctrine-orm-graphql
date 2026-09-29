@@ -5,6 +5,16 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+decimal fields are strings
+--------------------------
+
+A ``decimal`` field was a ``Float``, which rounds a value of many digits.
+Doctrine reads a decimal as a string, and it is now a ``String``, which keeps
+its precision, with the ``ToString`` strategy.  It keeps the number filters,
+and a comparison value which is not a number is an error.  This is a schema
+change: clients receive, and send as filter values, strings such as
+``"314.15"``.  The DBAL 4 ``number`` type has the number filters too.
+
 bigint fields have the number filters
 -------------------------------------
 

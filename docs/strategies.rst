@@ -35,8 +35,9 @@ ToString
 ========
 
 Similar to ``ToInteger``, this will convert the field value to a string to be handled as a string internal to PHP.
-Scalars and ``Stringable`` objects are converted; ``null`` is returned as ``null``.  This strategy is not applied
-by default.  Use it with ``hydratorStrategy`` and set the GraphQL ``type`` of the field to ``string``.
+Scalars and ``Stringable`` objects are converted; ``null`` is returned as ``null``.  This strategy is applied by
+default to ``decimal`` fields.  To use it for another field, set it as the ``hydratorStrategy`` and set the GraphQL
+``type`` of the field to ``string``.
 
 .. code-block:: php
 
