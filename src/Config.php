@@ -9,6 +9,12 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 
 use function array_keys;
 use function array_merge;
+use function assert;
+use function get_debug_type;
+use function implode;
+use function in_array;
+use function is_int;
+use function is_string;
 use function property_exists;
 
 /**
@@ -92,6 +98,23 @@ final class Config
      */
     protected readonly array $excludeFilters;
 
+    /**
+     * The types each setting may have, as get_debug_type() names them
+     */
+    private const array TYPES = [
+        'group' => ['string'],
+        'groupSuffix' => ['string', 'null'],
+        'useHydratorCache' => ['bool'],
+        'useQueryResultCache' => ['bool'],
+        'batchAssociations' => ['bool'],
+        'batchLimit' => ['int'],
+        'limit' => ['int'],
+        'extractByValue' => ['bool', 'null'],
+        'entityPrefix' => ['string', 'null'],
+        'sortFields' => ['bool', 'null'],
+        'excludeFilters' => ['array'],
+    ];
+
     /** @param mixed[] $config */
     public function __construct(array $config = [])
     {
@@ -109,17 +132,18 @@ final class Config
             'excludeFilters' => [],
         ];
 
-        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $mergedConfig */
         $mergedConfig = array_merge($default, $config);
 
-        foreach ($mergedConfig as $field => $value) {
-            if (! property_exists($this, $field)) {
+        foreach (array_keys($mergedConfig) as $field) {
+            if (! property_exists($this, (string) $field)) {
                 throw new ConfigurationException(
                     'Invalid configuration setting: ' . $field,
                     array_keys($default),
                 );
             }
         }
+
+        $mergedConfig = $this->validate($mergedConfig);
 
         // Assigning properties explicitly is phpstan friendly
         $this->group               = $mergedConfig['group'];
@@ -133,6 +157,70 @@ final class Config
         $this->entityPrefix        = $mergedConfig['entityPrefix'];
         $this->sortFields          = $mergedConfig['sortFields'];
         $this->excludeFilters      = $mergedConfig['excludeFilters'];
+    }
+
+    /**
+     * Validate the type and range of every setting.  The filters to exclude
+     * may be Filters or their values; they are returned as Filters.
+     *
+     * @param array<array-key, mixed> $config
+     *
+     * @return array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]}
+     *
+     * @throws ConfigurationException
+     */
+    private function validate(array $config): array
+    {
+        foreach (self::TYPES as $field => $types) {
+            if (! in_array(get_debug_type($config[$field]), $types, true)) {
+                throw new ConfigurationException(
+                    'Invalid configuration value for ' . $field . ': expected ' . implode(' or ', $types)
+                    . ', got ' . get_debug_type($config[$field]) . '.',
+                );
+            }
+        }
+
+        if ($config['group'] === '') {
+            throw new ConfigurationException('Invalid configuration value for group: it may not be empty.');
+        }
+
+        $limit      = $config['limit'];
+        $batchLimit = $config['batchLimit'];
+        assert(is_int($limit) && is_int($batchLimit));
+
+        if ($limit < 1) {
+            throw new ConfigurationException(
+                'Invalid configuration value for limit: it must be at least 1, got ' . $limit . '.',
+            );
+        }
+
+        if ($batchLimit < 0) {
+            throw new ConfigurationException(
+                'Invalid configuration value for batchLimit: it must be at least 0, got ' . $batchLimit . '.',
+            );
+        }
+
+        $excludeFilters = [];
+        /** @psalm-suppress MixedAssignment Each filter is checked */
+        foreach ($config['excludeFilters'] as $filter) {
+            $excludeFilters[] = match (true) {
+                $filter instanceof Filters => $filter,
+                is_string($filter) && Filters::tryFrom($filter) !== null => Filters::from($filter),
+                default => throw new ConfigurationException(
+                    'Invalid configuration value for excludeFilters: '
+                    . (is_string($filter) ? '"' . $filter . '"' : get_debug_type($filter))
+                    . ' is not a filter.',
+                    Filters::toStringArray(Filters::cases()),
+                ),
+            };
+        }
+
+        $config['excludeFilters'] = $excludeFilters;
+
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[]} $validated */
+        $validated = $config;
+
+        return $validated;
     }
 
     public function getGroup(): string
