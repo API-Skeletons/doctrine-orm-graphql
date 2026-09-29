@@ -8,11 +8,13 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSeriali
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\RejectInvalidDateTime;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SerializeDateTime;
 use DateTime as PHPDateTime;
+use DateTimeZone;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 use Override;
 
+use function date_default_timezone_get;
 use function get_debug_type;
 use function is_string;
 
@@ -53,7 +55,10 @@ final class DateTime extends ScalarType
 
         $this->rejectInvalidDateTime($value);
 
-        return $data;
+        // A datetime column stores the date and time without an offset, and
+        // Doctrine reads it in the default timezone, so the value is given
+        // in the default timezone.  It is the same instant.
+        return $data->setTimezone(new DateTimeZone(date_default_timezone_get()));
     }
 
     /** @throws TypeSerializationException */

@@ -5,6 +5,17 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Date-times are converted to the default timezone
+------------------------------------------------
+
+A ``DateTime`` or ``DateTimeImmutable`` value sent with an offset other than
+PHP's default timezone kept that offset.  A ``datetime`` column stores the
+date and time without an offset, so a filter compared, and an input stored,
+the wrong instant: with the default timezone UTC, ``15:19:21+05:00`` matched,
+and was stored as, 15:19:21 UTC rather than 10:19:21 UTC.  Such a value is now
+converted to the default timezone, the same instant.  ``DateTimeTZ`` values
+keep their offset.
+
 ConfigBuilder::sortFields() is renamed enableSortFields()
 ---------------------------------------------------------
 
