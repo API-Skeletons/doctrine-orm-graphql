@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Type;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Date;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateImmutable;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateTime;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateTimeImmutable;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\DateTimeTZ;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use DateTimeInterface;
 use GraphQL\GraphQL;
@@ -23,7 +27,8 @@ use function date_default_timezone_set;
 /**
  * A datetime column stores the date and time without an offset, and Doctrine
  * reads it in the default timezone, so a date-time given with another offset
- * is converted to the default timezone, the same instant
+ * is converted to the default timezone, the same instant.  A date is not
+ * converted.
  */
 class DateTimeTimezoneTest extends TestCase
 {
@@ -126,5 +131,85 @@ class DateTimeTimezoneTest extends TestCase
             '2004-02-12 10:19:21',
             $this->getEntityManager()->getConnection()->fetchOne('SELECT performanceDate FROM performance WHERE id = 1'),
         );
+    }
+
+    /**
+     * Timezones from UTC-11 to UTC+14
+     *
+     * @return array<string, array{string}>
+     */
+    public static function timezoneProvider(): array
+    {
+        return [
+            'UTC' => ['UTC'],
+            'UTC-11' => ['Pacific/Pago_Pago'],
+            'UTC-5' => ['America/New_York'],
+            'UTC+5:30' => ['Asia/Kolkata'],
+            'UTC+14' => ['Pacific/Kiritimati'],
+        ];
+    }
+
+    /**
+     * A date has no instant, so it is not converted to the default timezone,
+     * which could make it another day.  In any default timezone, a date is
+     * stored, filtered by and returned as the date the client sent.
+     */
+    #[DataProvider('timezoneProvider')]
+    public function testDateIsTheSameDayInEveryTimezone(string $timezone): void
+    {
+        date_default_timezone_set($timezone);
+
+        $entityManager = $this->getEntityManager();
+        $typeTest      = $entityManager->getRepository(TypeTest::class)->findOneBy([]);
+        $this->assertInstanceOf(TypeTest::class, $typeTest);
+
+        $typeTest->setTestDate((new Date())->parseValue('2004-02-12'));
+        $typeTest->setTestDateImmutable((new DateImmutable())->parseValue('2004-02-12'));
+        $entityManager->flush();
+        $entityManager->clear();
+
+        $this->assertSame(
+            ['testDate' => '2004-02-12', 'testDateImmutable' => '2004-02-12'],
+            $entityManager->getConnection()->fetchAssociative('SELECT testDate, testDateImmutable FROM typetest'),
+        );
+
+        $driver = new Driver($entityManager, new Config(['group' => 'DataTypesTest']));
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => ['typeTest' => $driver->completeConnection(TypeTest::class)],
+            ]),
+        ]);
+
+        $filters = [
+            'eq: "2004-02-12"' => true,
+            'neq: "2004-02-12"' => false,
+            'lt: "2004-02-13"' => true,
+            'lt: "2004-02-12"' => false,
+            'lte: "2004-02-12"' => true,
+            'gt: "2004-02-11"' => true,
+            'gt: "2004-02-12"' => false,
+            'gte: "2004-02-12"' => true,
+            'between: { from: "2004-02-11", to: "2004-02-12" }' => true,
+            'between: { from: "2004-02-13", to: "2004-02-14" }' => false,
+            'in: ["2004-02-12"]' => true,
+            'notin: ["2004-02-12"]' => false,
+        ];
+
+        foreach (['testDate', 'testDateImmutable'] as $field) {
+            foreach ($filters as $filter => $matches) {
+                $result = GraphQL::executeQuery(
+                    $schema,
+                    '{ typeTest(filter: { ' . $field . ': { ' . $filter . ' } }) { edges { node { ' . $field . ' } } } }',
+                )->toArray();
+
+                $this->assertArrayNotHasKey('errors', $result);
+                $this->assertSame(
+                    $matches ? [['node' => [$field => '2004-02-12']]] : [],
+                    $result['data']['typeTest']['edges'],
+                    $timezone . ' ' . $field . ' ' . $filter,
+                );
+            }
+        }
     }
 }
