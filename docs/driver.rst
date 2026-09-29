@@ -257,7 +257,8 @@ There are two parameters:
     $queryBuilder = $entityManager->getConnection()->createQueryBuilder()
         ->select('id', 'name')
         ->from('artist')
-        ->orderBy('name', 'ASC');
+        ->orderBy('name', 'ASC')
+        ->addOrderBy('id', 'ASC');
 
     $artistRow = new ObjectType([
         'name' => 'artistRow',
@@ -314,6 +315,15 @@ must be added to the args.
 
 When the query is resolved the QueryBuilder is given the offset and limit
 calculated from the pagination arguments.
+
+Each page is a separate query with its own offset, so the rows must be in the
+same order every time the query runs.  Give the QueryBuilder an ``ORDER BY``
+which orders every row, ending with a column or columns which are unique, such
+as a primary key.  A database returns rows in no particular order without an
+``ORDER BY``, and in no particular order within a tie, so rows may be repeated
+or skipped from one page to the next.  An entity connection is ordered by its
+identifier for this reason, but a DBAL query has no identifier the driver can
+use.
 
 Rows are returned as associative arrays so the fields of the given type are
 resolved by their column name or alias.  Filters are not available because
