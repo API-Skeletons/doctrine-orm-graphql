@@ -16,8 +16,8 @@ final class Field
     use ExcludeFilters;
 
     /**
-     * @param Filters[] $excludeFilters
-     * @param Filters[] $includeFilters
+     * @param array<Filters|string> $excludeFilters Filters cases or their values
+     * @param array<Filters|string> $includeFilters Filters cases or their values
      */
     public function __construct(
         private readonly string $group = 'default',

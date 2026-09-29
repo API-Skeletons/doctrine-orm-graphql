@@ -145,7 +145,7 @@ class ConfigBuilderTest extends TestCase
     public function testSortFieldsEnablesSortFields(): void
     {
         $config = ConfigBuilder::create()
-            ->sortFields()
+            ->enableSortFields()
             ->build();
 
         $this->assertTrue($config->getSortFields());
@@ -154,7 +154,7 @@ class ConfigBuilderTest extends TestCase
     public function testSortFieldsWithFalseDisablesSortFields(): void
     {
         $config = ConfigBuilder::create()
-            ->sortFields(false)
+            ->enableSortFields(false)
             ->build();
 
         $this->assertFalse($config->getSortFields());
@@ -190,7 +190,7 @@ class ConfigBuilderTest extends TestCase
             ->withLimit(100)
             ->extractByValue()
             ->withEntityPrefix('App\\')
-            ->sortFields()
+            ->enableSortFields()
             ->excludeFilter(Filters::CONTAINS)
             ->build();
 
