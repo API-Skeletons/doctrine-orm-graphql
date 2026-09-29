@@ -117,6 +117,15 @@ A ``dateinterval`` is stored as a string, which does not order as the duration
 does, so it has only the ``eq``, ``neq``, ``in``, ``notin`` and ``isnull``
 filters.
 
+A ``datetime`` or ``datetime_immutable`` column stores a date and time without
+an offset, and Doctrine reads it in PHP's default timezone.  A value sent to a
+``DateTime`` or ``DateTimeImmutable`` argument or input, such as
+``2004-02-12T15:19:21+05:00``, is therefore converted to the default timezone,
+keeping its instant, so it is filtered and stored as that instant.  A
+``DateTimeTZ`` value keeps its offset, for a ``datetimetz`` column on a
+database which stores one; on a database which does not, such as MySQL or
+SQLite, send a ``datetimetz`` value in the default timezone.
+
 A field mapped with an ``enumType`` is represented by the value of the enum,
 the value stored in the database, as the field's type.  An input or filter
 value of it is also the value; use ``Enum::from()`` to convert it before
