@@ -104,75 +104,16 @@ final class QueryBuilder
             foreach ($filters as $filter => $value) {
                 $filter = Filters::from($filter);
 
-                // A filter given null is not applied, as a field or filter
-                // given null is not.  eq, neq, in and notin would compare to
-                // null, which matches nothing, so they are an error.
-                if ($value === null) {
-                    if (in_array($filter, [Filters::EQ, Filters::NEQ, Filters::IN, Filters::NOTIN], true)) {
-                        throw new FilterException(
-                            "Filter '" . $filter->value . "' of field '" . $fieldName . "' cannot be null.  "
-                            . "Use the 'isnull' filter to match null values.",
-                        );
-                    }
-
+                if (! $this->validateFilter($filter, $value, $fieldName, $fieldType)) {
                     continue;
                 }
 
-                // A comparison to null matches nothing
-                if (
-                    (in_array($filter, [Filters::IN, Filters::NOTIN], true) && is_array($value) && in_array(null, $value, true))
-                    || ($filter === Filters::BETWEEN && is_array($value) && (($value['from'] ?? null) === null || ($value['to'] ?? null) === null))
-                ) {
-                    throw new FilterException(
-                        "Filter '" . $filter->value . "' of field '" . $fieldName . "' cannot contain null.  "
-                        . "Use the 'isnull' filter to match null values.",
-                    );
-                }
-
-                // A bigint, decimal or number is a String, so its value is
-                // checked to be a number
-                $pattern = $fieldType === null ? null : self::NUMBER_PATTERNS[$fieldType] ?? null;
-                if (
-                    $pattern !== null
-                    && ! in_array($filter, [Filters::ISNULL, Filters::SORT, Filters::SORTPRIORITY], true)
-                    && ! $this->matchesNumber($value, $pattern)
-                ) {
-                    throw new FilterException(
-                        "Filter '" . $filter->value . "' of field '" . $fieldName . "' must be "
-                        . ($fieldType === Types::BIGINT ? 'an integer.' : 'a number.'),
-                    );
-                }
-
-                // Every value is not in an empty list.  DBAL expands an empty
-                // list to NULL, and NOT IN (NULL) matches nothing.
-                if ($filter === Filters::NOTIN && $value === []) {
-                    continue;
-                }
-
-                $value = $this->toDatabaseValue($value, $fieldType, $queryBuilder);
-
-                if (
-                    in_array($filter, [
-                        Filters::EQ,
-                        Filters::NEQ,
-                        Filters::GT,
-                        Filters::GTE,
-                        Filters::LT,
-                        Filters::LTE,
-                        Filters::IN,
-                        Filters::NOTIN,
-                    ])
-                ) {
-                    $this->default($filter->value, $queryBuilderField, $value, $queryBuilder);
-                    continue;
-                }
-
-                if ($filter === Filters::ISNULL) {
-                    $this->isnull($queryBuilderField, $value, $queryBuilder);
-                    continue;
-                }
-
-                $this->{$filter->value}($queryBuilderField, $value, $queryBuilder);
+                $this->addFilter(
+                    $filter,
+                    $queryBuilderField,
+                    $this->toDatabaseValue($value, $fieldType, $queryBuilder),
+                    $queryBuilder,
+                );
             }
         }
 
@@ -180,20 +121,106 @@ final class QueryBuilder
     }
 
     /**
-     * For filters that do not have a special method, use this method
+     * Whether a filter is applied.  A filter given null is not, as a field or
+     * filter given null is not, and neither is notin given an empty list.
+     *
+     * @throws FilterException When the value cannot be filtered by.
      */
-    protected function default(string $filterValue, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
+    private function validateFilter(Filters $filter, mixed $value, string $fieldName, string|null $fieldType): bool
     {
-        $parameter = $this->parameter($queryBuilder);
+        // eq, neq, in and notin would compare to null, which matches nothing
+        if ($value === null) {
+            if (in_array($filter, [Filters::EQ, Filters::NEQ, Filters::IN, Filters::NOTIN], true)) {
+                throw new FilterException(
+                    "Filter '" . $filter->value . "' of field '" . $fieldName . "' cannot be null.  "
+                    . "Use the 'isnull' filter to match null values.",
+                );
+            }
+
+            return false;
+        }
+
+        // A comparison to null matches nothing
+        if (
+            (in_array($filter, [Filters::IN, Filters::NOTIN], true) && is_array($value) && in_array(null, $value, true))
+            || ($filter === Filters::BETWEEN && is_array($value) && (($value['from'] ?? null) === null || ($value['to'] ?? null) === null))
+        ) {
+            throw new FilterException(
+                "Filter '" . $filter->value . "' of field '" . $fieldName . "' cannot contain null.  "
+                . "Use the 'isnull' filter to match null values.",
+            );
+        }
+
+        // A bigint, decimal or number is a String, so its value is checked to
+        // be a number
+        $pattern = $fieldType === null ? null : self::NUMBER_PATTERNS[$fieldType] ?? null;
+        if (
+            $pattern !== null
+            && ! in_array($filter, [Filters::ISNULL, Filters::SORT, Filters::SORTPRIORITY], true)
+            && ! $this->matchesNumber($value, $pattern)
+        ) {
+            throw new FilterException(
+                "Filter '" . $filter->value . "' of field '" . $fieldName . "' must be "
+                . ($fieldType === Types::BIGINT ? 'an integer.' : 'a number.'),
+            );
+        }
+
+        // Every value is not in an empty list.  DBAL expands an empty list to
+        // NULL, and NOT IN (NULL) matches nothing.
+        return ! ($filter === Filters::NOTIN && $value === []);
+    }
+
+    /**
+     * Add a filter to the QueryBuilder
+     *
+     * @psalm-suppress MixedArgument The value is of the filter's GraphQL type
+     */
+    private function addFilter(Filters $filter, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
+    {
+        match ($filter) {
+            Filters::EQ,
+            Filters::NEQ,
+            Filters::LT,
+            Filters::LTE,
+            Filters::GT,
+            Filters::GTE,
+            Filters::IN,
+            Filters::NOTIN => $this->compare($filter, $field, $value, $queryBuilder),
+            Filters::BETWEEN => $this->between($field, $value, $queryBuilder),
+            Filters::CONTAINS => $this->contains($field, $value, $queryBuilder),
+            Filters::STARTSWITH => $this->startsWith($field, $value, $queryBuilder),
+            Filters::ENDSWITH => $this->endsWith($field, $value, $queryBuilder),
+            Filters::ISNULL => $this->isnull($field, $value, $queryBuilder),
+            Filters::SORT => $this->sort($field, $value, $queryBuilder),
+            Filters::SORTPRIORITY => $this->sortPriority($field, $value, $queryBuilder),
+        };
+    }
+
+    /**
+     * Compare the field with the value
+     */
+    private function compare(Filters $filter, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
+    {
+        $parameter   = $this->parameter($queryBuilder);
+        $placeholder = ':' . $parameter;
+        $expr        = $queryBuilder->expr();
+
         $queryBuilder
-            ->andWhere(
-                $queryBuilder->expr()->$filterValue($field, ':' . $parameter),
-            )
+            ->andWhere(match ($filter) {
+                Filters::NEQ => $expr->neq($field, $placeholder),
+                Filters::LT => $expr->lt($field, $placeholder),
+                Filters::LTE => $expr->lte($field, $placeholder),
+                Filters::GT => $expr->gt($field, $placeholder),
+                Filters::GTE => $expr->gte($field, $placeholder),
+                Filters::IN => $expr->in($field, $placeholder),
+                Filters::NOTIN => $expr->notIn($field, $placeholder),
+                default => $expr->eq($field, $placeholder),
+            })
             ->setParameter($parameter, $value);
     }
 
     /** @param array<string, mixed> $value */
-    protected function between(string $field, array $value, DoctrineQueryBuilder $queryBuilder): void
+    private function between(string $field, array $value, DoctrineQueryBuilder $queryBuilder): void
     {
         $from = $this->parameter($queryBuilder);
         $to   = $this->parameter($queryBuilder);
@@ -209,17 +236,17 @@ final class QueryBuilder
             ->setParameter($to, $value['to']);
     }
 
-    protected function contains(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
+    private function contains(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
     {
         $this->like($field, '%' . $this->escapeLike($value) . '%', $queryBuilder);
     }
 
-    protected function startsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
+    private function startsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
     {
         $this->like($field, $this->escapeLike($value) . '%', $queryBuilder);
     }
 
-    protected function endsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
+    private function endsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
     {
         $this->like($field, '%' . $this->escapeLike($value), $queryBuilder);
     }
@@ -284,7 +311,7 @@ final class QueryBuilder
         ]);
     }
 
-    protected function isnull(string $field, bool $value, DoctrineQueryBuilder $queryBuilder): void
+    private function isnull(string $field, bool $value, DoctrineQueryBuilder $queryBuilder): void
     {
         if ($value === true) {
             $queryBuilder->andWhere(
@@ -343,7 +370,7 @@ final class QueryBuilder
         );
     }
 
-    protected function sort(string $field, string $direction, DoctrineQueryBuilder $queryBuilder): void
+    private function sort(string $field, string $direction, DoctrineQueryBuilder $queryBuilder): void
     {
         if (! isset($this->sortFields[$field])) {
             $this->sortFields[$field] = [];
@@ -355,7 +382,7 @@ final class QueryBuilder
         $this->sortFields[$field]['direction'] = $direction;
     }
 
-    protected function sortPriority(string $field, int $priority, DoctrineQueryBuilder $queryBuilder): void
+    private function sortPriority(string $field, int $priority, DoctrineQueryBuilder $queryBuilder): void
     {
         if (! isset($this->sortFields[$field])) {
             $this->sortFields[$field] = [];
@@ -366,7 +393,7 @@ final class QueryBuilder
         $this->sortFields[$field]['priority'] = $priority;
     }
 
-    protected function applySort(DoctrineQueryBuilder $queryBuilder): void
+    private function applySort(DoctrineQueryBuilder $queryBuilder): void
     {
         // If no sort fields were added, do nothing
         if (! $this->sortFields) {
