@@ -98,7 +98,7 @@ class IncludeFiltersTest extends TestCase
         ';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "in" is not defined by type "Filters_String_8254df8c7959ea47c8b536a2b975a8e6".', $error->getMessage());
+            $this->assertEquals('Field "in" is not defined by type "Filters_String_dd2b410a".', $error->getMessage());
         }
 
         // Test entity>field level included filters
@@ -143,7 +143,7 @@ class IncludeFiltersTest extends TestCase
         ';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "contains" is not defined by type "Filters_String_22ea8c5dceaa153b3729393465ba253d".', $error->getMessage());
+            $this->assertEquals('Field "contains" is not defined by type "Filters_String_22ea8c5d".', $error->getMessage());
         }
 
         // Test entity>field level included filters excluded by field level exclude
@@ -167,7 +167,7 @@ class IncludeFiltersTest extends TestCase
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
             $this->assertMatchesRegularExpression(
-                '/^Field "eq" is not defined by type "Filters_String_[0-9a-f]{32}"\\. Did you mean "neq"\\?$/',
+                '/^Field "eq" is not defined by type "Filters_String_[0-9a-f]{8}"\\. Did you mean "neq"\\?$/',
                 $error->getMessage(),
             );
         }
@@ -229,7 +229,7 @@ class IncludeFiltersTest extends TestCase
         }';
         $result = GraphQL::executeQuery($schema, $query);
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "Filters_String_daeebc957d3b444810fef662f84b89e8".', $error->getMessage());
+            $this->assertEquals('Field "eq" is not defined by type "Filters_String_0959f5d3".', $error->getMessage());
         }
     }
 

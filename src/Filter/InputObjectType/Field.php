@@ -13,6 +13,7 @@ use GraphQL\Type\Definition\Type;
 
 use function md5;
 use function serialize;
+use function substr;
 use function uniqid;
 
 /**
@@ -63,14 +64,24 @@ class Field extends InputObjectType
             $fields[$filter->value]['type'] = $typeContainer->get('Between_' . $type->name());
         }
 
-        $typeName = $type instanceof ScalarType ? $type->name() : uniqid();
-
-        // ScalarType field filters are named by their field type
-        // and a hash of the allowed filters
         parent::__construct([ // @phpstan-ignore argument.type
-            'name' => 'Filters_' . $typeName . '_' . md5(serialize($allowedFilters)),
+            'name' => self::nameFor($type, $allowedFilters),
             'description' => 'Field filters',
             'fields' => static fn () => $fields,
         ]);
+    }
+
+    /**
+     * Field filters are named by their field type and a short hash of the
+     * allowed filters
+     *
+     * @param ScalarType|ListOfType<Type> $type
+     * @param Filters[]                   $allowedFilters
+     */
+    public static function nameFor(ScalarType|ListOfType $type, array $allowedFilters): string
+    {
+        $typeName = $type instanceof ScalarType ? $type->name() : uniqid();
+
+        return 'Filters_' . $typeName . '_' . substr(md5(serialize($allowedFilters)), 0, 8);
     }
 }
