@@ -200,6 +200,30 @@ Cursors are included with each edge.  A cursor is a base64 encoded
 offset from the beginning of the result set.  ``base64_encode('0');`` is
 ``MA==`` to use when creating a paginated query.
 
+A cursor is the position of a row, not the row itself.  When rows are added
+or removed before a cursor's position between one page and the next, the next
+page starts at the same position of the changed result set, so a row may be
+skipped or returned on both pages.  The rows are ordered by the entity's
+identifier after any sort, so a result set which does not change pages
+consistently.  A page deep in a large result set is also slower to fetch, as
+the database counts past the rows before it.  Where either matters, filter on
+a sorted field instead of paging by cursor, such as asking for rows with an
+``id`` greater than the last one received:
+
+.. code-block:: js
+
+  {
+    artists (filter: { id: { gt: 120, sort: ASC } }, first: 10) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+
+The value of a ``bigint`` identifier is a string, such as ``gt: "120"``.
+
 
 Two pairs of parameters work with the query:
 
