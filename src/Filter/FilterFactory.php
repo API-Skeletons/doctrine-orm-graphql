@@ -12,7 +12,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\ClassMetadata;
 use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
@@ -23,6 +22,7 @@ use function array_filter;
 use function array_merge;
 use function array_udiff;
 use function array_unique;
+use function array_values;
 use function count;
 use function in_array;
 use function md5;
@@ -196,34 +196,38 @@ final class FilterFactory
 
         $classMetadata = $this->entityManager->getClassMetadata($targetEntity->getEntityClass());
 
-        // Add eq filter for to-one associations
+        // A to-one association is filtered by the identifier of its target
+        $associationFilters = array_values(array_filter(
+            [Filters::EQ, Filters::NEQ, Filters::IN, Filters::NOTIN, Filters::ISNULL],
+            static fn (Filters $filter): bool => in_array($filter, $allowedFilters, true),
+        ));
+
         foreach ($classMetadata->getAssociationNames() as $associationName) {
             // Only process associations which are in the graphql metadata
             if (! isset($targetEntity->getEntityMetadata()->associations[$associationName])) {
                 continue;
             }
 
-            $associationMetadata = $classMetadata->getAssociationMapping($associationName);
-
-            if (
-                in_array($associationMetadata['type'], [
-                    ClassMetadata::TO_MANY,
-                    ClassMetadata::MANY_TO_MANY,
-                    ClassMetadata::ONE_TO_MANY,
-                ])
-                || ! in_array(Filters::EQ, $allowedFilters)
-            ) {
+            if (! $associationFilters || ! $classMetadata->isSingleValuedAssociation($associationName)) {
                 continue;
             }
 
-            $filterTypeName = 'Filters_ID_' . md5(serialize($allowedFilters));
-
-            if (! $this->typeContainer->has($filterTypeName)) {
-                $this->typeContainer->set($filterTypeName, new Association($this->typeContainer, Type::id(), [Filters::EQ]));
+            // A composite identifier is not one value
+            $targetClassMetadata = $this->entityManager->getClassMetadata(
+                $classMetadata->getAssociationTargetClass($associationName),
+            );
+            if (count($targetClassMetadata->getIdentifierFieldNames()) !== 1) {
+                continue;
             }
 
-            // eq filter is for association id from parent entity; an aliased
-            // association is filtered by its alias, as its field is named
+            $filterTypeName = 'Filters_ID_' . md5(serialize($associationFilters));
+
+            if (! $this->typeContainer->has($filterTypeName)) {
+                $this->typeContainer->set($filterTypeName, new Association($this->typeContainer, Type::id(), $associationFilters));
+            }
+
+            // An aliased association is filtered by its alias, as its field is
+            // named
             $alias = $targetEntity->getExtractionMap()[$associationName] ?? null;
 
             $fields[$alias ?? $associationName] = [
