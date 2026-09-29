@@ -5,6 +5,15 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Driver methods have specific return types
+-----------------------------------------
+
+``Driver::type()`` returns a ``GraphQL\Type\Definition\Type`` rather than
+``mixed``, ``Driver::filter()`` an ``InputObjectType`` rather than ``object``,
+and ``Driver::connection()`` and ``Driver::dbalConnection()`` a
+``Type\Connection`` rather than an ``ObjectType``.  The values are unchanged;
+code which checked their types may drop the checks.
+
 Filter types are of scalar types
 --------------------------------
 
