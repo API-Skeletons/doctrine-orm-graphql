@@ -320,9 +320,9 @@ resolved by their column name or alias.  Filters are not available because
 there is no entity metadata to build them from.  The QueryBuilder is cloned
 for each resolution so it is not modified by a query.
 
-The ``totalCount`` is computed by replacing the select of the QueryBuilder
-with ``COUNT(*)``.  A QueryBuilder using ``GROUP BY`` or ``DISTINCT`` will not
-report the correct ``totalCount``.
+The ``totalCount`` is computed by counting the rows of the QueryBuilder's
+query, without its offset, limit and ordering, as a subquery, so a query using
+``GROUP BY``, ``DISTINCT`` or ``HAVING`` is counted by the rows it returns.
 
 The ``limit`` from the ``Config`` applies to these functions.
 

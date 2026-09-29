@@ -7,9 +7,12 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use Closure;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use GraphQL\Type\Definition\ResolveInfo;
+use ReflectionProperty;
 
+use function assert;
 use function count;
 use function method_exists;
 
@@ -90,9 +93,8 @@ final class ResolveDbalFactory
     /**
      * Count the rows the QueryBuilder matches without its offset and limit.
      *
-     * The select is replaced with COUNT(*) on a clone of the QueryBuilder.
-     * A QueryBuilder using GROUP BY or DISTINCT will not be counted correctly
-     * by this strategy.
+     * The query is counted as a subquery, so a query using GROUP BY, DISTINCT
+     * or HAVING is counted by its rows rather than by the rows it groups.
      */
     private function getItemCount(QueryBuilder $queryBuilder): int
     {
@@ -100,11 +102,26 @@ final class ResolveDbalFactory
 
         $countQueryBuilder->setFirstResult(0);
         $countQueryBuilder->setMaxResults(null);
-        $countQueryBuilder->select('COUNT(*)');
 
         $this->resetOrderBy($countQueryBuilder);
 
-        return (int) $countQueryBuilder->fetchOne();
+        return (int) $this->getConnection($queryBuilder)->fetchOne(
+            'SELECT COUNT(*) FROM (' . $countQueryBuilder->getSQL() . ') dbal_count',
+            $countQueryBuilder->getParameters(),
+            $countQueryBuilder->getParameterTypes(),
+        );
+    }
+
+    /**
+     * The connection of the QueryBuilder.  DBAL 4 has no getter for it, and
+     * it may not be the entity manager's connection.
+     */
+    private function getConnection(QueryBuilder $queryBuilder): Connection
+    {
+        $connection = (new ReflectionProperty(QueryBuilder::class, 'connection'))->getValue($queryBuilder);
+        assert($connection instanceof Connection);
+
+        return $connection;
     }
 
     /**
