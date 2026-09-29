@@ -44,28 +44,28 @@ class ConfigExcludeFiltersTest extends TestCase
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "eq" is not defined by type "Filters_String_2fcc46c308f783c42451d0c9ee076e5b".', $error->getMessage());
+            $this->assertEquals('Field "eq" is not defined by type "Filters_String_8e869526".', $error->getMessage());
         }
 
         $query  = '{ artists (filter: { name: { neq: "Grateful Dead" } } ) { edges { node { name } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "neq" is not defined by type "Filters_String_2fcc46c308f783c42451d0c9ee076e5b".', $error->getMessage());
+            $this->assertEquals('Field "neq" is not defined by type "Filters_String_8e869526".', $error->getMessage());
         }
 
         $query  = '{ artists { edges { node { performances ( filter: {venue: { neq: "test"} } ) { edges { node { venue } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "neq" is not defined by type "Filters_String_2fcc46c308f783c42451d0c9ee076e5b".', $error->getMessage());
+            $this->assertEquals('Field "neq" is not defined by type "Filters_String_8e869526".', $error->getMessage());
         }
 
         $query  = '{ artists { edges { node { performances ( filter: {venue: { contains: "test" } } ) { edges { node { venue } } } } } } }';
         $result = GraphQL::executeQuery($schema, $query);
 
         foreach ($result->errors as $error) {
-            $this->assertEquals('Field "contains" is not defined by type "Filters_String_2fcc46c308f783c42451d0c9ee076e5b". Did you mean "notin"?', $error->getMessage());
+            $this->assertEquals('Field "contains" is not defined by type "Filters_String_8e869526". Did you mean "notin"?', $error->getMessage());
         }
     }
 }

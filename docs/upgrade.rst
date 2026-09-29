@@ -5,6 +5,15 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Filter type names are shorter
+-----------------------------
+
+A field's filter type is named by its type and a hash of its filters.  The
+hash is now 8 characters rather than 32, as input type names use, so
+``Filters_String_9e7d5d723262a26bad04896d55cce1e1`` becomes a name such as
+``Filters_String_8e869526``.  This is a schema change; regenerate client types
+built from the schema.
+
 Config values are validated
 ---------------------------
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Filter as FilterException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Association;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\AssociationMetadata;
@@ -25,8 +26,6 @@ use function array_unique;
 use function array_values;
 use function count;
 use function in_array;
-use function md5;
-use function serialize;
 use function ucwords;
 
 use const SORT_REGULAR;
@@ -159,17 +158,7 @@ final class FilterFactory
                 continue;
             }
 
-            // ScalarType field filters are named by their field type
-            // and a hash of the allowed filters
-            $filterTypeName = 'Filters_' . $type->name() . '_' . md5(serialize($filteredFilters));
-
-            if ($this->typeContainer->has($filterTypeName)) {
-                /** @psalm-suppress MixedAssignment */
-                $fieldType = $this->typeContainer->get($filterTypeName);
-            } else {
-                $fieldType = new Field($this->typeContainer, $type, $filteredFilters);
-                $this->typeContainer->set($filterTypeName, $fieldType);
-            }
+            $fieldType = $this->getFieldFilterType($type, $filteredFilters);
 
             $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
 
@@ -220,11 +209,7 @@ final class FilterFactory
                 continue;
             }
 
-            $filterTypeName = 'Filters_ID_' . md5(serialize($associationFilters));
-
-            if (! $this->typeContainer->has($filterTypeName)) {
-                $this->typeContainer->set($filterTypeName, new Association($this->typeContainer, Type::id(), $associationFilters));
-            }
+            $filterType = $this->getFieldFilterType(Type::id(), $associationFilters, true);
 
             // An aliased association is filtered by its alias, as its field is
             // named
@@ -232,12 +217,46 @@ final class FilterFactory
 
             $fields[$alias ?? $associationName] = [
                 'name' => $alias ?? $associationName,
-                'type' => $this->typeContainer->get($filterTypeName),
+                'type' => $filterType,
                 'description' => 'Association Filters',
             ];
         }
 
         return $fields;
+    }
+
+    /**
+     * The filter type of a field or association, shared by every field of the
+     * same type and filters.  It is named by a short hash of the filters; a
+     * registered type of the same name must have the same filters.
+     *
+     * @param Filters[] $filters
+     *
+     * @throws FilterException
+     */
+    private function getFieldFilterType(ScalarType $type, array $filters, bool $association = false): Field
+    {
+        $filters = array_values($filters);
+        $name    = Field::nameFor($type, $filters);
+
+        if (! $this->typeContainer->has($name)) {
+            $this->typeContainer->set(
+                $name,
+                $association
+                    ? new Association($this->typeContainer, $type, $filters)
+                    : new Field($this->typeContainer, $type, $filters),
+            );
+        }
+
+        $filterType = $this->typeContainer->get($name);
+
+        if (! $filterType instanceof Field || $filterType->allowedFilters !== $filters) {
+            throw new FilterException(
+                'Filter type name ' . $name . ' is already used for different filters.',
+            );
+        }
+
+        return $filterType;
     }
 
     /**
