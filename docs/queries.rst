@@ -84,6 +84,11 @@ to null matches nothing, so ``eq``, ``neq``, ``in`` or ``notin`` given null, an
 ``in`` or ``notin`` list containing null, and a ``between`` without both
 ``from`` and ``to`` are an error.  Use ``isnull`` to find null values.
 
+A to-one association is filtered by the identifier of the entity it refers
+to, with ``eq``, ``neq``, ``in``, ``notin`` and ``isnull``, such as
+``filter: { artist: { in: [1, 2] } }``.  An association to an entity with a
+composite identifier has no filter.
+
 A ``bigint``, ``decimal`` or ``number`` field is a string, which keeps its
 precision, but it has the filters of a number.  A value of ``eq``, ``lt``,
 ``between``, ``in`` or the other comparisons must be a number, such as
