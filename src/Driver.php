@@ -25,23 +25,25 @@ final class Driver extends Container
      *
      * @throws Error
      */
-    public function connection(string $id, string|null $eventName = null): ObjectType
+    public function connection(string $id, string|null $eventName = null): Type\Connection
     {
         $objectType = $this->type($id, $eventName);
         assert($objectType instanceof ObjectType);
 
-        $typeContainer = $this->service(Type\TypeContainer::class);
+        $connection = $this->service(Type\TypeContainer::class)
+            ->build(Type\Connection::class, Type\Connection::nameFor($objectType->name), $objectType);
+        assert($connection instanceof Type\Connection);
 
-        /** @psalm-suppress MixedReturnStatement */
-        return $typeContainer->build(Type\Connection::class, Type\Connection::nameFor($objectType->name), $objectType);
+        return $connection;
     }
 
     /**
-     * A shortcut into the EntityTypeContainer and TypeContainer
+     * A shortcut into the EntityTypeContainer and TypeContainer: the object
+     * type of an entity, else a registered type
      *
      * @throws TypeNotFoundException
      */
-    public function type(string $id, string|null $eventName = null): mixed
+    public function type(string $id, string|null $eventName = null): GraphQLType
     {
         $entityTypeContainer = $this->service(Type\Entity\EntityTypeContainer::class);
         if ($entityTypeContainer->has($id)) {
@@ -76,7 +78,7 @@ final class Driver extends Container
      *
      * @throws Error
      */
-    public function filter(string $id): object
+    public function filter(string $id): InputObjectType
     {
         $filterFactory       = $this->service(Filter\FilterFactory::class);
         $entityTypeContainer = $this->service(Type\Entity\EntityTypeContainer::class);
@@ -118,12 +120,11 @@ final class Driver extends Container
      *
      * @throws Error
      */
-    public function dbalConnection(ObjectType $type): ObjectType
+    public function dbalConnection(ObjectType $type): Type\Connection
     {
-        $typeContainer = $this->service(Type\TypeContainer::class);
-
-        $connection = $typeContainer->build(Type\Connection::class, Type\Connection::nameFor($type->name), $type);
-        assert($connection instanceof ObjectType);
+        $connection = $this->service(Type\TypeContainer::class)
+            ->build(Type\Connection::class, Type\Connection::nameFor($type->name), $type);
+        assert($connection instanceof Type\Connection);
 
         return $connection;
     }
