@@ -9,6 +9,13 @@ document.
 The namespace for attributes is ``ApiSkeletons\Doctrine\ORM\GraphQL\Attribute``.
 It is recommended you alias this namespace in your entities as ``GraphQL``.
 
+Every name given to GraphQL, such as a ``typeName``, an ``alias`` or a computed
+field ``name``, and the ``group`` or ``groupSuffix`` which ends each type name,
+must be a valid GraphQL name: letters, digits and underscores, not starting with a digit
+or with ``__``.  An invalid name throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the type is
+built.
+
 A slightly complicated example:
 
 .. code-block:: php

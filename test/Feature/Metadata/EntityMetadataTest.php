@@ -14,6 +14,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\ComputedFieldMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\EntityMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\FieldMetadata;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -260,5 +261,88 @@ class EntityMetadataTest extends TestCase
         );
 
         EntityMetadata::fromArray($artist);
+    }
+
+    /**
+     * Every name of an entity's type must be a valid GraphQL name.  The
+     * names are made invalid in cached metadata, as an attribute could.
+     *
+     * @return array<string, array{callable(array<string, mixed>): array<string, mixed>, string}>
+     */
+    public static function invalidNameProvider(): array
+    {
+        $performance = 'Metadata for entity ' . Performance::class . ': ';
+        $rule        = '  A name must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ and may not begin with "__".';
+
+        return [
+            'alias' => [
+                static function (array $metadata): array {
+                    $metadata['fields']['venue']['alias'] = 'venue-name';
+
+                    return $metadata;
+                },
+                $performance . 'the alias of venue, "venue-name", is not a valid GraphQL name.' . $rule,
+            ],
+            'reserved alias' => [
+                static function (array $metadata): array {
+                    $metadata['fields']['venue']['alias'] = '__venue';
+
+                    return $metadata;
+                },
+                $performance . 'the alias of venue, "__venue", is not a valid GraphQL name.' . $rule,
+            ],
+            'association alias' => [
+                static function (array $metadata): array {
+                    $metadata['fields']['artist']['alias'] = '1artist';
+
+                    return $metadata;
+                },
+                $performance . 'the alias of artist, "1artist", is not a valid GraphQL name.' . $rule,
+            ],
+            'type name' => [
+                static function (array $metadata): array {
+                    $metadata['typeName'] = 'performance type';
+
+                    return $metadata;
+                },
+                $performance . 'the type name, "performance type", is not a valid GraphQL name.' . $rule,
+            ],
+            'computed field' => [
+                static function (array $metadata): array {
+                    $metadata['computedFields'] = [
+                        'full-city' => ['method' => 'getCity', 'type' => 'string', 'name' => 'full-city', 'description' => null],
+                    ];
+
+                    return $metadata;
+                },
+                $performance . 'the name of computed field full-city, "full-city", is not a valid GraphQL name.' . $rule,
+            ],
+        ];
+    }
+
+    /** @param callable(array<string, mixed>): array<string, mixed> $invalidate */
+    #[DataProvider('invalidNameProvider')]
+    public function testInvalidNameIsRejected(callable $invalidate, string $message): void
+    {
+        $metadata                     = (new Driver($this->getEntityManager()))->get(Metadata::class)->toArray();
+        $metadata[Performance::class] = $invalidate($metadata[Performance::class]);
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage($message);
+
+        EntityMetadata::fromArray($metadata[Performance::class]);
+    }
+
+    /**
+     * A group suffix is part of every type name
+     */
+    public function testInvalidGroupSuffixIsRejected(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['groupSuffix' => 'my-suffix']));
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage('the type name, "performance_my-suffix", is not a valid GraphQL name.');
+
+        $driver->type(Performance::class);
     }
 }
