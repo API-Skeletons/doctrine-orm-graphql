@@ -118,6 +118,10 @@ extracting, so this library passes the field name as the third argument, ``$fiel
 ``extract()``.  This allows one strategy to act differently per field without keeping
 per-field state.
 
+A strategy for a collection-valued association is the exception.  It implements Doctrine's
+``CollectionStrategyInterface``, and the Doctrine hydrator sets the collection name and class
+metadata on it, so each collection association is given its own clone of the strategy.
+
 .. code-block:: php
 
     public function extract(mixed $value, object|null $object = null, string|null $fieldName = null): mixed
