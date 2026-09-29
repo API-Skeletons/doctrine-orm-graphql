@@ -16,11 +16,16 @@ use ReflectionClass;
  */
 trait Services
 {
-    /** @param array<string, mixed> $metadataArray */
+    /**
+     * The arguments are registered as services, not kept as properties; get
+     * them with service(), which gives the default Config when none is given
+     *
+     * @param array<string, mixed> $metadataArray Metadata exported by Metadata::toArray(), to use rather than build
+     */
     public function __construct(
-        readonly EntityManager $entityManager,
-        readonly Config|null $config = null,
-        readonly array $metadataArray = [],
+        EntityManager $entityManager,
+        Config|null $config = null,
+        array $metadataArray = [],
     ) {
         $self     = $this;
         $metadata = Metadata::fromArray($metadataArray);
