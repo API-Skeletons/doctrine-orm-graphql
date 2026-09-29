@@ -191,6 +191,11 @@ A complete query for all pagination data:
     }
   }
 
+The rows are counted for ``totalCount`` only when it is requested, or when a
+``last`` or ``before`` argument needs the count.  A forward page which does
+not request ``totalCount`` is resolved without a count query; one row more than
+the page is fetched to tell whether there is a next page.
+
 Cursors are included with each edge.  A cursor is a base64 encoded
 offset from the beginning of the result set.  ``base64_encode('0');`` is
 ``MA==`` to use when creating a paginated query.

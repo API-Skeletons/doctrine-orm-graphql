@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Pagination;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Pagination as PaginationException;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
+use function array_slice;
+use function array_values;
 use function base64_decode;
 use function base64_encode;
 use function count;
@@ -157,6 +160,96 @@ final class PaginationService
     }
 
     /**
+     * Resolve a page of a connection.  The rows are counted only when the
+     * page needs it: for totalCount, for a backward page, and for first: 0,
+     * whose page has no rows to show whether there are more.  A forward page
+     * is fetched with one row more than it holds instead, which tells whether
+     * there is a next page.
+     *
+     * @param array{first: int|null, last: int|null, before: int|null, after: int|null} $paginationFields
+     * @param callable(): int                                                           $count            The number of rows
+     * @param callable(int, int): array<array-key, mixed>                               $fetch            The rows at an offset, up to a limit
+     *
+     * @return array<string, mixed>
+     */
+    public function paginate(
+        array $paginationFields,
+        int $defaultLimit,
+        ResolveInfo|null $info,
+        callable $count,
+        callable $fetch,
+    ): array {
+        if ($this->needsCount($paginationFields, $info)) {
+            $itemCount = $count();
+            $page      = $this->calculateOffsetAndLimit($paginationFields, $defaultLimit, $itemCount);
+            $results   = $page['limit'] > 0 ? array_values($fetch($page['offset'], $page['limit'])) : [];
+
+            return $this->buildPaginationResponse(
+                $this->buildEdges($results, $page['offset']),
+                $this->buildCursors($page['offset'], count($results)),
+                $itemCount,
+                $page['offset'],
+            );
+        }
+
+        $page    = $this->calculateForwardOffsetAndLimit($paginationFields, $defaultLimit);
+        $results = array_values($fetch($page['offset'], $page['limit'] + 1));
+
+        $hasNextPage = count($results) > $page['limit'];
+        $results     = array_slice($results, 0, $page['limit']);
+
+        return $this->buildPaginationResponse(
+            $this->buildEdges($results, $page['offset']),
+            $this->buildCursors($page['offset'], count($results)),
+            null,
+            $page['offset'],
+            $hasNextPage,
+        );
+    }
+
+    /**
+     * Whether the rows must be counted to resolve a page: for totalCount, for
+     * a backward page, and for first: 0.  Without the ResolveInfo they are.
+     *
+     * @param array{first: int|null, last: int|null, before: int|null, after: int|null} $paginationFields
+     */
+    public function needsCount(array $paginationFields, ResolveInfo|null $info): bool
+    {
+        if (
+            $info === null
+            || $paginationFields['last'] !== null
+            || $paginationFields['before'] !== null
+            || $paginationFields['first'] === 0
+        ) {
+            return true;
+        }
+
+        return isset($info->getFieldSelection()['totalCount']);
+    }
+
+    /**
+     * The offset and limit of a forward page, which need no count: from the
+     * after cursor, up to first rows within the limit
+     *
+     * @param array{first: int|null, last: int|null, before: int|null, after: int|null} $paginationFields
+     *
+     * @return array{offset: int, limit: int}
+     */
+    public function calculateForwardOffsetAndLimit(array $paginationFields, int $defaultLimit): array
+    {
+        $limit = $paginationFields['first'] ?? $defaultLimit;
+
+        if ($defaultLimit > 0) {
+            $limit = min($limit, $defaultLimit);
+        }
+
+        return [
+            'offset' => $paginationFields['after'] ?? 0,
+            'limit'  => $limit,
+        ];
+    }
+
+    /**
      * Resolve the offset and limit a request asks for, before the rows are counted
      *
      * The QueryBuilder event is dispatched before the count query runs so that
@@ -245,6 +338,8 @@ final class PaginationService
      *
      * The page flags are derived from the offset and the row count rather than
      * from the cursors so that an empty page reports its position correctly.
+     * A page resolved without counting its rows has no totalCount, which was
+     * not requested, and is given whether it has a next page.
      *
      * @param array<int, array<string, mixed>>            $edges
      * @param array{start: string|null, end: string|null} $cursors
@@ -254,8 +349,9 @@ final class PaginationService
     public function buildPaginationResponse(
         array $edges,
         array $cursors,
-        int $totalCount,
+        int|null $totalCount,
         int $offset,
+        bool|null $hasNextPage = null,
     ): array {
         $resultCount = count($edges);
 
@@ -265,7 +361,7 @@ final class PaginationService
             'pageInfo'   => [
                 'endCursor'       => $cursors['end'],
                 'startCursor'     => $cursors['start'],
-                'hasNextPage'     => $offset + $resultCount < $totalCount,
+                'hasNextPage'     => $hasNextPage ?? $offset + $resultCount < (int) $totalCount,
                 'hasPreviousPage' => $offset > 0,
             ],
         ];

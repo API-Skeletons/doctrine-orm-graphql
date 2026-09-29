@@ -13,7 +13,6 @@ use GraphQL\Type\Definition\ResolveInfo;
 use ReflectionProperty;
 
 use function assert;
-use function count;
 use function method_exists;
 
 /**
@@ -38,7 +37,7 @@ final class ResolveDbalFactory
     public function get(QueryBuilder $queryBuilder): Closure
     {
         return function (mixed $objectValue, array $args, mixed $context, ResolveInfo $info) use ($queryBuilder): array {
-            return $this->buildPagination(clone $queryBuilder, $args);
+            return $this->buildPagination(clone $queryBuilder, $args, $info);
         };
     }
 
@@ -47,46 +46,19 @@ final class ResolveDbalFactory
      *
      * @return mixed[]
      */
-    public function buildPagination(QueryBuilder $queryBuilder, array $args): array
+    public function buildPagination(QueryBuilder $queryBuilder, array $args, ResolveInfo|null $info = null): array
     {
-        // Decode pagination fields
-        $paginationFields = $this->paginationService->decodePaginationFields($args);
-
-        // The rows must be counted before the offset and limit can be resolved
-        $itemCount = $this->getItemCount($queryBuilder);
-
-        // Calculate offset and limit
-        $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit(
-            $paginationFields,
+        return $this->paginationService->paginate(
+            $this->paginationService->decodePaginationFields($args),
             $this->config->getLimit(),
-            $itemCount,
-        );
+            $info,
+            fn (): int => $this->getItemCount($queryBuilder),
+            static function (int $offset, int $limit) use ($queryBuilder): array {
+                $queryBuilder->setFirstResult($offset);
+                $queryBuilder->setMaxResults($limit);
 
-        // A limit of zero cannot match a row so the query is not executed
-        $results = [];
-
-        if ($offsetAndLimit['limit'] > 0) {
-            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
-            $queryBuilder->setMaxResults($offsetAndLimit['limit']);
-
-            $results = $queryBuilder->executeQuery()->fetchAllAssociative();
-        }
-
-        // Build edges
-        $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
-
-        // Build cursors
-        $cursors = $this->paginationService->buildCursors(
-            $offsetAndLimit['offset'],
-            count($results),
-        );
-
-        // Build final pagination response
-        return $this->paginationService->buildPaginationResponse(
-            $edges,
-            $cursors,
-            $itemCount,
-            $offsetAndLimit['offset'],
+                return $queryBuilder->executeQuery()->fetchAllAssociative();
+            },
         );
     }
 

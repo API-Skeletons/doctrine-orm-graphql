@@ -57,10 +57,10 @@ class ToOneBatchTest extends QueryCountingTestCase
 
         $this->assertSame($unbatched, $batched);
 
-        // A count and a page of performances, then one lazy load per distinct
-        // artist, or one query for all of them
-        $this->assertSame(6, $unbatchedQueries);
-        $this->assertSame(3, $batchedQueries);
+        // A page of performances, then one lazy load per distinct artist, or
+        // one query for all of them
+        $this->assertSame(5, $unbatchedQueries);
+        $this->assertSame(2, $batchedQueries);
     }
 
     /**

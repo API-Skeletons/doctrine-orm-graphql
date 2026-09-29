@@ -18,7 +18,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 use GraphQL\Type\Definition\ResolveInfo;
 use League\Event\EventDispatcher;
 
-use function count;
+use function assert;
 
 /**
  * Build a resolver for entities
@@ -105,48 +105,24 @@ final class ResolveEntityFactory
             );
         }
 
-        // The rows must be counted before the offset and limit can be resolved
-        // Paginator is deprecated as of ORM 3.7 in favour of OffsetPaginator, which
-        // does not exist in ORM 2.x or ORM < 3.7. Keep Paginator until those are dropped.
-        /** @psalm-suppress DeprecatedClass */
-        $itemCount = (new Paginator($queryBuilder->getQuery()))->count();
+        $info = $resolve['info'] ?? null;
+        assert($info instanceof ResolveInfo || $info === null);
 
-        // Calculate offset and limit
-        /** @psalm-suppress MixedArgument */
-        $offsetAndLimit = $this->paginationService->calculateOffsetAndLimit(
+        return $this->paginationService->paginate(
             $paginationFields,
             $limit,
-            $itemCount,
-        );
+            $info,
+            // Paginator is deprecated as of ORM 3.7 in favour of OffsetPaginator, which
+            // does not exist in ORM 2.x or ORM < 3.7. Keep Paginator until those are dropped.
+            /** @psalm-suppress DeprecatedClass */
+            static fn (): int => (new Paginator($queryBuilder->getQuery()))->count(),
+            function (int $offset, int $limit) use ($queryBuilder): array {
+                $this->orderByIdentifier($queryBuilder);
+                $queryBuilder->setFirstResult($offset);
+                $queryBuilder->setMaxResults($limit);
 
-        // A limit of zero cannot match a row so the query is not executed
-        $results = [];
-
-        if ($offsetAndLimit['limit'] > 0) {
-            $this->orderByIdentifier($queryBuilder);
-            $queryBuilder->setFirstResult($offsetAndLimit['offset']);
-            $queryBuilder->setMaxResults($offsetAndLimit['limit']);
-
-            $results = $this->getResults($queryBuilder);
-        }
-
-        // Build edges
-        /** @psalm-suppress PossiblyInvalidArgument */
-        $edges = $this->paginationService->buildEdges($results, $offsetAndLimit['offset']);
-
-        // Build cursors
-        /** @psalm-suppress MixedArgument */
-        $cursors = $this->paginationService->buildCursors(
-            $offsetAndLimit['offset'],
-            count($results),
-        );
-
-        // Build final pagination response
-        return $this->paginationService->buildPaginationResponse(
-            $edges,
-            $cursors,
-            $itemCount,
-            $offsetAndLimit['offset'],
+                return $this->getResults($queryBuilder);
+            },
         );
     }
 

@@ -335,7 +335,9 @@ for each resolution so it is not modified by a query.
 
 The ``totalCount`` is computed by counting the rows of the QueryBuilder's
 query, without its offset, limit and ordering, as a subquery, so a query using
-``GROUP BY``, ``DISTINCT`` or ``HAVING`` is counted by the rows it returns.
+``GROUP BY``, ``DISTINCT`` or ``HAVING`` is counted by the rows it returns.  As
+for an entity connection, the rows are counted only when ``totalCount`` is
+requested or a ``last`` or ``before`` argument needs the count.
 
 The ``limit`` from the ``Config`` applies to these functions.
 
