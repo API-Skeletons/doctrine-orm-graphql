@@ -24,6 +24,11 @@ class TestEntityWithIsMethod
     #[ORM\Column(type: 'boolean')]
     private bool $valid;
 
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
     public function setValid(bool $valid): self
     {
         $this->valid = $valid;

@@ -24,6 +24,11 @@ class TestEntityWithPlainMethod
     #[ORM\Column(type: 'string')]
     private string $value;
 
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
     public function setValue(string $value): self
     {
         $this->value = $value;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use BadMethodCallException;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -12,19 +13,23 @@ use Doctrine\ORM\Mapping as ORM;
  * Used to verify that DoctrineObjectWithComputed falls back to __call
  * when no explicit getter or isser exists for a field.
  */
+#[GraphQL\Entity(group: 'MagicCall')]
 #[ORM\Entity]
 class TestEntityWithMagicCall
 {
+    #[GraphQL\Field(group: 'MagicCall')]
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
     private int $id;
 
     /** Field with an explicit getter — parent extractByValue handles it normally */
+    #[GraphQL\Field(group: 'MagicCall')]
     #[ORM\Column(type: 'string')]
     private string $regularField;
 
     /** Field with no explicit getter — __call must be used to extract it */
+    #[GraphQL\Field(group: 'MagicCall')]
     #[ORM\Column(type: 'string')]
     private string $magicField;
 
