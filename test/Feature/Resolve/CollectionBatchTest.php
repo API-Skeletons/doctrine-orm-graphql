@@ -185,21 +185,24 @@ class CollectionBatchTest extends QueryCountingTestCase
     public static function queryCountProvider(): array
     {
         return [
-            // query => [per source, batched]
-            'one-to-many' => ['{ artist { edges { node { performances { edges { node { id } } } } } } }', 10, 4],
+            // query => [per source, batched].  No query asks for totalCount, so
+            // a connection resolved per source is not counted.
+            'one-to-many' => ['{ artist { edges { node { performances { edges { node { id } } } } } } }', 5, 3],
             'nested' => [
                 '{ artist { edges { node { performances { edges { node { recordings { edges { node { id } } } } } } } } } }',
-                22,
-                6,
+                15,
+                5,
             ],
-            'many-to-many' => ['{ user { edges { node { recordings { edges { node { id } } } } } } }', 6, 5],
-            'to-one' => ['{ performance { edges { node { artist { name } } } } }', 6, 3],
+            'many-to-many' => ['{ user { edges { node { recordings { edges { node { id } } } } } } }', 3, 4],
+            'to-one' => ['{ performance { edges { node { artist { name } } } } }', 5, 2],
         ];
     }
 
     /**
-     * A collection field costs a count and a row query, and a many-to-many
-     * collection a query for the targets on its pages, however many sources
+     * A batched collection field costs a count and a row query, and a
+     * many-to-many collection a query for the targets on its pages, however
+     * many sources.  A connection resolved per source costs a row query, and a
+     * count only when it is needed.
      */
     #[DataProvider('queryCountProvider')]
     public function testQueryCount(string $query, int $perSourceQueries, int $batchedQueries): void
@@ -223,9 +226,9 @@ class CollectionBatchTest extends QueryCountingTestCase
         [$overLimit, $overLimitQueries]   = $this->execute(['batchLimit' => 9], $query);
 
         $this->assertSame($underLimit, $overLimit);
-        // The artists, their count, and their performances with one query or
-        // with one query per artist
-        $this->assertSame(2 + 1 + 1, $underLimitQueries);
-        $this->assertSame(2 + 1 + 4, $overLimitQueries);
+        // The artists, the count of their performances, and their performances
+        // with one query or with one query per artist
+        $this->assertSame(1 + 1 + 1, $underLimitQueries);
+        $this->assertSame(1 + 1 + 4, $overLimitQueries);
     }
 }

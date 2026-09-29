@@ -5,6 +5,21 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+totalCount is counted only when it is requested
+-----------------------------------------------
+
+Every connection ran a count query.  A forward page (no ``last`` or
+``before``) which does not request ``totalCount`` is now resolved without one;
+one row more than the page is fetched to tell whether there is a next page.
+The GraphQL results are unchanged.  A batched collection still counts its rows
+with one query for the batch.
+
+Code which calls a resolver directly and reads ``totalCount`` from the array it
+returns gets ``null`` when the query did not request it.
+``PaginationService::buildPaginationResponse()`` takes a nullable
+``$totalCount`` and an optional ``$hasNextPage``, and
+``ResolveDbalFactory::buildPagination()`` an optional ``ResolveInfo``.
+
 Filter type names are shorter
 -----------------------------
 
