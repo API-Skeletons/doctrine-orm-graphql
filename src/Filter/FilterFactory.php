@@ -24,6 +24,7 @@ use function array_merge;
 use function array_udiff;
 use function array_unique;
 use function array_values;
+use function assert;
 use function count;
 use function in_array;
 use function ucwords;
@@ -59,8 +60,10 @@ final class FilterFactory
             : 'Filter_' . $targetEntity->getTypeName();
 
         if ($this->typeContainer->has($typeName)) {
-            /** @psalm-suppress MixedReturnStatement */
-            return $this->typeContainer->get($typeName);
+            $filter = $this->typeContainer->get($typeName);
+            assert($filter instanceof GraphQLInputObjectType);
+
+            return $filter;
         }
 
         $excludedFilters = array_unique(

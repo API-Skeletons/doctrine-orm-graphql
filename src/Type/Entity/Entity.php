@@ -257,7 +257,7 @@ final class Entity
     /**
      * @return array<string, mixed>
      *
-     * @psalm-suppress MixedArgument, MixedAssignment, MixedMethodCall
+     * @psalm-suppress MixedArgument, MixedAssignment
      */
     protected function addAssociations(): array
     {

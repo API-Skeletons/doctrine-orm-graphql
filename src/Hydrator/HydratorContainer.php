@@ -6,7 +6,6 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
@@ -15,7 +14,6 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
 use Override;
 use ReflectionClass;
 
-use function assert;
 use function class_implements;
 use function in_array;
 
@@ -51,9 +49,8 @@ final class HydratorContainer extends Container
         // Compose hydrators as Lazy Ghosts using DoctrineObjectWithComputed
         $hydrator = (new ReflectionClass(DoctrineObjectWithComputed::class))
             ->newLazyGhost(static function (DoctrineObjectWithComputed $object) use ($self, $id): void {
-                $entityManager = $self->entityManager;
-                $entity        = $self->entityTypeContainer->get($id);
-                assert($entity instanceof Entity);
+                $entityManager  = $self->entityManager;
+                $entity         = $self->entityTypeContainer->get($id);
                 $entityMetadata = $entity->getEntityMetadata();
 
                 /** @psalm-suppress DirectConstructorCall */

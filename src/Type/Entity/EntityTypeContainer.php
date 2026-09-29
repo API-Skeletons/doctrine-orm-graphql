@@ -22,6 +22,7 @@ use ReflectionClass;
 use function array_keys;
 use function array_map;
 use function assert;
+use function is_array;
 use function strtolower;
 
 /**
@@ -41,23 +42,23 @@ final class EntityTypeContainer extends Container
     #[Override]
     public function has(string $id): bool
     {
-        $metadata = $this->container->get(Metadata::class);
-        assert($metadata instanceof Metadata);
-
-        return isset($metadata[$id]);
+        return isset($this->container->service(Metadata::class)[$id]);
     }
 
     /**
      * Create and return an Entity object
      */
     #[Override]
-    public function get(string $id, string|null $eventName = null): mixed
+    public function get(string $id, string|null $eventName = null): Entity
     {
         // Allow for entities with a custom eventName
         $key = strtolower($id . ($eventName !== null ? '.' . $eventName : ''));
 
         if (isset($this->register[$key])) {
-            return $this->register[$key];
+            $entity = $this->register[$key];
+            assert($entity instanceof Entity);
+
+            return $entity;
         }
 
         if (! $this->has($id)) {
@@ -74,22 +75,23 @@ final class EntityTypeContainer extends Container
             $key,
             (new ReflectionClass(Entity::class))
                 ->newLazyGhost(static function (Entity $object) use ($container, $id, $eventName): void {
-                    $metadata = $container->get(Metadata::class);
-                    assert($metadata instanceof Metadata);
-                    /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                    $entityMetadata = $container->service(Metadata::class)[$id];
+                    assert(is_array($entityMetadata));
+
+                    /** @psalm-suppress DirectConstructorCall */
                     $object->__construct(
                         $eventName,
-                        $container->get(Config::class),
-                        $container->get(EntityManager::class),
-                        $container->get(EntityTypeContainer::class),
-                        $container->get(EventDispatcher::class),
-                        $container->get(FieldResolver::class),
-                        $container->get(FilterFactory::class),
-                        $container->get(HydratorContainer::class),
-                        $container->get(PaginationService::class),
-                        $container->get(ResolveCollectionFactory::class),
-                        $container->get(TypeContainer::class),
-                        $metadata[$id],
+                        $container->service(Config::class),
+                        $container->service(EntityManager::class),
+                        $container->service(EntityTypeContainer::class),
+                        $container->service(EventDispatcher::class),
+                        $container->service(FieldResolver::class),
+                        $container->service(FilterFactory::class),
+                        $container->service(HydratorContainer::class),
+                        $container->service(PaginationService::class),
+                        $container->service(ResolveCollectionFactory::class),
+                        $container->service(TypeContainer::class),
+                        $entityMetadata,
                     );
                 }),
         );
@@ -105,9 +107,6 @@ final class EntityTypeContainer extends Container
     #[Override]
     public function getRegisteredTypes(): array
     {
-        $metadata = $this->container->get(Metadata::class);
-        assert($metadata instanceof Metadata);
-
-        return array_map('strval', array_keys((array) $metadata));
+        return array_map('strval', array_keys($this->container->service(Metadata::class)->getArrayCopy()));
     }
 }

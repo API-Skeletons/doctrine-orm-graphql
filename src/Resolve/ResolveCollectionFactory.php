@@ -77,27 +77,21 @@ final class ResolveCollectionFactory
 
             // If an alias map exists, check for an alias
             $targetCollectionName = $info->fieldName;
-            /** @psalm-suppress MixedMethodCall, MixedArgument */
             if (in_array($info->fieldName, $this->entityTypeContainer->get($entityClassName)->getExtractionMap())) {
                 $targetCollectionName = array_flip($this->entityTypeContainer
                     ->get($entityClassName)->getExtractionMap())[$info->fieldName] ?? $info->fieldName;
             }
 
-            /** @psalm-suppress MixedArgumentTypeCoercion */
             $targetClassName = $this->entityManager->getMetadataFactory()
                 ->getMetadataFor($entityClassName)
                 ->getAssociationTargetClass($targetCollectionName);
 
             // Get the target entity
             $targetEntity = $this->entityTypeContainer->get($targetClassName);
-            assert($targetEntity instanceof Entity);
-
-            assert(is_string($targetCollectionName));
 
             // Get event name
             $sourceEntity = $this->entityTypeContainer->get($entityClassName);
-            assert($sourceEntity instanceof Entity);
-            $eventName = $sourceEntity->getEntityMetadata()->associations[$targetCollectionName]->eventName ?? null;
+            $eventName    = $sourceEntity->getEntityMetadata()->associations[$targetCollectionName]->eventName ?? null;
 
             $sourceIdentifier = $this->getBatchableIdentifier($entityClassName, $targetCollectionName, $source);
 
@@ -129,11 +123,7 @@ final class ResolveCollectionFactory
         };
     }
 
-    /**
-     * @return mixed[]
-     *
-     * @psalm-suppress MixedOperand
-     */
+    /** @return mixed[] */
     protected function buildPagination(
         Entity $entity,
         string $entityClassName,
@@ -168,7 +158,6 @@ final class ResolveCollectionFactory
          * offset and limit rather than the final ones.
          */
         if ($eventName !== null) {
-            /** @psalm-suppress MixedArgument */
             $requested = $this->paginationService->calculateRequestedOffsetAndLimit(
                 $paginationFields,
                 $limit,
@@ -189,7 +178,6 @@ final class ResolveCollectionFactory
         $info = $resolve['info'] ?? null;
         assert($info instanceof ResolveInfo || $info === null);
 
-        /** @psalm-suppress MixedArgument */
         return $this->paginationService->paginate(
             $paginationFields,
             $limit,
@@ -640,8 +628,7 @@ final class ResolveCollectionFactory
      */
     private function getLimit(Entity $targetEntity, string $sourceClassName, string $associationName): int
     {
-        $sourceEntity = $this->entityTypeContainer->get($sourceClassName);
-        assert($sourceEntity instanceof Entity);
+        $sourceEntity     = $this->entityTypeContainer->get($sourceClassName);
         $associationLimit = $sourceEntity->getEntityMetadata()->associations[$associationName]->limit ?? null;
 
         $limit = $associationLimit !== null && $associationLimit !== 0

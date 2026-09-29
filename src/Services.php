@@ -9,8 +9,6 @@ use Doctrine\ORM\EntityManager;
 use League\Event\EventDispatcher;
 use ReflectionClass;
 
-use function assert;
-
 /**
  * This trait is used to remove complexity from the Driver class.
  * It doesn't change what the Driver does.  It just separates the container work
@@ -49,8 +47,7 @@ trait Services
                 Cache\QueryResultCache::class,
                 static function (Container $container) use ($entityManager): Cache\QueryResultCache {
                     $cache  = new Cache\QueryResultCache();
-                    $config = $container->get(Config::class);
-                    assert($config instanceof Config);
+                    $config = $container->service(Config::class);
 
                     // The cache lasts until the entity manager is cleared or flushed
                     if ($config->getUseQueryResultCache()) {
@@ -64,19 +61,16 @@ trait Services
                 Type\Entity\EntityTypeContainer::class,
                 (new ReflectionClass(Type\Entity\EntityTypeContainer::class))
                     ->newLazyGhost(static function (Type\Entity\EntityTypeContainer $object) use ($self): void {
-                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                        /** @psalm-suppress DirectConstructorCall */
                         $object->__construct($self);
                     }),
             )
             ->set(
                 Metadata::class,
                 static function (Container $container) use ($metadata) {
-                    $entityManager = $container->get(EntityManager::class);
-                    assert($entityManager instanceof EntityManager);
-                    $config = $container->get(Config::class);
-                    assert($config instanceof Config);
-                    $eventDispatcher = $container->get(EventDispatcher::class);
-                    assert($eventDispatcher instanceof EventDispatcher);
+                    $entityManager   = $container->service(EntityManager::class);
+                    $config          = $container->service(Config::class);
+                    $eventDispatcher = $container->service(EventDispatcher::class);
 
                     return (new Metadata\MetadataFactory(
                         $metadata,
@@ -90,19 +84,18 @@ trait Services
                 Resolve\FieldResolver::class,
                 (new ReflectionClass(Resolve\FieldResolver::class))
                     ->newLazyGhost(static function (Resolve\FieldResolver $object) use ($self): void {
-                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                        /** @psalm-suppress DirectConstructorCall */
                         $object->__construct(
-                            $self->get(Config::class),
-                            $self->get(Type\Entity\EntityTypeContainer::class),
-                            $self->get(Resolve\ToOneLoader::class),
+                            $self->service(Config::class),
+                            $self->service(Type\Entity\EntityTypeContainer::class),
+                            $self->service(Resolve\ToOneLoader::class),
                         );
                     }),
             )
             ->set(
                 Resolve\ToOneLoader::class,
                 static function (Container $container) {
-                    $entityManager = $container->get(EntityManager::class);
-                    assert($entityManager instanceof EntityManager);
+                    $entityManager = $container->service(EntityManager::class);
 
                     return new Resolve\ToOneLoader($entityManager);
                 },
@@ -111,16 +104,16 @@ trait Services
                 Resolve\ResolveCollectionFactory::class,
                 (new ReflectionClass(Resolve\ResolveCollectionFactory::class))
                     ->newLazyGhost(static function (Resolve\ResolveCollectionFactory $object) use ($self): void {
-                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                        /** @psalm-suppress DirectConstructorCall */
                         $object->__construct(
-                            $self->get(EntityManager::class),
-                            $self->get(Config::class),
-                            $self->get(Resolve\FieldResolver::class),
-                            $self->get(Type\TypeContainer::class),
-                            $self->get(EntityTypeContainer::class),
-                            $self->get(EventDispatcher::class),
-                            $self->get(Pagination\PaginationService::class),
-                            $self->get(Cache\QueryResultCache::class),
+                            $self->service(EntityManager::class),
+                            $self->service(Config::class),
+                            $self->service(Resolve\FieldResolver::class),
+                            $self->service(Type\TypeContainer::class),
+                            $self->service(EntityTypeContainer::class),
+                            $self->service(EventDispatcher::class),
+                            $self->service(Pagination\PaginationService::class),
+                            $self->service(Cache\QueryResultCache::class),
                         );
                     }),
             )
@@ -128,13 +121,13 @@ trait Services
                 Resolve\ResolveEntityFactory::class,
                 (new ReflectionClass(Resolve\ResolveEntityFactory::class))
                     ->newLazyGhost(static function (Resolve\ResolveEntityFactory $object) use ($self): void {
-                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                        /** @psalm-suppress DirectConstructorCall */
                         $object->__construct(
-                            $self->get(Config::class),
-                            $self->get(EntityManager::class),
-                            $self->get(EventDispatcher::class),
-                            $self->get(Pagination\PaginationService::class),
-                            $self->get(Cache\QueryResultCache::class),
+                            $self->service(Config::class),
+                            $self->service(EntityManager::class),
+                            $self->service(EventDispatcher::class),
+                            $self->service(Pagination\PaginationService::class),
+                            $self->service(Cache\QueryResultCache::class),
                         );
                     }),
             )
@@ -142,10 +135,10 @@ trait Services
                 Resolve\ResolveDbalFactory::class,
                 (new ReflectionClass(Resolve\ResolveDbalFactory::class))
                     ->newLazyGhost(static function (Resolve\ResolveDbalFactory $object) use ($self): void {
-                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                        /** @psalm-suppress DirectConstructorCall */
                         $object->__construct(
-                            $self->get(Config::class),
-                            $self->get(Pagination\PaginationService::class),
+                            $self->service(Config::class),
+                            $self->service(Pagination\PaginationService::class),
                         );
                     }),
             )
@@ -153,12 +146,12 @@ trait Services
                 Filter\FilterFactory::class,
                 (new ReflectionClass(Filter\FilterFactory::class))
                     ->newLazyGhost(static function (Filter\FilterFactory $object) use ($self): void {
-                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                        /** @psalm-suppress DirectConstructorCall */
                         $object->__construct(
-                            $self->get(Config::class),
-                            $self->get(EntityManager::class),
-                            $self->get(Type\TypeContainer::class),
-                            $self->get(EventDispatcher::class),
+                            $self->service(Config::class),
+                            $self->service(EntityManager::class),
+                            $self->service(Type\TypeContainer::class),
+                            $self->service(EventDispatcher::class),
                         );
                     }),
             )
@@ -166,10 +159,10 @@ trait Services
                 Hydrator\HydratorContainer::class,
                 (new ReflectionClass(Hydrator\HydratorContainer::class))
                     ->newLazyGhost(static function (Hydrator\HydratorContainer $object) use ($self): void {
-                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                        /** @psalm-suppress DirectConstructorCall */
                         $object->__construct(
-                            $self->get(EntityManager::class),
-                            $self->get(Type\Entity\EntityTypeContainer::class),
+                            $self->service(EntityManager::class),
+                            $self->service(Type\Entity\EntityTypeContainer::class),
                         );
                     }),
             )
@@ -177,12 +170,12 @@ trait Services
                 Input\InputFactory::class,
                 (new ReflectionClass(Input\InputFactory::class))
                     ->newLazyGhost(static function (Input\InputFactory $object) use ($self): void {
-                        /** @psalm-suppress DirectConstructorCall, MixedArgument */
+                        /** @psalm-suppress DirectConstructorCall */
                         $object->__construct(
-                            $self->get(Config::class),
-                            $self->get(EntityManager::class),
-                            $self->get(Type\Entity\EntityTypeContainer::class),
-                            $self->get(Type\TypeContainer::class),
+                            $self->service(Config::class),
+                            $self->service(EntityManager::class),
+                            $self->service(Type\Entity\EntityTypeContainer::class),
+                            $self->service(Type\TypeContainer::class),
                         );
                     }),
             );
