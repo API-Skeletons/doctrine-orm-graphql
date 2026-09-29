@@ -5,6 +5,18 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Input fields of nullable columns are optional
+---------------------------------------------
+
+``$driver->input(Entity::class)`` without field lists made every field
+required, including fields whose column is nullable.  Those fields are now
+optional.  This is a schema change.
+
+The required and optional field lists accept a field's alias, the name the
+input uses, as well as its field name, and name the same input type either
+way.  A field in both lists, which was silently optional, throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input``.
+
 decimal fields are strings
 --------------------------
 
