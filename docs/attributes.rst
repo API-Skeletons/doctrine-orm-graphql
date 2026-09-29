@@ -78,7 +78,9 @@ Field
 Use this attribute on fields (not associations) you want included
 in your graph. Optional parameters are:
 
-* ``alias`` - An alias to use as the GraphQL field name.
+* ``alias`` - An alias to use as the GraphQL field name.  Each field of a type
+  must have a unique name, so an alias may not be the name or alias of another
+  field, association or computed field.
 * ``description`` - A description of the ``Field``.
 * ``excludeFilters`` - An array of filters to exclude from available
   filters for this field.  Combined with ``excludeFilters`` of the entity.
@@ -115,7 +117,9 @@ Used on any type of association including one to one, one to many, many to one,
 etc.  Associations which are to one types will just include the entity they are
 associated with.  Associations of the to many variety will become connections.
 
-* ``alias`` - An alias to use as the GraphQL field name.
+* ``alias`` - An alias to use as the GraphQL field name.  Each field of a type
+  must have a unique name, so an alias may not be the name or alias of another
+  field, association or computed field.
 * ``description`` - A description of the ``Association``.
 * ``excludeFilters`` - An array of criteria to exclude from available
   filters for the association. Entity level ``excludeFilters`` are applied to

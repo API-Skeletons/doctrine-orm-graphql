@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\ComputedFieldMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\EntityMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
@@ -111,7 +112,14 @@ final class Entity
      * An extraction map is used to alias fields and associations using a
      * naming strategy in the hydrator
      *
+     * Every field of the type, whether a field, an association or a computed
+     * field, named by its alias if it has one, must have a unique name.
+     * Otherwise one would silently replace another in the type and in the
+     * hydrator's extraction.
+     *
      * @return array<string, string>
+     *
+     * @throws MetadataException
      */
     public function getExtractionMap(): array
     {
@@ -119,24 +127,40 @@ final class Entity
             return $this->extractionMap;
         }
 
-        // Build into a local so a duplicate alias does not leave a partial map
+        // Build into a local so a duplicate name does not leave a partial map
         $extractionMap = [];
 
-        $fields = [...$this->entityMetadata->fields, ...$this->entityMetadata->associations];
-        foreach ($fields as $fieldName => $fieldMetadata) {
-            if ($fieldMetadata->alias === null) {
-                continue;
-            }
+        // The field, association or computed field named by each name
+        $names = [];
 
-            // Don't allow duplicate aliases
-            if (in_array($fieldMetadata->alias, $extractionMap, true)) {
-                throw new MetadataException(
-                    'Duplicate alias "' . $fieldMetadata->alias . '" found for field ' . $fieldName .
-                    ' in entity ' . $this->getEntityClass() . '. Each field alias must be unique.',
-                );
-            }
+        $fields = [
+            'field' => $this->entityMetadata->fields,
+            'association' => $this->entityMetadata->associations,
+            'computed field' => $this->entityMetadata->computedFields,
+        ];
 
-            $extractionMap[$fieldName] = $fieldMetadata->alias;
+        foreach ($fields as $kind => $kindFields) {
+            foreach ($kindFields as $fieldName => $fieldMetadata) {
+                $alias = $fieldMetadata instanceof ComputedFieldMetadata ? null : $fieldMetadata->alias;
+                $name  = $alias ?? $fieldName;
+
+                if (isset($names[$name])) {
+                    throw new MetadataException(
+                        'Duplicate field name "' . $name . '" in entity ' . $this->getEntityClass() . ': '
+                        . $names[$name] . ' and ' . $kind . ' ' . $fieldName
+                        . ($alias !== null ? ' aliased as "' . $alias . '"' : '')
+                        . '.  Each field of a type must have a unique name.',
+                    );
+                }
+
+                $names[$name] = $kind . ' ' . $fieldName . ($alias !== null ? ' aliased as "' . $alias . '"' : '');
+
+                if ($alias === null) {
+                    continue;
+                }
+
+                $extractionMap[$fieldName] = $alias;
+            }
         }
 
         $this->extractionMap = $extractionMap;
