@@ -18,6 +18,7 @@ use League\Event\EventDispatcher;
 use ReflectionClass;
 use ReflectionProperty;
 
+use function array_key_exists;
 use function ctype_upper;
 use function in_array;
 use function lcfirst;
@@ -101,6 +102,14 @@ final class MetadataFactory
 
         // Fetch attributes for the entity class filterd by Attribute\Entity
         foreach ($reflectionClass->getAttributes(Attribute\Entity::class) as $attribute) {
+            // PHP would report only an unknown named parameter
+            if (array_key_exists('byValue', $attribute->getArguments())) {
+                throw new MetadataException(
+                    'The byValue argument of the Entity attribute of ' . $reflectionClass->getName()
+                    . ' is renamed extractByValue.',
+                );
+            }
+
             $instance = $attribute->newInstance();
 
             // Only process attributes for the Config group
@@ -123,7 +132,7 @@ final class MetadataFactory
             // Save entity-level metadata
             $this->metadata[$reflectionClass->getName()] = [
                 'entityClass' => $reflectionClass->getName(),
-                'byValue' => $this->config->getExtractByValue() ?? $instance->getByValue(),
+                'extractByValue' => $this->config->getExtractByValue() ?? $instance->getExtractByValue(),
                 'limit' => $instance->getLimit(),
                 'fields' => [],
                 'excludeFilters' => Filters::toStringArray($instance->getExcludeFilters()),

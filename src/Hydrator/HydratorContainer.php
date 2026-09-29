@@ -59,7 +59,7 @@ final class HydratorContainer extends Container
                 /** @psalm-suppress DirectConstructorCall */
                 $object->__construct(
                     $entityManager,
-                    $entityMetadata->byValue,
+                    $entityMetadata->extractByValue,
                 );
 
                 // Create field and association strategies and assign them to the hydrator

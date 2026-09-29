@@ -131,7 +131,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `useHydratorCache` - Cache hydrator results for as long as the entity exists
 - `useQueryResultCache` - Cache query results for identical SQL and parameters until the entity manager is cleared or flushed (`Cache\QueryResultCacheListener`)
 - `limit` - Default limit on the rows of a connection (default: 1000); an entity's `limit`, then an association's, replaces it, even when larger
-- `extractByValue` - Extract by value vs reference for every entity, overriding the `byValue` entity attribute
+- `extractByValue` - Extract by value vs reference for every entity, overriding the `extractByValue` argument of the `#[Entity]` attribute
 - `entityPrefix` - Remove prefix from type names
 - `sortFields` - Sort fields alphabetically
 - `excludeFilters` - Globally exclude specific filters

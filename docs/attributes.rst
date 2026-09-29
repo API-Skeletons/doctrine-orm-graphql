@@ -64,7 +64,7 @@ The following parameters are specific to the hydrator used to extract
 data from Doctrine entities.  The hydrator library is
 `doctrine-laminas-hydrator <https://github.com/doctrine/doctrine-laminas-hydrator>`_
 
-* ``byValue`` - Default is ``true``.  When set to false the hydrator will
+* ``extractByValue`` - Default is ``true``.  When set to false the hydrator will
   extract values by reference.  If you have getters and setters for all your
   fields then extracting by value will use those.  Extracting by reference
   will reflect the entities and extract the values from the properties.

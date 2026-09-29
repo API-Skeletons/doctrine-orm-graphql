@@ -106,23 +106,34 @@ The export records the config values the metadata depends on: ``group``,
 cached metadata built with other values throws, rather than silently serving
 another group's types, names and limits.
 
-The shape of each entity's metadata is unchanged.
+Each entity's ``byValue`` key is renamed ``extractByValue``, as the ``Entity``
+attribute's argument is; the shape of each entity's metadata is otherwise
+unchanged.
 
-globalByValue is renamed extractByValue
----------------------------------------
+globalByValue and byValue are renamed extractByValue
+----------------------------------------------------
 
 The ``globalByValue`` config option is renamed ``extractByValue``, matching
 ``ConfigBuilder::extractByValue()``, and ``Config::getGlobalByValue()`` is
 renamed ``Config::getExtractByValue()``.  Its meaning is unchanged.  The old
 name throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration``.
 
+The ``byValue`` argument of the ``#[Entity]`` attribute is renamed
+``extractByValue`` too, and ``Attribute\Entity::getByValue()`` is renamed
+``getExtractByValue()``, so the option has one name wherever it is set.  The
+old argument throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``.
+The parameter of ``ConfigBuilder::extractByValue()`` is renamed ``$enable``, as
+the other boolean methods' are.
+
 .. code-block:: php
 
     // 13.x
     new Config(['globalByValue' => false]);
+    #[GraphQL\Entity(byValue: false)]
 
     // 14.0
     new Config(['extractByValue' => false]);
+    #[GraphQL\Entity(extractByValue: false)]
 
 symfony/var-exporter is no longer required
 ------------------------------------------

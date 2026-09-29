@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Fields mapped with an enumType
  */
 #[GraphQL\Entity(group: 'EnumTypes')]
-#[GraphQL\Entity(group: 'EnumTypesByReference', byValue: false)]
+#[GraphQL\Entity(group: 'EnumTypesByReference', extractByValue: false)]
 #[ORM\Entity]
 class EnumTypes
 {

@@ -45,7 +45,7 @@ class CachingTest extends TestCase
             ],
             'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User' => [
                 'entityClass' => 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User',
-                'byValue' => true,
+                'extractByValue' => true,
                 'limit' => 0,
                 'description' => '',
                 'excludeFilters' => [],
