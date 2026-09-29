@@ -75,7 +75,6 @@ final class InputFactory
         string|null $name = null,
     ): InputObjectType {
         $targetEntity = $this->entityTypeContainer->get($id);
-        assert($targetEntity instanceof Entity);
 
         // A field may be named by its alias, as it is in the input, or by its
         // field name.  The order of the fields does not matter.
@@ -275,7 +274,7 @@ final class InputFactory
     {
         $fieldMetadata = $targetEntity->getEntityMetadata()->fields[$fieldName];
         $type          = $this->typeContainer->get($fieldMetadata->type);
-        assert($type instanceof Type && $type instanceof NullableType && $type instanceof InputType);
+        assert($type instanceof NullableType && $type instanceof InputType);
 
         $name = $targetEntity->getExtractionMap()[$fieldName] ?? $fieldName;
 

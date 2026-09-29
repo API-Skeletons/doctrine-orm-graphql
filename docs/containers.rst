@@ -11,6 +11,20 @@ the container to the closure as the only argument.  This provides a basic
 method for factories.  Once a factory has executed, the result will
 replace the factory so later requests will just get the composed object.
 
+``get()`` returns ``mixed``, as PSR-11 defines it.  A service registered by its
+class name, such as the ``TypeContainer`` or the ``EventDispatcher``, can be
+got typed as that class with ``service()``, which throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration`` if the
+registration is of another class:
+
+  .. code-block:: php
+
+    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
+
+    $typeContainer = $driver->service(TypeContainer::class);
+
+The ``TypeContainer``'s ``get()`` returns a ``GraphQL\Type\Definition\Type``.
+
 There are two containers you should be aware of if you intend to extend this
 library.
 

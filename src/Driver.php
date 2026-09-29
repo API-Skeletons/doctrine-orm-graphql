@@ -30,8 +30,7 @@ final class Driver extends Container
         $objectType = $this->type($id, $eventName);
         assert($objectType instanceof ObjectType);
 
-        $typeContainer = $this->get(Type\TypeContainer::class);
-        assert($typeContainer instanceof Type\TypeContainer);
+        $typeContainer = $this->service(Type\TypeContainer::class);
 
         /** @psalm-suppress MixedReturnStatement */
         return $typeContainer->build(Type\Connection::class, Type\Connection::nameFor($objectType->name), $objectType);
@@ -44,17 +43,14 @@ final class Driver extends Container
      */
     public function type(string $id, string|null $eventName = null): mixed
     {
-        $entityTypeContainer = $this->get(Type\Entity\EntityTypeContainer::class);
-        assert($entityTypeContainer instanceof Type\Entity\EntityTypeContainer);
+        $entityTypeContainer = $this->service(Type\Entity\EntityTypeContainer::class);
         if ($entityTypeContainer->has($id)) {
             $entity = $entityTypeContainer->get($id, $eventName);
-            assert($entity instanceof Type\Entity\Entity);
 
             return $entity->getObjectType();
         }
 
-        $typeContainer = $this->get(Type\TypeContainer::class);
-        assert($typeContainer instanceof Type\TypeContainer);
+        $typeContainer = $this->service(Type\TypeContainer::class);
         if ($typeContainer->has($id)) {
             return $typeContainer->get($id);
         }
@@ -82,12 +78,9 @@ final class Driver extends Container
      */
     public function filter(string $id): object
     {
-        $filterFactory = $this->get(Filter\FilterFactory::class);
-        assert($filterFactory instanceof Filter\FilterFactory);
-        $entityTypeContainer = $this->get(Type\Entity\EntityTypeContainer::class);
-        assert($entityTypeContainer instanceof Type\Entity\EntityTypeContainer);
-        $entity = $entityTypeContainer->get($id);
-        assert($entity instanceof Type\Entity\Entity);
+        $filterFactory       = $this->service(Filter\FilterFactory::class);
+        $entityTypeContainer = $this->service(Type\Entity\EntityTypeContainer::class);
+        $entity              = $entityTypeContainer->get($id);
 
         return $filterFactory->get($entity);
     }
@@ -100,8 +93,7 @@ final class Driver extends Container
      */
     public function pagination(): array
     {
-        $paginationService = $this->get(Pagination\PaginationService::class);
-        assert($paginationService instanceof Pagination\PaginationService);
+        $paginationService = $this->service(Pagination\PaginationService::class);
 
         return $paginationService->getArguments();
     }
@@ -113,12 +105,9 @@ final class Driver extends Container
      */
     public function resolve(string $id, string|null $eventName = null): Closure
     {
-        $resolveEntityFactory = $this->get(Resolve\ResolveEntityFactory::class);
-        assert($resolveEntityFactory instanceof Resolve\ResolveEntityFactory);
-        $entityTypeContainer = $this->get(Type\Entity\EntityTypeContainer::class);
-        assert($entityTypeContainer instanceof Type\Entity\EntityTypeContainer);
-        $entity = $entityTypeContainer->get($id);
-        assert($entity instanceof Type\Entity\Entity);
+        $resolveEntityFactory = $this->service(Resolve\ResolveEntityFactory::class);
+        $entityTypeContainer  = $this->service(Type\Entity\EntityTypeContainer::class);
+        $entity               = $entityTypeContainer->get($id);
 
         return $resolveEntityFactory->get($entity, $eventName);
     }
@@ -131,8 +120,7 @@ final class Driver extends Container
      */
     public function dbalConnection(ObjectType $type): ObjectType
     {
-        $typeContainer = $this->get(Type\TypeContainer::class);
-        assert($typeContainer instanceof Type\TypeContainer);
+        $typeContainer = $this->service(Type\TypeContainer::class);
 
         $connection = $typeContainer->build(Type\Connection::class, Type\Connection::nameFor($type->name), $type);
         assert($connection instanceof ObjectType);
@@ -149,8 +137,7 @@ final class Driver extends Container
      */
     public function dbalResolve(DbalQueryBuilder $queryBuilder): Closure
     {
-        $resolveDbalFactory = $this->get(Resolve\ResolveDbalFactory::class);
-        assert($resolveDbalFactory instanceof Resolve\ResolveDbalFactory);
+        $resolveDbalFactory = $this->service(Resolve\ResolveDbalFactory::class);
 
         return $resolveDbalFactory->get($queryBuilder);
     }
@@ -187,8 +174,7 @@ final class Driver extends Container
         array $optionalFields = [],
         string|null $name = null,
     ): InputObjectType {
-        $inputFactory = $this->get(Input\InputFactory::class);
-        assert($inputFactory instanceof Input\InputFactory);
+        $inputFactory = $this->service(Input\InputFactory::class);
 
         return $inputFactory->get($entityClass, $requiredFields, $optionalFields, $name);
     }

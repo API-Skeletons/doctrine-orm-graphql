@@ -16,6 +16,7 @@ use ReflectionException;
 
 use function array_keys;
 use function array_map;
+use function get_debug_type;
 use function strtolower;
 
 /**
@@ -59,6 +60,30 @@ abstract class Container implements ContainerInterface
         }
 
         return $this->register[$id];
+    }
+
+    /**
+     * Get a service registered by its class name, typed as that class
+     *
+     * @param class-string<T> $class
+     *
+     * @return T
+     *
+     * @throws ConfigurationException When the registration is not of that class.
+     *
+     * @template T of object
+     */
+    public function service(string $class): object
+    {
+        $service = $this->get($class);
+
+        if (! $service instanceof $class) {
+            throw new ConfigurationException(
+                'The service registered as ' . $class . ' is ' . get_debug_type($service) . ', not ' . $class . '.',
+            );
+        }
+
+        return $service;
     }
 
     /**

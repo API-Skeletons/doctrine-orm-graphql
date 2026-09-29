@@ -6,7 +6,6 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\DoctrineObjectWithComputed;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use Doctrine\Persistence\Proxy;
@@ -100,7 +99,6 @@ final class FieldResolver
     private function getHydrator(object $source): HydratorInterface
     {
         $entity = $this->entityTypeContainer->get((new DefaultProxyClassNameResolver())->getClass($source));
-        assert($entity instanceof Entity);
 
         return $entity->getHydrator();
     }

@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeNotFound as TypeNotFoundException;
 use GraphQL\Type\Definition\Type;
+use Override;
+
+use function assert;
 
 /**
  * This class manages all GraphQL types
@@ -54,5 +58,19 @@ final class TypeContainer extends Container
             ->set('sortdirection', static fn () => new SortDirection())
             ->set('blob', static fn () => new Blob())
             ->set('binary', static fn (Container $container): mixed => $container->get('blob'));
+    }
+
+    /**
+     * Every registration is a GraphQL type
+     *
+     * @throws TypeNotFoundException
+     */
+    #[Override]
+    public function get(string $id): Type
+    {
+        $type = parent::get($id);
+        assert($type instanceof Type);
+
+        return $type;
     }
 }
