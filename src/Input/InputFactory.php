@@ -6,6 +6,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Input;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input as InputException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\EntityMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SuggestSimilarString;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
@@ -105,7 +106,7 @@ final class InputFactory
             return $this->inputTypes[$name]['type'];
         }
 
-        if (! preg_match('/^[_a-zA-Z][_a-zA-Z0-9]*$/', $name)) {
+        if (! preg_match(EntityMetadata::NAME_PATTERN, $name)) {
             throw new InputException('Input type name ' . $name . ' is not a valid GraphQL name.');
         }
 

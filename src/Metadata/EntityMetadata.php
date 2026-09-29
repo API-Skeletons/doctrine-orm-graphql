@@ -6,7 +6,10 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 
+use function array_keys;
 use function class_exists;
+use function preg_match;
+use function str_starts_with;
 
 /**
  * The metadata of an entity exposed with #[Entity]
@@ -19,6 +22,9 @@ use function class_exists;
  */
 final readonly class EntityMetadata
 {
+    /** The pattern of a GraphQL name */
+    public const string NAME_PATTERN = '/^[_a-zA-Z][_a-zA-Z0-9]*$/';
+
     /**
      * @param class-string                         $entityClass
      * @param list<string>                         $excludeFilters
@@ -79,7 +85,7 @@ final readonly class EntityMetadata
             }
         }
 
-        return new self(
+        $entityMetadata = new self(
             $entityClass,
             $reader->bool('extractByValue'),
             $reader->int('limit'),
@@ -89,6 +95,47 @@ final readonly class EntityMetadata
             $fields,
             $associations,
             $computedFields,
+        );
+
+        $entityMetadata->assertValidNames();
+
+        return $entityMetadata;
+    }
+
+    /**
+     * The type name and the name of each field of the type must be a valid
+     * GraphQL name, or the schema is invalid.  webonyx only reports that when
+     * the schema is validated, which it is not by default.
+     *
+     * @throws MetadataException
+     */
+    private function assertValidNames(): void
+    {
+        $this->assertValidName($this->typeName, 'the type name');
+
+        foreach ([...$this->fields, ...$this->associations] as $name => $fieldMetadata) {
+            if ($fieldMetadata->alias !== null) {
+                $this->assertValidName($fieldMetadata->alias, 'the alias of ' . $name);
+            } else {
+                $this->assertValidName($name, 'the name of field ' . $name);
+            }
+        }
+
+        foreach (array_keys($this->computedFields) as $name) {
+            $this->assertValidName($name, 'the name of computed field ' . $name);
+        }
+    }
+
+    /** @throws MetadataException */
+    private function assertValidName(string $name, string $what): void
+    {
+        if (preg_match(self::NAME_PATTERN, $name) === 1 && ! str_starts_with($name, '__')) {
+            return;
+        }
+
+        throw new MetadataException(
+            'Metadata for entity ' . $this->entityClass . ': ' . $what . ', "' . $name . '", is not a valid GraphQL name.  '
+            . 'A name must match ' . self::NAME_PATTERN . ' and may not begin with "__".',
         );
     }
 

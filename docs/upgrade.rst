@@ -5,6 +5,16 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Invalid GraphQL names are rejected
+----------------------------------
+
+A ``typeName``, ``alias`` or computed field name which is not a valid GraphQL
+name, or a ``group`` or ``groupSuffix`` which makes type names invalid, built a schema
+which webonyx rejects only when the schema is validated, which it is not by
+default.  Such a name now throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` naming the entity
+and the name.
+
 The Driver has no public properties
 -----------------------------------
 
