@@ -86,6 +86,12 @@ all resolve parameters:
     ``getArgs()['last']`` and ``getArgs()['before']`` if you need to tell a
     backward request apart from a request for the first page.
 
+    A listener may fetch join a collection, such as
+    ``->leftJoin('entity.performances', 'p')->addSelect('p')``.  Each entity
+    then has a row for each member of the collection, so a page of such a
+    query is fetched with Doctrine's ``Paginator``, which limits the entities
+    rather than the rows.
+
 Association QueryBuilder Event
 ==============================
 

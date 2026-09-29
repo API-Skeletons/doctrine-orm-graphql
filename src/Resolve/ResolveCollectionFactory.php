@@ -10,7 +10,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Pagination as PaginationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\OrderByIdentifier;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\FetchPage;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
@@ -43,7 +43,7 @@ use function serialize;
  */
 final class ResolveCollectionFactory
 {
-    use OrderByIdentifier;
+    use FetchPage;
 
     /** The most sources matched by one IN list */
     private const int CHUNK_SIZE = 1000;
@@ -543,20 +543,6 @@ final class ResolveCollectionFactory
         return $queryBuilder;
     }
 
-    /**
-     * Fetch a page of a query, ordered by identifier after any other ordering
-     *
-     * @return mixed[]
-     */
-    private function fetchPage(QueryBuilder $queryBuilder, int $offset, int $limit): array
-    {
-        $this->orderByIdentifier($queryBuilder);
-        $queryBuilder->setFirstResult($offset);
-        $queryBuilder->setMaxResults($limit);
-
-        return $this->getResults($queryBuilder);
-    }
-
     /** @param class-string $targetClassName */
     private function createQueryBuilder(string $targetClassName): QueryBuilder
     {
@@ -674,33 +660,5 @@ final class ResolveCollectionFactory
             $itemCount,
             $offset,
         );
-    }
-
-    /**
-     * Fetch the rows for the QueryBuilder, using the query result cache when enabled
-     *
-     * @return mixed[]
-     */
-    private function getResults(QueryBuilder $queryBuilder): array
-    {
-        $query = $queryBuilder->getQuery();
-
-        if (! $this->config->getUseQueryResultCache()) {
-            /** @psalm-suppress MixedReturnStatement */
-            return $query->getResult();
-        }
-
-        $cachedResults = $this->queryResultCache->get($query);
-
-        if ($cachedResults !== null) {
-            return $cachedResults;
-        }
-
-        /** @psalm-suppress MixedAssignment */
-        $results = $query->getResult();
-        /** @psalm-suppress MixedArgument */
-        $this->queryResultCache->set($query, $results);
-
-        return $results;
     }
 }
