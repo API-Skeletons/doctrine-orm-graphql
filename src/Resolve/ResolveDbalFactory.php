@@ -48,10 +48,12 @@ final class ResolveDbalFactory
      */
     public function buildPagination(QueryBuilder $queryBuilder, array $args, ResolveInfo|null $info = null): array
     {
+        $paginationFields = $this->paginationService->decodePaginationFields($args);
+
         return $this->paginationService->paginate(
-            $this->paginationService->decodePaginationFields($args),
+            $paginationFields,
             $this->config->getLimit(),
-            $info,
+            $this->paginationService->needsCount($paginationFields, $info),
             fn (): int => $this->getItemCount($queryBuilder),
             static function (int $offset, int $limit) use ($queryBuilder): array {
                 $queryBuilder->setFirstResult($offset);
