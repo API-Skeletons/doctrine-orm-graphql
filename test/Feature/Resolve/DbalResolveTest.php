@@ -6,13 +6,16 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Resolve;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use Closure;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function array_keys;
 use function base64_encode;
@@ -350,5 +353,56 @@ class DbalResolveTest extends TestCase
 
         $this->assertEquals(0, $queryBuilder->getFirstResult());
         $this->assertNull($queryBuilder->getMaxResults());
+    }
+
+    /** @return array<string, array{string, int}> */
+    public static function groupedQueryProvider(): array
+    {
+        // Ten performances by four artists in nine distinct venues, one null
+        return [
+            'group by' => ['GROUP BY', 4],
+            'distinct' => ['DISTINCT', 9],
+            'having' => ['HAVING', 2],
+        ];
+    }
+
+    /**
+     * A query using GROUP BY, DISTINCT or HAVING is counted by its rows, not
+     * by the rows it groups
+     */
+    #[DataProvider('groupedQueryProvider')]
+    public function testGroupedQueryIsCountedByItsRows(string $kind, int $rows): void
+    {
+        $performance  = $this->getEntityManager()->getClassMetadata(Performance::class)->getTableName();
+        $queryBuilder = $this->getEntityManager()->getConnection()->createQueryBuilder();
+
+        if ($kind === 'DISTINCT') {
+            $queryBuilder->select('DISTINCT venue AS name', '0 AS id')->from($performance)->orderBy('venue');
+        } else {
+            $queryBuilder->select('artist_id AS id', 'COUNT(*) AS name')
+                ->from($performance)
+                ->groupBy('artist_id')
+                ->orderBy('artist_id');
+
+            if ($kind === 'HAVING') {
+                $queryBuilder->having('COUNT(*) > :atLeast')->setParameter('atLeast', 1, ParameterType::INTEGER);
+            }
+        }
+
+        $driver = new Driver($this->getEntityManager());
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => ['rows' => $driver->dbalCompleteConnection($this->getObjectType(), $queryBuilder)],
+            ]),
+        ]);
+
+        $result = GraphQL::executeQuery($schema, '{ rows(first: 1) { totalCount pageInfo { hasNextPage } edges { node { id } } } }')
+            ->toArray();
+
+        $this->assertArrayNotHasKey('errors', $result);
+        $this->assertSame($rows, $result['data']['rows']['totalCount']);
+        $this->assertCount(1, $result['data']['rows']['edges']);
+        $this->assertSame($rows > 1, $result['data']['rows']['pageInfo']['hasNextPage']);
     }
 }
