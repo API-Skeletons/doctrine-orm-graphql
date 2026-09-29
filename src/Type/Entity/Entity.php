@@ -54,7 +54,7 @@ final class Entity
      * @throws MetadataException
      */
     public function __construct(
-        private string|null $eventName,
+        private readonly string|null $eventName,
         protected readonly Config $config,
         protected readonly EntityManager $entityManager,
         protected readonly EntityTypeContainer $entityTypeContainer,
@@ -206,7 +206,7 @@ final class Entity
          * Dispatch event to allow modifications to the ObjectType definition
          */
         $this->eventDispatcher->dispatch(
-            new EntityDefinition($definition, $this->eventName ??= $this->getEntityClass() . '.definition'),
+            new EntityDefinition($definition, $this->eventName ?? $this->getEntityClass() . '.definition'),
         );
 
         /**

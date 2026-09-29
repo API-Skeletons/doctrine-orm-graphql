@@ -183,9 +183,9 @@ final class ConfigBuilder
     /**
      * Enable alphabetical sorting of entity fields
      */
-    public function sortFields(bool $sort = true): self
+    public function enableSortFields(bool $enable = true): self
     {
-        $this->sortFields = $sort;
+        $this->sortFields = $enable;
 
         return $this;
     }

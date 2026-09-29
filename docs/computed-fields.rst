@@ -75,7 +75,8 @@ By default, field names are derived from method names:
 
 * ``getFullName()`` becomes ``fullName``
 * ``isActive()`` stays ``isActive`` (for boolean methods)
-* Other methods use the method name as-is
+* Other methods use the method name as-is, including a method such as
+  ``getaway()`` whose name only begins with ``get``
 
 You can override this with the ``name`` parameter:
 

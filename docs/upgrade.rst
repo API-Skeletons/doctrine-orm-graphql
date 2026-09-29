@@ -5,6 +5,28 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+ConfigBuilder::sortFields() is renamed enableSortFields()
+---------------------------------------------------------
+
+``ConfigBuilder::sortFields()`` is renamed ``enableSortFields()``, and its
+parameter is named ``$enable``, as the other boolean methods' are.
+
+.. code-block:: php
+
+    // 13.x
+    ConfigBuilder::create()->sortFields();
+
+    // 14.0
+    ConfigBuilder::create()->enableSortFields();
+
+A computed field of a method such as ``getaway()``, whose name only begins
+with ``get``, is named for the whole method, ``getaway``, rather than ``away``.
+
+Attribute ``excludeFilters`` and ``includeFilters`` accept the values of
+filters, such as ``'eq'``, as ``Config`` does; an unknown filter throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration`` rather than a
+``TypeError``.
+
 Invalid GraphQL names are rejected
 ----------------------------------
 

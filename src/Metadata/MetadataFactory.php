@@ -336,8 +336,8 @@ final class MetadataFactory
      */
     private function deriveFieldNameFromMethod(string $methodName): string
     {
-        // Handle getXxx() -> xxx
-        if (str_starts_with($methodName, 'get') && strlen($methodName) > 3) {
+        // Handle getXxx() -> xxx, but not a method such as getaway()
+        if (str_starts_with($methodName, 'get') && strlen($methodName) > 3 && ctype_upper($methodName[3])) {
             return lcfirst(substr($methodName, 3));
         }
 
