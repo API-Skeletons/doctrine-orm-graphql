@@ -7,13 +7,16 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Input;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input as InputException;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use Doctrine\ORM\EntityManager;
 use GraphQL\GraphQL;
+use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function array_keys;
 use function array_unique;
@@ -714,5 +717,74 @@ class InputFactoryTest extends TestCase
         $this->expectExceptionMessage('Input type name create-user is not a valid GraphQL name');
 
         $driver->input(User::class, ['name'], [], 'create-user');
+    }
+
+    /**
+     * With no field lists, a field whose column is nullable is optional
+     */
+    public function testNullableColumnIsOptionalWithoutFieldLists(): void
+    {
+        $input = (new Driver($this->getEntityManager()))->input(Performance::class);
+
+        $types = [];
+        foreach ($input->getFields() as $name => $field) {
+            $types[$name] = (string) $field->getType();
+        }
+
+        $this->assertSame(
+            ['venue' => 'String', 'city' => 'String', 'state' => 'String', 'performanceDate' => 'DateTime!'],
+            $types,
+        );
+    }
+
+    /**
+     * A field may be named by its alias, as it is in the input
+     */
+    public function testFieldListsAcceptAnAlias(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryAliasTest']));
+
+        $byAlias = $driver->input(User::class, ['nameAlias']);
+
+        $this->assertSame($driver->input(User::class, ['name']), $byAlias);
+        $this->assertSame(['nameAlias'], array_keys($byAlias->getFields()));
+        $this->assertInstanceOf(NonNull::class, $byAlias->getField('nameAlias')->getType());
+
+        $optional = $driver->input(User::class, [], ['nameAlias']);
+        $this->assertNotInstanceOf(NonNull::class, $optional->getField('nameAlias')->getType());
+    }
+
+    public function testUnknownFieldSuggestsTheAlias(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryAliasTest']));
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Did you mean "nameAlias"?');
+
+        $driver->input(User::class, ['nameAlais'])->getFields();
+    }
+
+    /** @return array<string, array{string[], string[]}> */
+    public static function bothListsProvider(): array
+    {
+        return [
+            'field name' => [['name'], ['name']],
+            'alias and field name' => [['nameAlias'], ['name']],
+        ];
+    }
+
+    /**
+     * @param string[] $requiredFields
+     * @param string[] $optionalFields
+     */
+    #[DataProvider('bothListsProvider')]
+    public function testFieldInBothListsThrowsException(array $requiredFields, array $optionalFields): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryAliasTest']));
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage('Field name is in both the required and the optional fields');
+
+        $driver->input(User::class, $requiredFields, $optionalFields);
     }
 }

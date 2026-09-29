@@ -61,9 +61,9 @@ Input Argument
 ==============
 
 The driver function ``$driver->input(Entity::class)`` will return an
-``InputObjectType`` with all the fields set to nonNull, thereby making them
-required.  Since this is rarely what is intended, there are two optional
-parameters to specify required and optional fields.
+``InputObjectType`` with every exposed field.  A field whose column is not
+nullable is required and a field whose column is nullable is optional.  There
+are two optional parameters to specify required and optional fields.
 
 .. code-block:: php
 
@@ -72,6 +72,10 @@ parameters to specify required and optional fields.
 In the above mutation example the ``name`` field is required and there are no
 optional fields, so the only field in the ``input`` args will be ``name``.
 The ``name`` input field will be typed according to its metadata configuration.
+
+A field with an ``alias`` is named by its alias in the input, and may be
+named by its alias or its field name in the lists.  A field may not be in both
+lists.
 
 Identifiers are excluded from the input field list because they should not be
 changed or added by a user.

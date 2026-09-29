@@ -14,10 +14,15 @@ use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\InputType;
+use GraphQL\Type\Definition\NullableType;
 use GraphQL\Type\Definition\Type;
 use ReflectionClass;
 
 use function array_filter;
+use function array_flip;
+use function array_intersect;
+use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -72,9 +77,19 @@ final class InputFactory
         $targetEntity = $this->entityTypeContainer->get($id);
         assert($targetEntity instanceof Entity);
 
-        // The order of the fields does not matter
-        $requiredFields = array_values(array_unique($requiredFields));
-        $optionalFields = array_values(array_unique($optionalFields));
+        // A field may be named by its alias, as it is in the input, or by its
+        // field name.  The order of the fields does not matter.
+        $requiredFields = array_values(array_unique($this->toFieldNames($targetEntity, $requiredFields)));
+        $optionalFields = array_values(array_unique($this->toFieldNames($targetEntity, $optionalFields)));
+
+        $both = array_values(array_intersect($requiredFields, $optionalFields));
+        if ($both) {
+            throw new InputException(
+                'Field ' . $both[0] . ' is in both the required and the optional fields of the input for entity '
+                . $targetEntity->getEntityClass() . '.',
+            );
+        }
+
         sort($requiredFields);
         sort($optionalFields);
 
@@ -139,7 +154,7 @@ final class InputFactory
                 $self->assertFieldsExist($targetEntity, array_merge($requiredFields, $optionalFields));
 
                 if (! count($requiredFields) && ! count($optionalFields)) {
-                    $self->addAllFieldsAsRequired($targetEntity, $fields);
+                    $self->addAllFields($targetEntity, $fields);
                 } else {
                     $self->addRequiredFields($targetEntity, $requiredFields, $fields);
                     $self->addOptionalFields($targetEntity, $optionalFields, $fields);
@@ -157,105 +172,58 @@ final class InputFactory
     /**
      * @param string[]                            $optionalFields
      * @param array<int|string, InputObjectField> $fields
-     *
-     * @psalm-suppress MixedArgumentTypeCoercion
      */
     protected function addOptionalFields(
         Entity $targetEntity,
         array $optionalFields,
         array &$fields,
     ): void {
+        // In the order of the entity's fields
         foreach ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->getFieldNames() as $fieldName) {
-            if (! in_array($fieldName, $optionalFields)) {
+            if (! in_array($fieldName, $optionalFields, true)) {
                 continue;
             }
 
-            if (! $this->isExposed($targetEntity, $fieldName)) {
-                throw new InputException(
-                    'Field ' . $fieldName . ' is not exposed for entity ' . $targetEntity->getEntityClass()
-                    . ' in group ' . $this->config->getGroup() . ' and cannot be used as input.',
-                );
-            }
-
-            /**
-             * Do not include identifiers as input.  In the majority of cases there will be
-             * no reason to set or update an identifier.  For the case where an identifier
-             * should be set or updated, this factory is not the correct solution.
-             *
-             * @phpcs-disable
-             */
-            if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
-                throw new InputException('Identifier ' . $fieldName . ' is an invalid input. Identifiers should not be included in mutation input.');
-            }
-
-            $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
-
-            $fields[$alias ?? $fieldName] = new InputObjectField([
-                'name' => $alias ?? $fieldName,
-                'description' => (string) $targetEntity->getEntityMetadata()->fields[$fieldName]->description,
-                'type' => $this->typeContainer->get($targetEntity->getEntityMetadata()->fields[$fieldName]->type),
-            ]);
+            $this->addListedField($targetEntity, $fieldName, false, $fields);
         }
     }
 
     /**
      * @param string[]                            $requiredFields
      * @param array<int|string, InputObjectField> $fields
-     *
-     * @psalm-suppress MixedArgument
      */
     protected function addRequiredFields(
         Entity $targetEntity,
         array $requiredFields,
         array &$fields,
     ): void {
+        // In the order of the entity's fields
         foreach ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->getFieldNames() as $fieldName) {
-            if (! in_array($fieldName, $requiredFields)) {
+            if (! in_array($fieldName, $requiredFields, true)) {
                 continue;
             }
 
-            if (! $this->isExposed($targetEntity, $fieldName)) {
-                throw new InputException(
-                    'Field ' . $fieldName . ' is not exposed for entity ' . $targetEntity->getEntityClass()
-                    . ' in group ' . $this->config->getGroup() . ' and cannot be used as input.',
-                );
-            }
-
-            /**
-             * Do not include identifiers as input.  In the majority of cases there will be
-             * no reason to set or update an identifier.  For the case where an identifier
-             * should be set or updated, this factory is not the correct solution.
-             */
-            if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
-                throw new InputException('Identifier ' . $fieldName . ' is an invalid input. Identifiers should not be included in mutation input.');
-            }
-
-            $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
-
-            $fields[$alias ?? $fieldName] = new InputObjectField([
-                'name' => $alias ?? $fieldName,
-                'description' => (string) $targetEntity->getEntityMetadata()->fields[$fieldName]->description,
-                'type' => Type::nonNull($this->typeContainer->get(
-                    $targetEntity->getEntityMetadata()->fields[$fieldName]->type,
-                )),
-            ]);
+            $this->addListedField($targetEntity, $fieldName, true, $fields);
         }
     }
 
     /**
-     * @param array<int|string, InputObjectField> $fields
+     * With no field lists, every exposed field is input.  A field whose
+     * column is nullable is optional; every other field is required.
      *
-     * @psalm-suppress MixedArrayAccess, MixedArgument, MixedArgumentTypeCoercion
+     * @param array<int|string, InputObjectField> $fields
      */
-    protected function addAllFieldsAsRequired(Entity $targetEntity, array &$fields): void
+    protected function addAllFields(Entity $targetEntity, array &$fields): void
     {
-        foreach ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->getFieldNames() as $fieldName) {
+        $classMetadata = $this->entityManager->getClassMetadata($targetEntity->getEntityClass());
+
+        foreach ($classMetadata->getFieldNames() as $fieldName) {
             /**
              * Do not include identifiers as input.  In the majority of cases there will be
              * no reason to set or update an identifier.  For the case where an identifier
              * should be set or updated, this factory is not the correct solution.
              */
-            if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
+            if ($classMetadata->isIdentifier($fieldName)) {
                 continue;
             }
 
@@ -264,14 +232,72 @@ final class InputFactory
                 continue;
             }
 
-            $alias = $targetEntity->getExtractionMap()[$fieldName] ?? null;
-
-            $fields[$alias ?? $fieldName] = new InputObjectField([
-                'name' => $alias ?? $fieldName,
-                'description' => (string) $targetEntity->getEntityMetadata()->fields[$fieldName]->description,
-                'type' => Type::nonNull($this->typeContainer->get($targetEntity->getEntityMetadata()->fields[$fieldName]->type)),
-            ]);
+            $this->addField($targetEntity, $fieldName, ! $classMetadata->isNullable($fieldName), $fields);
         }
+    }
+
+    /**
+     * Add a field named in the required or optional list
+     *
+     * @param array<int|string, InputObjectField> $fields
+     *
+     * @throws InputException
+     */
+    private function addListedField(Entity $targetEntity, string $fieldName, bool $required, array &$fields): void
+    {
+        if (! $this->isExposed($targetEntity, $fieldName)) {
+            throw new InputException(
+                'Field ' . $fieldName . ' is not exposed for entity ' . $targetEntity->getEntityClass()
+                . ' in group ' . $this->config->getGroup() . ' and cannot be used as input.',
+            );
+        }
+
+        /**
+         * Do not include identifiers as input.  In the majority of cases there will be
+         * no reason to set or update an identifier.  For the case where an identifier
+         * should be set or updated, this factory is not the correct solution.
+         */
+        if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
+            throw new InputException(
+                'Identifier ' . $fieldName . ' is an invalid input. Identifiers should not be included in mutation input.',
+            );
+        }
+
+        $this->addField($targetEntity, $fieldName, $required, $fields);
+    }
+
+    /**
+     * Add an exposed field, named by its alias if it has one
+     *
+     * @param array<int|string, InputObjectField> $fields
+     */
+    private function addField(Entity $targetEntity, string $fieldName, bool $required, array &$fields): void
+    {
+        $fieldMetadata = $targetEntity->getEntityMetadata()->fields[$fieldName];
+        $type          = $this->typeContainer->get($fieldMetadata->type);
+        assert($type instanceof Type && $type instanceof NullableType && $type instanceof InputType);
+
+        $name = $targetEntity->getExtractionMap()[$fieldName] ?? $fieldName;
+
+        $fields[$name] = new InputObjectField([
+            'name' => $name,
+            'description' => (string) $fieldMetadata->description,
+            'type' => $required ? Type::nonNull($type) : $type,
+        ]);
+    }
+
+    /**
+     * Name each field of a list by its field name rather than its alias
+     *
+     * @param string[] $names
+     *
+     * @return string[]
+     */
+    private function toFieldNames(Entity $targetEntity, array $names): array
+    {
+        $fieldNames = array_flip($targetEntity->getExtractionMap());
+
+        return array_map(static fn (string $name): string => $fieldNames[$name] ?? $name, $names);
     }
 
     /**
@@ -301,10 +327,13 @@ final class InputFactory
                 continue;
             }
 
-            // Suggest only fields which can be input
-            $exposedFieldNames = array_values(array_filter(
-                $entityFieldNames,
-                fn (string $name): bool => $this->isExposed($targetEntity, $name),
+            // Suggest only fields which can be input, by their names in the input
+            $exposedFieldNames = array_values(array_map(
+                static fn (string $name): string => $targetEntity->getExtractionMap()[$name] ?? $name,
+                array_filter(
+                    $entityFieldNames,
+                    fn (string $name): bool => $this->isExposed($targetEntity, $name),
+                ),
             ));
             $suggestion        = $this->findSimilarString($fieldName, $exposedFieldNames);
 
