@@ -43,7 +43,12 @@ trait Services
                 },
             )
             ->set(EventDispatcher::class, static fn () => new EventDispatcher())
-            ->set(Type\TypeContainer::class, static fn () => new Type\TypeContainer())
+            ->set(
+                Type\TypeContainer::class,
+                static fn (Container $container) => new Type\TypeContainer(
+                    $container->service(Config::class)->getFormatJsonAs(),
+                ),
+            )
             ->set(
                 Pagination\PaginationService::class,
                 static fn () => new Pagination\PaginationService(),

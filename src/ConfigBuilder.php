@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\JsonFormat;
 
 /**
  * Fluent builder for creating Config instances
@@ -33,6 +34,8 @@ final class ConfigBuilder
     private bool|null $sortFields     = null;
     /** @var Filters[] */
     private array $excludeFilters = [];
+
+    private JsonFormat $formatJsonAs = JsonFormat::String;
 
     /**
      * Create a new ConfigBuilder instance
@@ -213,6 +216,17 @@ final class ConfigBuilder
     }
 
     /**
+     * Set how the Json scalar exchanges a JSON value: as a string containing
+     * a JSON document, the default, or as the value itself
+     */
+    public function formatJsonAs(JsonFormat $format): self
+    {
+        $this->formatJsonAs = $format;
+
+        return $this;
+    }
+
+    /**
      * Build and return the Config instance
      */
     public function build(): Config
@@ -229,6 +243,7 @@ final class ConfigBuilder
             'entityPrefix' => $this->entityPrefix,
             'sortFields' => $this->sortFields,
             'excludeFilters' => $this->excludeFilters,
+            'formatJsonAs' => $this->formatJsonAs,
         ]);
     }
 }

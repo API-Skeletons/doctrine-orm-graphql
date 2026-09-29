@@ -20,7 +20,7 @@ final class TypeContainer extends Container
      * A Doctrine type which maps to the same GraphQL type as another shares
      * its instance; a schema may have only one type of each name.
      */
-    public function __construct()
+    public function __construct(JsonFormat $jsonFormat = JsonFormat::String)
     {
         $this
             ->set('tinyint', static fn () => Type::int())
@@ -39,7 +39,7 @@ final class TypeContainer extends Container
             ->set('enum', static fn () => Type::string())
             ->set('text', static fn () => Type::string())
             ->set('simple_array', static fn () => Type::listOf(Type::string()))
-            ->set('json', static fn () => new Json())
+            ->set('json', static fn () => new Json($jsonFormat))
             ->set('json_object', static fn (Container $container): mixed => $container->get('json'))
             ->set('jsonb', static fn (Container $container): mixed => $container->get('json'))
             ->set('jsonb_object', static fn (Container $container): mixed => $container->get('json'))

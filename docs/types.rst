@@ -77,10 +77,10 @@ Data Type Mappings
      - integer
    * - json
      - array
-     - string of json
+     - string of json, or the value with ``formatJsonAs``
    * - json_object, jsonb and jsonb_object (as json)
      - stdClass or array
-     - string of json
+     - string of json, or the value with ``formatJsonAs``
    * - number
      - ``BcMath\Number``
      - string
