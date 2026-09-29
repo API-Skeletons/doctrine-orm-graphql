@@ -7,6 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
+use Doctrine\Laminas\Hydrator\Strategy\CollectionStrategyInterface;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
 use Laminas\Hydrator\NamingStrategy\MapNamingStrategy;
@@ -14,6 +15,7 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
 use Override;
 use ReflectionClass;
 
+use function assert;
 use function class_implements;
 use function in_array;
 
@@ -70,8 +72,16 @@ final class HydratorContainer extends Container
                         );
                     }
 
-                    /** @psalm-suppress MixedArgument */
-                    $object->addStrategy($fieldName, $self->get($fieldMetadata->hydratorStrategy));
+                    $strategy = $self->get($fieldMetadata->hydratorStrategy);
+                    assert($strategy instanceof StrategyInterface);
+
+                    // The hydrator sets the collection name and class metadata
+                    // on a collection strategy, so each collection has its own
+                    if ($strategy instanceof CollectionStrategyInterface) {
+                        $strategy = clone $strategy;
+                    }
+
+                    $object->addStrategy($fieldName, $strategy);
                 }
 
                 // Register computed fields
