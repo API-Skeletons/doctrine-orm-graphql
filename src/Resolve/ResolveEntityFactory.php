@@ -9,7 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\OrderByIdentifier;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\FetchPage;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use Closure;
 use Doctrine\ORM\EntityManager;
@@ -25,7 +25,7 @@ use function assert;
  */
 final class ResolveEntityFactory
 {
-    use OrderByIdentifier;
+    use FetchPage;
 
     public function __construct(
         protected readonly Config $config,
@@ -116,41 +116,7 @@ final class ResolveEntityFactory
             // does not exist in ORM 2.x or ORM < 3.7. Keep Paginator until those are dropped.
             /** @psalm-suppress DeprecatedClass */
             static fn (): int => (new Paginator($queryBuilder->getQuery()))->count(),
-            function (int $offset, int $limit) use ($queryBuilder): array {
-                $this->orderByIdentifier($queryBuilder);
-                $queryBuilder->setFirstResult($offset);
-                $queryBuilder->setMaxResults($limit);
-
-                return $this->getResults($queryBuilder);
-            },
+            fn (int $offset, int $limit): array => $this->fetchPage($queryBuilder, $offset, $limit),
         );
-    }
-
-    /**
-     * Fetch the rows for the QueryBuilder, using the query result cache when enabled
-     *
-     * @return mixed[]
-     */
-    private function getResults(QueryBuilder $queryBuilder): array
-    {
-        $query = $queryBuilder->getQuery();
-
-        if (! $this->config->getUseQueryResultCache()) {
-            /** @psalm-suppress MixedReturnStatement */
-            return $query->getResult();
-        }
-
-        $cachedResults = $this->queryResultCache->get($query);
-
-        if ($cachedResults !== null) {
-            return $cachedResults;
-        }
-
-        /** @psalm-suppress MixedAssignment */
-        $results = $query->getResult();
-        /** @psalm-suppress MixedArgument */
-        $this->queryResultCache->set($query, $results);
-
-        return $results;
     }
 }
