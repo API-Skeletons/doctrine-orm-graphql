@@ -348,8 +348,13 @@ final class MetadataFactory
             return Strategy\ToInteger::class;
         }
 
-        if (in_array($fieldType, ['decimal', 'float'])) {
+        if ($fieldType === 'float') {
             return Strategy\ToFloat::class;
+        }
+
+        // A decimal is a String, which keeps its precision
+        if ($fieldType === 'decimal') {
+            return Strategy\ToString::class;
         }
 
         if ($fieldType === 'boolean') {

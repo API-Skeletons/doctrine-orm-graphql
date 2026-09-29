@@ -62,7 +62,7 @@ Data Type Mappings
      - ISO 8601 date string
    * - decimal
      - string
-     - float
+     - string, which keeps its precision
    * - enum
      - string
      - string
@@ -109,9 +109,9 @@ Data Type Mappings
 ``datetime_utc``, ``datetime_utc_immutable``, ``enum``, ``json_object``,
 ``jsonb``, ``jsonb_object``, ``number`` and ``smallfloat`` are types of DBAL 4.
 
-A ``number`` is a string in GraphQL, which keeps its precision.  An input or
-filter value of it is also a string; convert it to a ``BcMath\Number`` before
-setting it on an entity.
+A ``decimal`` or ``number`` is a string in GraphQL, which keeps its precision.  An input or
+filter value of it is also a string; convert a ``number`` value to a
+``BcMath\Number`` before setting it on an entity.
 
 A ``dateinterval`` is stored as a string, which does not order as the duration
 does, so it has only the ``eq``, ``neq``, ``in``, ``notin`` and ``isnull``

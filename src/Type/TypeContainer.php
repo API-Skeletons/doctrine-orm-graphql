@@ -24,7 +24,7 @@ final class TypeContainer extends Container
             ->set('integer', static fn () => Type::int())
             ->set('int', static fn () => Type::int())
             ->set('boolean', static fn () => Type::boolean())
-            ->set('decimal', static fn () => Type::float())
+            ->set('decimal', static fn () => Type::string())
             ->set('float', static fn () => Type::float())
             ->set('bigint', static fn () => Type::string())
             ->set('smallfloat', static fn () => Type::float())

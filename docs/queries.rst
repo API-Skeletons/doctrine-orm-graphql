@@ -84,9 +84,10 @@ to null matches nothing, so ``eq``, ``neq``, ``in`` or ``notin`` given null, an
 ``in`` or ``notin`` list containing null, and a ``between`` without both
 ``from`` and ``to`` are an error.  Use ``isnull`` to find null values.
 
-A ``bigint`` field is a string, which keeps its precision, but it has the
-filters of a number, and a value of ``eq``, ``lt``, ``between``, ``in`` or
-the other comparisons must be an integer, such as ``"1234567890123"``.
+A ``bigint``, ``decimal`` or ``number`` field is a string, which keeps its
+precision, but it has the filters of a number.  A value of ``eq``, ``lt``,
+``between``, ``in`` or the other comparisons must be a number, such as
+``"1234567890123"`` or ``"314.15"``; a ``bigint`` value must be an integer.
 
 A JSON field has only the ``isnull`` filter; a filter value is decoded JSON,
 which does not compare to the stored JSON text.  A blob field has no filters.

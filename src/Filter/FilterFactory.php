@@ -248,8 +248,8 @@ final class FilterFactory
     {
         $filterCollection = new ArrayCollection($filters);
 
-        // Numbers.  A bigint is a String, which keeps its precision, but it is
-        // a number.
+        // Numbers.  A bigint, decimal or number is a String, which keeps its
+        // precision, but it is a number.
         if (
             in_array($type->name(), [
                 'Float',
@@ -257,7 +257,7 @@ final class FilterFactory
                 'Int',
                 'Integer',
             ])
-            || $fieldType === 'bigint'
+            || in_array($fieldType, ['bigint', 'decimal', 'number'], true)
         ) {
             $filterCollection->removeElement(Filters::CONTAINS);
             $filterCollection->removeElement(Filters::STARTSWITH);

@@ -54,6 +54,16 @@ final class QueryBuilder
     ];
 
     /**
+     * The value patterns of the Doctrine types which are a String but are
+     * numbers; number is a DBAL 4 type
+     */
+    private const array NUMBER_PATTERNS = [
+        Types::BIGINT => '/^-?[0-9]+$/',
+        Types::DECIMAL => '/^-?[0-9]+(\.[0-9]+)?$/',
+        'number' => '/^-?[0-9]+(\.[0-9]+)?$/',
+    ];
+
+    /**
      * The sort direction and priority of each sorted field, keyed by field
      *
      * @var array<string, array{direction?: string, priority?: int}>
@@ -119,14 +129,17 @@ final class QueryBuilder
                     );
                 }
 
-                // A bigint is a String, so its value is checked to be an integer
+                // A bigint, decimal or number is a String, so its value is
+                // checked to be a number
+                $pattern = $fieldType === null ? null : self::NUMBER_PATTERNS[$fieldType] ?? null;
                 if (
-                    $fieldType === Types::BIGINT
+                    $pattern !== null
                     && ! in_array($filter, [Filters::ISNULL, Filters::SORT, Filters::SORTPRIORITY], true)
-                    && ! $this->isInteger($value)
+                    && ! $this->matchesNumber($value, $pattern)
                 ) {
                     throw new FilterException(
-                        "Filter '" . $filter->value . "' of field '" . $fieldName . "' must be an integer.",
+                        "Filter '" . $filter->value . "' of field '" . $fieldName . "' must be "
+                        . ($fieldType === Types::BIGINT ? 'an integer.' : 'a number.'),
                     );
                 }
 
@@ -237,16 +250,18 @@ final class QueryBuilder
     }
 
     /**
-     * Whether a filter value, or each value of a list or between, is an integer
-     * or an integer string
+     * Whether a filter value, or each value of a list or between, is an
+     * integer or a string matching the pattern
+     *
+     * @param non-empty-string $pattern
      */
-    private function isInteger(mixed $value): bool
+    private function matchesNumber(mixed $value, string $pattern): bool
     {
         if (is_array($value)) {
             // Filter values are GraphQL input, so their elements are mixed
             /** @psalm-suppress MixedAssignment */
             foreach ($value as $item) {
-                if (! $this->isInteger($item)) {
+                if (! $this->matchesNumber($item, $pattern)) {
                     return false;
                 }
             }
@@ -254,7 +269,7 @@ final class QueryBuilder
             return true;
         }
 
-        return is_int($value) || (is_string($value) && preg_match('/^-?[0-9]+$/', $value) === 1);
+        return is_int($value) || (is_string($value) && preg_match($pattern, $value) === 1);
     }
 
     /**

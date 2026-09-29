@@ -141,5 +141,19 @@ class Dbal4TypesTest extends TestCase
         $this->assertCount(1, $this->execute('{ dbal4Types(filter: { enum: { eq: "small" } }) { edges { node { id } } } }'));
         $this->assertCount(0, $this->execute('{ dbal4Types(filter: { enum: { eq: "large" } }) { edges { node { id } } } }'));
         $this->assertCount(1, $this->execute('{ dbal4Types(filter: { number: { eq: "12.5" } }) { edges { node { id } } } }'));
+        $this->assertCount(1, $this->execute('{ dbal4Types(filter: { number: { gt: "12" } }) { edges { node { id } } } }'));
+        $this->assertCount(0, $this->execute('{ dbal4Types(filter: { number: { lt: "12.5" } }) { edges { node { id } } } }'));
+
+        $result = GraphQL::executeQuery(
+            $this->schema,
+            '{ dbal4Types(filter: { number: { contains: "2" } }) { edges { node { id } } } }',
+        )->toArray();
+        $this->assertStringContainsString('Field "contains" is not defined', $result['errors'][0]['message']);
+
+        $result = GraphQL::executeQuery(
+            $this->schema,
+            '{ dbal4Types(filter: { number: { gt: "twelve" } }) { edges { node { id } } } }',
+        )->toArray();
+        $this->assertSame("Filter 'gt' of field 'number' must be a number.", $result['errors'][0]['message']);
     }
 }
