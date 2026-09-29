@@ -5,6 +5,16 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Field names must be unique
+--------------------------
+
+An alias which was the name of another field, or a computed field named as
+an alias, silently replaced the other field in the type.  Every field of a
+type, named by its alias if it has one, must now have a unique name; a
+duplicate throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``
+naming both fields.  The message for two equal aliases changes from
+``Duplicate alias`` to ``Duplicate field name``.
+
 Input fields of nullable columns are optional
 ---------------------------------------------
 
