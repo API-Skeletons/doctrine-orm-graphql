@@ -28,7 +28,7 @@ Version 14.x (In Development)
 
 - PHP 8.4+
 - Doctrine ORM 2.20.9+ or 3.0+
-- league/event 3.0+ (PSR-14 compliant)
+- league/event 3.0.3+ (PSR-14 compliant)
 - webonyx/graphql-php 15.29+
 
 On PHP 8.5, Doctrine ORM 3.3.1 or later is required.  ``doctrine/doctrine-laminas-hydrator``
