@@ -343,7 +343,12 @@ must be added to the args.
     ]);
 
 When the query is resolved the QueryBuilder is given the offset and limit
-calculated from the pagination arguments.
+calculated from the pagination arguments.  They replace any the QueryBuilder
+was given with ``setFirstResult()`` and ``setMaxResults()``, and the
+``totalCount`` counts the query without them, so a QueryBuilder's own offset
+and limit are ignored.  To cap the rows of a query, such as a top ten, limit it
+in the query itself, for example with a subquery, or use the pagination
+arguments; the connection's rows are also capped by the ``limit``.
 
 Each page is a separate query with its own offset, so the rows must be in the
 same order every time the query runs.  Give the QueryBuilder an ``ORDER BY``
