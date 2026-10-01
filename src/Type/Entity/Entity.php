@@ -17,12 +17,15 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Connection;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
+use ArrayAccess;
 use Closure;
 use Doctrine\Inflector\InflectorFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
+use GraphQL\Type\Definition\NullableType;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
 use Laminas\Hydrator\HydratorInterface;
 use League\Event\EventDispatcher;
 use ReflectionClass;
@@ -33,6 +36,7 @@ use function assert;
 use function ctype_upper;
 use function get_class_methods;
 use function in_array;
+use function is_iterable;
 use function is_string;
 use function ksort;
 use function preg_replace;
@@ -295,13 +299,54 @@ final class Entity
                 continue;
             }
 
+            $type = $this->typeContainer->get($fieldMetadata->type);
+
+            // An identifier or a column which is not nullable always has a value
+            if ($this->config->getUseNonNullTypes() && ! $classMetadata->isNullable($fieldName)) {
+                $type = self::nonNull($type);
+            }
+
             $fields[$this->getExtractionMap()[$fieldName] ?? $fieldName] = [
-                'type' => $this->typeContainer->get($fieldMetadata->type),
+                'type' => $type,
                 'description' => $fieldMetadata->description,
             ];
         }
 
         return $fields;
+    }
+
+    /**
+     * The non-null type of a type, which a custom type may already be
+     */
+    private static function nonNull(Type $type): Type
+    {
+        return $type instanceof NullableType ? Type::nonNull($type) : $type;
+    }
+
+    /**
+     * Whether a to-one association always has a value: it is the owning side
+     * and none of its join columns is nullable.  A join column is nullable
+     * unless it says otherwise.
+     *
+     * @param array<string, mixed>|ArrayAccess<string, mixed> $associationMapping
+     *
+     * @psalm-suppress MixedAssignment, MixedArrayAccess
+     */
+    private static function isRequired(array|ArrayAccess $associationMapping): bool
+    {
+        $joinColumns = $associationMapping['joinColumns'] ?? [];
+
+        if (! is_iterable($joinColumns) || $joinColumns === []) {
+            return false;
+        }
+
+        foreach ($joinColumns as $joinColumn) {
+            if (($joinColumn['nullable'] ?? true) !== false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -330,14 +375,15 @@ final class Entity
                 ])
             ) {
                 $targetEntity = $associationMetadata['targetEntity'];
+                $required     = $this->config->getUseNonNullTypes() && self::isRequired($associationMetadata);
 
                 // The hydrator extracts an aliased association under its alias
-                $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $graphqlAssociation): array {
+                $fields[$this->getExtractionMap()[$associationName] ?? $associationName] = function () use ($targetEntity, $graphqlAssociation, $required): array {
                     $entity = $this->entityTypeContainer->get($targetEntity);
 
                     // The association's description, else the target entity's
                     return [
-                        'type' => $entity->getObjectType(),
+                        'type' => $required ? Type::nonNull($entity->getObjectType()) : $entity->getObjectType(),
                         'description' => $graphqlAssociation->description ?? $entity->getDescription(),
                     ];
                 };

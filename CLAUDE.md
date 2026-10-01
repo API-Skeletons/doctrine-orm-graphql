@@ -135,6 +135,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `entityPrefix` - Remove prefix from type names
 - `sortFields` - Sort fields alphabetically
 - `excludeFilters` - Globally exclude specific filters
+- `useNonNullTypes` - Make an entity type's identifier, the fields of columns which are not nullable, and owning to-one associations whose join columns are not nullable non-null types (default false)
 - `formatJsonAs` - `Type\JsonFormat::String` (default, a JSON document string) or `JsonFormat::Object` (the value itself) for the `Json` scalar
 
 ## Testing Approach
