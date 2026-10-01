@@ -15,6 +15,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\FieldResolver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ResolveCollectionFactory;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use League\Event\EventDispatcher;
 use Override;
 use ReflectionClass;
@@ -22,6 +23,7 @@ use ReflectionClass;
 use function array_keys;
 use function array_map;
 use function assert;
+use function get_parent_class;
 use function is_array;
 use function strtolower;
 
@@ -97,6 +99,27 @@ final class EntityTypeContainer extends Container
         );
 
         return $this->get($id, $eventName);
+    }
+
+    /**
+     * The class of an entity which is exposed: its own class, else the
+     * nearest parent class which is.  A row of an entity inheritance
+     * hierarchy may be of a subclass which is not exposed itself.  An entity
+     * of no exposed class gives its own class, which get() reports.
+     *
+     * @return class-string
+     */
+    public function getExposedClass(object $entity): string
+    {
+        $class = (new DefaultProxyClassNameResolver())->getClass($entity);
+
+        for ($parent = $class; $parent !== false; $parent = get_parent_class($parent)) {
+            if ($this->has($parent)) {
+                return $parent;
+            }
+        }
+
+        return $class;
     }
 
     /**

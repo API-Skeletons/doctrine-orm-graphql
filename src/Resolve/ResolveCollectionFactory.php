@@ -17,7 +17,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Closure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use GraphQL\Deferred;
@@ -72,8 +71,9 @@ final class ResolveCollectionFactory
     {
         return function (mixed $source, array $args, mixed $context, ResolveInfo $info) {
             assert(is_object($source));
-            $defaultProxyClassNameResolver = new DefaultProxyClassNameResolver();
-            $entityClassName               = $defaultProxyClassNameResolver->getClass($source);
+
+            // A subclass which is not exposed is resolved as its exposed parent
+            $entityClassName = $this->entityTypeContainer->getExposedClass($source);
 
             // If an alias map exists, check for an alias
             $targetCollectionName = $info->fieldName;

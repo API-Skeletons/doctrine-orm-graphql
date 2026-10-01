@@ -7,7 +7,6 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\DoctrineObjectWithComputed;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
-use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use Doctrine\Persistence\Proxy;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -98,7 +97,8 @@ final class FieldResolver
 
     private function getHydrator(object $source): HydratorInterface
     {
-        $entity = $this->entityTypeContainer->get((new DefaultProxyClassNameResolver())->getClass($source));
+        // A subclass which is not exposed is extracted as its exposed parent
+        $entity = $this->entityTypeContainer->get($this->entityTypeContainer->getExposedClass($source));
 
         return $entity->getHydrator();
     }
