@@ -507,7 +507,8 @@ final class ResolveCollectionFactory
 
     /**
      * The source's identifier if its collection can be batched: the source
-     * and target have a single identifier and the source's is an int or a
+     * and target each have a single identifier which is a field, not an
+     * association as a derived identity has, and the source's is an int or a
      * string.  A collection is always one-to-many or many-to-many.
      *
      * @param class-string $sourceClassName
@@ -517,8 +518,13 @@ final class ResolveCollectionFactory
         $sourceMetadata = $this->entityManager->getClassMetadata($sourceClassName);
         $targetMetadata = $this->entityManager->getClassMetadata($sourceMetadata->getAssociationTargetClass($associationName));
 
-        if (count($sourceMetadata->getIdentifierFieldNames()) !== 1 || count($targetMetadata->getIdentifierFieldNames()) !== 1) {
-            return null;
+        foreach ([$sourceMetadata, $targetMetadata] as $metadata) {
+            if (
+                count($metadata->getIdentifierFieldNames()) !== 1
+                || $metadata->hasAssociation($metadata->getSingleIdentifierFieldName())
+            ) {
+                return null;
+            }
         }
 
         /** @psalm-suppress MixedAssignment An identifier may be of any type */

@@ -63,7 +63,8 @@ The results are the same as without batching.
 
 A collection is not batched when its association has an ``eventName``, so its
 `QueryBuilder event <events.html>`_ is still dispatched for each row, or when
-its source or target entity has a composite identifier.
+its source or target entity has a composite identifier, or an association as
+its identifier, as a derived identity has.
 
 
 batchLimit
