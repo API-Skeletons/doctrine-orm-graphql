@@ -5,6 +5,14 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Collections are ordered by their association's OrderBy
+-------------------------------------------------------
+
+A collection whose association has an ``#[ORM\OrderBy]`` attribute was
+ordered by the target's identifier, unlike the collection Doctrine loads.  It
+is now ordered by the ``OrderBy``, after any ``sort`` filter and any ordering
+of a QueryBuilder event listener, and then by the identifier.
+
 A field without a getter is an error when extracting by value
 -------------------------------------------------------------
 
