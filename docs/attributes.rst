@@ -138,6 +138,28 @@ in your graph. Optional parameters are:
   $driver = new Driver($this->getEntityManager());
   $driver->get(TypeContainer::class)->set('customtype', fn() => Type::string());
 
+Embeddables
+-----------
+
+The fields of an embeddable, mapped with ``#[ORM\Embedded]``, are not
+exposed; an entity with an embeddable is exposed without them.  Expose an
+embedded value with a `computed field <computed-fields.html>`_:
+
+.. code-block:: php
+
+  #[GraphQL\Entity]
+  class Office
+  {
+      #[ORM\Embedded(class: Address::class)]
+      private Address $address;
+
+      #[GraphQL\ComputedField(type: 'string')]
+      public function getCity(): string
+      {
+          return $this->address->getCity();
+      }
+  }
+
 
 Association
 ===========

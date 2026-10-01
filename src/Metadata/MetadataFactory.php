@@ -22,6 +22,7 @@ use function array_key_exists;
 use function ctype_upper;
 use function in_array;
 use function lcfirst;
+use function str_contains;
 use function str_replace;
 use function str_starts_with;
 use function strlen;
@@ -157,6 +158,12 @@ final class MetadataFactory
         ReflectionClass $reflectionClass,
     ): void {
         foreach ($entityClassMetadata->getFieldNames() as $fieldName) {
+            // A field of an embeddable is named <property>.<field>.  It is
+            // not exposed, as it is not a property of the entity.
+            if (str_contains($fieldName, '.')) {
+                continue;
+            }
+
             $fieldInstance   = null;
             $reflectionField = $this->getMappedProperty($reflectionClass, $fieldName);
 
