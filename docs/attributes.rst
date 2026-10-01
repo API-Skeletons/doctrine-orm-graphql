@@ -86,6 +86,20 @@ data from Doctrine entities.  The hydrator library is
   More information here:
   `By Value and By Reference <https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.0/by-value-by-reference.html#by-value-and-by-reference>`_
 
+Inheritance
+-----------
+
+PHP does not inherit attributes, so each entity class to expose needs its own
+``#[Entity]`` attribute.  The fields and associations a class inherits, from a
+mapped superclass or a parent entity, are exposed by the ``#[Field]`` and
+``#[Association]`` attributes on the parent's properties.
+
+With single table or class table inheritance, a query of the root entity
+returns rows of its subclasses too.  A row of a subclass which is not exposed
+itself is resolved as its nearest exposed parent class.  A subclass which is
+exposed is resolved as itself, with its own entity attribute, wherever its
+rows appear.
+
 
 Field
 =====
