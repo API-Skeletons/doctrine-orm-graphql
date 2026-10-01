@@ -5,6 +5,13 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+The inverse side of a one-to-one association has no filter
+----------------------------------------------------------
+
+A filter on the inverse side of a one-to-one association was offered, but
+Doctrine cannot compare that side, which has no column, so the query always
+failed.  The filter is removed.  Filter by the owning side's entity instead.
+
 Collections are ordered by their association's OrderBy
 -------------------------------------------------------
 
