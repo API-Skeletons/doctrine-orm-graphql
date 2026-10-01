@@ -77,6 +77,10 @@ first, lowest priority first.  Fields without a ``sortPriority`` follow,
 ordered by field name, as are fields with the same priority.  A
 ``sortPriority`` without a ``sort`` direction is an error.
 
+A collection whose association has an ``#[ORM\OrderBy]`` attribute is ordered
+by it, as Doctrine orders the collection, after any sort.  Rows which sort
+equally are ordered by their identifier.
+
 A filter given ``null``, such as ``isnull: null`` or an optional variable
 which is null, is not applied, as a field or filter argument given ``null`` is
 not.  ``eq``, ``neq``, ``in`` and ``notin`` are the exception.  A comparison

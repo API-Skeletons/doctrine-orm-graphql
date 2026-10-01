@@ -111,7 +111,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `ResolveCollectionFactory` creates resolve closures for associations
 - `FieldResolver` resolves individual fields
 - A row of a subclass which is not exposed is resolved as its nearest exposed parent class (`EntityTypeContainer::getExposedClass()`), in `FieldResolver` and `ResolveCollectionFactory`
-- Connections are ordered by the root entity's identifier after any other ordering (`Trait\OrderByIdentifier`), added after the QueryBuilder event so a listener's ordering comes first
+- Connections are ordered by the root entity's identifier after any other ordering (`Trait\OrderByIdentifier`), added after the QueryBuilder event so a listener's ordering comes first. A collection is ordered by its association's `#[ORM\OrderBy]` just before the identifier (`ResolveCollectionFactory::orderByAssociation()`)
 - Batching (`batchAssociations`, on by default) returns `GraphQL\Deferred`:
   - `ToOneLoader` loads unloaded to-one proxies with one `IN` query per class
   - `ResolveCollectionFactory` groups sources resolving the same association with the same arguments into a `CollectionBatch`: one query fetches the source/target id pairs of every row, capped at `batchLimit` (pairs, because Doctrine returns an entity once however many rows it is in); they give each source's count and page, and one query loads only the targets on a page. Over `batchLimit`, each source's page is queried, with one GROUP BY count query only when a page needs it

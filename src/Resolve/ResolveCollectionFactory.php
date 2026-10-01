@@ -176,6 +176,8 @@ final class ResolveCollectionFactory
             );
         }
 
+        $this->orderByAssociation($queryBuilder, $entityClassName, $associationName);
+
         $info = $resolve['info'] ?? null;
         assert($info instanceof ResolveInfo || $info === null);
 
@@ -309,17 +311,18 @@ final class ResolveCollectionFactory
 
                     return $itemCounts[(string) $identifier] ?? 0;
                 },
-                fn (int $offset, int $limit): array => $this->fetchPage(
-                    $this->createSourceQueryBuilder(
+                function (int $offset, int $limit) use ($batch, $source): array {
+                    $queryBuilder = $this->createSourceQueryBuilder(
                         $batch->targetEntity,
                         $batch->sourceClassName,
                         $batch->associationName,
                         $source,
                         $batch->args,
-                    ),
-                    $offset,
-                    $limit,
-                ),
+                    );
+                    $this->orderByAssociation($queryBuilder, $batch->sourceClassName, $batch->associationName);
+
+                    return $this->fetchPage($queryBuilder, $offset, $limit);
+                },
             ));
         }
     }
@@ -341,6 +344,7 @@ final class ResolveCollectionFactory
         $targetIds = [];
         foreach (array_chunk($this->getBatchIdentifiers($batch), self::CHUNK_SIZE) as $chunk) {
             $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent);
+            $this->orderByAssociation($queryBuilder, $batch->sourceClassName, $batch->associationName);
             $this->orderByIdentifier($queryBuilder);
             $queryBuilder
                 ->select($parent['select'] . ' AS parent')
@@ -616,6 +620,24 @@ final class ResolveCollectionFactory
         $queryBuilder->setParameter('sources', $identifiers);
 
         return $parent;
+    }
+
+    /**
+     * Order a collection by its association's #[ORM\OrderBy], as Doctrine
+     * orders it.  It follows any sort filter and any ordering of a
+     * QueryBuilder listener, and precedes the identifier.
+     *
+     * @param class-string $sourceClassName
+     */
+    private function orderByAssociation(QueryBuilder $queryBuilder, string $sourceClassName, string $associationName): void
+    {
+        /** @var array<string, string> $orderBy */
+        $orderBy = $this->entityManager->getClassMetadata($sourceClassName)
+            ->getAssociationMapping($associationName)['orderBy'] ?? [];
+
+        foreach ($orderBy as $fieldName => $direction) {
+            $queryBuilder->addOrderBy('entity.' . $fieldName, $direction);
+        }
     }
 
     /** @param array<array-key, mixed> $args */
