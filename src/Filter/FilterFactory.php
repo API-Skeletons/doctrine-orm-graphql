@@ -204,6 +204,11 @@ final class FilterFactory
                 continue;
             }
 
+            // The inverse side of a one-to-one has no column to compare
+            if ($classMetadata->isAssociationInverseSide($associationName)) {
+                continue;
+            }
+
             // A composite identifier is not one value
             $targetClassMetadata = $this->entityManager->getClassMetadata(
                 $classMetadata->getAssociationTargetClass($associationName),
