@@ -32,6 +32,7 @@ use function strtoupper;
 #[GraphQL\Entity(group: 'MappedSuperclassTest', description: 'Artists in a release')]
 #[GraphQL\Entity(group: 'CompositeKeyTest')]
 #[GraphQL\Entity(group: 'MappedSuperclassByReferenceTest')]
+#[GraphQL\Entity(group: 'NonNullTypes')]
 
 #[ORM\Entity]
 class Artist
@@ -52,6 +53,7 @@ class Artist
     #[GraphQL\Field(group: 'MappedSuperclassTest')]
     #[GraphQL\Field(group: 'MappedSuperclassByReferenceTest')]
     #[GraphQL\Field(group: 'CompositeKeyTest')]
+    #[GraphQL\Field(group: 'NonNullTypes')]
 
     #[ORM\Column(type: 'string', nullable: false)]
     private string $name;

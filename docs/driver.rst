@@ -26,6 +26,7 @@ Creating a Driver with all config options
       'limit' => 500,
       'sortFields' => true,
       'useHydratorCache' => true,
+      'useNonNullTypes' => true,
       'useQueryResultCache' => true,
       'excludeFilters' => [Filters::CONTAINS],
       'formatJsonAs' => JsonFormat::Object,
@@ -174,6 +175,28 @@ manager is cleared, so clear it between requests in a long running process.
 Values of an entity changed after it was extracted are not seen until it is
 freed.  Default is ``false``
 
+
+useNonNullTypes
+---------------
+
+When set to true, a field which always has a value is a non-null type in the
+entity's type: its identifier, a field whose column is not nullable, and a
+to-one association on the owning side whose join columns are not nullable.  So
+``performanceDate`` of a ``datetime`` column which is not nullable is
+``DateTime!``.  Default is ``false``, and every field is nullable.
+
+A field keeps a nullable type when its column or a join column is nullable, as
+a join column is by default, and so does the inverse side of a one-to-one
+association, a collection and a computed field.  A field of a custom type is
+made non-null in the same way, unless its type already is.  Input and filter
+types do not change.
+
+A null value for a non-null field is an error, which GraphQL reports in the
+result's ``errors`` with ``null`` for the nearest nullable field above it.  A
+field's value can be null although its column is not nullable when a hydrator
+strategy returns null, when a property of an entity extracted by reference is
+not initialized, or when a row's join column refers to a row which does not
+exist.
 
 useQueryResultCache
 -------------------

@@ -37,6 +37,8 @@ final class ConfigBuilder
 
     private JsonFormat $formatJsonAs = JsonFormat::String;
 
+    private bool $useNonNullTypes = false;
+
     /**
      * Create a new ConfigBuilder instance
      */
@@ -227,6 +229,18 @@ final class ConfigBuilder
     }
 
     /**
+     * Make an entity type's identifier, the fields of columns which are not
+     * nullable and the to-one associations whose join columns are not
+     * nullable non-null types
+     */
+    public function useNonNullTypes(bool $enable = true): self
+    {
+        $this->useNonNullTypes = $enable;
+
+        return $this;
+    }
+
+    /**
      * Build and return the Config instance
      */
     public function build(): Config
@@ -244,6 +258,7 @@ final class ConfigBuilder
             'sortFields' => $this->sortFields,
             'excludeFilters' => $this->excludeFilters,
             'formatJsonAs' => $this->formatJsonAs,
+            'useNonNullTypes' => $this->useNonNullTypes,
         ]);
     }
 }

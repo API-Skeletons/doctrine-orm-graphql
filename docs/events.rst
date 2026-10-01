@@ -281,6 +281,10 @@ The ``EntityDefinition`` event has one function:
   needed and the value is set by reference, just like the
   QueryBuilder event above.
 
+With the ``useNonNullTypes`` `config option <driver.html#usenonnulltypes>`_, the
+type of a field may be a ``NonNull`` type.  ``Type::getNullableType()`` returns
+the type within it.
+
 A clever use of this event is to add a new field for related data and specify
 a custom QueryBuilder event in the ``$driver->resolve()`` function.
 

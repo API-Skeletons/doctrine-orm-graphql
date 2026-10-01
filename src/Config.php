@@ -108,6 +108,13 @@ final class Config
     protected readonly JsonFormat $formatJsonAs;
 
     /**
+     * @var bool When set to true, an entity type's identifier, the fields of
+     *           columns which are not nullable and the to-one associations
+     *           whose join columns are not nullable are non-null types
+     */
+    protected readonly bool $useNonNullTypes;
+
+    /**
      * The types each setting may have, as get_debug_type() names them
      */
     private const array TYPES = [
@@ -123,6 +130,7 @@ final class Config
         'sortFields' => ['bool', 'null'],
         'excludeFilters' => ['array'],
         'formatJsonAs' => [JsonFormat::class, 'string'],
+        'useNonNullTypes' => ['bool'],
     ];
 
     /** @param mixed[] $config */
@@ -141,6 +149,7 @@ final class Config
             'sortFields' => null,
             'excludeFilters' => [],
             'formatJsonAs' => JsonFormat::String,
+            'useNonNullTypes' => false,
         ];
 
         $mergedConfig = array_merge($default, $config);
@@ -169,6 +178,7 @@ final class Config
         $this->sortFields          = $mergedConfig['sortFields'];
         $this->excludeFilters      = $mergedConfig['excludeFilters'];
         $this->formatJsonAs        = $mergedConfig['formatJsonAs'];
+        $this->useNonNullTypes     = $mergedConfig['useNonNullTypes'];
     }
 
     /**
@@ -177,7 +187,7 @@ final class Config
      *
      * @param array<array-key, mixed> $config
      *
-     * @return array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[], formatJsonAs: JsonFormat}
+     * @return array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool}
      *
      * @throws ConfigurationException
      */
@@ -237,7 +247,7 @@ final class Config
             );
         }
 
-        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[], formatJsonAs: JsonFormat} $validated */
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool} $validated */
         $validated = $config;
 
         return $validated;
@@ -302,5 +312,10 @@ final class Config
     public function getFormatJsonAs(): JsonFormat
     {
         return $this->formatJsonAs;
+    }
+
+    public function getUseNonNullTypes(): bool
+    {
+        return $this->useNonNullTypes;
     }
 }
