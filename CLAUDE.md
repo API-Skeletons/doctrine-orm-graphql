@@ -115,7 +115,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - Batching (`batchAssociations`, on by default) returns `GraphQL\Deferred`:
   - `ToOneLoader` loads unloaded to-one proxies with one `IN` query per class
   - `ResolveCollectionFactory` groups sources resolving the same association with the same arguments into a `CollectionBatch`: one query fetches the source/target id pairs of every row, capped at `batchLimit` (pairs, because Doctrine returns an entity once however many rows it is in); they give each source's count and page, and one query loads only the targets on a page. Over `batchLimit`, each source's page is queried, with one GROUP BY count query only when a page needs it
-  - Not batched: associations with an `eventName` (their QueryBuilder event is per source) and composite identifiers
+  - Not batched: associations with an `eventName` (their QueryBuilder event is per source) and composite identifiers or an association as the identifier (derived identity)
   - `CollectionBatchTest` checks batched results against per-source results for every form of pagination
 - Uses Doctrine Laminas Hydrator for extracting entity data to arrays
 - Supports extraction strategies (FieldDefault, AssociationDefault, ToBoolean, ToFloat, ToInteger, ToString)
