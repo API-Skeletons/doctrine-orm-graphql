@@ -60,6 +60,16 @@ class MisplacedAttributeTest extends TestCase
                 'Property address ' . self::ENTITY
                     . ' is an embeddable, whose fields are not exposed.  Expose an embedded value with a ComputedField.',
             ],
+            'eventName on a to-one association' => [
+                'ToOneEventName',
+                'Association parent ' . self::ENTITY
+                    . ' is a to-one association, which has no eventName.  The eventName of an association applies to a collection.',
+            ],
+            'limit on a to-one association' => [
+                'ToOneLimit',
+                'Association parent ' . self::ENTITY
+                    . ' is a to-one association, which has no limit.  The limit of an association applies to a collection.',
+            ],
             'ComputedField on a private method' => [
                 'PrivateComputedField',
                 'Method getSecret ' . self::ENTITY . ' has a ComputedField attribute but is not a public, non-static method.',

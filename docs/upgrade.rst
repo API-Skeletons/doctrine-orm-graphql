@@ -5,6 +5,17 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+An association's options apply to a to-one association as they can
+-------------------------------------------------------------------
+
+The ``excludeFilters`` and ``includeFilters`` of an ``#[Association]``
+attribute did not limit the filters of a to-one association by the identifier
+of the entity it refers to.  They now do, so such an association may have
+fewer filters.  An ``eventName`` or a ``limit`` on a to-one association, which
+were silently ignored, now throw
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``; they apply to a
+collection only.
+
 A developer's error is not shown to a client
 --------------------------------------------
 

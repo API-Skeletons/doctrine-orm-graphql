@@ -210,11 +210,10 @@ final class MetadataFactory
         ReflectionClass $reflectionClass,
     ): void {
         // Fetch attributes for associations
-        $associationNames = $this->entityManager->getMetadataFactory()
-            ->getMetadataFor($reflectionClass->getName())
-            ->getAssociationNames();
+        $classMetadata = $this->entityManager->getMetadataFactory()
+            ->getMetadataFor($reflectionClass->getName());
 
-        foreach ($associationNames as $associationName) {
+        foreach ($classMetadata->getAssociationNames() as $associationName) {
             $associationInstance   = null;
             $reflectionAssociation = $this->getMappedProperty($reflectionClass, $associationName);
 
@@ -235,6 +234,20 @@ final class MetadataFactory
                 }
 
                 $associationInstance = $instance;
+
+                // A to-one association is not a connection, so it has neither an
+                // event nor a limit, which would otherwise be silently ignored
+                if ($classMetadata->isSingleValuedAssociation($associationName)) {
+                    foreach (['eventName' => $instance->getEventName(), 'limit' => $instance->getLimit()] as $parameter => $value) {
+                        if ($value !== null) {
+                            throw new MetadataException(
+                                'Association ' . $associationName . ' of entity ' . $reflectionClass->getName()
+                                . ' is a to-one association, which has no ' . $parameter . '.  The ' . $parameter
+                                . ' of an association applies to a collection.',
+                            );
+                        }
+                    }
+                }
 
                 $associationMetadata = [
                     'alias' => $instance->getAlias(),

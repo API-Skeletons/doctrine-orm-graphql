@@ -20,6 +20,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'AssociationOnEmbedded')]
 #[GraphQL\Entity(group: 'PrivateComputedField')]
 #[GraphQL\Entity(group: 'StaticComputedField')]
+#[GraphQL\Entity(group: 'ToOneEventName')]
+#[GraphQL\Entity(group: 'ToOneLimit')]
 #[ORM\Entity]
 class TestMisplacedAttributes extends TestMisplacedAttributesParent
 {
@@ -36,6 +38,8 @@ class TestMisplacedAttributes extends TestMisplacedAttributesParent
 
     #[GraphQL\Association(group: 'Placed')]
     #[GraphQL\Field(group: 'FieldOnAssociation')]
+    #[GraphQL\Association(group: 'ToOneEventName', eventName: 'parent')]
+    #[GraphQL\Association(group: 'ToOneLimit', limit: 5)]
     #[ORM\ManyToOne(targetEntity: self::class)]
     private TestMisplacedAttributes|null $parent = null;
 

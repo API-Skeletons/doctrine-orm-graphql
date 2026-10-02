@@ -90,7 +90,8 @@ to null matches nothing, so ``eq``, ``neq``, ``in`` or ``notin`` given null, an
 
 A to-one association is filtered by the identifier of the entity it refers
 to, with ``eq``, ``neq``, ``in``, ``notin`` and ``isnull``, such as
-``filter: { artist: { in: [1, 2] } }``.  An association to an entity with a
+``filter: { artist: { in: [1, 2] } }``.  The ``excludeFilters`` and
+``includeFilters`` of its ``#[Association]`` attribute limit them.  An association to an entity with a
 composite identifier has no filter, nor has the inverse side of a one-to-one
 association, which has no column of its own.
 
