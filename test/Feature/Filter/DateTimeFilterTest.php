@@ -52,6 +52,13 @@ class DateTimeFilterTest extends TestCase
                     ],
                 ],
             ],
+            'datetime_immutable between with fractions of a second' => [
+                [
+                    'testDateTimeImmutable' => [
+                        'between' => ['from' => '2022-08-07T00:00:00.000Z', 'to' => '2022-08-08T00:00:00.000Z'],
+                    ],
+                ],
+            ],
             'date in' => [['testDate' => ['in' => [$today, '2000-01-01']]]],
         ];
     }

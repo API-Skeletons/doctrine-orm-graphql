@@ -27,6 +27,9 @@ use PHPUnit\Framework\TestCase;
  */
 class DateTimeScalarsTest extends TestCase
 {
+    /** A date and time serializes its fraction of a second when it has one */
+    private const string FRACTION_FORMAT = 'Y-m-d\TH:i:s.uP';
+
     /**
      * scalar class => [format of serialize, valid input, class parsed to]
      *
@@ -37,17 +40,17 @@ class DateTimeScalarsTest extends TestCase
         return [
             'Date' => [Date::class, 'Y-m-d', '2004-02-12', PHPDateTime::class],
             'DateImmutable' => [DateImmutable::class, 'Y-m-d', '2004-02-12', PHPDateTimeImmutable::class],
-            'DateTime' => [DateTime::class, PHPDateTime::ATOM, '2004-02-12T15:19:21+00:00', PHPDateTime::class],
+            'DateTime' => [DateTime::class, self::FRACTION_FORMAT, '2004-02-12T15:19:21+00:00', PHPDateTime::class],
             'DateTimeImmutable' => [
                 DateTimeImmutable::class,
-                PHPDateTime::ATOM,
+                self::FRACTION_FORMAT,
                 '2004-02-12T15:19:21+00:00',
                 PHPDateTimeImmutable::class,
             ],
-            'DateTimeTZ' => [DateTimeTZ::class, PHPDateTime::ATOM, '2004-02-12T15:19:21+00:00', PHPDateTime::class],
+            'DateTimeTZ' => [DateTimeTZ::class, self::FRACTION_FORMAT, '2004-02-12T15:19:21+00:00', PHPDateTime::class],
             'DateTimeTZImmutable' => [
                 DateTimeTZImmutable::class,
-                PHPDateTime::ATOM,
+                self::FRACTION_FORMAT,
                 '2004-02-12T15:19:21+00:00',
                 PHPDateTimeImmutable::class,
             ],
