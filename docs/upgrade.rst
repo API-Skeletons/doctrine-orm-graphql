@@ -5,6 +5,14 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+Two services take fewer constructor arguments
+---------------------------------------------
+
+``Resolve\ResolveCollectionFactory`` no longer takes a ``FieldResolver`` or a
+``TypeContainer``, and ``Filter\FilterFactory`` no longer takes an
+``EventDispatcher``; neither used them.  Code which constructs them, rather
+than getting them from the ``Driver``, passes the other arguments.
+
 An association's filter value must be of its identifier's type
 --------------------------------------------------------------
 

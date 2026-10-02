@@ -13,7 +13,6 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\FetchPage;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Closure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -58,8 +57,6 @@ final class ResolveCollectionFactory
     public function __construct(
         protected readonly EntityManager $entityManager,
         protected readonly Config $config,
-        protected readonly FieldResolver $fieldResolver,
-        protected readonly TypeContainer $typeContainer,
         protected readonly EntityTypeContainer $entityTypeContainer,
         protected readonly EventDispatcher $eventDispatcher,
         protected readonly PaginationService $paginationService,
