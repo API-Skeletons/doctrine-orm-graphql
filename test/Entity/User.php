@@ -31,6 +31,7 @@ use function substr;
 #[GraphQL\Entity(group: 'multiComputedTest')]
 #[GraphQL\Entity(group: 'computedFieldNameTest')]
 #[GraphQL\Entity(group: 'isMethodTest')]
+#[GraphQL\Entity(group: 'entityTest')]
 #[ORM\Entity]
 class User
 {

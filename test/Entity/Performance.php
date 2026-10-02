@@ -34,6 +34,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(group: 'LimitTest')]
 #[GraphQL\Entity(group: 'AttributeLimit')]
 #[GraphQL\Entity(group: 'ExtractionMap')]
+#[GraphQL\Entity(group: 'entityTest')]
 
 #[ORM\Entity]
 class Performance

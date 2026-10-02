@@ -6,7 +6,9 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\ComputedField;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata as MetadataEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\FieldDefault;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\ComputedAuthor;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\ComputedBook;
@@ -16,6 +18,7 @@ use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use League\Event\EventDispatcher;
 
 use function assert;
 
@@ -212,5 +215,42 @@ class ComputedEntityFieldTest extends QueryCountingTestCase
         );
 
         $driver->get(Metadata::class);
+    }
+
+    /**
+     * The entities are checked after the metadata.build event, so a listener
+     * may expose the entity a computed field returns
+     */
+    public function testListenerMayExposeTheEntity(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'ComputedEntityUnexposed']));
+
+        $driver->get(EventDispatcher::class)->subscribeTo(
+            'metadata.build',
+            static function (MetadataEvent $event): void {
+                $event->getMetadata()[ComputedAuthor::class] = [
+                    'entityClass' => ComputedAuthor::class,
+                    'extractByValue' => true,
+                    'limit' => 0,
+                    'description' => null,
+                    'excludeFilters' => [],
+                    'typeName' => 'ComputedAuthor',
+                    'fields' => [
+                        'name' => [
+                            'alias' => null,
+                            'description' => null,
+                            'type' => 'string',
+                            'hydratorStrategy' => FieldDefault::class,
+                            'excludeFilters' => [],
+                        ],
+                    ],
+                ];
+            },
+        );
+
+        $book = $driver->type(ComputedBook::class);
+        assert($book instanceof ObjectType);
+
+        $this->assertSame($driver->type(ComputedAuthor::class), $book->getField('writer')->getType());
     }
 }

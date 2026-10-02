@@ -19,6 +19,7 @@ use ReflectionClass;
 use ReflectionProperty;
 
 use function array_key_exists;
+use function array_keys;
 use function assert;
 use function ctype_upper;
 use function in_array;
@@ -84,12 +85,13 @@ final class MetadataFactory
             $this->buildMetadataForComputedFields($reflectionClass);
         }
 
-        $this->assertComputedEntityTypesAreExposed($entityClasses);
-
         // Fire the metadata.build event
         $this->eventDispatcher->dispatch(
             new MetadataEvent($this->metadata, 'metadata.build'),
         );
+
+        // After the event, as a listener may add or remove entities
+        $this->assertReferencedEntitiesAreExposed($entityClasses);
 
         return $this->metadata;
     }
@@ -342,23 +344,48 @@ final class MetadataFactory
     }
 
     /**
-     * A computed field whose type is the class of an entity must return an
-     * entity exposed in the group, whose type it is.  Otherwise the error
-     * would come only when the schema is built, and would not name the field.
+     * The entities an exposed association refers to, and a computed field of
+     * an entity type returns, must be exposed in the group, as their types are
+     * the fields' types.  Otherwise every query of the entity's type would
+     * fail, with an error naming neither the field nor its entity.
      *
      * @param list<string> $entityClasses Every entity class of the entity manager
      *
      * @throws MetadataException
      */
-    private function assertComputedEntityTypesAreExposed(array $entityClasses): void
+    private function assertReferencedEntitiesAreExposed(array $entityClasses): void
     {
-        /** @psalm-suppress MixedAssignment The metadata built above */
+        $suffix = ', an entity which is not exposed in group ' . $this->config->getGroup()
+            . '.  Add an Entity attribute of the group to it.';
+
+        /** @psalm-suppress MixedAssignment The metadata built above, as a listener may have changed it */
         foreach ($this->metadata as $entityClass => $entityMetadata) {
-            $computedFields = is_array($entityMetadata) ? $entityMetadata['computedFields'] ?? [] : [];
-            assert(is_array($computedFields));
+            if (! is_array($entityMetadata) || ! in_array($entityClass, $entityClasses, true)) {
+                continue;
+            }
+
+            $classMetadata = $this->entityManager->getClassMetadata($entityClass);
+            $fields        = $entityMetadata['fields'] ?? [];
+            $computed      = $entityMetadata['computedFields'] ?? [];
+            assert(is_array($fields) && is_array($computed));
+
+            foreach (array_keys($fields) as $fieldName) {
+                if (! $classMetadata->hasAssociation((string) $fieldName)) {
+                    continue;
+                }
+
+                $target = $classMetadata->getAssociationTargetClass((string) $fieldName);
+                if (isset($this->metadata[$target])) {
+                    continue;
+                }
+
+                throw new MetadataException(
+                    'Association ' . $fieldName . ' of entity ' . $entityClass . ' refers to ' . $target . $suffix,
+                );
+            }
 
             /** @psalm-suppress MixedAssignment The metadata built above */
-            foreach ($computedFields as $fieldName => $computedField) {
+            foreach ($computed as $fieldName => $computedField) {
                 $type = is_array($computedField) ? $computedField['type'] ?? null : null;
 
                 if (! in_array($type, $entityClasses, true) || isset($this->metadata[$type])) {
@@ -366,9 +393,7 @@ final class MetadataFactory
                 }
 
                 throw new MetadataException(
-                    'Computed field ' . $fieldName . ' of entity ' . $entityClass . ' is of type ' . $type
-                    . ', an entity which is not exposed in group ' . $this->config->getGroup()
-                    . '.  Add an Entity attribute of the group to it.',
+                    'Computed field ' . $fieldName . ' of entity ' . $entityClass . ' is of type ' . $type . $suffix,
                 );
             }
         }
