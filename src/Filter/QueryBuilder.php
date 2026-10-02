@@ -10,6 +10,7 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
@@ -19,8 +20,11 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function ltrim;
 use function preg_match;
+use function str_starts_with;
 use function strcmp;
+use function strlen;
 use function strtr;
 use function uksort;
 
@@ -68,6 +72,18 @@ final class QueryBuilder
     ];
 
     /**
+     * The least and the greatest value of the integer Doctrine types, and the
+     * greatest of an unsigned column, which MySQL creates for a field with the
+     * unsigned option.  A value beyond its column's range is a database error
+     * on some databases, such as PostgreSQL.
+     */
+    private const array INTEGER_RANGES = [
+        Types::SMALLINT => ['-32768', '32767', '65535'],
+        Types::INTEGER => ['-2147483648', '2147483647', '4294967295'],
+        Types::BIGINT => ['-9223372036854775808', '9223372036854775807', '18446744073709551615'],
+    ];
+
+    /**
      * The sort direction and priority of each sorted field, keyed by field
      *
      * @var array<string, array{direction?: string, priority?: int}>
@@ -101,14 +117,15 @@ final class QueryBuilder
             // Resolve aliases
             $field             = array_flip($entity->getExtractionMap())[$fieldName] ?? $fieldName;
             $queryBuilderField = 'entity.' . $field;
-            $fieldType         = $this->getFieldType($queryBuilder, $entity, $field);
+            $valueType         = $this->getValueType($queryBuilder, $entity, $field);
+            $fieldType         = $valueType['type'];
 
             $this->fieldNames[$queryBuilderField] = $fieldName;
 
             foreach ($filters as $filter => $value) {
                 $filter = Filters::from($filter);
 
-                if (! $this->validateFilter($filter, $value, $fieldName, $fieldType)) {
+                if (! $this->validateFilter($filter, $value, $fieldName, $fieldType, $valueType['unsigned'])) {
                     continue;
                 }
 
@@ -130,8 +147,13 @@ final class QueryBuilder
      *
      * @throws FilterException When the value cannot be filtered by.
      */
-    private function validateFilter(Filters $filter, mixed $value, string $fieldName, string|null $fieldType): bool
-    {
+    private function validateFilter(
+        Filters $filter,
+        mixed $value,
+        string $fieldName,
+        string|null $fieldType,
+        bool $unsigned,
+    ): bool {
         // eq, neq, in and notin would compare to null, which matches nothing
         if ($value === null) {
             if (in_array($filter, [Filters::EQ, Filters::NEQ, Filters::IN, Filters::NOTIN], true)) {
@@ -168,6 +190,19 @@ final class QueryBuilder
                 "Filter '" . $filter->value . "' of field '" . $fieldName . "' must be "
                 . (in_array($fieldType, [Types::BIGINT, Types::INTEGER, Types::SMALLINT], true) ? 'an integer.' : 'a number.'),
             );
+        }
+
+        // An integer must be within its column's range
+        $range = $fieldType === null ? null : self::INTEGER_RANGES[$fieldType] ?? null;
+        if ($range !== null && ! in_array($filter, [Filters::ISNULL, Filters::SORT, Filters::SORTPRIORITY], true)) {
+            [$least, $greatest] = $unsigned ? ['0', $range[2]] : [$range[0], $range[1]];
+
+            if (! $this->isInRange($value, $least, $greatest)) {
+                throw new FilterException(
+                    "Filter '" . $filter->value . "' of field '" . $fieldName . "' must be an integer from "
+                    . $least . ' to ' . $greatest . '.',
+                );
+            }
         }
 
         // Every value is not in an empty list.  DBAL expands an empty list to
@@ -305,6 +340,66 @@ final class QueryBuilder
     }
 
     /**
+     * Whether an integer value, or each value of a list or between, is from
+     * $least to $greatest.  The values are compared as strings of digits, as
+     * the greatest unsigned bigint is beyond PHP's int.
+     */
+    private function isInRange(mixed $value, string $least, string $greatest): bool
+    {
+        if (is_array($value)) {
+            // Filter values are GraphQL input, so their elements are mixed
+            /** @psalm-suppress MixedAssignment */
+            foreach ($value as $item) {
+                if (! $this->isInRange($item, $least, $greatest)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // An integer type's value is an int or, as the number check found, a
+        // string of digits
+        $integer = is_int($value) ? (string) $value : (is_string($value) ? $value : '');
+
+        return self::compareIntegers($integer, $least) >= 0 && self::compareIntegers($integer, $greatest) <= 0;
+    }
+
+    /**
+     * Compare two integers written as strings of digits, of any length
+     */
+    private static function compareIntegers(string $first, string $second): int
+    {
+        $first  = self::normalizeInteger($first);
+        $second = self::normalizeInteger($second);
+
+        $firstNegative = str_starts_with($first, '-');
+        if ($firstNegative !== str_starts_with($second, '-')) {
+            return $firstNegative ? -1 : 1;
+        }
+
+        $firstDigits  = ltrim($first, '-');
+        $secondDigits = ltrim($second, '-');
+        $order        = strlen($firstDigits) <=> strlen($secondDigits) ?: (strcmp($firstDigits, $secondDigits) <=> 0);
+
+        return $firstNegative ? -$order : $order;
+    }
+
+    /**
+     * An integer string without leading zeros, and 0 without a sign
+     */
+    private static function normalizeInteger(string $integer): string
+    {
+        $digits = ltrim(ltrim($integer, '-'), '0');
+
+        if ($digits === '') {
+            return '0';
+        }
+
+        return (str_starts_with($integer, '-') ? '-' : '') . $digits;
+    }
+
+    /**
      * Escape the LIKE wildcards % and _, and the escape character itself
      */
     private function escapeLike(string $value): string
@@ -330,24 +425,39 @@ final class QueryBuilder
     }
 
     /**
-     * The Doctrine type of a filter's values: of the field, or of the
-     * identifier of the entity a to-one association refers to.  Null for an
-     * identifier which is not a field, such as of a derived identity.
+     * The Doctrine type of a filter's values, of the field or of the
+     * identifier of the entity a to-one association refers to, and whether
+     * its column is unsigned.  The type is null for an identifier which is not
+     * a field, such as of a derived identity.
+     *
+     * @return array{type: string|null, unsigned: bool}
      */
-    private function getFieldType(DoctrineQueryBuilder $queryBuilder, Entity $entity, string $field): string|null
+    private function getValueType(DoctrineQueryBuilder $queryBuilder, Entity $entity, string $field): array
     {
         $entityManager = $queryBuilder->getEntityManager();
-        $classMetadata = $entityManager->getClassMetadata($entity->getEntityClass());
-
-        if ($classMetadata->hasField($field)) {
-            return $classMetadata->getTypeOfField($field);
-        }
+        $metadata      = $entityManager->getClassMetadata($entity->getEntityClass());
 
         // An association is filtered by the identifier of the entity it refers to
-        $targetMetadata = $entityManager->getClassMetadata($classMetadata->getAssociationTargetClass($field));
-        $identifier     = $targetMetadata->getSingleIdentifierFieldName();
+        if (! $metadata->hasField($field)) {
+            $metadata = $entityManager->getClassMetadata($metadata->getAssociationTargetClass($field));
+            $field    = $metadata->getSingleIdentifierFieldName();
 
-        return $targetMetadata->hasField($identifier) ? $targetMetadata->getTypeOfField($identifier) : null;
+            if (! $metadata->hasField($field)) {
+                return ['type' => null, 'unsigned' => false];
+            }
+        }
+
+        // MySQL creates the column of a field with the unsigned option unsigned;
+        // another database ignores the option
+        /** @psalm-suppress MixedAssignment A field mapping's options are not typed */
+        $options = $metadata->getFieldMapping($field)['options'] ?? [];
+
+        return [
+            'type' => $metadata->getTypeOfField($field),
+            'unsigned' => is_array($options)
+                && ($options['unsigned'] ?? false) === true
+                && $entityManager->getConnection()->getDatabasePlatform() instanceof AbstractMySQLPlatform,
+        ];
     }
 
     /**

@@ -5,6 +5,16 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+An integer filter value must be within its column's range
+---------------------------------------------------------
+
+A filter value of a ``smallint``, ``integer`` or ``bigint`` field, or of an
+association to an identifier of one, beyond its column's range, such as
+``40000`` for a ``smallint``, was a database error on PostgreSQL and matched
+nothing on others.  It is now an error,
+``Filter 'eq' of field 'small' must be an integer from -32768 to 32767.``  On
+MySQL and MariaDB a field with the ``unsigned`` option has the unsigned range.
+
 Two services take fewer constructor arguments
 ---------------------------------------------
 
