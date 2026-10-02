@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[GraphQL\Entity(typeName: 'entitytestrecording', description: 'Entity Test Recordings', group: 'entityTest')]
 #[GraphQL\Entity(group: 'IncludeFiltersTest')]
 #[GraphQL\Entity(group: 'CustomFieldStrategyTest')]
+#[GraphQL\Entity(group: 'StaticMetadata')]
 #[ORM\Entity]
 class Recording
 {

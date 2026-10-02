@@ -173,7 +173,8 @@ etc.  Associations which are to one types will just include the entity they are
 associated with.  Associations of the to many variety will become connections.
 An ``Association`` attribute of the driver's group on a property which is not
 an association throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``
-when the metadata is built.
+when the metadata is built.  So does an association to an entity which is
+not exposed in the group, as its type is the association's type.
 
 * ``alias`` - An alias to use as the GraphQL field name.  Each field of a type
   must have a unique name, so an alias may not be the name or alias of another

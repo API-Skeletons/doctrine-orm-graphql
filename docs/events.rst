@@ -351,6 +351,12 @@ The ``BuildMetadata`` event has one function:
   needed and the value is set by reference, just like the
   QueryBuilder event above.
 
+After the listeners, every entity an exposed association refers to, or a
+computed field of an entity type returns, must be in the metadata.  A
+listener may therefore add the entity, and one which removes an entity
+another refers to causes
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``.
+
 
 .. role:: raw-html(raw)
    :format: html

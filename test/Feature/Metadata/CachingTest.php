@@ -68,6 +68,16 @@ class CachingTest extends TestCase
                     ],
                 ],
             ],
+            // Exposed as the recordings association refers to it
+            'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording' => [
+                'entityClass' => 'ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Recording',
+                'extractByValue' => true,
+                'limit' => 0,
+                'description' => '',
+                'excludeFilters' => [],
+                'typeName' => 'ApiSkeletonsTest_Doctrine_ORM_GraphQL_Entity_Recording_StaticMetadata',
+                'fields' => [],
+            ],
         ];
 
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'StaticMetadata']), $metadata);

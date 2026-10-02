@@ -85,6 +85,17 @@ were silently ignored.  Each now throws
 is built.  Only the attributes of the driver's group are checked.  Move the
 attribute to where it applies, or remove it.
 
+An association to an entity which is not exposed is an error
+------------------------------------------------------------
+
+An ``#[Association]`` to an entity with no ``#[Entity]`` attribute of the
+driver's group failed every query of its entity's type, even one which did
+not ask for the association, with an error naming only the entity it refers
+to.  It now throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``
+naming the association when the metadata is built, for every exposed entity,
+including one which no schema uses.  Expose the entity it refers to in the
+group, or remove the attribute.
+
 input() checks its field lists when it is called
 ------------------------------------------------
 
