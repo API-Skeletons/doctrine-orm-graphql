@@ -16,7 +16,7 @@ Mutations modify data in your Doctrine ORM.  They are defined as such:
                       'id' => Type::nonNull(Type::id()),
                       'input' => Type::nonNull($driver->input(Artist::class, ['name'])),
                   ],
-                  'resolve' => function ($root, $args) use ($driver): User {
+                  'resolve' => function ($root, $args) use ($driver): Artist {
                       $artist = $driver->get(EntityManager::class)
                           ->getRepository(Artist::class)
                           ->find($args['id']);
@@ -45,7 +45,7 @@ Calling Mutations
 
 .. code-block:: php
 
-  $query = 'mutation MutationName($id: Int!, $name: String!) {
+  $query = 'mutation MutationName($id: ID!, $name: String!) {
       mutationName(id: $id, input: { name: $name }) {
           id
           name
