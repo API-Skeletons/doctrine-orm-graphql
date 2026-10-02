@@ -82,7 +82,11 @@ changed or added by a user.  Naming one in the required or optional list
 throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input``.
 
 Only fields exposed with a ``#[Field]`` attribute in the driver's group can be
-input.  When no field lists are given, a column which is not exposed, such as a
+input.  A field of a custom type which is non-null is input as the type it
+wraps, and is required or optional as the field lists say.  A field of a custom
+type which cannot be input, such as an object type, throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input`` when the input type
+is built.  When no field lists are given, a column which is not exposed, such as a
 password, is left out.  Naming a field which is not exposed in the required or
 optional list throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input``.
 

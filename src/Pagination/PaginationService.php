@@ -14,10 +14,15 @@ use function base64_decode;
 use function base64_encode;
 use function count;
 use function ctype_digit;
+use function filter_var;
 use function is_int;
 use function is_string;
+use function ltrim;
 use function max;
 use function min;
+
+use const FILTER_VALIDATE_INT;
+use const PHP_INT_MAX;
 
 /**
  * Shared pagination logic for entities, collections and DBAL queries
@@ -89,11 +94,12 @@ final class PaginationService
         }
 
         if (isset($pagination['after'])) {
-            $paginationFields['after'] = $this->decodeCursor('after', $pagination['after']) + 1;
+            // The first row is the one after the cursor's, which must also be an int
+            $paginationFields['after'] = $this->decodeCursor('after', $pagination['after'], PHP_INT_MAX - 1) + 1;
         }
 
         if (isset($pagination['before'])) {
-            $paginationFields['before'] = $this->decodeCursor('before', $pagination['before']);
+            $paginationFields['before'] = $this->decodeCursor('before', $pagination['before'], PHP_INT_MAX);
         }
 
         return $paginationFields;
@@ -393,20 +399,25 @@ final class PaginationService
     }
 
     /**
-     * Decode a cursor into the row index it represents
+     * Decode a cursor into the row index it represents.  A cursor is a row's
+     * position, not its identifier, so it is an int: an index larger than
+     * $maxIndex is not a valid cursor, rather than an offset no query takes.
      *
      * @throws PaginationException
      */
-    private function decodeCursor(string $field, mixed $value): int
+    private function decodeCursor(string $field, mixed $value, int $maxIndex): int
     {
         $decoded = is_string($value) ? base64_decode($value, true) : false;
+        $index   = $decoded !== false && ctype_digit($decoded)
+            ? filter_var(ltrim($decoded, '0') ?: '0', FILTER_VALIDATE_INT, ['options' => ['max_range' => $maxIndex]])
+            : false;
 
-        if ($decoded === false || ! ctype_digit($decoded)) {
+        if ($index === false) {
             throw new PaginationException(
                 'Pagination argument "' . $field . '" is not a valid cursor.',
             );
         }
 
-        return (int) $decoded;
+        return $index;
     }
 }

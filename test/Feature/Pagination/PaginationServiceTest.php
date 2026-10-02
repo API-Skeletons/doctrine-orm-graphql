@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 
 use function base64_encode;
 
+use const PHP_INT_MAX;
+
 class PaginationServiceTest extends TestCase
 {
     private PaginationService $service;
@@ -124,7 +126,33 @@ class PaginationServiceTest extends TestCase
             'negative cursor' => [['after' => base64_encode('-5')], 'Pagination argument "after" is not a valid cursor.'],
             'non numeric cursor' => [['before' => base64_encode('abc')], 'Pagination argument "before" is not a valid cursor.'],
             'cursor not a string' => [['before' => 5], 'Pagination argument "before" is not a valid cursor.'],
+            'cursor beyond an int' => [
+                ['before' => base64_encode('99999999999999999999')],
+                'Pagination argument "before" is not a valid cursor.',
+            ],
+            // The row after it would be beyond an int
+            'after cursor of the largest int' => [
+                ['after' => base64_encode((string) PHP_INT_MAX)],
+                'Pagination argument "after" is not a valid cursor.',
+            ],
         ];
+    }
+
+    /**
+     * A cursor is a row's position, so it is an int.  Leading zeros are
+     * accepted, as they were.
+     */
+    public function testCursorsUpToTheLargestInt(): void
+    {
+        $this->assertSame(
+            ['first' => null, 'last' => null, 'before' => PHP_INT_MAX, 'after' => PHP_INT_MAX],
+            $this->service->decodePaginationFields([
+                'after' => base64_encode((string) (PHP_INT_MAX - 1)),
+                'before' => base64_encode((string) PHP_INT_MAX),
+            ]),
+        );
+        $this->assertSame(8, $this->service->decodePaginationFields(['after' => base64_encode('007')])['after']);
+        $this->assertSame(0, $this->service->decodePaginationFields(['before' => base64_encode('000')])['before']);
     }
 
     /** @param array<string, mixed> $pagination */
