@@ -77,6 +77,34 @@ final class ArrayReader
         return $value;
     }
 
+    /**
+     * An int of at least 0, such as a limit, of which 0 is the default
+     *
+     * @throws MetadataException
+     */
+    public function nonNegativeInt(string $key): int
+    {
+        $value = $this->int($key);
+
+        if ($value < 0) {
+            throw $this->negative($key, $value);
+        }
+
+        return $value;
+    }
+
+    /** @throws MetadataException */
+    public function nullableNonNegativeInt(string $key): int|null
+    {
+        $value = $this->nullableInt($key);
+
+        if ($value !== null && $value < 0) {
+            throw $this->negative($key, $value);
+        }
+
+        return $value;
+    }
+
     /** @throws MetadataException */
     public function bool(string $key): bool
     {
@@ -170,6 +198,13 @@ final class ArrayReader
         }
 
         return $this->array[$key];
+    }
+
+    private function negative(string $key, int $value): MetadataException
+    {
+        return new MetadataException(
+            'Metadata for ' . $this->context . ' key ' . $key . ' must be at least 0, ' . $value . ' given.',
+        );
     }
 
     private function invalid(string $key, string $expected, mixed $value): MetadataException
