@@ -93,4 +93,31 @@ class DerivedIdentityTest extends TestCase
 
         $this->assertSame([$badge('ann'), $badge('bob'), $badge('cat')], $result['data']['badges']['edges']);
     }
+
+    /**
+     * An association to an entity of a derived identity is filtered by the
+     * identifier of the entity its identifier refers to, whose value is not
+     * checked to be a number
+     */
+    public function testFilterByAnAssociationToADerivedIdentity(): void
+    {
+        $account = $this->getEntityManager()->getRepository(TestDerivedAccount::class)->findOneBy(['name' => 'bob']);
+        $this->assertInstanceOf(TestDerivedAccount::class, $account);
+
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'DerivedIdentity']));
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => ['badges' => $driver->completeConnection(TestDerivedBadge::class)],
+            ]),
+        ]);
+
+        $result = GraphQL::executeQuery(
+            $schema,
+            '{ badges(filter: { member: { eq: "' . $account->getId() . '" } }) { edges { node { name } } } }',
+        )->toArray();
+
+        $this->assertArrayNotHasKey('errors', $result);
+        $this->assertSame([['node' => ['name' => 'bob badge']]], $result['data']['badges']['edges']);
+    }
 }

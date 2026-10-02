@@ -54,11 +54,15 @@ final class QueryBuilder
     ];
 
     /**
-     * The value patterns of the Doctrine types which are a String but are
-     * numbers; number is a DBAL 4 type
+     * The value patterns of the Doctrine types whose filter values may be
+     * strings but are numbers: a bigint, decimal or number is a String, and a
+     * to-one association is filtered by an ID of its target's identifier type.
+     * number is a DBAL 4 type.
      */
     private const array NUMBER_PATTERNS = [
         Types::BIGINT => '/^-?[0-9]+$/',
+        Types::INTEGER => '/^-?[0-9]+$/',
+        Types::SMALLINT => '/^-?[0-9]+$/',
         Types::DECIMAL => '/^-?[0-9]+(\.[0-9]+)?$/',
         'number' => '/^-?[0-9]+(\.[0-9]+)?$/',
     ];
@@ -151,8 +155,9 @@ final class QueryBuilder
             );
         }
 
-        // A bigint, decimal or number is a String, so its value is checked to
-        // be a number
+        // A bigint, decimal or number is a String, and an association's ID may be
+        // any string, so the value is checked to be a number.  Otherwise a
+        // database may compare it, or fail to, as text.
         $pattern = $fieldType === null ? null : self::NUMBER_PATTERNS[$fieldType] ?? null;
         if (
             $pattern !== null
@@ -161,7 +166,7 @@ final class QueryBuilder
         ) {
             throw new FilterException(
                 "Filter '" . $filter->value . "' of field '" . $fieldName . "' must be "
-                . ($fieldType === Types::BIGINT ? 'an integer.' : 'a number.'),
+                . (in_array($fieldType, [Types::BIGINT, Types::INTEGER, Types::SMALLINT], true) ? 'an integer.' : 'a number.'),
             );
         }
 
@@ -325,13 +330,24 @@ final class QueryBuilder
     }
 
     /**
-     * The Doctrine type of a field, or null for an association
+     * The Doctrine type of a filter's values: of the field, or of the
+     * identifier of the entity a to-one association refers to.  Null for an
+     * identifier which is not a field, such as of a derived identity.
      */
     private function getFieldType(DoctrineQueryBuilder $queryBuilder, Entity $entity, string $field): string|null
     {
-        $classMetadata = $queryBuilder->getEntityManager()->getClassMetadata($entity->getEntityClass());
+        $entityManager = $queryBuilder->getEntityManager();
+        $classMetadata = $entityManager->getClassMetadata($entity->getEntityClass());
 
-        return $classMetadata->hasField($field) ? $classMetadata->getTypeOfField($field) : null;
+        if ($classMetadata->hasField($field)) {
+            return $classMetadata->getTypeOfField($field);
+        }
+
+        // An association is filtered by the identifier of the entity it refers to
+        $targetMetadata = $entityManager->getClassMetadata($classMetadata->getAssociationTargetClass($field));
+        $identifier     = $targetMetadata->getSingleIdentifierFieldName();
+
+        return $targetMetadata->hasField($identifier) ? $targetMetadata->getTypeOfField($identifier) : null;
     }
 
     /**
