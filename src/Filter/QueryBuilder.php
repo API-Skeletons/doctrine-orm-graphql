@@ -11,9 +11,11 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Types\ConversionException;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
+use ReflectionClass;
 
 use function array_flip;
 use function in_array;
@@ -83,6 +85,27 @@ final class QueryBuilder
         Types::BIGINT => ['-9223372036854775808', '9223372036854775807', '18446744073709551615'],
     ];
 
+    /** The filters which compare the field to a value */
+    private const array COMPARISONS = [
+        Filters::EQ,
+        Filters::NEQ,
+        Filters::LT,
+        Filters::LTE,
+        Filters::GT,
+        Filters::GTE,
+        Filters::BETWEEN,
+        Filters::IN,
+        Filters::NOTIN,
+    ];
+
+    /**
+     * The names of the types DBAL provides, keyed by name.  Any other type
+     * is a custom type.
+     *
+     * @var array<string, true>|null
+     */
+    private static array|null $dbalTypes = null;
+
     /**
      * The sort direction and priority of each sorted field, keyed by field
      *
@@ -129,12 +152,13 @@ final class QueryBuilder
                     continue;
                 }
 
-                $this->addFilter(
-                    $filter,
-                    $queryBuilderField,
-                    $this->toDatabaseValue($value, $fieldType, $queryBuilder),
-                    $queryBuilder,
-                );
+                // A value compared to the field is its database value; a LIKE
+                // pattern, a sort and isnull are not values of the field
+                if (in_array($filter, self::COMPARISONS, true)) {
+                    $value = $this->toDatabaseValue($value, $fieldType, $queryBuilder, $filter, $fieldName);
+                }
+
+                $this->addFilter($filter, $queryBuilderField, $value, $queryBuilder);
             }
         }
 
@@ -461,39 +485,86 @@ final class QueryBuilder
     }
 
     /**
-     * Convert a date, time or interval filter value to the database value of
-     * the field's Doctrine type.  Bound untyped, Doctrine would bind a date or
-     * time as a datetime, which does not match a date or time column, and could
-     * not bind an interval.  Arrays, as for between and in, are converted
-     * element by element.
+     * Convert a filter value to the database value of the field's Doctrine
+     * type.  Arrays, as for between and in, are converted element by element.
+     *
+     * A date, time or interval is converted: bound untyped, Doctrine would
+     * bind a date or time as a datetime, which does not match a date or time
+     * column, and could not bind an interval.
+     *
+     * A value of a custom type, such as a binary UUID, is converted as
+     * Doctrine converts an identifier given to find(), as it may be stored in
+     * another form.  For an association, the value is the identifier of the
+     * entity it refers to.  The value of a type DBAL provides is bound as it
+     * is.
+     *
+     * @throws FilterException When a custom type cannot convert the value.
      */
-    private function toDatabaseValue(mixed $value, string|null $fieldType, DoctrineQueryBuilder $queryBuilder): mixed
-    {
+    private function toDatabaseValue(
+        mixed $value,
+        string|null $fieldType,
+        DoctrineQueryBuilder $queryBuilder,
+        Filters $filter,
+        string $fieldName,
+    ): mixed {
         if (is_array($value)) {
             // Filter values are GraphQL input, so their elements are mixed
             /** @psalm-suppress MixedAssignment */
             foreach ($value as $key => $item) {
-                $value[$key] = $this->toDatabaseValue($item, $fieldType, $queryBuilder);
+                $value[$key] = $this->toDatabaseValue($item, $fieldType, $queryBuilder, $filter, $fieldName);
             }
 
             return $value;
         }
 
-        if ((! $value instanceof DateTimeInterface && ! $value instanceof DateInterval) || $fieldType === null) {
+        if ($fieldType === null) {
             return $value;
         }
 
-        // DBAL's date and time types accept only their own DateTimeInterface class
-        if ($value instanceof DateTimeInterface && in_array($fieldType, self::IMMUTABLE_TYPES, true)) {
-            $value = DateTimeImmutable::createFromInterface($value);
-        } elseif ($value instanceof DateTimeInterface && in_array($fieldType, self::MUTABLE_TYPES, true)) {
-            $value = DateTime::createFromInterface($value);
+        $platform = $queryBuilder->getEntityManager()->getConnection()->getDatabasePlatform();
+
+        if ($value instanceof DateTimeInterface || $value instanceof DateInterval) {
+            // DBAL's date and time types accept only their own DateTimeInterface class
+            if ($value instanceof DateTimeInterface && in_array($fieldType, self::IMMUTABLE_TYPES, true)) {
+                $value = DateTimeImmutable::createFromInterface($value);
+            } elseif ($value instanceof DateTimeInterface && in_array($fieldType, self::MUTABLE_TYPES, true)) {
+                $value = DateTime::createFromInterface($value);
+            }
+
+            return Type::getType($fieldType)->convertToDatabaseValue($value, $platform);
         }
 
-        return Type::getType($fieldType)->convertToDatabaseValue(
-            $value,
-            $queryBuilder->getEntityManager()->getConnection()->getDatabasePlatform(),
-        );
+        if (self::isDbalType($fieldType)) {
+            return $value;
+        }
+
+        try {
+            return Type::getType($fieldType)->convertToDatabaseValue($value, $platform);
+        } catch (ConversionException) {
+            throw new FilterException(
+                "Filter '" . $filter->value . "' of field '" . $fieldName . "' is given a value which is not valid.",
+            );
+        }
+    }
+
+    /**
+     * Whether a type is one DBAL provides, rather than a custom type
+     */
+    private static function isDbalType(string $type): bool
+    {
+        if (self::$dbalTypes === null) {
+            self::$dbalTypes = [];
+
+            foreach ((new ReflectionClass(Types::class))->getConstants() as $name) {
+                if (! is_string($name)) {
+                    continue;
+                }
+
+                self::$dbalTypes[$name] = true;
+            }
+        }
+
+        return isset(self::$dbalTypes[$type]);
     }
 
     private function sort(string $field, string $direction, DoctrineQueryBuilder $queryBuilder): void

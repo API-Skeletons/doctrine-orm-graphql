@@ -25,6 +25,8 @@ abstract class QueryCountingTestCase extends TestCase
 
     public function setUp(): void
     {
+        self::registerTypes();
+
         $config = ORMSetup::createAttributeMetadataConfiguration(
             paths: [__DIR__ . '/Entity'],
             isDevMode: true,

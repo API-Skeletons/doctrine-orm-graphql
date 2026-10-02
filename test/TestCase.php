@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL;
 
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\DbalType\CodeType;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -25,6 +27,8 @@ class TestCase extends PHPUnitTestCase
 
     public function setUp(): void
     {
+        self::registerTypes();
+
         // Create a simple "default" Doctrine ORM configuration for Attributes
         $config = ORMSetup::createAttributeMetadataConfiguration(
             paths: [__DIR__ . '/Entity'],
@@ -46,6 +50,18 @@ class TestCase extends PHPUnitTestCase
         $tool->createSchema(self::$entityManager->getMetadataFactory()->getAllMetadata());
 
         $this->populateData();
+    }
+
+    /**
+     * Register the custom DBAL types of the test entities
+     */
+    protected static function registerTypes(): void
+    {
+        if (Type::hasType(CodeType::NAME)) {
+            return;
+        }
+
+        Type::addType(CodeType::NAME, CodeType::class);
     }
 
     protected function getEntityManager(): EntityManager

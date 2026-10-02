@@ -27,7 +27,7 @@ This example implements a Uuid type for ``ramsey/uuid-doctrine``.
         // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
         public string|null $description = 'A universally unique identifier.';
 
-        public function parseLiteral(ASTNode $valueNode, array|null $variables = null): string
+        public function parseLiteral(ASTNode $valueNode, array|null $variables = null): UuidInterface|null
         {
             if (! $valueNode instanceof StringValueNode) {
                 throw new Error('Query error: Uuid can only parse strings got: ' . $valueNode->kind, $valueNode);
@@ -65,7 +65,28 @@ Then add that type to the type container
 
    use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 
-   $driver->get(TypeContainer::class)->set('uuid', static fn () => new Uuid();
+   $driver->get(TypeContainer::class)->set('uuid', static fn () => new Uuid());
+
+
+Values Stored in Another Form
+=============================
+
+A custom type may store a value in another form than PHP holds it, as
+``uuid_binary`` stores a UUID as 16 bytes.  The driver compares such values as
+the database values the type converts them to:
+
+* An identifier of a custom type is matched by its database value when
+  collections and to-one associations are loaded, batched or not.
+* A filter value of a field of a custom type, and of a to-one association
+  whose target's identifier is of a custom type, is converted by the type as
+  Doctrine converts an identifier given to ``find()``.  A field's value is the
+  value its GraphQL type parses; an association's is the ``ID`` the client
+  sends, such as a UUID string, which ``uuid_binary`` converts.  ``contains``,
+  ``startswith`` and ``endswith`` patterns are not converted.
+* A value the type cannot convert, which throws a DBAL ``ConversionException``,
+  is reported to the client as an invalid filter value.
+
+The values of the types DBAL provides are bound as they are.
 
 
 .. role:: raw-html(raw)
