@@ -82,7 +82,7 @@ Attributes are in `src/Attribute/`:
 - `#[Entity]` - Marks an entity for GraphQL exposure
 - `#[Field]` - Exposes a field
 - `#[Association]` - Exposes an association (relationship)
-- `#[ComputedField]` - Exposes derived values from entity methods (placed on public methods)
+- `#[ComputedField]` - Exposes derived values from entity methods (placed on public methods); its `type` may be an entity class exposed in the group, and `list: true` makes it a list. An entity type's field is a thunk, as an association's is, so entities may refer to each other
 - `#[ExcludeFilters]` - Excludes specific filters
 
 ### Event System (PSR-14)

@@ -9,12 +9,15 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\DoctrineObjectWithComputed;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\Persistence\Proxy;
 use GraphQL\Error\Error;
+use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\Definition\Type;
 use Laminas\Hydrator\HydratorInterface;
 use WeakMap;
 
 use function array_key_exists;
 use function assert;
+use function is_iterable;
 use function is_object;
 
 /**
@@ -87,8 +90,26 @@ final class FieldResolver
         /** @psalm-suppress MixedAssignment */
         $value = $values[$info->fieldName] ?? null;
 
-        // An unloaded to-one association is loaded in a batch with the others
-        if ($this->config->getBatchAssociations() && is_object($value)) {
+        if (! $this->config->getBatchAssociations()) {
+            return $value;
+        }
+
+        // The entities of a list, such as a computed field may return, are
+        // loaded in a batch with the others
+        if (is_iterable($value) && Type::getNullableType($info->returnType) instanceof ListOfType) {
+            $list = [];
+
+            /** @psalm-suppress MixedAssignment A list may hold any value */
+            foreach ($value as $item) {
+                $list[] = is_object($item) ? $this->toOneLoader->defer($item) : $item;
+            }
+
+            return $list;
+        }
+
+        // An unloaded entity, of a to-one association or a computed field, is
+        // loaded in a batch with the others
+        if (is_object($value)) {
             return $this->toOneLoader->defer($value);
         }
 

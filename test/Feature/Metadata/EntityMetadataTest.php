@@ -351,7 +351,7 @@ class EntityMetadataTest extends TestCase
             'computed field' => [
                 static function (array $metadata): array {
                     $metadata['computedFields'] = [
-                        'full-city' => ['method' => 'getCity', 'type' => 'string', 'name' => 'full-city', 'description' => null],
+                        'full-city' => ['method' => 'getCity', 'type' => 'string', 'name' => 'full-city', 'description' => null, 'list' => false],
                     ];
 
                     return $metadata;

@@ -31,16 +31,19 @@ use Attribute;
 final class ComputedField
 {
     /**
-     * @param string      $type        GraphQL type name (required). Must match a registered type in TypeContainer.
+     * @param string      $type        A type registered in the TypeContainer, or the class of an entity
+     *                                 exposed in the group, whose type the field is
      * @param string      $group       GraphQL schema group (default: 'default')
      * @param string|null $name        Field name in GraphQL schema. If null, derived from method name.
      * @param string|null $description Field description for GraphQL schema
+     * @param bool        $list        Whether the method returns a list of the type
      */
     public function __construct(
         private readonly string $type,
         private readonly string $group = 'default',
         private readonly string|null $name = null,
         private readonly string|null $description = null,
+        private readonly bool $list = false,
     ) {
     }
 
@@ -62,5 +65,10 @@ final class ComputedField
     public function getDescription(): string|null
     {
         return $this->description;
+    }
+
+    public function getList(): bool
+    {
+        return $this->list;
     }
 }
