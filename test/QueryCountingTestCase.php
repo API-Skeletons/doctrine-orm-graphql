@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL;
 
+use Closure;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Logging\Middleware;
@@ -23,9 +24,13 @@ abstract class QueryCountingTestCase extends TestCase
     /** @var string[] */
     private static array $sql = [];
 
+    /** Called with the SQL of each statement just before it is executed */
+    private static Closure|null $beforeExecute = null;
+
     public function setUp(): void
     {
         self::registerTypes();
+        self::$beforeExecute = null;
 
         $config = ORMSetup::createAttributeMetadataConfiguration(
             paths: [__DIR__ . '/Entity'],
@@ -68,6 +73,23 @@ abstract class QueryCountingTestCase extends TestCase
     public static function record(string $sql): void
     {
         self::$sql[] = $sql;
+
+        if (self::$beforeExecute === null) {
+            return;
+        }
+
+        (self::$beforeExecute)($sql);
+    }
+
+    /**
+     * Call a function with the SQL of each statement just before it is
+     * executed, such as to change the data as another request would
+     *
+     * @param Closure(string): void|null $callback
+     */
+    protected static function beforeExecute(Closure|null $callback): void
+    {
+        self::$beforeExecute = $callback;
     }
 
     protected function resetQueries(): void

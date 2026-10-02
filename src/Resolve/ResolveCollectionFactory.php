@@ -550,14 +550,14 @@ final class ResolveCollectionFactory
 
         $idField = $sourceMetadata->getSingleIdentifierFieldName();
 
-        /** @psalm-suppress MixedAssignment An identifier may be of any type */
-        $identifier = $sourceMetadata->getIdentifierValues($source)[$idField] ?? null;
-        if ($identifier === null) {
-            return null;
-        }
-
+        // A type converts null, the identifier of an entity which has none, to null
         /** @psalm-suppress MixedAssignment A database value may be of any type */
-        $identifier = self::databaseValueOf($this->entityManager, $sourceMetadata, $idField, $identifier);
+        $identifier = self::databaseValueOf(
+            $this->entityManager,
+            $sourceMetadata,
+            $idField,
+            $sourceMetadata->getIdentifierValues($source)[$idField] ?? null,
+        );
 
         return is_int($identifier) || is_string($identifier) ? $identifier : null;
     }
@@ -622,14 +622,13 @@ final class ResolveCollectionFactory
         /** @psalm-suppress MixedAssignment The source is an entity */
         $parameter = $source;
         $idFields  = $sourceMetadata->getIdentifierFieldNames();
-        if (count($idFields) === 1 && $sourceMetadata->hasField($idFields[0]) && is_object($source)) {
+
+        // An entity without an identifier is bound as it is, for Doctrine to report
+        /** @psalm-suppress MixedAssignment An identifier may be of any type */
+        $identifier = is_object($source) ? $sourceMetadata->getIdentifierValues($source)[$idFields[0]] ?? null : null;
+        if (count($idFields) === 1 && $sourceMetadata->hasField($idFields[0]) && $identifier !== null) {
             /** @psalm-suppress MixedAssignment A database value may be of any type */
-            $parameter = self::databaseValueOf(
-                $this->entityManager,
-                $sourceMetadata,
-                $idFields[0],
-                $sourceMetadata->getIdentifierValues($source)[$idFields[0]],
-            );
+            $parameter = self::databaseValueOf($this->entityManager, $sourceMetadata, $idFields[0], $identifier);
         }
 
         $queryBuilder->setParameter('source', $parameter);

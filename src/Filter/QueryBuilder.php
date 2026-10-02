@@ -553,13 +553,11 @@ final class QueryBuilder
     private static function isDbalType(string $type): bool
     {
         if (self::$dbalTypes === null) {
+            /** @var array<string, string> $names Each constant of Types is a type's name */
+            $names = (new ReflectionClass(Types::class))->getConstants();
+
             self::$dbalTypes = [];
-
-            foreach ((new ReflectionClass(Types::class))->getConstants() as $name) {
-                if (! is_string($name)) {
-                    continue;
-                }
-
+            foreach ($names as $name) {
                 self::$dbalTypes[$name] = true;
             }
         }
