@@ -23,7 +23,6 @@ The goal of this project is to make creating GraphQL types simple and uncomplica
 you'll see, there's a lot of customizable power built in too.
 
 .. toctree::
-
     :caption: User Documentation
 
     install
@@ -36,7 +35,6 @@ you'll see, there's a lot of customizable power built in too.
     computed-fields
     events
     errors
-    extending-entity-types
     containers
     metadata
     strategies

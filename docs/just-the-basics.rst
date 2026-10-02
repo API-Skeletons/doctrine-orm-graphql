@@ -29,9 +29,21 @@ each element you want to be queryable from GraphQL.
 
       #[GraphQL\Field]
       private $name;
+
+      public function getId(): int
+      {
+          return $this->id;
+      }
+
+      public function getName(): string
+      {
+          return $this->name;
+      }
   }
 
-That's the minimum configuration required.  Next, create your driver using your
+That's the minimum configuration required.  Each field is read with its
+getter, as an entity is extracted by value by default; see the
+``extractByValue`` parameter of the `Entity attribute <attributes.html#entity>`_.  Next, create your driver using your
 entity manager
 
 .. code-block:: php

@@ -16,18 +16,20 @@ by supporting version 2 of that library instead of version 3.  Version 2 is not 
 Version Overview
 ================
 
-* **14.x** - In development; field-aware hydrator strategies, ``globalEnable`` removed (breaking changes from 13.x)
+* **14.x** - In development; batch loading, stricter validation and many fixes (breaking changes from 13.x)
 * **13.x** - Current version, QueryBuilder-based collection resolution (breaking changes from 12.x)
 * **12.x** - Introduced QueryBuilder support, deprecated Criteria Event for collections
 * **11.x** - Supports `league/event <https://github.com/thephpleague/event>`_ version 2.2 (non-PSR-14)
 
 Version 14.x (In Development)
-============================
+=============================
 
 **Requirements**:
 
 - PHP 8.4+
 - Doctrine ORM 2.20.9+ or 3.0+
+- doctrine/doctrine-laminas-hydrator 3.2+
+- doctrine/inflector 2.0.4+, now a direct dependency
 - league/event 3.0.3+ (PSR-14 compliant)
 - webonyx/graphql-php 15.29+
 
@@ -37,15 +39,60 @@ ORM versions do not support ``doctrine/persistence`` 4.
 
 **Key Features**:
 
-- Hydrator strategies receive the name of the field being extracted
-- ``ToString`` hydrator strategy
-- ``first``, ``after``, ``last`` and ``before`` are top-level connection arguments, as in the Complete Connection Model
+- Associations are loaded in batches, so a nested query costs a fixed number of database
+  queries however many rows it returns (``batchAssociations``, on by default, and ``batchLimit``)
+- ``totalCount`` is counted only when it is requested
+- ``first``, ``after``, ``last`` and ``before`` are top-level connection arguments, as in
+  the Complete Connection Model, and every combination of them is well defined
+- To-one associations are filtered by the identifier of the entity they refer to, with
+  ``eq``, ``neq``, ``in``, ``notin`` and ``isnull``
+- The ``useNonNullTypes`` config option makes identifiers and required columns and
+  associations non-null types
+- The ``formatJsonAs`` config option exchanges JSON as a document string or as the value
+- Twelve more Doctrine types are mapped, including those of DBAL 4, and fields mapped with
+  an ``enumType``
+- Entity inheritance, embeddables, derived identities and a collection's
+  ``#[ORM\OrderBy]`` are supported
+- A QueryBuilder event listener may join collections, fetched or not; a page is still of
+  entities
+- Hydrator strategies receive the name of the field being extracted; ``ToString``
+  hydrator strategy
+- Metadata is read as typed value objects, and cached metadata carries its format version
+  and the config it was built with
+- Configuration mistakes, such as a misplaced attribute, an invalid name or a field
+  without a getter, are reported when the types are built
+- A client sees only the errors its own request causes; see `errors <errors.html>`_
 
 **Breaking Changes from 13.x**:
 
-- ``pagination`` argument removed; its fields are now top-level connection arguments
-- ``globalEnable`` and ``ignoreFields`` config options removed
-- See `upgrade guide <upgrade.html>`_ for migration instructions
+- Connections: the ``pagination`` argument is removed, as its fields are top-level
+  arguments; connections are ordered by identifier after any other ordering, and a
+  collection by its ``#[ORM\OrderBy]`` first
+- Configuration: ``globalEnable`` and ``ignoreFields`` are removed; ``globalByValue`` and
+  ``byValue`` are renamed ``extractByValue``; ``ConfigBuilder::sortFields()`` is renamed
+  ``enableSortFields()``; config values are validated
+- Types: ``decimal`` is a ``String``; date-times are converted to the default timezone;
+  the date and time scalars reject impossible and invalid values and serialize only date
+  objects; filter, connection and input type names change; the ``sort`` filter takes the
+  ``SortDirection`` enum
+- Filters: comparing to null with ``eq``, ``neq``, ``in`` or ``notin`` is an error;
+  ``LIKE`` wildcards match literally; ``bigint``, ``date_immutable`` and JSON fields have
+  different filters; the inverse side of a one-to-one has no filter; a field's filters apply
+  to that field only
+- Mutations: an input without field lists makes the fields of nullable columns optional
+- Validation: a misplaced attribute, an invalid GraphQL name, a duplicate field name, a
+  negative limit, a field without a getter when extracting by value, and a wrong
+  ``input()`` field list are errors; configuration checks no longer depend on
+  ``zend.assertions``
+- Errors: an error the developer must fix is shown to a client as
+  ``Internal server error``
+- Hydration: custom strategies may implement the new ``Strategy`` interface to receive the
+  field name; the abstract ``Collection`` strategy is removed
+- Metadata: cached metadata must be regenerated with ``Metadata::toArray()``
+- Resolvers called directly return a null ``totalCount`` when it is not requested
+- The ``Driver`` has no public properties, and its methods have specific return types
+- ``symfony/var-exporter`` is no longer required
+- See the `upgrade guide <upgrade.html>`_ for every change and its migration
 
 Version 13.x (Current)
 ======================

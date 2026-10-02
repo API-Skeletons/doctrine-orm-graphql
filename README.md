@@ -1,14 +1,14 @@
 <p align="center">
     <img src="https://placehold.co/10x10/337ab7/337ab7.png" width="100%" height="15px">
-    <img src="https://raw.githubusercontent.com/api-skeletons/doctrine-orm-graphql/master/docs/banner.png" width="450px">
+    <img src="https://raw.githubusercontent.com/api-skeletons/doctrine-orm-graphql/HEAD/docs/banner.png" width="450px">
 </p>
 
 
 GraphQL Type Driver for Doctrine ORM
 ====================================
 
-[![Build Status](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml?query=branch%3Amain)
-[![Code Coverage](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main/graphs/badge.svg)](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/branch/main)
+[![Build Status](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/API-Skeletons/doctrine-orm-graphql/actions/workflows/continuous-integration.yml)
+[![Code Coverage](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql/graph/badge.svg)](https://codecov.io/gh/API-Skeletons/doctrine-orm-graphql)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg)
 [![psalm](https://img.shields.io/badge/psalm-level%201-brightgreen.svg)](https://img.shields.io/badge/psalm-level%201-brightgreen.svg)
 [![License](https://poser.pugx.org/api-skeletons/doctrine-orm-graphql/license)](//packagist.org/packages/api-skeletons/doctrine-orm-graphql)
@@ -43,17 +43,23 @@ composer require api-skeletons/doctrine-orm-graphql
 Documentation
 -------------
 
-Full documentation is available at https://doctrine-orm-graphql.apiskeletons.dev or in the [docs](https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/docs) directory.
+Full documentation is available at https://doctrine-orm-graphql.apiskeletons.dev or in the [docs](https://github.com/api-skeletons/doctrine-orm-graphql/tree/HEAD/docs) directory.
 
 
 Features
 --------
 
-* Supports all [Doctrine Types](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/types.html#data-type-mappings) and allows custom types
+* Supports all [Doctrine Types](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/types.html#data-type-mappings), including those of DBAL 4, and allows custom types
 * Pagination with the [GraphQL Complete Connection Model](https://graphql.org/learn/pagination/#complete-connection-model)
-* [Filtering of sub-collections](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html)
-* [Events](https://github.com/API-Skeletons/doctrine-orm-graphql#events) for modifying queries, entity types and more
+* [Filtering and sorting](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/queries.html) of connections and sub-collections, and of to-one associations by identifier
+* [Batch loading](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#batchassociations) of associations, so a nested query costs a fixed number of database queries
+* [Events](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/events.html) for modifying queries, entity types and more
+* [Computed fields](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/computed-fields.html) from entity methods
+* [Mutation input types](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/mutations.html) from entity fields
 * [Multiple configuration group support](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#group)
+* Optional [non-null types](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#usenonnulltypes) for identifiers and required columns and associations
+* Entity inheritance, mapped superclasses and embeddables
+* [Errors](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/errors.html) a client sees only when its own request causes them
 * [DBAL QueryBuilder Complete Connection Model](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/driver.html#dbalcompleteconnection)
 
 
@@ -66,7 +72,8 @@ Technical Features
 * Custom PSR-11 Container with lazy initialization and buildable types
 * Advanced hydration system with Doctrine Laminas Hydrator and extraction strategies
 * Dynamic QueryBuilder generation with filter translation and event-driven query modification
-  to solve N+1 query problems
+* Deferred batch loading of associations to solve N+1 query problems
+* Metadata as typed value objects, which may be cached
 
 
 Examples
@@ -74,7 +81,7 @@ Examples
 
 The **LDOG Stack**: Laravel, Doctrine ORM, and GraphQL uses this library:  https://ldog.apiskeletons.dev
 
-For an working implementation see https://graphql.lcdb.org
+For a working implementation see https://graphql.lcdb.org
 
 
 Quick Start
@@ -89,31 +96,37 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 class Artist
 {
     #[GraphQL\Field]
-    public $id;
+    private int $id;
 
     #[GraphQL\Field]
-    public $name;
+    private string $name;
 
     #[GraphQL\Association]
-    public $performances;
+    private Collection $performances;
+
+    // Each field is read with its getter: getId(), getName() and getPerformances()
 }
 
 #[GraphQL\Entity]
 class Performance
 {
     #[GraphQL\Field]
-    public $id;
+    private int $id;
 
     #[GraphQL\Field]
-    public $venue;
+    private string $venue;
 
     /**
      * Not all fields need attributes.
      * Only add attributes to fields you want available in GraphQL
      */
-    public $city;
+    private string $city;
+
+    // getId() and getVenue()
 }
 ```
+
+The Doctrine mapping attributes are left out here.
 
 Create the driver and GraphQL schema
 
@@ -197,7 +210,7 @@ Run GraphQL mutations
 use GraphQL\GraphQL;
 
 $query = '
-  mutation ArtistUpdateName($id: Int!, $name: String!) {
+  mutation ArtistUpdateName($id: ID!, $name: String!) {
     artistUpdateName(id: $id, input: { name: $name }) {
       id
       name
@@ -267,13 +280,15 @@ Each field has their own set of filters.  Based on the field type, some or all o
 * gt - Greater than.
 * gte - Greater than or equal to.
 * isnull - Is null.  If value is true, the field must be null.  If value is false, the field must not be null.
-* between - Between.  Identical to using gte & lte on the same field.  Give values as `low, high`.
+* between - Between.  Identical to using gte & lte on the same field.  Give values as `{ from: low, to: high }`.
 * in - Exists within an array.
 * notin - Does not exist within an array.
 * startswith - A like query with a wildcard on the right side of the value.
 * endswith - A like query with a wildcard on the left side of the value.
 * contains - A like query.
-* sort & sortPriority - Sort the results by a field.  Use sortPriority to sort by multiple fields.
+* sort & sortPriority - Sort the results by a field, `ASC` or `DESC`.  Use sortPriority to sort by multiple fields.
+
+A to-one association is filtered by the identifier of the entity it refers to, with `eq`, `neq`, `in`, `notin` and `isnull`.
 
 You may [exclude any filter](https://doctrine-orm-graphql.apiskeletons.dev/en/latest/attributes.html#entity) from any entity, association, or globally.
 
@@ -291,5 +306,5 @@ This was written for [graphql.etreedb.org](https://graphql.etreedb.org)
 License
 -------
 
-See [LICENSE](https://github.com/api-skeletons/doctrine-orm-graphql/blob/master/LICENSE).
+See [LICENSE](https://github.com/api-skeletons/doctrine-orm-graphql/blob/HEAD/LICENSE).
 
