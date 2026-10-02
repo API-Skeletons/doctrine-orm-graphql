@@ -110,6 +110,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `ResolveEntityFactory` creates resolve closures for entity queries
 - `ResolveCollectionFactory` creates resolve closures for associations
 - `FieldResolver` resolves individual fields
+- A page of a query with a join a QueryBuilder listener added, fetched or not, is fetched by Doctrine's `Paginator`, which limits entities rather than rows (`Trait\FetchPage`); a collection's own many-to-many `source` join needs none
 - A row of a subclass which is not exposed is resolved as its nearest exposed parent class (`EntityTypeContainer::getExposedClass()`), in `FieldResolver` and `ResolveCollectionFactory`
 - Connections are ordered by the root entity's identifier after any other ordering (`Trait\OrderByIdentifier`), added after the QueryBuilder event so a listener's ordering comes first. A collection is ordered by its association's `#[ORM\OrderBy]` just before the identifier (`ResolveCollectionFactory::orderByAssociation()`)
 - Batching (`batchAssociations`, on by default) returns `GraphQL\Deferred`:
