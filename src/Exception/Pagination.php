@@ -10,7 +10,7 @@ use Throwable;
 /**
  * Thrown when a pagination argument is invalid
  */
-final class Pagination extends GraphQL
+final class Pagination extends ClientError
 {
     public function __construct(
         string $message,

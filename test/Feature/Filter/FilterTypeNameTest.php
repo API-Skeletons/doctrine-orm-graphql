@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Filter as FilterException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration as ConfigurationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
@@ -59,7 +59,7 @@ class FilterTypeNameTest extends TestCase
         $typeContainer = $driver->get(TypeContainer::class);
         $typeContainer->set($name, new Field($typeContainer, Type::id(), [Filters::EQ]));
 
-        $this->expectException(FilterException::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Filter type name ' . $name . ' is already used for different filters.');
 
         $driver->filter(Performance::class);

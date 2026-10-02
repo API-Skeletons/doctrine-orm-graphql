@@ -95,6 +95,10 @@ Uses league/event (v3.0) for PSR-14 event dispatching. Key events in `src/Event/
 
 Events can have custom event names via `$eventName` parameter in Driver methods.
 
+### Exceptions
+
+All library exceptions extend `Exception\GraphQL` (a webonyx `Error`), which is not client safe: a client sees only "Internal server error" for a developer's error, whose message may name classes and methods. `Exception\ClientError` (`Filter`, `Pagination`, `TypeSerialization`) is client safe unless it has a previous exception which is not; throw one only for an error a client's request causes, with a message naming only GraphQL names and the client's values. See `docs/errors.rst`.
+
 ### Filter System
 
 Filters are auto-generated for all exposed fields and associations (src/Filter/):

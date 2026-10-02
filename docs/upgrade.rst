@@ -5,6 +5,24 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+A developer's error is not shown to a client
+--------------------------------------------
+
+Every exception of this library extended webonyx's ``GraphQL\Error\Error``
+and was client safe, so a client saw the message of an error the developer
+must fix, which may name classes, methods and groups.  Types, hydrators and
+inputs are built when they are first used, often while a query is validated
+or executed, so such an error reached the client even when the schema had
+been built first.  ``Exception\GraphQL::isClientSafe()`` now returns false,
+and a client sees ``Internal server error``.
+
+``Exception\Filter``, ``Exception\Pagination`` and
+``Exception\TypeSerialization``, the errors of a client's request, extend the
+new ``Exception\ClientError`` and are still shown.  The
+``Filter type name ... is already used for different filters`` error is the
+developer's, and now throws ``Exception\Configuration`` rather than
+``Exception\Filter``.  See `errors <errors.html>`_ to log hidden errors.
+
 A negative entity or association limit is an error
 --------------------------------------------------
 
