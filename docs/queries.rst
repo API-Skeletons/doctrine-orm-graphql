@@ -102,6 +102,13 @@ precision, but it has the filters of a number.  A value of ``eq``, ``lt``,
 ``between``, ``in`` or the other comparisons must be a number, such as
 ``"1234567890123"`` or ``"314.15"``; a ``bigint`` value must be an integer.
 
+A value of a ``smallint``, ``integer`` or ``bigint`` field, or of an
+association to an identifier of one, must be within the column's range, such
+as -32768 to 32767 for a ``smallint``; beyond it, some databases, such as
+PostgreSQL, fail rather than match nothing.  On MySQL and MariaDB a field
+with the ``unsigned`` option has the unsigned range, such as 0 to 4294967295
+for an ``integer``.
+
 A JSON field has only the ``isnull`` filter; a filter value is decoded JSON,
 which does not compare to the stored JSON text.  A blob field has no filters.
 
