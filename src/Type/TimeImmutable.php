@@ -41,11 +41,11 @@ final class TimeImmutable extends ScalarType
     public function parseValue(mixed $value): PHPDateTimeImmutable
     {
         if (! is_string($value)) {
-            throw new TypeSerializationException('Time is not a string: ' . get_debug_type($value));
+            throw new TypeSerializationException($this->name . ' is not a string: ' . get_debug_type($value));
         }
 
         if (! preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])(\.\d{1,6})?$/', $value)) {
-            throw new TypeSerializationException('Time ' . $value . ' format does not match H:i:s.u e.g. 13:34:40.867530');
+            throw new TypeSerializationException($this->name . ' ' . $value . ' format does not match H:i:s.u e.g. 13:34:40.867530');
         }
 
         // If time does not have milliseconds, parse without
@@ -54,7 +54,7 @@ final class TimeImmutable extends ScalarType
 
         // @codeCoverageIgnoreStart
         if ($time === false) {
-            throw new TypeSerializationException('Time format does not match ' . $format . '.');
+            throw new TypeSerializationException($this->name . ' format does not match ' . $format . '.');
         }
 
         // @codeCoverageIgnoreEnd

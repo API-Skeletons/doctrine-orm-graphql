@@ -62,13 +62,14 @@ final class Json extends ScalarType
         }
 
         if (! is_string($value)) {
-            throw new TypeSerializationException('JSON is not a string: ' . get_debug_type($value));
+            throw new TypeSerializationException($this->name . ' is not a string: ' . get_debug_type($value));
         }
 
         try {
             return json_decode($value, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            throw new TypeSerializationException('Could not parse JSON data: ' . $e->getMessage(), null, $e);
+        } catch (JsonException) {
+            // The client is told so, rather than shown PHP's message
+            throw new TypeSerializationException($this->name . ' is not a valid JSON document.');
         }
     }
 

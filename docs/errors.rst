@@ -9,7 +9,9 @@ An error a client's request causes is shown to the client: an invalid filter
 (``Exception\Filter``), pagination argument (``Exception\Pagination``) or
 scalar value (``Exception\TypeSerialization``).  These extend
 ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\ClientError``, and their
-messages name only the GraphQL fields and the values the client sent.
+messages name only GraphQL types and fields and the values the client sent,
+such as ``DateTimeImmutable format does not match ISO 8601.`` or
+``Json is not a valid JSON document.``
 
 Every other error of this library is the developer's to fix, such as an
 entity field without a getter, invalid metadata, a hydrator strategy which

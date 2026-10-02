@@ -178,6 +178,6 @@ class DateImmutableTest extends TestCase
         ';
         $result = GraphQL::executeQuery($schema, $query);
 
-        $this->assertEquals('Date format does not match Y-m-d e.g. 2004-02-12.', $result->toArray()['errors'][0]['message']);
+        $this->assertEquals('DateImmutable format does not match Y-m-d e.g. 2004-02-12.', $result->toArray()['errors'][0]['message']);
     }
 }

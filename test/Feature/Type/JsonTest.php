@@ -88,17 +88,25 @@ class JsonTest extends TestCase
     public function testParseValueReportsTheTypeOfANonString(): void
     {
         $this->expectException(TypeSerializationException::class);
-        $this->expectExceptionMessage('JSON is not a string: array');
+        $this->expectExceptionMessage('Json is not a string: array');
 
         (new Json())->parseValue(['a' => 1]);
     }
 
-    public function testParseValueReportsTheJsonError(): void
+    /**
+     * The client is told its JSON is not valid, rather than shown PHP's
+     * message, and the error is client safe
+     */
+    public function testParseValueReportsInvalidJson(): void
     {
-        $this->expectException(TypeSerializationException::class);
-        $this->expectExceptionMessage('Could not parse JSON data: Syntax error');
-
-        (new Json())->parseValue('{bad');
+        try {
+            (new Json())->parseValue('{bad');
+            $this->fail('An exception was expected');
+        } catch (TypeSerializationException $e) {
+            $this->assertSame('Json is not a valid JSON document.', $e->getMessage());
+            $this->assertNull($e->getPrevious());
+            $this->assertTrue($e->isClientSafe());
+        }
     }
 
     public function testParseLiteralRejectsANonStringLiteral(): void

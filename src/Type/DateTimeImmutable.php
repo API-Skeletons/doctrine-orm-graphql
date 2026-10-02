@@ -44,13 +44,13 @@ final class DateTimeImmutable extends ScalarType
     public function parseValue(mixed $value): PHPDateTimeImmutable
     {
         if (! is_string($value)) {
-            throw new TypeSerializationException('datetime_immutable is not a string: ' . get_debug_type($value));
+            throw new TypeSerializationException($this->name . ' is not a string: ' . get_debug_type($value));
         }
 
         $data = PHPDateTimeImmutable::createFromFormat(PHPDateTimeImmutable::ATOM, $value);
 
         if ($data === false) {
-            throw new TypeSerializationException('datetime_immutable format does not match ISO 8601.');
+            throw new TypeSerializationException($this->name . ' format does not match ISO 8601.');
         }
 
         $this->rejectInvalidDateTime($value);

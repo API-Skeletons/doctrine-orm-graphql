@@ -44,13 +44,13 @@ final class DateTime extends ScalarType
     public function parseValue(mixed $value): PHPDateTime
     {
         if (! is_string($value)) {
-            throw new TypeSerializationException('datetime is not a string: ' . get_debug_type($value));
+            throw new TypeSerializationException($this->name . ' is not a string: ' . get_debug_type($value));
         }
 
         $data = PHPDateTime::createFromFormat(PHPDateTime::ATOM, $value);
 
         if ($data === false) {
-            throw new TypeSerializationException('datetime format does not match ISO 8601.');
+            throw new TypeSerializationException($this->name . ' format does not match ISO 8601.');
         }
 
         $this->rejectInvalidDateTime($value);

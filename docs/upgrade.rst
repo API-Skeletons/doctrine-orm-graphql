@@ -18,7 +18,11 @@ and a client sees ``Internal server error``.
 
 ``Exception\Filter``, ``Exception\Pagination`` and
 ``Exception\TypeSerialization``, the errors of a client's request, extend the
-new ``Exception\ClientError`` and are still shown.  The
+new ``Exception\ClientError`` and are still shown.  A scalar's error names its
+GraphQL type, such as ``DateTimeImmutable``, rather than its Doctrine type,
+such as ``datetime_immutable``.  Invalid JSON and a ``DateInterval`` too large
+for PHP were shown as ``Internal server error``; the client is now told
+``Json is not a valid JSON document.`` or ``DateInterval ... is out of range.``  The
 ``Filter type name ... is already used for different filters`` error is the
 developer's, and now throws ``Exception\Configuration`` rather than
 ``Exception\Filter``.  See `errors <errors.html>`_ to log hidden errors.

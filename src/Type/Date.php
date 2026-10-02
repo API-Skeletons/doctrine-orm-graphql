@@ -42,18 +42,18 @@ final class Date extends ScalarType
     public function parseValue(mixed $value): DateTime
     {
         if (! is_string($value)) {
-            throw new TypeSerializationException('Date is not a string: ' . get_debug_type($value));
+            throw new TypeSerializationException($this->name . ' is not a string: ' . get_debug_type($value));
         }
 
         if (! preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $value)) {
-            throw new TypeSerializationException('Date format does not match Y-m-d e.g. 2004-02-12.');
+            throw new TypeSerializationException($this->name . ' format does not match Y-m-d e.g. 2004-02-12.');
         }
 
         $date = DateTime::createFromFormat(DateTime::ATOM, $value . 'T00:00:00+00:00');
 
         // @codeCoverageIgnoreStart
         if ($date === false) {
-            throw new TypeSerializationException('Date format does not match Y-m-d e.g. 2004-02-12.');
+            throw new TypeSerializationException($this->name . ' format does not match Y-m-d e.g. 2004-02-12.');
         }
 
         // @codeCoverageIgnoreEnd
