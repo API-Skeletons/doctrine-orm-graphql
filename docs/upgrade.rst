@@ -5,6 +5,16 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+input() checks its field lists when it is called
+------------------------------------------------
+
+A field in the required or optional fields of ``$driver->input()`` which is
+not a field of the entity, is not exposed in the group or is an identifier
+was reported only when a query used the input type, as an error returned to
+the client.  ``input()`` now throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input`` for it, so the
+mistake is found when the schema is built.
+
 The inverse side of a one-to-one association has no filter
 ----------------------------------------------------------
 

@@ -78,7 +78,8 @@ named by its alias or its field name in the lists.  A field may not be in both
 lists.
 
 Identifiers are excluded from the input field list because they should not be
-changed or added by a user.
+changed or added by a user.  Naming one in the required or optional list
+throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input``.
 
 Only fields exposed with a ``#[Field]`` attribute in the driver's group can be
 input.  When no field lists are given, a column which is not exposed, such as a
@@ -91,6 +92,9 @@ Associations cannot be input.  An unknown name, such as a typo, throws
 closest exposed field when there is one::
 
   Field nmae is not a field of entity App\ORM\Entity\User. Did you mean "name"?
+
+``input()`` checks the lists when it is called, so these mistakes are found
+when the schema is built rather than when a query uses the input.
 
 
 Input Type Names
