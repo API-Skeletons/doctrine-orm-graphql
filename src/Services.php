@@ -118,8 +118,6 @@ trait Services
                         $object->__construct(
                             $self->service(EntityManager::class),
                             $self->service(Config::class),
-                            $self->service(Resolve\FieldResolver::class),
-                            $self->service(Type\TypeContainer::class),
                             $self->service(EntityTypeContainer::class),
                             $self->service(EventDispatcher::class),
                             $self->service(Pagination\PaginationService::class),
@@ -161,7 +159,6 @@ trait Services
                             $self->service(Config::class),
                             $self->service(EntityManager::class),
                             $self->service(Type\TypeContainer::class),
-                            $self->service(EventDispatcher::class),
                         );
                     }),
             )

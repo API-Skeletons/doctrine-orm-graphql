@@ -16,7 +16,6 @@ use Doctrine\ORM\EntityManager;
 use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
-use League\Event\EventDispatcher;
 use ReflectionClass;
 
 use function array_filter;
@@ -40,7 +39,6 @@ final class FilterFactory
         protected readonly Config $config,
         protected readonly EntityManager $entityManager,
         protected readonly TypeContainer $typeContainer,
-        protected readonly EventDispatcher $eventDispatcher,
     ) {
     }
 
