@@ -131,6 +131,17 @@ and was stored as, 15:19:21 UTC rather than 10:19:21 UTC.  Such a value is now
 converted to the default timezone, the same instant.  ``DateTimeTZ`` values
 keep their offset.
 
+Date-times take a fraction of a second
+--------------------------------------
+
+The ``DateTime``, ``DateTimeImmutable``, ``DateTimeTZ`` and
+``DateTimeTZImmutable`` scalars rejected a value with a fraction of a second,
+such as ``2004-02-12T15:19:21.123Z`` from JavaScript's ``Date.toISOString()``.
+It is now accepted; digits after the sixth are dropped.  A value with a
+fraction of a second was serialized without it.  It is now serialized with
+six digits, such as ``2004-02-12T15:19:21.123000+00:00``.  A value of whole
+seconds is serialized as before.
+
 ConfigBuilder::sortFields() is renamed enableSortFields()
 ---------------------------------------------------------
 

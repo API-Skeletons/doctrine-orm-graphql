@@ -126,6 +126,14 @@ keeping its instant, so it is filtered and stored as that instant.  A
 database which stores one; on a database which does not, such as MySQL or
 SQLite, send a ``datetimetz`` value in the default timezone.
 
+A ``DateTime``, ``DateTimeImmutable``, ``DateTimeTZ`` or ``DateTimeTZImmutable``
+value may have a fraction of a second, such as ``2004-02-12T15:19:21.123Z``,
+which JavaScript's ``Date.toISOString()`` gives.  PHP holds microseconds, so
+digits after the sixth are dropped.  A value is serialized with its fraction,
+as ``2004-02-12T15:19:21.123000+00:00``, only when it has one; a value of whole
+seconds is serialized as ``2004-02-12T15:19:21+00:00``.  A ``datetime`` column
+stores whole seconds unless its type is given a precision.
+
 A field mapped with an ``enumType`` is represented by the value of the enum,
 the value stored in the database, as the field's type.  An input or filter
 value of it is also the value; use ``Enum::from()`` to convert it before

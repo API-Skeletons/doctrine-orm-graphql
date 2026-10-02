@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Type;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\TypeSerialization as TypeSerializationException;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\RejectInvalidDateTime;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\SerializeDateTime;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\IsoDateTime;
 use DateTimeImmutable as PHPDateTimeTZImmutable;
 use GraphQL\Language\AST\Node as ASTNode;
 use GraphQL\Language\AST\StringValueNode;
@@ -21,12 +20,11 @@ use function is_string;
  */
 final class DateTimeTZImmutable extends ScalarType
 {
-    use RejectInvalidDateTime;
-    use SerializeDateTime;
+    use IsoDateTime;
 
     // phpcs:disable SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingAnyTypeHint
     public string|null $description = 'The `datetimetz_immutable` scalar type represents datetime data.'
-    . 'The format is ISO-8601 e.g. 2004-02-12T15:19:21+00:00';
+    . 'The format is ISO-8601 e.g. 2004-02-12T15:19:21+00:00 or 2004-02-12T15:19:21.123Z';
 
     #[Override]
     public function parseLiteral(ASTNode $valueNode, array|null $variables = null): PHPDateTimeTZImmutable
@@ -45,21 +43,13 @@ final class DateTimeTZImmutable extends ScalarType
             throw new TypeSerializationException($this->name . ' is not a string: ' . get_debug_type($value));
         }
 
-        $data = PHPDateTimeTZImmutable::createFromFormat(PHPDateTimeTZImmutable::ATOM, $value);
-
-        if ($data === false) {
-            throw new TypeSerializationException($this->name . ' format does not match ISO 8601.');
-        }
-
-        $this->rejectInvalidDateTime($value);
-
-        return $data;
+        return $this->parseIsoDateTime($value, PHPDateTimeTZImmutable::class);
     }
 
     /** @throws TypeSerializationException */
     #[Override]
     public function serialize(mixed $value): string
     {
-        return $this->serializeDateTime($value, PHPDateTimeTZImmutable::ATOM);
+        return $this->serializeIsoDateTime($value);
     }
 }
