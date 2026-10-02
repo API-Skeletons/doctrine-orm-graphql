@@ -16,6 +16,8 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+use function array_column;
+
 /**
  * An entity of a derived identity has an association as its identifier.  A
  * collection of, or from, such entities is not batched.
@@ -99,6 +101,39 @@ class DerivedIdentityTest extends TestCase
      * identifier of the entity its identifier refers to, whose value is not
      * checked to be a number
      */
+
+    /**
+     * The members are not loaded by another field, so the to-one loader
+     * loads them by their identifiers, which are associations
+     */
+    #[DataProvider('batchProvider')]
+    public function testToOneAssociationToADerivedIdentity(bool $batchAssociations): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config([
+            'group' => 'DerivedIdentity',
+            'batchAssociations' => $batchAssociations,
+        ]));
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => ['badges' => $driver->completeConnection(TestDerivedBadge::class)],
+            ]),
+        ]);
+
+        $result = GraphQL::executeQuery($schema, '{ badges { edges { node { name member { role account { name } } } } } }')
+            ->toArray();
+
+        $this->assertArrayNotHasKey('errors', $result);
+        $this->assertSame(
+            [
+                ['name' => 'ann badge', 'member' => ['role' => 'player', 'account' => ['name' => 'ann']]],
+                ['name' => 'bob badge', 'member' => ['role' => 'player', 'account' => ['name' => 'bob']]],
+                ['name' => 'cat badge', 'member' => ['role' => 'player', 'account' => ['name' => 'cat']]],
+            ],
+            array_column($result['data']['badges']['edges'], 'node'),
+        );
+    }
+
     public function testFilterByAnAssociationToADerivedIdentity(): void
     {
         $account = $this->getEntityManager()->getRepository(TestDerivedAccount::class)->findOneBy(['name' => 'bob']);

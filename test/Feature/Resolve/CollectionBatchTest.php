@@ -20,6 +20,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use function array_sum;
 use function base64_encode;
 use function sprintf;
+use function str_contains;
 
 /**
  * Batched collections return exactly what per-parent queries return
@@ -255,6 +256,55 @@ class CollectionBatchTest extends QueryCountingTestCase
         }
 
         $this->assertSame(10, array_sum($totals));
+    }
+
+    /**
+     * A target removed after its identifier was selected, as by another
+     * request, is left off its page rather than given as a null node
+     */
+    public function testTargetRemovedBeforeItIsLoadedIsLeftOff(): void
+    {
+        $query = '{ artist { edges { node { id performances { edges { node { id } } } } } } }';
+
+        [$before] = $this->execute(['batchAssociations' => true], $query);
+        $removed  = $before['data']['artist']['edges'][0]['node']['performances']['edges'][0]['node']['id'];
+
+        $connection = $this->getEntityManager()->getConnection();
+        $table      = $this->getEntityManager()->getClassMetadata(Performance::class)->getTableName();
+
+        self::beforeExecute(static function (string $sql) use ($connection, $table, $removed): void {
+            // The query loading the targets on the pages, not the one selecting
+            // their identifiers as scalars
+            if (! str_contains($sql, 'FROM ' . $table . ' ') || ! str_contains($sql, ' IN (') || str_contains($sql, 'sclr')) {
+                return;
+            }
+
+            self::beforeExecute(null);
+            $connection->executeStatement('DELETE FROM ' . $table . ' WHERE id = ?', [$removed]);
+        });
+
+        [$after] = $this->execute(['batchAssociations' => true], $query);
+
+        $this->assertArrayNotHasKey('errors', $after);
+
+        $expected = [];
+        $actual   = [];
+        foreach ($before['data']['artist']['edges'] as $index => $edge) {
+            foreach ($edge['node']['performances']['edges'] as $performance) {
+                if ($performance['node']['id'] === $removed) {
+                    continue;
+                }
+
+                $expected[$index][] = $performance['node']['id'];
+            }
+
+            foreach ($after['data']['artist']['edges'][$index]['node']['performances']['edges'] as $performance) {
+                $this->assertNotNull($performance['node']);
+                $actual[$index][] = $performance['node']['id'];
+            }
+        }
+
+        $this->assertSame($expected, $actual);
     }
 
     /**
