@@ -59,7 +59,7 @@ Optional parameters are:
 
     #[GraphQL\Entity(excludeFilters: [Filters::CONTAINS, Filters::STARTSWITH, Filters::ENDSWITH])]
 
-* ``group`` - You may have multiple GraphQL configurations organzied by
+* ``group`` - You may have multiple GraphQL configurations organized by
   ``group``.
 * ``includeFilters`` - An array of filters to include from available
   filters for all fields and associations in the entity.  ``includeFilters``
@@ -117,7 +117,7 @@ is built.  Optional parameters are:
 * ``description`` - A description of the ``Field``.
 * ``excludeFilters`` - An array of filters to exclude from available
   filters for this field.  Combined with ``excludeFilters`` of the entity.
-* ``group`` - You can have multiple GraphQL configurations organzied by
+* ``group`` - You can have multiple GraphQL configurations organized by
   ``group``.
 * ``includeFilters`` - An array of filters to include from available
   filters for the field.  ``includeFilters``
@@ -193,7 +193,7 @@ when the metadata is built.
   associations with soft deletes.  The event is dispatched for each row, so an
   association with an event name is not `batched <driver.html#batchassociations>`_.
   See `events <events.html>`_.
-* ``group`` - You can have multiple GraphQL configurations organzied by
+* ``group`` - You can have multiple GraphQL configurations organized by
   ``group``.
 * ``includeFilters`` - An array of filters to include from available
   filters for all fields in the association.  ``includeFilters``

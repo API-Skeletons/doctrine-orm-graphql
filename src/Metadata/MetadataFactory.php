@@ -102,7 +102,7 @@ final class MetadataFactory
         $entityInstance       = null;
         $entityAttributeFound = false;
 
-        // Fetch attributes for the entity class filterd by Attribute\Entity
+        // Fetch attributes for the entity class filtered by Attribute\Entity
         foreach ($reflectionClass->getAttributes(Attribute\Entity::class) as $attribute) {
             // PHP would report only an unknown named parameter
             if (array_key_exists('byValue', $attribute->getArguments())) {

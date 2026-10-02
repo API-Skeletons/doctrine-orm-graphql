@@ -8,7 +8,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
 /**
- * This type is defined in the GraphqQL Complete Connection Specification
+ * This type is defined in the GraphQL Complete Connection Specification
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
