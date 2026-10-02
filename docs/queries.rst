@@ -384,6 +384,30 @@ With both, ``artists { edges { node { performances { edges { node { venue } } } 
 costs 3,002,000 and is rejected by ``QueryComplexity(1000)``, and the same query
 with ``first: 5`` for each connection is allowed.
 
+Filters have a cost too, which these rules do not count.  ``contains``,
+``startswith`` and ``endswith`` are ``LIKE`` comparisons.  ``contains`` and
+``endswith`` begin with a wildcard, so no ordinary index serves them and each
+reads every row; whether an index serves ``startswith`` depends on the
+database.  A ``sort`` on a column without an index sorts every matching row
+before the page is taken.  An ``in`` or ``notin`` list binds a parameter for
+each of its values, and databases limit them: Oracle allows 1000 values in a
+list and SQL Server 2100 parameters in a query.  Index the columns clients
+filter and sort on, and leave out the filters a large table should not offer
+with the ``excludeFilters`` of the `field, association or entity
+<attributes.html>`_ or of the `config <driver.html#excludefilters>`_.
+
+Doctrine loads the inverse side of a one-to-one association, the side
+without the join column, with a query for every entity it hydrates, whether
+or not a query asks for it: without the join column it cannot tell whether
+there is a related entity, so it cannot give a proxy for one.  Batching does
+not cover these queries.  A `QueryBuilder event <events.html>`_ listener which
+fetch joins it loads them with the page instead, which is still a page of
+entities:
+
+.. code-block:: php
+
+    $event->getQueryBuilder()->leftJoin('entity.profile', 'profile')->addSelect('profile');
+
 .. role:: raw-html(raw)
    :format: html
 
