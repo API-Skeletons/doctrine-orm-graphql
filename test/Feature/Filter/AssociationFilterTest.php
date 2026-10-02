@@ -121,6 +121,47 @@ class AssociationFilterTest extends TestCase
         $this->assertCount(3, $result['data']['performance']['edges']);
     }
 
+    /** @return array<string, array{string, string}> */
+    public static function nonIntegerProvider(): array
+    {
+        return [
+            'eq' => ['eq', 'eq: "abc"'],
+            'neq' => ['neq', 'neq: "1.5"'],
+            'in' => ['in', 'in: ["1", "x"]'],
+            'notin' => ['notin', 'notin: [""]'],
+        ];
+    }
+
+    /**
+     * An ID may be any string.  A value which is not an integer, for an
+     * integer identifier, is an error, rather than compared as text or a
+     * database error.
+     */
+    #[DataProvider('nonIntegerProvider')]
+    public function testValueOfAnIntegerIdentifierMustBeAnInteger(string $filter, string $value): void
+    {
+        $result = $this->execute(
+            new Config(),
+            '{ performance(filter: { artist: { ' . $value . ' } }) { edges { node { id } } } }',
+        );
+
+        $this->assertSame(
+            "Filter '" . $filter . "' of field 'artist' must be an integer.",
+            $result['errors'][0]['message'],
+        );
+    }
+
+    public function testIntegerIdentifierAsAString(): void
+    {
+        $result = $this->execute(
+            new Config(),
+            '{ performance(filter: { artist: { eq: "1", in: ["1", "2"] } }) { edges { node { id } } } }',
+        );
+
+        $this->assertArrayNotHasKey('errors', $result);
+        $this->assertCount(5, $result['data']['performance']['edges']);
+    }
+
     public function testNullComparisonIsRejected(): void
     {
         $result = $this->execute(new Config(), '{ performance(filter: { artist: { in: [1, null] } }) { edges { node { id } } } }');

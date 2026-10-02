@@ -5,6 +5,14 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+An association's filter value must be of its identifier's type
+--------------------------------------------------------------
+
+A to-one association is filtered by an ``ID``, which may be any string.  A
+value which is not an integer, for an integer identifier, matched nothing on
+SQLite and MySQL and was a database error on PostgreSQL.  It is now an error,
+``Filter 'eq' of field 'artist' must be an integer.``
+
 An association's options apply to a to-one association as they can
 -------------------------------------------------------------------
 

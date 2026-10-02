@@ -74,5 +74,12 @@ class ToOneAssociationFiltersTest extends TestCase
             '{ entities(filter: { excluded: { eq: ' . $first->getId() . ' } }) { edges { node { id } } } }',
         )->toArray();
         $this->assertStringContainsString('Field "eq" is not defined', $result['errors'][0]['message']);
+
+        // The identifier is an integer
+        $result = GraphQL::executeQuery(
+            $schema,
+            '{ entities(filter: { every: { eq: "first" } }) { edges { node { id } } } }',
+        )->toArray();
+        $this->assertSame("Filter 'eq' of field 'every' must be an integer.", $result['errors'][0]['message']);
     }
 }
