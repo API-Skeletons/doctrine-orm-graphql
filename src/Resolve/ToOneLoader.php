@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Resolve;
 
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\DatabaseValue;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Proxy\DefaultProxyClassNameResolver;
 use GraphQL\Deferred;
@@ -25,9 +26,11 @@ use function serialize;
  */
 final class ToOneLoader
 {
+    use DatabaseValue;
+
     /**
-     * Identifiers to load, keyed by class and then by a key unique to the
-     * identifier
+     * The database values of the identifiers to load, keyed by class and then
+     * by a key unique to the identifier
      *
      * @var array<class-string, array<string, mixed>>
      */
@@ -59,10 +62,14 @@ final class ToOneLoader
             return $value;
         }
 
+        $idField    = $metadata->getSingleIdentifierFieldName();
         $identifier = $unitOfWork->getEntityIdentifier($value);
-        // An identifier may be of any type, such as an int, a string or a UUID object
+
+        // An identifier may be of any type, such as an int, a string or a UUID
+        // object; it is bound as its database value, which Doctrine does not
+        // convert in an IN list
         /** @psalm-suppress MixedAssignment */
-        $id = $identifier[$metadata->getSingleIdentifierFieldName()];
+        $id = self::databaseValueOf($this->entityManager, $metadata, $idField, $identifier[$idField]);
 
         $this->pending[$class][is_scalar($id) ? (string) $id : serialize($id)] = $id;
 

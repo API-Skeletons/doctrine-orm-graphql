@@ -10,6 +10,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Event\QueryBuilder as QueryBuilderEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Pagination as PaginationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Pagination\PaginationService;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\DatabaseValue;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\FetchPage;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
@@ -41,6 +42,7 @@ use function serialize;
  */
 final class ResolveCollectionFactory
 {
+    use DatabaseValue;
     use FetchPage;
 
     /** The most sources matched by one IN list */
@@ -334,7 +336,8 @@ final class ResolveCollectionFactory
      * is loaded which is not on a page, and a target in several sources'
      * collections is fetched for each of them.
      *
-     * @return array<string, list<int|string>>|null The target identifiers, by source identifier
+     * @return array<string, list<int|string>>|null The database values of the target identifiers, by
+     *                                               the database value of the source identifier
      */
     private function fetchBatchTargetIds(CollectionBatch $batch): array|null
     {
@@ -421,8 +424,17 @@ final class ResolveCollectionFactory
             );
 
             foreach ($entities as $entity) {
-                /** @psalm-suppress MixedArrayOffset An identifier may be of any type */
-                $targets[(string) $targetMetadata->getIdentifierValues($entity)[$targetId]] = $entity;
+                // Keyed by its identifier's database value, as the identifiers were selected
+                /** @psalm-suppress MixedAssignment A database value may be of any type */
+                $id = self::databaseValueOf(
+                    $this->entityManager,
+                    $targetMetadata,
+                    $targetId,
+                    $targetMetadata->getIdentifierValues($entity)[$targetId],
+                );
+                assert(is_int($id) || is_string($id));
+
+                $targets[(string) $id] = $entity;
             }
         }
 
@@ -430,6 +442,11 @@ final class ResolveCollectionFactory
         foreach ($pageTargetIds as $identifier => $ids) {
             $pageTargets[$identifier] = [];
             foreach ($ids as $id) {
+                // A target removed since its identifier was selected is not on the page
+                if (! isset($targets[(string) $id])) {
+                    continue;
+                }
+
                 $pageTargets[$identifier][] = $targets[(string) $id];
             }
         }
@@ -506,10 +523,14 @@ final class ResolveCollectionFactory
     }
 
     /**
-     * The source's identifier if its collection can be batched: the source
-     * and target each have a single identifier which is a field, not an
-     * association as a derived identity has, and the source's is an int or a
-     * string.  A collection is always one-to-many or many-to-many.
+     * The database value of the source's identifier if its collection can be
+     * batched: the source and target each have a single identifier which is a
+     * field, not an association as a derived identity has, and the database
+     * value of the source's is an int or a string.  A collection is always
+     * one-to-many or many-to-many.
+     *
+     * The rows of a batch are selected with their identifiers, which Doctrine
+     * gives as database values, so the sources are matched by theirs.
      *
      * @param class-string $sourceClassName
      */
@@ -527,8 +548,16 @@ final class ResolveCollectionFactory
             }
         }
 
+        $idField = $sourceMetadata->getSingleIdentifierFieldName();
+
         /** @psalm-suppress MixedAssignment An identifier may be of any type */
-        $identifier = $sourceMetadata->getIdentifierValues($source)[$sourceMetadata->getSingleIdentifierFieldName()] ?? null;
+        $identifier = $sourceMetadata->getIdentifierValues($source)[$idField] ?? null;
+        if ($identifier === null) {
+            return null;
+        }
+
+        /** @psalm-suppress MixedAssignment A database value may be of any type */
+        $identifier = self::databaseValueOf($this->entityManager, $sourceMetadata, $idField, $identifier);
 
         return is_int($identifier) || is_string($identifier) ? $identifier : null;
     }
@@ -572,7 +601,8 @@ final class ResolveCollectionFactory
         string $associationName,
         mixed $source,
     ): void {
-        $association = $this->entityManager->getClassMetadata($sourceClassName)->getAssociationMapping($associationName);
+        $sourceMetadata = $this->entityManager->getClassMetadata($sourceClassName);
+        $association    = $sourceMetadata->getAssociationMapping($associationName);
 
         if ($association['type'] === ClassMetadata::ONE_TO_MANY) {
             // One-to-many: the target entity holds the foreign key
@@ -587,7 +617,22 @@ final class ResolveCollectionFactory
                 ->where('source = :source');
         }
 
-        $queryBuilder->setParameter('source', $source);
+        // Doctrine binds an entity as its identifier without converting it by
+        // its type, so a single identifier is bound as its database value
+        /** @psalm-suppress MixedAssignment The source is an entity */
+        $parameter = $source;
+        $idFields  = $sourceMetadata->getIdentifierFieldNames();
+        if (count($idFields) === 1 && $sourceMetadata->hasField($idFields[0]) && is_object($source)) {
+            /** @psalm-suppress MixedAssignment A database value may be of any type */
+            $parameter = self::databaseValueOf(
+                $this->entityManager,
+                $sourceMetadata,
+                $idFields[0],
+                $sourceMetadata->getIdentifierValues($source)[$idFields[0]],
+            );
+        }
+
+        $queryBuilder->setParameter('source', $parameter);
     }
 
     /**
