@@ -143,6 +143,34 @@ class InheritanceTest extends TestCase
         ], $data['dogs']['edges']);
     }
 
+    /**
+     * A computed field of the subclass's type gives a subclass's own fields
+     * through the root's type, where a row is of the root's type
+     */
+    #[DataProvider('extractionProvider')]
+    public function testSubclassFieldsThroughAComputedField(bool $batchAssociations, bool $extractByValue): void
+    {
+        $data = $this->execute(
+            ['group' => 'InheritanceSubclass', 'batchAssociations' => $batchAssociations, 'extractByValue' => $extractByValue],
+            ['animals' => InheritanceAnimal::class, 'toys' => InheritanceToy::class],
+            '{
+                animals { edges { node { name asDog { breed } } } }
+                toys { edges { node { name owner { name asDog { breed } } } } }
+            }',
+        );
+
+        $this->assertSame([
+            ['node' => ['name' => 'Generic', 'asDog' => null]],
+            ['node' => ['name' => 'Rex', 'asDog' => ['breed' => 'Labrador']]],
+        ], $data['animals']['edges']);
+
+        $this->assertSame([
+            ['node' => ['name' => 'Ball', 'owner' => ['name' => 'Generic', 'asDog' => null]]],
+            ['node' => ['name' => 'Bone', 'owner' => ['name' => 'Rex', 'asDog' => ['breed' => 'Labrador']]]],
+            ['node' => ['name' => 'Rope', 'owner' => ['name' => 'Rex', 'asDog' => ['breed' => 'Labrador']]]],
+        ], $data['toys']['edges']);
+    }
+
     public function testExposedClass(): void
     {
         $dog = new InheritanceDog('Rex', 'Labrador');

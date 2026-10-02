@@ -179,7 +179,8 @@ returns a list of them, such as an array or a Doctrine ``Collection``.
   }
 
 This exposes a relation which is not mapped as an association, or which is
-derived from one.  The entity may be of the same class as the field's own
+derived from one, or a subclass's own fields through its parent's type; see
+`Inheritance <attributes.html#inheritance>`_.  The entity may be of the same class as the field's own
 entity, and two entities may have computed fields of each other's types.  An
 entity of a class which is not exposed in the group throws
 ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the metadata
