@@ -16,6 +16,7 @@ use GraphQL\Error\Error;
 use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\InputType;
+use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\NullableType;
 use GraphQL\Type\Definition\Type;
 use ReflectionClass;
@@ -27,7 +28,6 @@ use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
-use function assert;
 use function count;
 use function in_array;
 use function md5;
@@ -282,7 +282,19 @@ final class InputFactory
     {
         $fieldMetadata = $targetEntity->getEntityMetadata()->fields[$fieldName];
         $type          = $this->typeContainer->get($fieldMetadata->type);
-        assert($type instanceof NullableType && $type instanceof InputType);
+
+        // A custom type which is non-null is input as the type it wraps; the
+        // field lists decide whether the field is required
+        if ($type instanceof NonNull) {
+            $type = $type->getWrappedType();
+        }
+
+        if (! $type instanceof NullableType || ! $type instanceof InputType) {
+            throw new InputException(
+                'Field ' . $fieldName . ' of entity ' . $targetEntity->getEntityClass() . ' is of type '
+                . $type->toString() . ', which cannot be input.',
+            );
+        }
 
         $name = $targetEntity->getExtractionMap()[$fieldName] ?? $fieldName;
 

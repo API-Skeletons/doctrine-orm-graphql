@@ -7,7 +7,10 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Input;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Input as InputException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestNonNullTypes;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypeTest;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use Doctrine\ORM\EntityManager;
@@ -736,5 +739,44 @@ class InputFactoryTest extends TestCase
         $this->expectExceptionMessage('Field name is in both the required and the optional fields');
 
         $driver->input(User::class, $requiredFields, $optionalFields);
+    }
+
+    /**
+     * A field of a custom type which cannot be input is an error, whether
+     * assertions are enabled or not
+     */
+    public function testFieldOfATypeWhichCannotBeInputThrows(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'CustomTypeTest']));
+        $driver->get(TypeContainer::class)->set(
+            'customtype',
+            static fn () => new ObjectType(['name' => 'Custom', 'fields' => ['value' => Type::string()]]),
+        );
+
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage(
+            'Field testFloat of entity ' . TypeTest::class . ' is of type Custom, which cannot be input.',
+        );
+
+        $driver->input(TypeTest::class, ['testFloat'])->getFields();
+    }
+
+    /**
+     * A field of a custom type which is non-null is input as the type it
+     * wraps, required or optional as the field lists say
+     */
+    public function testFieldOfANonNullCustomTypeIsInputAsTheTypeItWraps(): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'NonNullTypes']));
+        $driver->get(TypeContainer::class)->set('requiredstring', static fn () => Type::nonNull(Type::string()));
+
+        $this->assertSame(
+            'String',
+            $driver->input(TestNonNullTypes::class, [], ['code'])->getField('code')->getType()->toString(),
+        );
+        $this->assertSame(
+            'String!',
+            $driver->input(TestNonNullTypes::class, ['code'])->getField('code')->getType()->toString(),
+        );
     }
 }

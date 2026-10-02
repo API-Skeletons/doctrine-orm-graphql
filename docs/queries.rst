@@ -204,7 +204,8 @@ the page is fetched to tell whether there is a next page.
 
 Cursors are included with each edge.  A cursor is a base64 encoded
 offset from the beginning of the result set.  ``base64_encode('0');`` is
-``MA==`` to use when creating a paginated query.
+``MA==`` to use when creating a paginated query.  An offset is an integer, so
+a cursor of an offset beyond PHP's largest integer is not a valid cursor.
 
 A cursor is the position of a row, not the row itself.  When rows are added
 or removed before a cursor's position between one page and the next, the next

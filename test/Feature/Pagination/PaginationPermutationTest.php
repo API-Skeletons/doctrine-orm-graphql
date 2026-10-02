@@ -220,6 +220,11 @@ class PaginationPermutationTest extends TestCase
                 ['before' => base64_encode('-5')],
                 'Pagination argument "before" is not a valid cursor.',
             ],
+            // A forward page without a count, whose offset was a float
+            'cursor beyond an int' => [
+                ['first' => 2, 'after' => base64_encode('99999999999999999999')],
+                'Pagination argument "after" is not a valid cursor.',
+            ],
         ];
     }
 
