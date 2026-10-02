@@ -24,9 +24,20 @@ vendor/bin/phpunit test/Feature/Type/EntityTest.php
 # Run a specific test method
 vendor/bin/phpunit --filter testMethodName
 
-# Generate code coverage report (requires Xdebug)
-composer coverage
+# Code coverage (requires Xdebug): a text summary, or an HTML report in coverage-report/
+composer coverage-cli
+composer coverage-html
 ```
+
+### Code Coverage
+
+The project keeps 100% line, method and class coverage. After changing `src/`, check it before reporting the work as done, and list any uncovered statements:
+
+```bash
+XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text --only-summary-for-coverage-text --coverage-clover "$TMPDIR/clover.xml"
+```
+
+An uncovered line in the clover report is a `<line type="stmt" count="0">`. For each one, write a test if the branch is reachable, or remove the code if it is not, such as a check only static analysis needs (use a `@var` annotation instead). A race, such as a row deleted by another request between two queries, can be tested with `QueryCountingTestCase::beforeExecute()`, which runs a function just before each statement executes. Do not add `@codeCoverageIgnore` to new code to reach 100%.
 
 ### Code Quality
 ```bash
