@@ -8,3 +8,4 @@
 /.idea/
 /.phpcs-cache
 /.phpunit.result.cache
+/.phpactor.json
