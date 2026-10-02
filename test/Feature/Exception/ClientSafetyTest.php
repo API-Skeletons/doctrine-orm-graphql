@@ -207,7 +207,7 @@ class ClientSafetyTest extends TestCase
             ],
             'scalar' => [
                 '{ entities(filter: { performanceDate: { eq: "yesterday" } }) { edges { node { id } } } }',
-                'datetime format does not match ISO 8601.',
+                'DateTime format does not match ISO 8601.',
             ],
         ];
     }

@@ -41,19 +41,20 @@ final class DateInterval extends ScalarType
     public function parseValue(mixed $value): PHPDateInterval
     {
         if (! is_string($value)) {
-            throw new TypeSerializationException('DateInterval is not a string: ' . get_debug_type($value));
+            throw new TypeSerializationException($this->name . ' is not a string: ' . get_debug_type($value));
         }
 
         // The DateInterval constructor accepts neither a sign nor an empty duration
         if (! preg_match('/^([+-]?)(P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?!$)(\d+H)?(\d+M)?(\d+S)?)?)$/', $value, $matches)) {
-            throw new TypeSerializationException('DateInterval ' . $value . ' does not match ISO 8601 e.g. P1Y2M3DT4H5M6S.');
+            throw new TypeSerializationException($this->name . ' ' . $value . ' does not match ISO 8601 e.g. P1Y2M3DT4H5M6S.');
         }
 
         try {
             $interval = new PHPDateInterval($matches[2]);
-        } catch (Throwable $e) {
-            // A number too large for PHP
-            throw new TypeSerializationException('DateInterval ' . $value . ' does not match ISO 8601.', null, $e);
+        } catch (Throwable) {
+            // A number too large for PHP.  The client is told so, rather than
+            // shown PHP's message.
+            throw new TypeSerializationException($this->name . ' ' . $value . ' is out of range.');
         }
 
         $interval->invert = $matches[1] === '-' ? 1 : 0;

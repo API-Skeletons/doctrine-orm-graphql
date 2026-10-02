@@ -69,7 +69,6 @@ class DateIntervalTest extends TestCase
             'fraction' => ['PT1.5S'],
             'wrong order' => ['P1D1Y'],
             'text' => ['one day'],
-            'too large' => ['P99999999999999999999Y'],
         ];
     }
 
@@ -80,6 +79,22 @@ class DateIntervalTest extends TestCase
         $this->expectExceptionMessage('does not match ISO 8601');
 
         (new DateInterval())->parseValue($value);
+    }
+
+    /**
+     * The client is told its interval is too large for PHP, rather than shown
+     * PHP's message, and the error is client safe
+     */
+    public function testTooLargeValueIsOutOfRange(): void
+    {
+        try {
+            (new DateInterval())->parseValue('P99999999999999999999Y');
+            $this->fail('An exception was expected');
+        } catch (TypeSerializationException $e) {
+            $this->assertSame('DateInterval P99999999999999999999Y is out of range.', $e->getMessage());
+            $this->assertNull($e->getPrevious());
+            $this->assertTrue($e->isClientSafe());
+        }
     }
 
     public function testNonStringValueIsRejected(): void
