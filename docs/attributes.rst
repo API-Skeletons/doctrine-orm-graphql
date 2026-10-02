@@ -123,7 +123,7 @@ is built.  Optional parameters are:
   filters for the field.  ``includeFilters``
   and ``excludeFilters`` are mutually exclusive.
 * ``hydratorStrategy`` - A custom hydrator strategy class.
-  Class must be injected into the HydratorFactory container.  See `strategies <strategies.html>`_ and `containers <containers.html>`_
+  Class must be injected into the HydratorContainer.  See `strategies <strategies.html>`_ and `containers <containers.html>`_
 * ``type`` - Override the GraphQL type name for the field.
   The custom type must be injected into the TypeContainer
   See `containers <containers.html>`_
@@ -208,7 +208,7 @@ when the metadata is built.
   when larger.  ``0`` does not; a negative ``limit`` is an error, as is a
   ``limit`` on a to-one association.
 * ``hydratorStrategy`` - A custom hydrator strategy class.
-  Class must be injected into the HydratorFactory container.  See `containers <containers.html>`_
+  Class must be injected into the HydratorContainer.  See `containers <containers.html>`_
 
 
 ComputedField

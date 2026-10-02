@@ -83,8 +83,9 @@ of a field you can construct your query like this:
 .. code-block:: php
 
    use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as FilterQueryBuilder;
-   use ApiSkeletons\Doctrine\ORM\GraphQL\Types\Entity\EntityTypeContainer;
+   use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
    use Doctrine\ORM\EntityManager;
+   use GraphQL\Type\Definition\ResolveInfo;
    use GraphQL\Type\Definition\Type;
 
    'average' => [
@@ -93,7 +94,7 @@ of a field you can construct your query like this:
            'filter' => $driver->filter(Entity::class),
        ],
        'resolve' => function ($root, array $args, $context, ResolveInfo $info) use ($driver) {
-           $entity = $driver->get(EntityTypeContainer::class)->get(Entity::class)
+           $entity = $driver->get(EntityTypeContainer::class)->get(Entity::class);
 
            $filterQueryBuilder = new FilterQueryBuilder();
 
@@ -104,9 +105,9 @@ of a field you can construct your query like this:
                ->from(Entity::class, 'entity');
 
            // The apply method requires a third parameter of the entity
-           $filterQueryBuilder->apply($args['filter'], $queryBuilder, $entity);
+           $filterQueryBuilder->apply($args['filter'] ?? [], $queryBuilder, $entity);
 
-           return $queryBuilder->getQuery()->getScalarResult();
+           return $queryBuilder->getQuery()->getSingleScalarResult();
        }
    ],
 
