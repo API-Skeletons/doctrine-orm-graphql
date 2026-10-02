@@ -5,6 +5,15 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+A negative entity or association limit is an error
+--------------------------------------------------
+
+A negative ``limit`` of an ``#[Entity]`` or ``#[Association]`` attribute
+returned no rows when no ``first`` or ``last`` was given, and let ``first``
+return more rows than the config ``limit``.  It now throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``.  ``0`` remains
+the default.
+
 A misplaced attribute is an error
 ---------------------------------
 

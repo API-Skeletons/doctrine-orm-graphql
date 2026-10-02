@@ -6,6 +6,7 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\Metadata;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata as MetadataEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\GraphQL as GraphQLException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
@@ -17,6 +18,7 @@ use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Artist;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\Performance;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\User;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
+use League\Event\EventDispatcher;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 use function array_unique;
@@ -200,6 +202,22 @@ class EntityMetadataTest extends TestCase
                 },
                 'Metadata for entity ' . User::class . ' key limit must be an int, null given.',
             ],
+            'negative limit' => [
+                static function (array $user): array {
+                    $user['limit'] = -1;
+
+                    return $user;
+                },
+                'Metadata for entity ' . User::class . ' key limit must be at least 0, -1 given.',
+            ],
+            'negative association limit' => [
+                static function (array $user): array {
+                    $user['fields']['recordings']['limit'] = -5;
+
+                    return $user;
+                },
+                'Metadata for entity ' . User::class . ' field recordings key limit must be at least 0, -5 given.',
+            ],
             'excludeFilters not an array' => [
                 static function (array $user): array {
                     $user['excludeFilters'] = 'eq';
@@ -245,6 +263,29 @@ class EntityMetadataTest extends TestCase
         $this->expectExceptionMessage($message);
 
         EntityMetadata::fromArray($corrupt($exported[User::class]));
+    }
+
+    /**
+     * A negative limit would return no rows by default and let first bypass
+     * the configured limit
+     */
+    public function testNegativeLimitFromListenerIsRejected(): void
+    {
+        $driver = new Driver($this->getEntityManager());
+        $driver->get(EventDispatcher::class)->subscribeTo(
+            'metadata.build',
+            static function (MetadataEvent $event): void {
+                $metadata                = $event->getMetadata();
+                $artist                  = $metadata[Artist::class];
+                $artist['limit']         = -1;
+                $metadata[Artist::class] = $artist;
+            },
+        );
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage('Metadata for entity ' . Artist::class . ' key limit must be at least 0, -1 given.');
+
+        $driver->type(Artist::class);
     }
 
     public function testInvalidComputedFieldIsReported(): void

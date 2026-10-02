@@ -88,7 +88,7 @@ final readonly class EntityMetadata
         $entityMetadata = new self(
             $entityClass,
             $reader->bool('extractByValue'),
-            $reader->int('limit'),
+            $reader->nonNegativeInt('limit'),
             $reader->stringList('excludeFilters'),
             $reader->nullableString('description'),
             $reader->string('typeName'),

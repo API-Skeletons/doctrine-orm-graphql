@@ -35,7 +35,7 @@ final readonly class AssociationMetadata
         return new self(
             $name,
             $reader->nullableString('alias'),
-            $reader->nullableInt('limit'),
+            $reader->nullableNonNegativeInt('limit'),
             $reader->nullableString('description'),
             $reader->stringList('excludeFilters'),
             $reader->nullableString('eventName'),
