@@ -7,12 +7,24 @@ Query Builder Event
 
 Each ``connection`` may listen for a ``QueryBuilder`` event.
 The event has a ``getQueryBuilder()`` method to retrieve the Doctrine QueryBuilder object before it is executed.
-The Doctrine QueryBuilder object may be modified to filter the data for the logged in user and such.
+Listen to this event and modify the QueryBuilder to customize the query of
+that connection, such as to filter its data for the logged in user.
 
-This can be used as a security layer and can be used to make
-customizations to ``QueryBuilder`` objects.  QueryBuilders are built then
-triggered through an event.  Listen to this event and modify the passed
-QueryBuilder to apply your security.
+.. warning::
+
+    A QueryBuilder event applies only to the connection, or the collection,
+    which dispatches it.  The same rows can be reached in other ways: through a
+    to-one association, which has no event, and through a collection whose
+    association has no ``eventName``.  A listener on a connection of artists
+    does not restrict the artist of a performance.  A QueryBuilder event alone
+    is therefore not a security layer.
+
+    For row level security, use a
+    `Doctrine SQL filter <https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/filters.html>`_.
+    It applies to every query the driver runs: connections, collections,
+    batched or not, their counts and the loading of to-one associations.  A
+    to-one association to a row the filter excludes is ``null``, with an error
+    the client sees as ``Internal server error``.
 
 Event names are passed as a second parameter to a ``$driver->resolve()``.
 
@@ -110,7 +122,9 @@ association with an event name is not
 `batched <driver.html#batchassociations>`_.
 
 This approach provides database-level filtering with full index support, eliminating
-the need to load entire collections into memory.
+the need to load entire collections into memory.  As for a connection, the
+event applies only to this collection; to hide rows everywhere, such as soft
+deleted rows, use a Doctrine SQL filter, as the warning above describes.
 
 .. code-block:: php
 

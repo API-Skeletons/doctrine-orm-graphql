@@ -189,10 +189,11 @@ when the metadata is built.
     #[GraphQL\Association(excludeFilters: [Filters::CONTAINS, Filters::STARTSWITH, Filters::ENDSWITH])]
 
 * ``eventName`` - A QueryBuilder event to dispatch when resolving this
-  collection, so a listener can modify its query.  An example of this use is for
-  associations with soft deletes.  The event is dispatched for each row, so an
-  association with an event name is not `batched <driver.html#batchassociations>`_.
-  See `events <events.html>`_.
+  collection, so a listener can modify its query.  The event is dispatched for
+  each row, so an association with an event name is not
+  `batched <driver.html#batchassociations>`_.  It applies to this collection
+  only; to hide rows everywhere, such as soft deleted rows, use a Doctrine SQL
+  filter.  See `events <events.html>`_.
 * ``group`` - You can have multiple GraphQL configurations organized by
   ``group``.
 * ``includeFilters`` - An array of filters to include from available

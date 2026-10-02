@@ -91,6 +91,7 @@ Uses league/event (v3.0) for PSR-14 event dispatching. Key events in `src/Event/
 
 - `EntityDefinition` - Fired when an entity GraphQL type is created (allows modification of type definition)
 - `QueryBuilder` - Fired when QueryBuilder is created for entity and collection resolution (allows custom query modifications)
+  - It applies only to the connection or collection that dispatches it; to-one associations and collections without an `eventName` reach the same rows. The docs recommend Doctrine SQL filters for row level security, which apply to every query the driver runs (`test/Feature/Security/SqlFilterTest.php`)
 - `Metadata` - Fired when metadata is built
 
 Events can have custom event names via `$eventName` parameter in Driver methods.
