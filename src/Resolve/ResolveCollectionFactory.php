@@ -150,6 +150,9 @@ final class ResolveCollectionFactory
 
         $limit = $this->getLimit($entity, $entityClassName, $associationName);
 
+        // A join a listener adds may give an entity several rows; the source's own does not
+        $ownJoins = $this->getJoinAliases($queryBuilder);
+
         /**
          * Fire the event dispatcher using the passed event name.
          * Include all resolve variables.
@@ -189,7 +192,7 @@ final class ResolveCollectionFactory
             // does not exist in ORM 2.x or ORM < 3.7. Keep Paginator until those are dropped.
             /** @psalm-suppress DeprecatedClass */
             static fn (): int => (new Paginator($queryBuilder->getQuery()))->count(),
-            fn (int $offset, int $limit): array => $this->fetchPage($queryBuilder, $offset, $limit),
+            fn (int $offset, int $limit): array => $this->fetchPage($queryBuilder, $offset, $limit, $ownJoins),
         );
     }
 
@@ -321,7 +324,7 @@ final class ResolveCollectionFactory
                     );
                     $this->orderByAssociation($queryBuilder, $batch->sourceClassName, $batch->associationName);
 
-                    return $this->fetchPage($queryBuilder, $offset, $limit);
+                    return $this->fetchPage($queryBuilder, $offset, $limit, $this->getJoinAliases($queryBuilder));
                 },
             ));
         }

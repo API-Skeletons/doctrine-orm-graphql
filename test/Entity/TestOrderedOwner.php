@@ -33,6 +33,7 @@ class TestOrderedOwner
 
     /** @var Collection<int, TestOrderedItem> */
     #[GraphQL\Association(group: 'OrderBy')]
+    #[GraphQL\Association(group: 'OrderByEvent', eventName: 'orderedTags')]
     #[ORM\ManyToMany(targetEntity: TestOrderedItem::class)]
     #[ORM\JoinTable(name: 'test_ordered_owner_tag')]
     #[ORM\OrderBy(['position' => 'ASC', 'name' => 'ASC'])]

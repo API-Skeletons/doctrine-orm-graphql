@@ -7,20 +7,19 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Trait;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Cache\QueryResultCache;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\ORM\Query\Expr\Select;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 
-use function in_array;
+use function array_diff;
 use function iterator_to_array;
-use function preg_match;
 
 /**
  * Fetch a page of a query's entities
  *
- * A QueryBuilder event listener may fetch join a collection, which gives an
- * entity a row for each member of the collection.  A LIMIT counts rows, so
- * such a page is fetched by a Paginator, which limits the entities.
+ * A QueryBuilder event listener may join a collection, fetched or not, which
+ * gives an entity a row for each member of the collection.  A LIMIT counts
+ * rows, so a page of a query with a join is fetched by a Paginator, which
+ * limits the entities.
  *
  * @property-read Config           $config
  * @property-read QueryResultCache $queryResultCache
@@ -32,15 +31,17 @@ trait FetchPage
     /**
      * Fetch a page of a query, ordered by identifier after any other ordering
      *
+     * @param list<string> $ownJoins The aliases of joins which give an entity one row, which need no Paginator
+     *
      * @return mixed[]
      */
-    private function fetchPage(QueryBuilder $queryBuilder, int $offset, int $limit): array
+    private function fetchPage(QueryBuilder $queryBuilder, int $offset, int $limit, array $ownJoins = []): array
     {
         $this->orderByIdentifier($queryBuilder);
         $queryBuilder->setFirstResult($offset);
         $queryBuilder->setMaxResults($limit);
 
-        if (! $this->hasFetchJoin($queryBuilder)) {
+        if (array_diff($this->getJoinAliases($queryBuilder), $ownJoins) === []) {
             return $this->getResults($queryBuilder);
         }
 
@@ -52,9 +53,11 @@ trait FetchPage
     }
 
     /**
-     * Whether the query selects a joined alias
+     * The aliases of the query's joins
+     *
+     * @return list<string>
      */
-    private function hasFetchJoin(QueryBuilder $queryBuilder): bool
+    private function getJoinAliases(QueryBuilder $queryBuilder): array
     {
         $aliases = [];
 
@@ -62,29 +65,11 @@ trait FetchPage
         $joins = $queryBuilder->getDQLPart('join');
         foreach ($joins as $rootJoins) {
             foreach ($rootJoins as $join) {
-                $aliases[] = $join->getAlias();
+                $aliases[] = (string) $join->getAlias();
             }
         }
 
-        if ($aliases === []) {
-            return false;
-        }
-
-        /** @var list<Select> $selects */
-        $selects = $queryBuilder->getDQLPart('select');
-        foreach ($selects as $select) {
-            foreach ($select->getParts() as $part) {
-                // An alias, or a partial or field of one
-                if (
-                    preg_match('/^\s*(?:partial\s+)?([A-Za-z_][A-Za-z0-9_]*)/i', (string) $part, $matches) === 1
-                    && in_array($matches[1], $aliases, true)
-                ) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return $aliases;
     }
 
     /**
