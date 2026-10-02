@@ -212,39 +212,20 @@ class InputFactoryTest extends TestCase
         $this->assertEquals('inputAliasTest', $output['data']['testInputAlias']['nameAlias']);
     }
 
+    /**
+     * An identifier is not input.  The lists are checked when the input is
+     * asked for, not when a query uses it.
+     */
     public function testInputExcludesIdentifier(): void
     {
-        $config = new Config(['group' => 'InputFactoryTest']);
-        $driver = new Driver($this->getEntityManager(), $config);
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
 
-        $schema = new Schema([
-            'mutation' => new ObjectType([
-                'name' => 'mutation',
-                'fields' => [
-                    'testInput' => [
-                        'type' => $driver->type(User::class),
-                        'args' => [
-                            'id' => Type::nonNull(Type::id()),
-                            'input' => Type::nonNull($driver->input(User::class, ['id'])),
-                        ],
-                        'resolve' => static function ($root, $args): void {
-                        },
-                    ],
-                ],
-            ]),
-        ]);
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage(
+            'Identifier id is an invalid input. Identifiers should not be included in mutation input.',
+        );
 
-        $query = 'mutation {
-            testInput(id: 1, input: { name: "inputTest" }) {
-                id
-                name
-            }
-        }';
-
-        $result = GraphQL::executeQuery($schema, $query);
-        $output = $result->toArray();
-
-        $this->assertEquals($output['errors'][0]['message'], 'Identifier id is an invalid input. Identifiers should not be included in mutation input.');
+        $driver->input(User::class, ['id']);
     }
 
     public function testInputWithOptionalField(): void
@@ -494,45 +475,14 @@ class InputFactoryTest extends TestCase
 
     public function testInputThrowsExceptionIfIdentifierFound(): void
     {
-        $config = new Config(['group' => 'InputFactoryTest']);
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
 
-        $driver = new Driver($this->getEntityManager(), $config);
+        $this->expectException(InputException::class);
+        $this->expectExceptionMessage(
+            'Identifier id is an invalid input. Identifiers should not be included in mutation input.',
+        );
 
-        $schema = new Schema([
-            'mutation' => new ObjectType([
-                'name' => 'mutation',
-                'fields' => [
-                    'testInput' => [
-                        'type' => $driver->type(User::class),
-                        'args' => [
-                            'id' => Type::nonNull(Type::id()),
-                            'input' => Type::nonNull($driver->input(User::class, [], ['id', 'email', 'password'])),
-                        ],
-                        'resolve' => function ($root, $args): User {
-                            $user = $this->getEntityManager()->getRepository(User::class)
-                                ->find($args['id']);
-
-                            $user->setName($args['input']['name']);
-                            $this->getEntityManager()->flush();
-
-                            return $user;
-                        },
-                    ],
-                ],
-            ]),
-        ]);
-
-        $query = 'mutation {
-            testInput(id: 1, input: { name: "inputTest" email: "email" password: "password"}) {
-                id
-                name
-            }
-        }';
-
-        $result = GraphQL::executeQuery($schema, $query);
-        $output = $result->toArray();
-
-        $this->assertEquals($output['errors'][0]['message'], 'Identifier id is an invalid input. Identifiers should not be included in mutation input.');
+        $driver->input(User::class, [], ['id', 'email', 'password']);
     }
 
     /**
@@ -558,7 +508,7 @@ class InputFactoryTest extends TestCase
         $this->expectException(InputException::class);
         $this->expectExceptionMessage('Field password is not exposed');
 
-        $driver->input(User::class, ['password'])->getFields();
+        $driver->input(User::class, ['password']);
     }
 
     /**
@@ -571,7 +521,7 @@ class InputFactoryTest extends TestCase
         $this->expectException(InputException::class);
         $this->expectExceptionMessage('Field password is not exposed');
 
-        $driver->input(User::class, [], ['password'])->getFields();
+        $driver->input(User::class, [], ['password']);
     }
 
     /**
@@ -585,7 +535,7 @@ class InputFactoryTest extends TestCase
         $this->expectException(InputException::class);
         $this->expectExceptionMessage('Field nmae is not a field of entity ' . User::class . '. Did you mean "name"?');
 
-        $driver->input(User::class, ['nmae'])->getFields();
+        $driver->input(User::class, ['nmae']);
     }
 
     public function testInputWithUnknownOptionalFieldThrowsException(): void
@@ -595,7 +545,7 @@ class InputFactoryTest extends TestCase
         $this->expectException(InputException::class);
         $this->expectExceptionMessage('Field nmae is not a field of entity ' . User::class . '. Did you mean "name"?');
 
-        $driver->input(User::class, ['email'], ['nmae'])->getFields();
+        $driver->input(User::class, ['email'], ['nmae']);
     }
 
     /**
@@ -606,7 +556,7 @@ class InputFactoryTest extends TestCase
         $driver = new Driver($this->getEntityManager(), new Config(['group' => 'InputFactoryTest']));
 
         try {
-            $driver->input(User::class, ['zzzzzzzz'])->getFields();
+            $driver->input(User::class, ['zzzzzzzz']);
             $this->fail('An exception was expected');
         } catch (InputException $e) {
             $this->assertSame('Field zzzzzzzz is not a field of entity ' . User::class . '.', $e->getMessage());
@@ -761,7 +711,7 @@ class InputFactoryTest extends TestCase
         $this->expectException(InputException::class);
         $this->expectExceptionMessage('Did you mean "nameAlias"?');
 
-        $driver->input(User::class, ['nameAlais'])->getFields();
+        $driver->input(User::class, ['nameAlais']);
     }
 
     /** @return array<string, array{string[], string[]}> */

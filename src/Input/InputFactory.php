@@ -93,6 +93,8 @@ final class InputFactory
         sort($requiredFields);
         sort($optionalFields);
 
+        $this->assertInputFields($targetEntity, array_merge($requiredFields, $optionalFields));
+
         $signature = serialize([$targetEntity->getEntityClass(), $requiredFields, $optionalFields]);
         $name    ??= $this->getDefaultName($targetEntity, $requiredFields, $optionalFields);
 
@@ -151,8 +153,6 @@ final class InputFactory
             ->newLazyGhost(static function (InputObjectType $object) use ($self, $targetEntity, $requiredFields, $optionalFields, $name): void {
                 $fields = [];
 
-                $self->assertFieldsExist($targetEntity, array_merge($requiredFields, $optionalFields));
-
                 if (! count($requiredFields) && ! count($optionalFields)) {
                     $self->addAllFields($targetEntity, $fields);
                 } else {
@@ -184,7 +184,7 @@ final class InputFactory
                 continue;
             }
 
-            $this->addListedField($targetEntity, $fieldName, false, $fields);
+            $this->addField($targetEntity, $fieldName, false, $fields);
         }
     }
 
@@ -203,7 +203,7 @@ final class InputFactory
                 continue;
             }
 
-            $this->addListedField($targetEntity, $fieldName, true, $fields);
+            $this->addField($targetEntity, $fieldName, true, $fields);
         }
     }
 
@@ -237,33 +237,40 @@ final class InputFactory
     }
 
     /**
-     * Add a field named in the required or optional list
+     * Every name in the required and optional lists must be an exposed field
+     * of the entity which is not an identifier.  The input type is built when
+     * a query first uses it, so the lists are checked when it is asked for,
+     * rather than when a query uses it.
      *
-     * @param array<int|string, InputObjectField> $fields
+     * @param string[] $fieldNames
      *
      * @throws InputException
      */
-    private function addListedField(Entity $targetEntity, string $fieldName, bool $required, array &$fields): void
+    private function assertInputFields(Entity $targetEntity, array $fieldNames): void
     {
-        if (! $this->isExposed($targetEntity, $fieldName)) {
-            throw new InputException(
-                'Field ' . $fieldName . ' is not exposed for entity ' . $targetEntity->getEntityClass()
-                . ' in group ' . $this->config->getGroup() . ' and cannot be used as input.',
-            );
-        }
+        $this->assertFieldsExist($targetEntity, $fieldNames);
 
-        /**
-         * Do not include identifiers as input.  In the majority of cases there will be
-         * no reason to set or update an identifier.  For the case where an identifier
-         * should be set or updated, this factory is not the correct solution.
-         */
-        if ($this->entityManager->getClassMetadata($targetEntity->getEntityClass())->isIdentifier($fieldName)) {
-            throw new InputException(
-                'Identifier ' . $fieldName . ' is an invalid input. Identifiers should not be included in mutation input.',
-            );
-        }
+        $classMetadata = $this->entityManager->getClassMetadata($targetEntity->getEntityClass());
 
-        $this->addField($targetEntity, $fieldName, $required, $fields);
+        foreach ($fieldNames as $fieldName) {
+            if (! $this->isExposed($targetEntity, $fieldName)) {
+                throw new InputException(
+                    'Field ' . $fieldName . ' is not exposed for entity ' . $targetEntity->getEntityClass()
+                    . ' in group ' . $this->config->getGroup() . ' and cannot be used as input.',
+                );
+            }
+
+            /**
+             * Do not include identifiers as input.  In the majority of cases there will be
+             * no reason to set or update an identifier.  For the case where an identifier
+             * should be set or updated, this factory is not the correct solution.
+             */
+            if ($classMetadata->isIdentifier($fieldName)) {
+                throw new InputException(
+                    'Identifier ' . $fieldName . ' is an invalid input. Identifiers should not be included in mutation input.',
+                );
+            }
+        }
     }
 
     /**
