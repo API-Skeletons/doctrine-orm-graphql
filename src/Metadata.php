@@ -32,7 +32,7 @@ final class Metadata extends ArrayObject
      * The version of the exported array's shape.  It changes only when the
      * shape changes, not with every release.
      */
-    public const int FORMAT_VERSION = 1;
+    public const int FORMAT_VERSION = 2;
 
     public const string VERSION_KEY = '__version';
 

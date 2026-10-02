@@ -57,6 +57,7 @@ ORM versions do not support ``doctrine/persistence`` 4.
   entities
 - Hydrator strategies receive the name of the field being extracted; ``ToString``
   hydrator strategy
+- A computed field may be of an entity type, or a list of any type
 - Metadata is read as typed value objects, and cached metadata carries its format version
   and the config it was built with
 - Configuration mistakes, such as a misplaced attribute, an invalid name or a field

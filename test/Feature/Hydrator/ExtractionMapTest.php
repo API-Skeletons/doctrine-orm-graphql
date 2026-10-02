@@ -184,7 +184,7 @@ class ExtractionMapTest extends TestCase
                 static function (array $performance): array {
                     $performance['fields']['venue']['alias'] = 'where';
                     $performance['computedFields']           = [
-                        'where' => ['method' => 'getCity', 'type' => 'string', 'name' => 'where', 'description' => null],
+                        'where' => ['method' => 'getCity', 'type' => 'string', 'name' => 'where', 'description' => null, 'list' => false],
                     ];
 
                     return $performance;

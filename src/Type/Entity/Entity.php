@@ -422,7 +422,10 @@ final class Entity
     }
 
     /**
-     * Add computed fields to the GraphQL type
+     * Add computed fields to the GraphQL type.  A computed field of an entity
+     * type is given as a function, as an association is, so its type is
+     * built when the schema needs it: the entity may be this one, or one
+     * whose type has a computed field of this one's type.
      *
      * @return array<string, mixed>
      */
@@ -431,12 +434,37 @@ final class Entity
         $fields = [];
 
         foreach ($this->entityMetadata->computedFields as $fieldName => $computedFieldMetadata) {
-            $fields[$fieldName] = [
-                'type' => $this->typeContainer->get($computedFieldMetadata->type),
-                'description' => $computedFieldMetadata->description,
-            ];
+            if (! $this->entityTypeContainer->has($computedFieldMetadata->type)) {
+                $fields[$fieldName] = [
+                    'type' => self::computedFieldType(
+                        $computedFieldMetadata,
+                        $this->typeContainer->get($computedFieldMetadata->type),
+                    ),
+                    'description' => $computedFieldMetadata->description,
+                ];
+
+                continue;
+            }
+
+            $fields[$fieldName] = function () use ($computedFieldMetadata): array {
+                $entity = $this->entityTypeContainer->get($computedFieldMetadata->type);
+
+                // The computed field's description, else the entity's
+                return [
+                    'type' => self::computedFieldType($computedFieldMetadata, $entity->getObjectType()),
+                    'description' => $computedFieldMetadata->description ?? $entity->getDescription(),
+                ];
+            };
         }
 
         return $fields;
+    }
+
+    /**
+     * The type of a computed field: its type, or a list of it
+     */
+    private static function computedFieldType(ComputedFieldMetadata $computedFieldMetadata, Type $type): Type
+    {
+        return $computedFieldMetadata->list ? Type::listOf($type) : $type;
     }
 }

@@ -61,8 +61,11 @@ ComputedField Parameters
 
 The ``#[ComputedField]`` attribute accepts these parameters:
 
-* ``type`` - **Required**. The GraphQL type name (e.g., ``'string'``, ``'int'``, ``'boolean'``).
-  Must match a registered type in the TypeContainer.
+* ``type`` - **Required**. The GraphQL type name (e.g., ``'string'``, ``'int'``, ``'boolean'``),
+  which must match a registered type in the TypeContainer, or the class of an entity; see
+  `Entity Types`_.
+* ``list`` - Optional. ``true`` when the method returns a list of the type, such as an
+  array of strings or of entities.  The default is ``false``.
 * ``description`` - Optional. A description of the computed field for GraphQL schema documentation.
 * ``name`` - Optional. Override the field name in the GraphQL schema.  If not provided,
   the name is derived from the method name.
@@ -142,6 +145,54 @@ Computed fields are:
   entity's other values for as long as the entity exists
 * **Not filterable** - Computed fields cannot be used in database filters since they're
   calculated in PHP, not at the database level
+
+Entity Types
+------------
+
+A computed field's ``type`` may be the class of an entity exposed in the
+driver's group.  The field is then of that entity's type, and its method
+returns an entity of the class, or ``null``.  With ``list: true`` the method
+returns a list of them, such as an array or a Doctrine ``Collection``.
+
+.. code-block:: php
+
+  #[GraphQL\Entity]
+  class Book
+  {
+      #[GraphQL\ComputedField(type: Author::class)]
+      public function getWriter(): Author
+      {
+          return $this->author;
+      }
+  }
+
+  #[GraphQL\Entity]
+  class Author
+  {
+      #[GraphQL\ComputedField(type: Book::class, list: true)]
+      public function getBestSellers(): array
+      {
+          return array_values($this->books->filter(
+              static fn (Book $book): bool => $book->isBestSeller(),
+          )->toArray());
+      }
+  }
+
+This exposes a relation which is not mapped as an association, or which is
+derived from one.  The entity may be of the same class as the field's own
+entity, and two entities may have computed fields of each other's types.  An
+entity of a class which is not exposed in the group throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the metadata
+is built.  The field's description is its own, else the entity's.
+
+An entity which is not loaded, such as the target of an unloaded to-one
+association, is loaded in a batch with the others, as an unloaded to-one
+association is; so are the entities of a list.  The method itself is called
+for each entity, so a method which reads a collection loads that collection
+for each entity.  A computed field is not a connection: a list has no
+pagination, filters or ``totalCount``, and it holds what the method returns.
+For a large collection, expose the association instead, whose rows the
+database filters and pages.
 
 Filtering Limitations
 ---------------------

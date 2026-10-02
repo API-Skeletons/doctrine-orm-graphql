@@ -16,6 +16,7 @@ final readonly class ComputedFieldMetadata
         public string $type,
         public string $name,
         public string|null $description,
+        public bool $list,
     ) {
     }
 
@@ -33,10 +34,11 @@ final readonly class ComputedFieldMetadata
             $reader->string('type'),
             $reader->string('name'),
             $reader->nullableString('description'),
+            $reader->bool('list'),
         );
     }
 
-    /** @return array{method: string, type: string, name: string, description: string|null} */
+    /** @return array{method: string, type: string, name: string, description: string|null, list: bool} */
     public function toArray(): array
     {
         return [
@@ -44,6 +46,7 @@ final readonly class ComputedFieldMetadata
             'type' => $this->type,
             'name' => $this->name,
             'description' => $this->description,
+            'list' => $this->list,
         ];
     }
 }

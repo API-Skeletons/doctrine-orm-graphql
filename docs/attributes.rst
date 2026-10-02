@@ -221,8 +221,10 @@ driver's group on a method which is not public, or is static, throws
 ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the metadata
 is built.
 
-* ``type`` - **Required**. The GraphQL type name (e.g., ``'string'``, ``'int'``).
-  Must match a registered type in the TypeContainer.
+* ``type`` - **Required**. The GraphQL type name (e.g., ``'string'``, ``'int'``),
+  which must match a registered type in the TypeContainer, or the class of an
+  entity exposed in the group.
+* ``list`` - ``true`` when the method returns a list of the type.
 * ``description`` - A description of the computed field.
 * ``name`` - An override for the field name in GraphQL. If not provided,
   the name is derived from the method name (``getFullName`` becomes ``fullName``).

@@ -101,7 +101,7 @@ of a field you can construct your query like this:
            $queryBuilder = $driver->get(EntityManager::class)
                ->createQueryBuilder();
            $queryBuilder
-               ->select('AVG(entity.fieldName)')
+               ->select('AVG(entity.fieldName)') /** MySQL example **/
                ->from(Entity::class, 'entity');
 
            // The apply method requires a third parameter of the entity
