@@ -5,6 +5,18 @@ Upgrade from previous versions
 13.x to 14.0
 ============
 
+A misplaced attribute is an error
+---------------------------------
+
+A ``#[Field]`` attribute on a property which is not a mapped field, such as an
+association, an embeddable or a property with no column, an
+``#[Association]`` attribute on a property which is not an association, and a
+``#[ComputedField]`` attribute on a method which is not public, or is static,
+were silently ignored.  Each now throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the metadata
+is built.  Only the attributes of the driver's group are checked.  Move the
+attribute to where it applies, or remove it.
+
 input() checks its field lists when it is called
 ------------------------------------------------
 

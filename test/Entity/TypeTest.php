@@ -38,11 +38,6 @@ class TypeTest
 
     #[GraphQL\Field]
     #[GraphQL\Field(group: 'DataTypesTest')]
-    #[GraphQL\Field(group: 'BetweenTypeContainerTest', excludeFilters: [Filters::EQ])]
-    private int $testInt2;
-
-    #[GraphQL\Field]
-    #[GraphQL\Field(group: 'DataTypesTest')]
     #[ORM\Column(type: "datetime", nullable: false)]
     private DateTime $testDateTime;
 
@@ -121,9 +116,6 @@ class TypeTest
     #[ORM\Column(type: "decimal", nullable: false, precision: 8, scale: 5)]
     private float $testDecimal;
 
-    #[GraphQL\Field(group: 'DataTypesTest')]
-    private string $testGuid;
-
     /** @var mixed[] */
     #[GraphQL\Field(group: 'DataTypesTest')]
     #[ORM\Column(type: "json", nullable: false)]
@@ -135,6 +127,7 @@ class TypeTest
     private array $testSimpleArray;
 
     #[GraphQL\Field(group: 'DataTypesTest')]
+    #[GraphQL\Field(group: 'BetweenTypeContainerTest', excludeFilters: [Filters::EQ])]
     #[ORM\Column(type: "smallint", nullable: false)]
     private int $testSmallInt;
 
@@ -222,18 +215,6 @@ class TypeTest
     public function setTestDecimal(mixed $testDecimal): self
     {
         $this->testDecimal = $testDecimal;
-
-        return $this;
-    }
-
-    public function getTestGuid(): mixed
-    {
-        return $this->testGuid;
-    }
-
-    public function setTestGuid(mixed $testGuid): self
-    {
-        $this->testGuid = $testGuid;
 
         return $this;
     }

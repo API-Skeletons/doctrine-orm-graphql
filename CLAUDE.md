@@ -74,7 +74,7 @@ Key containers:
 ### Metadata System
 
 Metadata is extracted from entity attributes and stored in a `Metadata` object (ArrayObject wrapper):
-- `MetadataFactory` builds metadata from PHP attributes on entities
+- `MetadataFactory` builds metadata from PHP attributes on entities. A `Field`, `Association` or `ComputedField` attribute of the configured group in a place it does not apply (a Field on an association, an embeddable or an unmapped property, an Association on a non-association, a ComputedField on a non-public or static method) throws `Exception\Metadata`
 - The `Metadata` ArrayObject holds the array form, keyed by entity class; it is what the `metadata.build` event modifies and what is cached. `Metadata::toArray()` exports it with `'__version' => Metadata::FORMAT_VERSION` (a format version, bumped only when the array's shape changes) and the Driver requires that version when given cached metadata
 - Code reads typed value objects built from the array: `Metadata\EntityMetadata` with `FieldMetadata`, `AssociationMetadata` and `ComputedFieldMetadata`, via `Entity::getEntityMetadata()`. Their `fromArray()` validates every key and `toArray()` reproduces the array exactly. `Entity::getMetadata()` still returns the array
 

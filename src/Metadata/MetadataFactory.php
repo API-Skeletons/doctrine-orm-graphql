@@ -76,6 +76,7 @@ final class MetadataFactory
                 continue;
             }
 
+            $this->assertPropertyAttributesAreMapped($entityClassMetadata, $reflectionClass);
             $this->buildMetadataForFields($entityClassMetadata, $reflectionClass);
             $this->buildMetadataForAssociations($reflectionClass);
             $this->buildMetadataForComputedFields($reflectionClass);
@@ -258,8 +259,17 @@ final class MetadataFactory
     private function buildMetadataForComputedFields(ReflectionClass $reflectionClass): void
     {
         foreach ($reflectionClass->getMethods() as $reflectionMethod) {
-            // Skip non-public, static, or constructor methods
+            // A computed field is computed by calling a public, non-static method
             if (! $reflectionMethod->isPublic() || $reflectionMethod->isStatic() || $reflectionMethod->isConstructor()) {
+                foreach ($reflectionMethod->getAttributes(Attribute\ComputedField::class) as $attribute) {
+                    if ($attribute->newInstance()->getGroup() === $this->config->getGroup()) {
+                        throw new MetadataException(
+                            'Method ' . $reflectionMethod->getName() . ' of entity ' . $reflectionClass->getName()
+                            . ' has a ComputedField attribute but is not a public, non-static method.',
+                        );
+                    }
+                }
+
                 continue;
             }
 
@@ -311,6 +321,73 @@ final class MetadataFactory
                 $this->metadata[$reflectionClass->getName()]['computedFields'][$fieldName] = $computedFieldMetadata;
             }
         }
+    }
+
+    /**
+     * A Field attribute of the group must be on a mapped field, and an
+     * Association attribute on an association, of the entity or a parent
+     * class.  Otherwise it would be silently ignored.
+     *
+     * @param ClassMetadata<object>   $entityClassMetadata
+     * @param ReflectionClass<object> $reflectionClass
+     *
+     * @throws MetadataException
+     */
+    private function assertPropertyAttributesAreMapped(
+        ClassMetadata $entityClassMetadata,
+        ReflectionClass $reflectionClass,
+    ): void {
+        for ($class = $reflectionClass; $class !== false; $class = $class->getParentClass()) {
+            foreach ($class->getProperties() as $property) {
+                // Each property once, in the class which declares it
+                if ($property->getDeclaringClass()->getName() !== $class->getName()) {
+                    continue;
+                }
+
+                $name   = $property->getName();
+                $prefix = 'Property ' . $name . ' of entity ' . $reflectionClass->getName();
+
+                // Doctrine's hasField() is true for an embeddable too
+                $isEmbedded    = isset($entityClassMetadata->embeddedClasses[$name]);
+                $isField       = ! $isEmbedded && $entityClassMetadata->hasField($name);
+                $isAssociation = $entityClassMetadata->hasAssociation($name);
+                $embedded      = ' is an embeddable, whose fields are not exposed.  Expose an embedded value with a ComputedField.';
+
+                if (! $isField && $this->hasAttributeOfGroup($property, Attribute\Field::class)) {
+                    throw new MetadataException($prefix . match (true) {
+                        $isEmbedded => $embedded,
+                        $isAssociation => ' is an association.  Expose it with an Association attribute, not a Field attribute.',
+                        default => ' has a Field attribute but is not a mapped field.  Expose a value which is not a column with a ComputedField.',
+                    });
+                }
+
+                if (! $isAssociation && $this->hasAttributeOfGroup($property, Attribute\Association::class)) {
+                    throw new MetadataException($prefix . match (true) {
+                        $isEmbedded => $embedded,
+                        $isField => ' is a field.  Expose it with a Field attribute, not an Association attribute.',
+                        default => ' has an Association attribute but is not a mapped association.',
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * Whether a property has an attribute of a class for the configured group
+     *
+     * @param class-string<T> $attributeClass
+     *
+     * @template T of Attribute\Field|Attribute\Association
+     */
+    private function hasAttributeOfGroup(ReflectionProperty $property, string $attributeClass): bool
+    {
+        foreach ($property->getAttributes($attributeClass) as $attribute) {
+            if ($attribute->newInstance()->getGroup() === $this->config->getGroup()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

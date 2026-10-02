@@ -105,7 +105,11 @@ Field
 =====
 
 Use this attribute on fields (not associations) you want included
-in your graph. Optional parameters are:
+in your graph.  A ``Field`` attribute of the driver's group on a property
+which is not a mapped field, such as an association, an embeddable or a
+property with no column, throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the metadata
+is built.  Optional parameters are:
 
 * ``alias`` - An alias to use as the GraphQL field name.  Each field of a type
   must have a unique name, so an alias may not be the name or alias of another
@@ -167,6 +171,9 @@ Association
 Used on any type of association including one to one, one to many, many to one,
 etc.  Associations which are to one types will just include the entity they are
 associated with.  Associations of the to many variety will become connections.
+An ``Association`` attribute of the driver's group on a property which is not
+an association throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``
+when the metadata is built.
 
 * ``alias`` - An alias to use as the GraphQL field name.  Each field of a type
   must have a unique name, so an alias may not be the name or alias of another
@@ -203,7 +210,10 @@ ComputedField
 
 Used on public methods to expose computed values derived from entity logic.
 Computed fields are values calculated from other properties or business logic,
-not stored directly in the database.
+not stored directly in the database.  A ``ComputedField`` attribute of the
+driver's group on a method which is not public, or is static, throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the metadata
+is built.
 
 * ``type`` - **Required**. The GraphQL type name (e.g., ``'string'``, ``'int'``).
   Must match a registered type in the TypeContainer.
