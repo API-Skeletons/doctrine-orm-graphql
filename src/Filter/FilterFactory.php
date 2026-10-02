@@ -217,7 +217,21 @@ final class FilterFactory
                 continue;
             }
 
-            $filterType = $this->getFieldFilterType(Type::id(), $associationFilters, true);
+            // The association's own excludeFilters, or includeFilters, limit its filters
+            $excludeFilters = Filters::fromArray(
+                $targetEntity->getEntityMetadata()->associations[$associationName]->excludeFilters,
+            );
+            $filters        = array_values(array_filter(
+                $associationFilters,
+                static fn (Filters $filter): bool => ! in_array($filter, $excludeFilters, true),
+            ));
+
+            // An input object must have a field
+            if (! $filters) {
+                continue;
+            }
+
+            $filterType = $this->getFieldFilterType(Type::id(), $filters, true);
 
             // An aliased association is filtered by its alias, as its field is
             // named

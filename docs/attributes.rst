@@ -180,16 +180,20 @@ when the metadata is built.
   field, association or computed field.
 * ``description`` - A description of the ``Association``.
 * ``excludeFilters`` - An array of criteria to exclude from available
-  filters for the association. Entity level ``excludeFilters`` are applied to
-  associations.  For instance, to exclude filters that use a ``like`` database
-  query, set the following::
+  filters for the association: the filters of a collection's entities, or the
+  filters of a to-one association by the identifier of the entity it refers
+  to.  Entity level ``excludeFilters`` are applied to associations.  For
+  instance, to exclude filters that use a ``like`` database query, set the
+  following::
 
     use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 
     #[GraphQL\Association(excludeFilters: [Filters::CONTAINS, Filters::STARTSWITH, Filters::ENDSWITH])]
 
 * ``eventName`` - A QueryBuilder event to dispatch when resolving this
-  collection, so a listener can modify its query.  The event is dispatched for
+  collection, so a listener can modify its query.  A to-one association has
+  no event; an ``eventName`` on one throws
+  ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``.  The event is dispatched for
   each row, so an association with an event name is not
   `batched <driver.html#batchassociations>`_.  It applies to this collection
   only; to hide rows everywhere, such as soft deleted rows, use a Doctrine SQL
@@ -197,11 +201,12 @@ when the metadata is built.
 * ``group`` - You can have multiple GraphQL configurations organized by
   ``group``.
 * ``includeFilters`` - An array of filters to include from available
-  filters for all fields in the association.  ``includeFilters``
-  and ``excludeFilters`` are mutually exclusive.
+  filters for all fields in the association, or for a to-one association.
+  ``includeFilters`` and ``excludeFilters`` are mutually exclusive.
 * ``limit`` - The most rows the association returns for each entity.  This
   value replaces the target entity's ``limit`` and the config ``limit``, even
-  when larger.  ``0`` does not; a negative ``limit`` is an error.
+  when larger.  ``0`` does not; a negative ``limit`` is an error, as is a
+  ``limit`` on a to-one association.
 * ``hydratorStrategy`` - A custom hydrator strategy class.
   Class must be injected into the HydratorFactory container.  See `containers <containers.html>`_
 
