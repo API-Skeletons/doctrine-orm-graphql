@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
-use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Filter as FilterException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration as ConfigurationException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Association;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\AssociationMetadata;
@@ -240,7 +240,7 @@ final class FilterFactory
      *
      * @param Filters[] $filters
      *
-     * @throws FilterException
+     * @throws ConfigurationException
      */
     private function getFieldFilterType(ScalarType $type, array $filters, bool $association = false): Field
     {
@@ -259,7 +259,7 @@ final class FilterFactory
         $filterType = $this->typeContainer->get($name);
 
         if (! $filterType instanceof Field || $filterType->allowedFilters !== $filters) {
-            throw new FilterException(
+            throw new ConfigurationException(
                 'Filter type name ' . $name . ' is already used for different filters.',
             );
         }

@@ -10,7 +10,7 @@ use Throwable;
 /**
  * Thrown when a GraphQL scalar type fails to parse or serialize a value
  */
-final class TypeSerialization extends GraphQL
+final class TypeSerialization extends ClientError
 {
     public function __construct(
         string $message,
