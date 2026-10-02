@@ -10,7 +10,7 @@ use Override;
 /**
  * Transform a value into a php native boolean
  *
- * @returns float
+ * @returns boolean
  */
 final class ToBoolean implements Strategy
 {

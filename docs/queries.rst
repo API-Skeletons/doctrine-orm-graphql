@@ -42,7 +42,7 @@ Fetch at most 100 performances in CA for each artist with 'Dead' in their name.
 Filters
 =======
 
-For each field, which is not a reference to another entity, a colletion of
+For each field, which is not a reference to another entity, a collection of
 filters exist. Given an entity which contains a `name` field you may directly
 filter the name using
 

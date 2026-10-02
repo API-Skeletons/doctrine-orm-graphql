@@ -49,7 +49,7 @@ need to add your custom type to the container.
 Custom Types
 ------------
 
-For instance, if your schema has a ``timestamp`` type, that data type is not suppored
+For instance, if your schema has a ``timestamp`` type, that data type is not supported
 by default in this library.  But adding the type is just a matter of creating a
 new Timestamp type (modifying the DateTime class is uncomplicated) then adding the
 type to the type manager.

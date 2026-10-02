@@ -109,7 +109,7 @@ class Performance
 
     /**
      * Not all fields need attributes.
-     * Only add attribues to fields you want available in GraphQL
+     * Only add attributes to fields you want available in GraphQL
      */
     public $city;
 }
@@ -270,7 +270,7 @@ Each field has their own set of filters.  Based on the field type, some or all o
 * between - Between.  Identical to using gte & lte on the same field.  Give values as `low, high`.
 * in - Exists within an array.
 * notin - Does not exist within an array.
-* startwith - A like query with a wildcard on the right side of the value.
+* startswith - A like query with a wildcard on the right side of the value.
 * endswith - A like query with a wildcard on the left side of the value.
 * contains - A like query.
 * sort & sortPriority - Sort the results by a field.  Use sortPriority to sort by multiple fields.

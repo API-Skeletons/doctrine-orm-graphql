@@ -9,7 +9,7 @@ use League\Event\HasEventName;
 use Override;
 
 /**
- * This event is fired when the metadta is created
+ * This event is fired when the metadata is created
  */
 final class Metadata implements
     HasEventName
