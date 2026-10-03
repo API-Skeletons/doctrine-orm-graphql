@@ -265,6 +265,10 @@ is built.
   which must match a registered type in the TypeContainer, or the class of an
   entity exposed in the group.
 * ``list`` - ``true`` when the method returns a list of the type.
+* ``args`` - The type of each method parameter which is not an ``int``,
+  ``float``, ``string`` or ``bool``, by its name.  Each parameter of the
+  method is an argument of the field; see `computed fields
+  <computed-fields.html#arguments>`_.
 * ``description`` - A description of the computed field.
 * ``name`` - An override for the field name in GraphQL. If not provided,
   the name is derived from the method name (``getFullName`` becomes ``fullName``).

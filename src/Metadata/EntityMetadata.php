@@ -121,8 +121,12 @@ final readonly class EntityMetadata
             }
         }
 
-        foreach (array_keys($this->computedFields) as $name) {
+        foreach ($this->computedFields as $name => $computedField) {
             $this->assertValidName($name, 'the name of computed field ' . $name);
+
+            foreach (array_keys($computedField->args) as $argName) {
+                $this->assertValidName($argName, 'the name of argument ' . $argName . ' of computed field ' . $name);
+            }
         }
     }
 

@@ -6,7 +6,9 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\ComputedFieldMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
+use Closure;
 use Doctrine\Laminas\Hydrator\Strategy\CollectionStrategyInterface;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Error\Error;
@@ -15,6 +17,7 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
 use Override;
 use ReflectionClass;
 
+use function array_key_exists;
 use function assert;
 use function class_implements;
 use function in_array;
@@ -86,13 +89,10 @@ final class HydratorContainer extends Container
 
                 // Register computed fields
                 foreach ($entityMetadata->computedFields as $fieldName => $computedFieldMetadata) {
-                    $methodName = $computedFieldMetadata->method;
-
-                    // Create extractor closure that calls the entity method
-                    /** @psalm-suppress MixedMethodCall */
                     $object->addComputedField(
                         $fieldName,
-                        static fn (object $entity): mixed => $entity->$methodName(),
+                        self::computedFieldExtractor($computedFieldMetadata),
+                        $computedFieldMetadata->args !== [],
                     );
                 }
 
@@ -109,5 +109,33 @@ final class HydratorContainer extends Container
         $this->set($id, $hydrator);
 
         return $hydrator;
+    }
+
+    /**
+     * A function which calls a computed field's method with the field's
+     * arguments, by name.  An argument which is not given is left to the
+     * method's default value, or is null when the method has none.
+     *
+     * @return Closure(object, array<array-key, mixed>): mixed
+     */
+    private static function computedFieldExtractor(ComputedFieldMetadata $computedFieldMetadata): Closure
+    {
+        $methodName = $computedFieldMetadata->method;
+        $arguments  = $computedFieldMetadata->args;
+
+        return static function (object $entity, array $args) use ($methodName, $arguments): mixed {
+            $named = [];
+            foreach ($arguments as $name => $argument) {
+                if (array_key_exists($name, $args)) {
+                    /** @psalm-suppress MixedAssignment An argument may be of any type */
+                    $named[$name] = $args[$name];
+                } elseif ($argument->default === null) {
+                    $named[$name] = null;
+                }
+            }
+
+            /** @psalm-suppress MixedMethodCall */
+            return $entity->$methodName(...$named);
+        };
     }
 }

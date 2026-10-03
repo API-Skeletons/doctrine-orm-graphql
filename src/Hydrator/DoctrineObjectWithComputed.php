@@ -32,19 +32,34 @@ final class DoctrineObjectWithComputed extends DoctrineObject
     /**
      * Map of computed field names to extraction callables
      *
-     * @var array<string, callable>
+     * @var array<string, callable(object, array<array-key, mixed>): mixed>
      */
     private array $computedFields = [];
 
     /**
+     * The names of the computed fields which have arguments
+     *
+     * @var array<string, true>
+     */
+    private array $computedFieldsWithArguments = [];
+
+    /**
      * Register a computed field for extraction
      *
-     * @param string   $fieldName The GraphQL field name
-     * @param callable $extractor Callable that accepts the entity and returns the field value
+     * @param string                                           $fieldName    The GraphQL field name
+     * @param callable(object, array<array-key, mixed>): mixed $extractor    Callable that accepts the entity and the
+     *                                                                       field's arguments and returns its value
+     * @param bool                                             $hasArguments Whether the field has arguments
      */
-    public function addComputedField(string $fieldName, callable $extractor): void
+    public function addComputedField(string $fieldName, callable $extractor, bool $hasArguments = false): void
     {
         $this->computedFields[$fieldName] = $extractor;
+
+        if (! $hasArguments) {
+            return;
+        }
+
+        $this->computedFieldsWithArguments[$fieldName] = true;
     }
 
     /**
@@ -53,6 +68,14 @@ final class DoctrineObjectWithComputed extends DoctrineObject
     public function hasComputedField(string $fieldName): bool
     {
         return isset($this->computedFields[$fieldName]);
+    }
+
+    /**
+     * Whether a computed field has arguments, so its value depends on them
+     */
+    public function hasComputedFieldArguments(string $fieldName): bool
+    {
+        return isset($this->computedFieldsWithArguments[$fieldName]);
     }
 
     /**
@@ -179,7 +202,9 @@ final class DoctrineObjectWithComputed extends DoctrineObject
      * Extract values from object, including computed fields
      *
      * This method extracts the regular Doctrine fields, then adds computed
-     * field values by calling registered extractors.
+     * field values by calling registered extractors.  A computed field with
+     * arguments has a value for each set of them, not one value, so it is
+     * left out.
      *
      * @return array<array-key, mixed>
      */
@@ -189,6 +214,10 @@ final class DoctrineObjectWithComputed extends DoctrineObject
         $data = $this->extractFields($object);
 
         foreach ($this->getComputedFieldNames() as $fieldName) {
+            if ($this->hasComputedFieldArguments($fieldName)) {
+                continue;
+            }
+
             /** @psalm-suppress MixedAssignment */
             $data[$fieldName] = $this->extractComputedField($object, $fieldName);
         }
@@ -210,10 +239,12 @@ final class DoctrineObjectWithComputed extends DoctrineObject
 
     /**
      * Compute a registered computed field
+     *
+     * @param array<array-key, mixed> $args The field's arguments
      */
-    public function extractComputedField(object $object, string $fieldName): mixed
+    public function extractComputedField(object $object, string $fieldName, array $args = []): mixed
     {
-        return ($this->computedFields[$fieldName])($object);
+        return ($this->computedFields[$fieldName])($object, $args);
     }
 
     /**
