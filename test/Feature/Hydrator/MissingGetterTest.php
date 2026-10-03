@@ -9,10 +9,13 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithMagicCall;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithoutGetter;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestGetterOptionalParameter;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestGetterRequiredParameter;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Extracting by value, a field without a getter would always be null, so it
@@ -112,5 +115,63 @@ class MissingGetterTest extends TestCase
             [['node' => ['regularField' => 'regular', 'magicField' => 'magic']]],
             $result['data']['entities']['edges'],
         );
+    }
+
+    /** @return array<string, array{string}> */
+    public static function requiredParameterProvider(): array
+    {
+        return [
+            'exposed field' => ['GetterRequired'],
+            'field which is not exposed' => ['GetterRequiredUnexposed'],
+        ];
+    }
+
+    /**
+     * Extracting by value calls the getter of every mapped field without
+     * arguments, so one which requires a parameter is an error, exposed or
+     * not, and with __call or not
+     */
+    #[DataProvider('requiredParameterProvider')]
+    public function testGetterWithARequiredParameterIsAnError(string $group): void
+    {
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => $group]));
+
+        $this->expectException(HydratorException::class);
+        $this->expectExceptionMessage(
+            'Field title of entity ' . TestGetterRequiredParameter::class . ' is read by getTitle(), which '
+            . 'extracting by value calls without arguments, but it requires a parameter.  Give its parameters '
+            . 'default values, or extract the entity by reference with extractByValue: false.',
+        );
+
+        $driver->type(TestGetterRequiredParameter::class);
+    }
+
+    public function testGetterWithARequiredParameterIsExtractedByReference(): void
+    {
+        $driver = new Driver(
+            $this->getEntityManager(),
+            new Config(['group' => 'GetterRequired', 'extractByValue' => false]),
+        );
+
+        $this->assertInstanceOf(ObjectType::class, $driver->type(TestGetterRequiredParameter::class));
+    }
+
+    public function testGetterWithAnOptionalParameterIsCalledWithoutIt(): void
+    {
+        $this->getEntityManager()->persist(new TestGetterOptionalParameter());
+        $this->getEntityManager()->flush();
+        $this->getEntityManager()->clear();
+
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'GetterOptional']));
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => ['entities' => $driver->completeConnection(TestGetterOptionalParameter::class)],
+            ]),
+        ]);
+
+        $result = GraphQL::executeQuery($schema, '{ entities { edges { node { label } } } }')->toArray();
+
+        $this->assertSame([['node' => ['label' => 'Label!']]], $result['data']['entities']['edges']);
     }
 }

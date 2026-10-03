@@ -82,7 +82,10 @@ data from Doctrine entities.  The hydrator library is
   ``getField()`` or ``isField()`` method (or the entity a ``__call`` method);
   a field without one throws
   ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator`` when the type is
-  built, as it would otherwise always be ``null``.
+  built, as it would otherwise always be ``null``.  The hydrator calls the
+  getter of every mapped field and association, exposed or not, without
+  arguments, so a getter which requires a parameter throws the same
+  exception; give its parameters default values.
   More information here:
   `By Value and By Reference <https://www.doctrine-project.org/projects/doctrine-laminas-hydrator/en/3.0/by-value-by-reference.html#by-value-and-by-reference>`_
 

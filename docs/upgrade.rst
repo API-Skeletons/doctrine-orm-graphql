@@ -131,6 +131,12 @@ which has no ``getField()`` or ``isField()`` method, and no ``__call``, now
 throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator``.  Add the
 getter, or extract the entity by reference with ``extractByValue: false``.
 
+The hydrator calls the getter of every mapped field and association, exposed
+or not, without arguments.  A getter which requires a parameter failed every
+query of its entity's type, even one which did not ask for that field, as an
+``Internal server error``.  It now throws the same exception when the type is
+built.  Give its parameters default values, or extract by reference.
+
 Date-times are converted to the default timezone
 ------------------------------------------------
 

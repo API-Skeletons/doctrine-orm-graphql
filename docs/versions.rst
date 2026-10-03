@@ -83,9 +83,9 @@ ORM versions do not support ``doctrine/persistence`` 4.
   to that field only
 - Mutations: an input without field lists makes the fields of nullable columns optional
 - Validation: a misplaced attribute, an invalid GraphQL name, a duplicate field name, a
-  negative limit, a field without a getter when extracting by value, and a wrong
-  ``input()`` field list are errors; configuration checks no longer depend on
-  ``zend.assertions``
+  negative limit, a field without a getter, or with one which requires a parameter, when
+  extracting by value, and a wrong ``input()`` field list are errors; configuration
+  checks no longer depend on ``zend.assertions``
 - Errors: an error the developer must fix is shown to a client as
   ``Internal server error``
 - Hydration: custom strategies may implement the new ``Strategy`` interface to receive the
