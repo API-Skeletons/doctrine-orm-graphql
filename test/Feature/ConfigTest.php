@@ -40,6 +40,10 @@ class ConfigTest extends TestCase
                 ['extractByValue' => 1],
                 'Invalid configuration value for extractByValue: expected bool or null, got int.',
             ],
+            'null sortFields' => [
+                ['sortFields' => null],
+                'Invalid configuration value for sortFields: expected bool, got null.',
+            ],
             'excludeFilters not an array' => [
                 ['excludeFilters' => 'eq'],
                 'Invalid configuration value for excludeFilters: expected array, got string.',
