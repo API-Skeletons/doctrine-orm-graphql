@@ -58,4 +58,14 @@ class InheritanceAnimal
     {
         return $this->toys;
     }
+
+    /**
+     * A subclass's own fields, through a field of the root's type: the
+     * animal as a dog, or null
+     */
+    #[GraphQL\ComputedField(type: InheritanceDog::class, group: 'InheritanceSubclass')]
+    public function getAsDog(): InheritanceDog|null
+    {
+        return $this instanceof InheritanceDog ? $this : null;
+    }
 }

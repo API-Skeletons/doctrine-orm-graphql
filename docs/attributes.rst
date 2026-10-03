@@ -100,6 +100,45 @@ itself is resolved as its nearest exposed parent class.  A subclass which is
 exposed is resolved as itself, with its own entity attribute, wherever its
 rows appear.
 
+Each exposed class has its own type, and the types are not related: a
+subclass's type is not an implementation of an interface of its parent's.
+A connection of the parent therefore has the parent's type, and a client
+cannot ask it for a subclass's own fields, not even with a fragment on the
+subclass's type.  Expose a subclass's fields through a `computed field
+<computed-fields.html#entity-types>`_ of the subclass's type on the parent,
+which returns the entity when it is of the subclass:
+
+.. code-block:: php
+
+  #[GraphQL\Entity]
+  #[ORM\Entity]
+  #[ORM\InheritanceType('SINGLE_TABLE')]
+  class Animal
+  {
+      #[GraphQL\ComputedField(type: Dog::class)]
+      public function getAsDog(): Dog|null
+      {
+          return $this instanceof Dog ? $this : null;
+      }
+  }
+
+  #[GraphQL\Entity]
+  #[ORM\Entity]
+  class Dog extends Animal
+  {
+      #[GraphQL\Field]
+      #[ORM\Column(type: 'string')]
+      private string $breed;
+  }
+
+.. code-block:: graphql
+
+  { animals { edges { node { name asDog { breed } } } } }
+
+``asDog`` is null for an animal which is not a dog.  The subclass must be
+exposed in the group.  A subclass inherits the computed field, so a dog's
+``asDog`` is the dog itself.
+
 
 Field
 =====
