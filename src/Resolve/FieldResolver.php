@@ -17,8 +17,10 @@ use WeakMap;
 
 use function array_key_exists;
 use function assert;
+use function is_array;
 use function is_iterable;
 use function is_object;
+use function serialize;
 
 /**
  * A field resolver that uses the Doctrine Laminas hydrator to extract values
@@ -76,19 +78,30 @@ final class FieldResolver
             $this->extractValues[$source] = $values;
         }
 
-        if (! array_key_exists($info->fieldName, $values)) {
+        $key = $info->fieldName;
+
+        if (! array_key_exists($key, $values)) {
             $hydrator = $this->getHydrator($source);
 
             if ($hydrator instanceof DoctrineObjectWithComputed && $hydrator->hasComputedField($info->fieldName)) {
-                /** @psalm-suppress MixedAssignment */
-                $values[$info->fieldName]     = $hydrator->extractComputedField($source, $info->fieldName);
-                $this->extractValues[$source] = $values;
+                // A computed field with arguments has a value for each set of
+                // them, as aliases of the field may give different arguments
+                $args = is_array($args) ? $args : [];
+                if ($hydrator->hasComputedFieldArguments($info->fieldName)) {
+                    $key .= '(' . serialize($args) . ')';
+                }
+
+                if (! array_key_exists($key, $values)) {
+                    /** @psalm-suppress MixedAssignment */
+                    $values[$key]                 = $hydrator->extractComputedField($source, $info->fieldName, $args);
+                    $this->extractValues[$source] = $values;
+                }
             }
         }
 
         // A field's value may be of any type
         /** @psalm-suppress MixedAssignment */
-        $value = $values[$info->fieldName] ?? null;
+        $value = $values[$key] ?? null;
 
         if (! $this->config->getBatchAssociations()) {
             return $value;

@@ -12,6 +12,7 @@ use function get_debug_type;
 use function is_array;
 use function is_bool;
 use function is_int;
+use function is_scalar;
 use function is_string;
 
 /**
@@ -112,6 +113,18 @@ final class ArrayReader
 
         if (! is_bool($value)) {
             throw $this->invalid($key, 'a bool', $value);
+        }
+
+        return $value;
+    }
+
+    /** @throws MetadataException */
+    public function scalar(string $key): int|float|string|bool
+    {
+        $value = $this->value($key);
+
+        if (! is_scalar($value)) {
+            throw $this->invalid($key, 'an int, float, string or bool', $value);
         }
 
         return $value;

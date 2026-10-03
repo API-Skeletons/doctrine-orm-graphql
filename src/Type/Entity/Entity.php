@@ -23,6 +23,7 @@ use Doctrine\Inflector\InflectorFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\NullableType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -441,23 +442,60 @@ final class Entity
                         $this->typeContainer->get($computedFieldMetadata->type),
                     ),
                     'description' => $computedFieldMetadata->description,
-                ];
+                ] + $this->computedFieldArgs($fieldName, $computedFieldMetadata);
 
                 continue;
             }
 
-            $fields[$fieldName] = function () use ($computedFieldMetadata): array {
+            $fields[$fieldName] = function () use ($fieldName, $computedFieldMetadata): array {
                 $entity = $this->entityTypeContainer->get($computedFieldMetadata->type);
 
                 // The computed field's description, else the entity's
                 return [
                     'type' => self::computedFieldType($computedFieldMetadata, $entity->getObjectType()),
                     'description' => $computedFieldMetadata->description ?? $entity->getDescription(),
-                ];
+                ] + $this->computedFieldArgs($fieldName, $computedFieldMetadata);
             };
         }
 
         return $fields;
+    }
+
+    /**
+     * The args of a computed field, as a field's config gives them, or no key
+     * for a computed field without arguments
+     *
+     * @return array{args?: array<string, array{type: Type, defaultValue?: int|float|string|bool}>}
+     *
+     * @throws MetadataException
+     */
+    private function computedFieldArgs(string $fieldName, ComputedFieldMetadata $computedFieldMetadata): array
+    {
+        if ($computedFieldMetadata->args === []) {
+            return [];
+        }
+
+        $args = [];
+        foreach ($computedFieldMetadata->args as $name => $argument) {
+            $type = $this->typeContainer->get($argument->type);
+
+            if (! $type instanceof InputType) {
+                throw new MetadataException(
+                    'Argument ' . $name . ' of computed field ' . $fieldName . ' of entity ' . $this->getEntityClass()
+                    . ' is of type ' . $type->toString() . ', which cannot be input.',
+                );
+            }
+
+            $args[$name] = ['type' => $argument->nullable ? $type : self::nonNull($type)];
+
+            if ($argument->default === null) {
+                continue;
+            }
+
+            $args[$name]['defaultValue'] = $argument->default;
+        }
+
+        return ['args' => $args];
     }
 
     /**

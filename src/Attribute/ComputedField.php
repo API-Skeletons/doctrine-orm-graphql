@@ -31,12 +31,14 @@ use Attribute;
 final class ComputedField
 {
     /**
-     * @param string      $type        A type registered in the TypeContainer, or the class of an entity
-     *                                 exposed in the group, whose type the field is
-     * @param string      $group       GraphQL schema group (default: 'default')
-     * @param string|null $name        Field name in GraphQL schema. If null, derived from method name.
-     * @param string|null $description Field description for GraphQL schema
-     * @param bool        $list        Whether the method returns a list of the type
+     * @param string                $type        A type registered in the TypeContainer, or the class of an entity
+     *                                           exposed in the group, whose type the field is
+     * @param string                $group       GraphQL schema group (default: 'default')
+     * @param string|null           $name        Field name in GraphQL schema. If null, derived from method name.
+     * @param string|null           $description Field description for GraphQL schema
+     * @param bool                  $list        Whether the method returns a list of the type
+     * @param array<string, string> $args        The registered type of each method parameter which is
+     *                                           not an int, float, string or bool, by its name
      */
     public function __construct(
         private readonly string $type,
@@ -44,6 +46,7 @@ final class ComputedField
         private readonly string|null $name = null,
         private readonly string|null $description = null,
         private readonly bool $list = false,
+        private readonly array $args = [],
     ) {
     }
 
@@ -70,5 +73,11 @@ final class ComputedField
     public function getList(): bool
     {
         return $this->list;
+    }
+
+    /** @return array<string, string> */
+    public function getArgs(): array
+    {
+        return $this->args;
     }
 }

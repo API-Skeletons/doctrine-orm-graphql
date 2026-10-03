@@ -66,6 +66,8 @@ The ``#[ComputedField]`` attribute accepts these parameters:
   `Entity Types`_.
 * ``list`` - Optional. ``true`` when the method returns a list of the type, such as an
   array of strings or of entities.  The default is ``false``.
+* ``args`` - Optional. The type of each method parameter which is not an ``int``,
+  ``float``, ``string`` or ``bool``, by its name; see `Arguments`_.
 * ``description`` - Optional. A description of the computed field for GraphQL schema documentation.
 * ``name`` - Optional. Override the field name in the GraphQL schema.  If not provided,
   the name is derived from the method name.
@@ -145,6 +147,62 @@ Computed fields are:
   entity's other values for as long as the entity exists
 * **Not filterable** - Computed fields cannot be used in database filters since they're
   calculated in PHP, not at the database level
+
+Arguments
+---------
+
+A computed field has an argument for each parameter of its method, of the
+same name:
+
+.. code-block:: php
+
+  #[GraphQL\ComputedField(type: 'int')]
+  public function getTotalRecordings(int|null $year = null): int
+  {
+      if ($year === null) {
+          return $this->recordings->count();
+      }
+
+      return $this->recordings->filter(
+          static fn (Recording $recording): bool => $recording->getYear() === $year,
+      )->count();
+  }
+
+.. code-block:: graphql
+
+  { artist { edges { node { name totalRecordings } } } }
+  { artist { edges { node { name totalRecordings(year: 2002) } } } }
+
+GraphQL arguments are named, so the argument is ``year``, not a position.
+
+* An ``int``, ``float``, ``string`` or ``bool`` parameter is an ``Int``,
+  ``Float``, ``String`` or ``Boolean`` argument.  Give the type of any other
+  parameter, by its name, in the attribute's ``args``, as a type registered in
+  the TypeContainer:
+
+  .. code-block:: php
+
+    #[GraphQL\ComputedField(type: 'boolean', args: ['date' => 'date_immutable'])]
+    public function getFoundedBefore(DateTimeImmutable $date): bool
+
+* A parameter which does not allow null is a required, non-null argument,
+  unless it has a default value.
+* A default value is the argument's default, and must be an ``int``,
+  ``float``, ``string`` or ``bool``.  An argument which is not given, and has
+  no default, is null.
+* A variadic parameter, or one passed by reference, cannot be an argument.
+
+These are checked when the metadata is built, and throw
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``.
+
+Each set of arguments has its own value, so aliases of a field with
+different arguments, such as ``a: totalRecordings(year: 2002)
+b: totalRecordings(year: 2003)``, each have theirs.  A computed field with
+arguments has no one value, so the hydrator's ``extract()`` leaves it out.
+
+The method is called for each entity a query returns.  A method which
+queries the database, rather than reading the entity, runs a query for each
+of them.
 
 Entity Types
 ------------

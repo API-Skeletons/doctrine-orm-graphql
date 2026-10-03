@@ -16,6 +16,9 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use League\Event\EventDispatcher;
 use ReflectionClass;
+use ReflectionMethod;
+use ReflectionNamedType;
+use ReflectionParameter;
 use ReflectionProperty;
 
 use function array_key_exists;
@@ -24,6 +27,7 @@ use function assert;
 use function ctype_upper;
 use function in_array;
 use function is_array;
+use function is_scalar;
 use function lcfirst;
 use function str_contains;
 use function str_replace;
@@ -335,12 +339,103 @@ final class MetadataFactory
                     'name' => $fieldName,
                     'description' => $instance->getDescription(),
                     'list' => $instance->getList(),
+                    'args' => $this->buildComputedFieldArguments($reflectionMethod, $instance, $reflectionClass->getName()),
                 ];
 
                 /** @psalm-suppress MixedArrayAssignment */
                 $this->metadata[$reflectionClass->getName()]['computedFields'][$fieldName] = $computedFieldMetadata;
             }
         }
+    }
+
+    /**
+     * The arguments of a computed field, one for each parameter of its
+     * method, in order.  An int, float, string or bool parameter is an Int,
+     * Float, String or Boolean argument; any other is of the type the
+     * attribute's args give it.  A parameter which does not allow null is a
+     * non-null argument, and its default value is the argument's.
+     *
+     * @return array<string, array{type: string, nullable: bool, default?: int|float|string|bool}>
+     *
+     * @throws MetadataException
+     */
+    private function buildComputedFieldArguments(
+        ReflectionMethod $method,
+        Attribute\ComputedField $attribute,
+        string $entityClass,
+    ): array {
+        $types   = $attribute->getArgs();
+        $context = ' of computed field method ' . $method->getName() . ' of entity ' . $entityClass;
+
+        $arguments = [];
+        foreach ($method->getParameters() as $parameter) {
+            $name   = $parameter->getName();
+            $prefix = 'Parameter $' . $name . $context;
+
+            if ($parameter->isVariadic() || $parameter->isPassedByReference()) {
+                throw new MetadataException(
+                    $prefix . ' is variadic or passed by reference, which an argument cannot be.',
+                );
+            }
+
+            $type = $types[$name] ?? self::argumentType($parameter);
+            if ($type === null) {
+                throw new MetadataException(
+                    $prefix . ' is not an int, float, string or bool.  Give its type in the args of the '
+                    . 'ComputedField attribute.',
+                );
+            }
+
+            $argument = ['type' => $type, 'nullable' => $parameter->allowsNull()];
+
+            // A null default is none: an absent argument is null
+            /** @psalm-suppress MixedAssignment A default value may be of any type */
+            $default = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null;
+            if ($default !== null) {
+                if (! is_scalar($default)) {
+                    throw new MetadataException(
+                        $prefix . ' has a default value which is not an int, float, string or bool, which an '
+                        . 'argument cannot have.',
+                    );
+                }
+
+                $argument['default'] = $default;
+            }
+
+            $arguments[$name] = $argument;
+        }
+
+        foreach (array_keys($types) as $name) {
+            if (! isset($arguments[$name])) {
+                throw new MetadataException(
+                    'The args of the ComputedField attribute' . $context . ' give the type of ' . $name
+                    . ', which is not a parameter of the method.',
+                );
+            }
+        }
+
+        return $arguments;
+    }
+
+    /**
+     * The registered type of a parameter which is an int, float, string or
+     * bool, nullable or not
+     */
+    private static function argumentType(ReflectionParameter $parameter): string|null
+    {
+        $type = $parameter->getType();
+
+        if (! $type instanceof ReflectionNamedType) {
+            return null;
+        }
+
+        return match ($type->getName()) {
+            'int' => 'int',
+            'float' => 'float',
+            'string' => 'string',
+            'bool' => 'boolean',
+            default => null,
+        };
     }
 
     /**
