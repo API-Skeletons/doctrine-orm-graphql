@@ -357,6 +357,17 @@ class ComputedFieldArgumentsTest extends TestCase
                 'The args of the ComputedField attribute of computed field method getUnknownArg of entity '
                 . ComputedArgsInvalid::class . ' give the type of other, which is not a parameter of the method.',
             ],
+            'default not a value of the given type' => [
+                'ComputedArgsTypedDefault',
+                'Argument since of computed field typedDefault of entity ' . ComputedArgsInvalid::class
+                . " has the default value '2020-01-01', which is not a value of its type DateImmutable.  Remove "
+                . 'the default, or give the parameter a type of which it is a value.',
+            ],
+            'scalar default for a list' => [
+                'ComputedArgsListDefault',
+                'Argument tags of computed field listDefault of entity ' . ComputedArgsInvalid::class
+                . " has the default value 'live', which is not a value of its type [String].",
+            ],
             'not an input type' => [
                 'ComputedArgsNotInput',
                 'Argument page of computed field notInput of entity ' . ComputedArgsInvalid::class

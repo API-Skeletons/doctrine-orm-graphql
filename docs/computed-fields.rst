@@ -193,7 +193,11 @@ GraphQL arguments are named, so the argument is ``year``, not a position.
 * A variadic parameter, or one passed by reference, cannot be an argument.
 
 These are checked when the metadata is built, and throw
-``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``.
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``.  When the type
+is built, an argument's type must be one which can be input, and a default
+must be a value of it: ``'2020-01-01'`` is not a value of ``date_immutable``,
+whose values are dates, so a parameter given that type in ``args`` may not
+have it as its default.  These throw the same exception.
 
 Each set of arguments has its own value, so aliases of a field with
 different arguments, such as ``a: totalRecordings(year: 2002)
