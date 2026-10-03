@@ -21,21 +21,19 @@ final class PageInfo extends ObjectType
             'description' => 'Page information',
             'fields' => [
                 'startCursor' => [
-                    'description' => 'Cursor corresponding to the first node in edges. '
-                        . 'Null when edges is empty.',
+                    'description' => 'The cursor of the first edge, or null when there are no edges.',
                     'type' => Type::string(),
                 ],
                 'endCursor' => [
-                    'description' => 'Cursor corresponding to the last node in edges. '
-                        . 'Null when edges is empty.',
+                    'description' => 'The cursor of the last edge, or null when there are no edges.',
                     'type' => Type::string(),
                 ],
                 'hasPreviousPage' => [
-                    'description' => 'If edges contains more than last elements return true, otherwise false.',
+                    'description' => 'True when this page does not start at the first row.',
                     'type' => Type::nonNull(Type::boolean()),
                 ],
                 'hasNextPage' => [
-                    'description' => 'If edges contains more than first elements return true, otherwise false.',
+                    'description' => 'Whether rows come after this page.',
                     'type' => Type::nonNull(Type::boolean()),
                 ],
             ],

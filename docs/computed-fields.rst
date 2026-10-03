@@ -140,9 +140,10 @@ How Computed Fields Work
 Computed fields are:
 
 * **Lazy evaluated** - The method is called only when the field is requested in a
-  GraphQL query, and once for each entity however many times the query requests it
+  GraphQL query, and once for each entity however many times the query requests it.
+  A field with `arguments`_ is computed once for each entity and set of arguments.
 * **Integrated with the hydrator** - The hydrator's ``extract()`` returns computed values
-  with the regular fields
+  with the regular fields, except those of fields with arguments, which have no one value
 * **Cached** - If you enable ``useHydratorCache``, a computed value is cached with the
   entity's other values for as long as the entity exists
 * **Not filterable** - Computed fields cannot be used in database filters since they're
@@ -242,8 +243,9 @@ returns a list of them, such as an array or a Doctrine ``Collection``.
 
 This exposes a relation which is not mapped as an association, or which is
 derived from one, or a subclass's own fields through its parent's type; see
-`Inheritance <attributes.html#inheritance>`_.  The entity may be of the same class as the field's own
-entity, and two entities may have computed fields of each other's types.  An
+`Inheritance <attributes.html#inheritance>`_.  The entity may be of the same
+class as the field's own entity, and two entities may have computed fields of
+each other's types.  An
 entity of a class which is not exposed in the group throws
 ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the metadata
 is built.  The field's description is its own, else the entity's.
