@@ -20,6 +20,8 @@ use function count;
 #[GraphQL\Entity(group: 'ComputedArgsObjectDefault')]
 #[GraphQL\Entity(group: 'ComputedArgsUnknownArg')]
 #[GraphQL\Entity(group: 'ComputedArgsNotInput')]
+#[GraphQL\Entity(group: 'ComputedArgsTypedDefault')]
+#[GraphQL\Entity(group: 'ComputedArgsListDefault')]
 #[ORM\Entity]
 class ComputedArgsInvalid
 {
@@ -72,6 +74,20 @@ class ComputedArgsInvalid
 
     #[GraphQL\ComputedField(type: 'int', group: 'ComputedArgsNotInput', args: ['page' => 'pageinfo'])]
     public function getNotInput(mixed $page): int
+    {
+        return 0;
+    }
+
+    /** A default which is not a value of the type its args give it */
+    #[GraphQL\ComputedField(type: 'string', group: 'ComputedArgsTypedDefault', args: ['since' => 'date_immutable'])]
+    public function getTypedDefault(mixed $since = '2020-01-01'): string
+    {
+        return (string) $since;
+    }
+
+    /** A scalar default for a list */
+    #[GraphQL\ComputedField(type: 'int', group: 'ComputedArgsListDefault', args: ['tags' => 'simple_array'])]
+    public function getListDefault(mixed $tags = 'live'): int
     {
         return 0;
     }

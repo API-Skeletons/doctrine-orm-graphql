@@ -24,12 +24,14 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
 use GraphQL\Type\Definition\InputType;
+use GraphQL\Type\Definition\LeafType;
 use GraphQL\Type\Definition\NullableType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use Laminas\Hydrator\HydratorInterface;
 use League\Event\EventDispatcher;
 use ReflectionClass;
+use Throwable;
 
 use function array_keys;
 use function array_merge;
@@ -44,6 +46,7 @@ use function preg_replace;
 use function str_starts_with;
 use function substr;
 use function ucwords;
+use function var_export;
 
 /**
  * This class is used to build an ObjectType for an entity
@@ -492,10 +495,42 @@ final class Entity
                 continue;
             }
 
+            // A default is a value of the argument's type, which introspection
+            // serializes; the method receives it as a value of the type
+            if (! self::isValueOf($type, $argument->default)) {
+                throw new MetadataException(
+                    'Argument ' . $name . ' of computed field ' . $fieldName . ' of entity ' . $this->getEntityClass()
+                    . ' has the default value ' . var_export($argument->default, true) . ', which is not a value of its '
+                    . 'type ' . $type->toString() . '.  Remove the default, or give the parameter a type of which '
+                    . 'it is a value.',
+                );
+            }
+
             $args[$name]['defaultValue'] = $argument->default;
         }
 
         return ['args' => $args];
+    }
+
+    /**
+     * Whether a scalar is a value of a type: the type is a scalar or an enum,
+     * not a list or an input object, and serializes the value
+     */
+    private static function isValueOf(Type $type, int|float|string|bool $value): bool
+    {
+        $type = Type::getNullableType($type);
+
+        if (! $type instanceof LeafType) {
+            return false;
+        }
+
+        try {
+            $type->serialize($value);
+        } catch (Throwable) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
