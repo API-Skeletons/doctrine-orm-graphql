@@ -31,9 +31,9 @@ use GraphQL\Type\Definition\Type;
 use Laminas\Hydrator\HydratorInterface;
 use League\Event\EventDispatcher;
 use ReflectionClass;
+use ReflectionMethod;
 use Throwable;
 
-use function array_keys;
 use function array_merge;
 use function assert;
 use function ctype_upper;
@@ -250,10 +250,14 @@ final class Entity
     }
 
     /**
-     * Extracting by value, the hydrator reads a field with its getter, and
-     * silently leaves out a field without one, which would always be null.
-     * The getter is found as the hydrator finds it: getField(), isField(), a
-     * field named isField() itself, or __call.
+     * Extracting by value, the hydrator reads every mapped field and
+     * association, exposed or not, by calling its getter without arguments.
+     * The getter is found as the hydrator finds it: getField(), isField(), or
+     * a field named isField() itself.
+     *
+     * A getter which requires a parameter fails every extract of the entity,
+     * so every query of its type.  An exposed field without a getter, and
+     * without __call, is silently left out, so would always be null.
      *
      * @throws HydratorException
      */
@@ -263,30 +267,44 @@ final class Entity
             return;
         }
 
-        $methods = get_class_methods($this->getEntityClass());
-        if (in_array('__call', $methods, true)) {
-            return;
-        }
+        $entityClass   = $this->getEntityClass();
+        $methods       = get_class_methods($entityClass);
+        $hasCall       = in_array('__call', $methods, true);
+        $exposed       = [...$this->entityMetadata->fields, ...$this->entityMetadata->associations];
+        $classMetadata = $this->entityManager->getClassMetadata($entityClass);
+        $inflector     = InflectorFactory::create()->build();
 
-        $inflector = InflectorFactory::create()->build();
-
-        foreach (array_keys([...$this->entityMetadata->fields, ...$this->entityMetadata->associations]) as $fieldName) {
+        foreach ([...$classMetadata->getFieldNames(), ...$classMetadata->getAssociationNames()] as $fieldName) {
             $getter = 'get' . $inflector->classify($fieldName);
             $isser  = 'is' . $inflector->classify($fieldName);
 
-            if (
-                in_array($getter, $methods, true)
-                || in_array($isser, $methods, true)
-                || (str_starts_with($fieldName, 'is') && ctype_upper(substr($fieldName, 2, 1)) && in_array($fieldName, $methods, true))
-            ) {
-                continue;
+            $method = match (true) {
+                in_array($getter, $methods, true) => $getter,
+                in_array($isser, $methods, true) => $isser,
+                str_starts_with($fieldName, 'is') && ctype_upper(substr($fieldName, 2, 1))
+                    && in_array($fieldName, $methods, true) => $fieldName,
+                default => null,
+            };
+
+            if ($method === null) {
+                if ($hasCall || ! isset($exposed[$fieldName])) {
+                    continue;
+                }
+
+                throw new HydratorException(
+                    'Field ' . $fieldName . ' of entity ' . $entityClass . ' has no ' . $getter . '() or '
+                    . $isser . '() method, which extracting by value reads it with.  Add one, or extract the entity '
+                    . 'by reference with extractByValue: false.',
+                );
             }
 
-            throw new HydratorException(
-                'Field ' . $fieldName . ' of entity ' . $this->getEntityClass() . ' has no ' . $getter . '() or '
-                . $isser . '() method, which extracting by value reads it with.  Add one, or extract the entity '
-                . 'by reference with extractByValue: false.',
-            );
+            if ((new ReflectionMethod($entityClass, $method))->getNumberOfRequiredParameters() > 0) {
+                throw new HydratorException(
+                    'Field ' . $fieldName . ' of entity ' . $entityClass . ' is read by ' . $method . '(), which '
+                    . 'extracting by value calls without arguments, but it requires a parameter.  Give its '
+                    . 'parameters default values, or extract the entity by reference with extractByValue: false.',
+                );
+            }
         }
     }
 
