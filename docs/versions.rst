@@ -72,7 +72,8 @@ ORM versions do not support ``doctrine/persistence`` 4.
   collection by its ``#[ORM\OrderBy]`` first
 - Configuration: ``globalEnable`` and ``ignoreFields`` are removed; ``globalByValue`` and
   ``byValue`` are renamed ``extractByValue``; ``ConfigBuilder::sortFields()`` is renamed
-  ``enableSortFields()``; config values are validated
+  ``enableSortFields()``; ``sortFields`` is a ``bool`` and may not be ``null``; config
+  values are validated
 - Types: ``decimal`` is a ``String``; date-times are converted to the default timezone;
   the date and time scalars reject impossible and invalid values and serialize only date
   objects; filter, connection and input type names change; the ``sort`` filter takes the

@@ -173,6 +173,12 @@ parameter is named ``$enable``, as the other boolean methods' are.
     // 14.0
     ConfigBuilder::create()->enableSortFields();
 
+The ``sortFields`` config value is a ``bool``, ``false`` by default.  It was
+``bool|null``, where ``null``, the default, meant ``false``.  Passing
+``'sortFields' => null`` to ``Config`` now throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Configuration``; remove it or
+pass ``false``.
+
 A computed field of a method such as ``getaway()``, whose name only begins
 with ``get``, is named for the whole method, ``getaway``, rather than ``away``.
 

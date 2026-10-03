@@ -31,7 +31,7 @@ final class ConfigBuilder
     private int $limit                = 1000;
     private bool|null $extractByValue = null;
     private string|null $entityPrefix = null;
-    private bool|null $sortFields     = null;
+    private bool $sortFields          = false;
     /** @var Filters[] */
     private array $excludeFilters = [];
 

@@ -164,6 +164,7 @@ sortFields
 When entity types are created, and after the definition event,
 the fields will be sorted alphabetically when set to true.
 This can aid reading of the documentation created by GraphQL.
+The default is false.
 
 
 useHydratorCache

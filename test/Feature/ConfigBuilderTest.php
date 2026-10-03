@@ -217,7 +217,7 @@ class ConfigBuilderTest extends TestCase
         $this->assertEquals(1000, $config->getLimit());
         $this->assertNull($config->getExtractByValue());
         $this->assertNull($config->getEntityPrefix());
-        $this->assertNull($config->getSortFields());
+        $this->assertFalse($config->getSortFields());
         $this->assertEquals([], $config->getExcludeFilters());
     }
 

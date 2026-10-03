@@ -88,10 +88,10 @@ final class Config
     protected readonly string|null $entityPrefix;
 
     /**
-     * @var bool|null When set to true entity fields will be
-     *                sorted alphabetically
+     * @var bool When set to true entity fields will be
+     *           sorted alphabetically
      */
-    protected readonly bool|null $sortFields;
+    protected readonly bool $sortFields;
 
     /**
      * @var Filters[] An array of filters to exclude from
@@ -127,7 +127,7 @@ final class Config
         'limit' => ['int'],
         'extractByValue' => ['bool', 'null'],
         'entityPrefix' => ['string', 'null'],
-        'sortFields' => ['bool', 'null'],
+        'sortFields' => ['bool'],
         'excludeFilters' => ['array'],
         'formatJsonAs' => [JsonFormat::class, 'string'],
         'useNonNullTypes' => ['bool'],
@@ -146,7 +146,7 @@ final class Config
             'limit' => 1000,
             'extractByValue' => null,
             'entityPrefix' => null,
-            'sortFields' => null,
+            'sortFields' => false,
             'excludeFilters' => [],
             'formatJsonAs' => JsonFormat::String,
             'useNonNullTypes' => false,
@@ -187,7 +187,7 @@ final class Config
      *
      * @param array<array-key, mixed> $config
      *
-     * @return array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool}
+     * @return array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool}
      *
      * @throws ConfigurationException
      */
@@ -247,7 +247,7 @@ final class Config
             );
         }
 
-        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool|null, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool} $validated */
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool} $validated */
         $validated = $config;
 
         return $validated;
@@ -298,7 +298,7 @@ final class Config
         return $this->entityPrefix;
     }
 
-    public function getSortFields(): bool|null
+    public function getSortFields(): bool
     {
         return $this->sortFields;
     }
