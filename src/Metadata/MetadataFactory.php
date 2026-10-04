@@ -8,12 +8,14 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Event\Metadata as MetadataEvent;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\ComputedFieldExpression;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\FindPropertyInHierarchy;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query\QueryException;
 use League\Event\EventDispatcher;
 use ReflectionClass;
 use ReflectionMethod;
@@ -23,6 +25,8 @@ use ReflectionProperty;
 
 use function array_key_exists;
 use function array_keys;
+use function array_unique;
+use function array_values;
 use function assert;
 use function ctype_upper;
 use function in_array;
@@ -42,6 +46,17 @@ use function substr;
 final class MetadataFactory
 {
     use FindPropertyInHierarchy;
+
+    /**
+     * The DQL of the filters which DQL applies to some expressions only, by
+     * the forms they use.  A comparison, and so a between, which is applied as
+     * two, applies to every expression.
+     */
+    private const array EXPRESSION_FILTER_FORMS = [
+        ' IN (:validateList)' => [Filters::IN, Filters::NOTIN],
+        ' IS NULL' => [Filters::ISNULL],
+        " LIKE :validateValue ESCAPE '!'" => [Filters::CONTAINS, Filters::STARTSWITH, Filters::ENDSWITH],
+    ];
 
     public function __construct(
         protected Metadata $metadata,
@@ -96,6 +111,7 @@ final class MetadataFactory
 
         // After the event, as a listener may add or remove entities
         $this->assertReferencedEntitiesAreExposed($entityClasses);
+        $this->assertComputedFieldExpressionsAreValid($entityClasses);
 
         return $this->metadata;
     }
@@ -342,6 +358,16 @@ final class MetadataFactory
                     'args' => $this->buildComputedFieldArguments($reflectionMethod, $instance, $reflectionClass->getName()),
                 ];
 
+                // Left out when unset, so the metadata of a field without them is unchanged
+                if ($instance->getExpression() !== null) {
+                    $computedFieldMetadata['expression'] = $instance->getExpression();
+                }
+
+                $excludeFilters = Filters::toStringArray($instance->getExcludeFilters());
+                if ($excludeFilters !== []) {
+                    $computedFieldMetadata['excludeFilters'] = $excludeFilters;
+                }
+
                 /** @psalm-suppress MixedArrayAssignment */
                 $this->metadata[$reflectionClass->getName()]['computedFields'][$fieldName] = $computedFieldMetadata;
             }
@@ -492,6 +518,160 @@ final class MetadataFactory
                 );
             }
         }
+    }
+
+    /**
+     * The expression of a computed field is checked when the metadata is
+     * built, after the metadata.build event, so a bad one fails at startup
+     * rather than when a client's query uses it.  The excluded filters of a
+     * computed field apply only to one with an expression.
+     *
+     * DQL compares any expression, but takes a subquery, or an arithmetic
+     * expression, for none of IN, IS NULL and LIKE.  The filters which use
+     * them are excluded for an expression they cannot be applied to, so the
+     * metadata, cached or not, has only the filters which apply.
+     *
+     * @param list<string> $entityClasses Every entity class of the entity manager
+     *
+     * @throws MetadataException
+     */
+    private function assertComputedFieldExpressionsAreValid(array $entityClasses): void
+    {
+        // The excluded filters of each field, by entity, set after the iteration
+        $excludeFilters = [];
+
+        /** @psalm-suppress MixedAssignment The metadata built above, as a listener may have changed it */
+        foreach ($this->metadata as $entityClass => $entityMetadata) {
+            if (! is_array($entityMetadata) || ! in_array($entityClass, $entityClasses, true)) {
+                continue;
+            }
+
+            $computed = $entityMetadata['computedFields'] ?? [];
+            assert(is_array($computed));
+
+            /** @psalm-suppress MixedAssignment The metadata built above */
+            foreach ($computed as $fieldName => $computedFieldArray) {
+                if (
+                    ! is_array($computedFieldArray)
+                    || (! array_key_exists('expression', $computedFieldArray)
+                        && ! array_key_exists('excludeFilters', $computedFieldArray))
+                ) {
+                    continue;
+                }
+
+                $computedField = ComputedFieldMetadata::fromArray(
+                    $computedFieldArray,
+                    'entity ' . $entityClass . ' computed field ' . $fieldName,
+                );
+
+                $unsupported = $this->assertComputedFieldExpressionIsValid(
+                    $entityClass,
+                    (string) $fieldName,
+                    $computedField,
+                    $entityClasses,
+                );
+
+                $excluded = array_values(array_unique([...$computedField->excludeFilters, ...$unsupported]));
+                if ($excluded === $computedField->excludeFilters) {
+                    continue;
+                }
+
+                $excludeFilters[$entityClass][$fieldName] = $excluded;
+            }
+        }
+
+        foreach ($excludeFilters as $entityClass => $fields) {
+            /** @psalm-suppress MixedAssignment The metadata built above */
+            $entityMetadata = $this->metadata[$entityClass];
+            assert(is_array($entityMetadata) && is_array($entityMetadata['computedFields']));
+
+            foreach ($fields as $fieldName => $excluded) {
+                assert(is_array($entityMetadata['computedFields'][$fieldName]));
+
+                /** @psalm-suppress MixedArrayAssignment */
+                $entityMetadata['computedFields'][$fieldName]['excludeFilters'] = $excluded;
+            }
+
+            $this->metadata[$entityClass] = $entityMetadata;
+        }
+    }
+
+    /**
+     * An expression is the value of a single scalar, uses only the field's
+     * arguments, and is valid DQL.  It is parsed, without a database, in a
+     * query which uses it twice, as a filter and as a sort, as a query may:
+     * an alias written without a placeholder is then defined twice.  Returns
+     * the filters DQL cannot apply to it.
+     *
+     * @param list<string> $entityClasses Every entity class of the entity manager
+     *
+     * @return list<string>
+     *
+     * @throws MetadataException
+     */
+    private function assertComputedFieldExpressionIsValid(
+        string $entityClass,
+        string $fieldName,
+        ComputedFieldMetadata $computedField,
+        array $entityClasses,
+    ): array {
+        $prefix     = 'Computed field ' . $fieldName . ' of entity ' . $entityClass;
+        $expression = $computedField->expression;
+
+        if ($expression === null) {
+            throw new MetadataException(
+                $prefix . ' has excluded filters but no expression.  A computed field is filtered only by its '
+                . 'expression.',
+            );
+        }
+
+        if ($computedField->list || in_array($computedField->type, $entityClasses, true)) {
+            throw new MetadataException(
+                $prefix . ' has an expression but is ' . ($computedField->list ? 'a list' : 'of an entity type')
+                . ', which has no single value to filter or sort by.',
+            );
+        }
+
+        foreach (ComputedFieldExpression::argumentNames($expression) as $name) {
+            if (! isset($computedField->args[$name])) {
+                throw new MetadataException(
+                    $prefix . ' has an expression which uses {:' . $name . '}, but ' . $name . ' is not a parameter '
+                    . 'of method ' . $computedField->method . '.',
+                );
+            }
+        }
+
+        $use = static fn (string $aliasPrefix): string => ComputedFieldExpression::substitute(
+            $expression,
+            'entity',
+            $aliasPrefix,
+            static fn (string $name): string => ':' . $aliasPrefix . $name,
+        );
+
+        $select = 'SELECT entity FROM ' . $entityClass . ' entity WHERE ';
+        $dql    = 'SELECT entity, ' . $use('validate1_') . ' AS HIDDEN validateSort FROM ' . $entityClass . ' entity '
+            . 'WHERE ' . $use('validate2_') . ' = :validateValue ORDER BY validateSort';
+
+        try {
+            $this->entityManager->createQuery($dql)->getAST();
+        } catch (QueryException $exception) {
+            throw new MetadataException(
+                $prefix . ' has an expression which is not valid: ' . $exception->getMessage() . '  Every alias in '
+                . 'an expression must be a placeholder, such as {entity} or {p}.',
+                previous: $exception,
+            );
+        }
+
+        $unsupported = [];
+        foreach (self::EXPRESSION_FILTER_FORMS as $form => $filters) {
+            try {
+                $this->entityManager->createQuery($select . $use('validate3_') . $form)->getAST();
+            } catch (QueryException) {
+                $unsupported = [...$unsupported, ...Filters::toStringArray($filters)];
+            }
+        }
+
+        return $unsupported;
     }
 
     /**

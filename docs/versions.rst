@@ -59,6 +59,8 @@ ORM versions do not support ``doctrine/persistence`` 4.
   hydrator strategy
 - A computed field may be of an entity type, or a list of any type, and has an argument for
   each parameter of its method
+- 14.1: a computed field with an ``expression``, its value in DQL, is filtered and sorted
+  by it; see `computed fields <computed-fields.html#filters-and-sorting>`_
 - Metadata is read as typed value objects, and cached metadata carries its format version
   and the config it was built with
 - Configuration mistakes, such as a misplaced attribute, an invalid name or a field

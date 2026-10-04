@@ -17,6 +17,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Closure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query\Expr\Select;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use GraphQL\Deferred;
@@ -36,6 +37,7 @@ use function is_int;
 use function is_object;
 use function is_string;
 use function serialize;
+use function str_contains;
 
 /**
  * Build a resolver for collections
@@ -349,10 +351,16 @@ final class ResolveCollectionFactory
             $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent);
             $this->orderByAssociation($queryBuilder, $batch->sourceClassName, $batch->associationName);
             $this->orderByIdentifier($queryBuilder);
+            $hiddenSelects = $this->getHiddenSelects($queryBuilder);
             $queryBuilder
                 ->select($parent['select'] . ' AS parent')
                 ->addSelect('entity.' . $targetId . ' AS target')
                 ->setMaxResults($remaining + 1);
+
+            // A sort by a computed field orders by its hidden select
+            foreach ($hiddenSelects as $hiddenSelect) {
+                $queryBuilder->addSelect($hiddenSelect);
+            }
 
             /** @var array<array{parent: int|string, target: int|string}> $rows */
             $rows = $queryBuilder->getQuery()->getScalarResult();
@@ -369,6 +377,31 @@ final class ResolveCollectionFactory
         }
 
         return $targetIds;
+    }
+
+    /**
+     * The hidden result variables a query selects, which a sort by a computed
+     * field orders by
+     *
+     * @return list<string>
+     */
+    private function getHiddenSelects(QueryBuilder $queryBuilder): array
+    {
+        $hiddenSelects = [];
+
+        /** @var list<Select> $selects */
+        $selects = $queryBuilder->getDQLPart('select');
+        foreach ($selects as $select) {
+            foreach ($select->getParts() as $part) {
+                if (! str_contains((string) $part, ' AS HIDDEN ')) {
+                    continue;
+                }
+
+                $hiddenSelects[] = (string) $part;
+            }
+        }
+
+        return $hiddenSelects;
     }
 
     /**
@@ -455,16 +488,21 @@ final class ResolveCollectionFactory
     }
 
     /**
-     * A query for the rows of a chunk of a batch's sources, filtered.
-     * $parent receives the expressions for each row's source.
+     * A query for the rows of a chunk of a batch's sources, filtered, and
+     * sorted unless $sort is false.  $parent receives the expressions for each
+     * row's source.
      *
      * @param list<int|string>                            $identifiers
      * @param array{select: string, groupBy: string}|null $parent
      *
      * @param-out array{select: string, groupBy: string} $parent
      */
-    private function createBatchQueryBuilder(CollectionBatch $batch, array $identifiers, array|null &$parent): QueryBuilder
-    {
+    private function createBatchQueryBuilder(
+        CollectionBatch $batch,
+        array $identifiers,
+        array|null &$parent,
+        bool $sort = true,
+    ): QueryBuilder {
         $queryBuilder = $this->createQueryBuilder($batch->targetClassName);
         $parent       = $this->restrictToSources(
             $queryBuilder,
@@ -472,7 +510,7 @@ final class ResolveCollectionFactory
             $batch->associationName,
             $identifiers,
         );
-        $this->applyFilters($queryBuilder, $batch->args, $batch->targetEntity);
+        $this->applyFilters($queryBuilder, $batch->args, $batch->targetEntity, $sort);
 
         return $queryBuilder;
     }
@@ -503,10 +541,8 @@ final class ResolveCollectionFactory
         $itemCounts = [];
 
         foreach (array_chunk($this->getBatchIdentifiers($batch), self::CHUNK_SIZE) as $chunk) {
-            $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent);
-
-            // An aggregate query is not ordered, as a sort filter would order it
-            $queryBuilder->resetDQLPart('orderBy');
+            // An aggregate query is not sorted
+            $queryBuilder = $this->createBatchQueryBuilder($batch, $chunk, $parent, false);
             $queryBuilder
                 ->select($parent['select'] . ' AS parent')
                 ->addSelect('COUNT(DISTINCT entity) AS total')
@@ -691,14 +727,14 @@ final class ResolveCollectionFactory
     }
 
     /** @param array<array-key, mixed> $args */
-    private function applyFilters(QueryBuilder $queryBuilder, array $args, Entity $entity): void
+    private function applyFilters(QueryBuilder $queryBuilder, array $args, Entity $entity, bool $sort = true): void
     {
         if (! isset($args['filter'])) {
             return;
         }
 
         /** @psalm-suppress MixedArgument */
-        (new QueryBuilderFilter())->apply($args['filter'], $queryBuilder, $entity);
+        (new QueryBuilderFilter())->apply($args['filter'], $queryBuilder, $entity, $sort);
     }
 
     /**

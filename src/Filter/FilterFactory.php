@@ -14,11 +14,14 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
+use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
 use ReflectionClass;
 
 use function array_filter;
+use function array_flip;
+use function array_intersect_key;
 use function array_merge;
 use function array_udiff;
 use function array_unique;
@@ -26,6 +29,9 @@ use function array_values;
 use function assert;
 use function count;
 use function in_array;
+use function md5;
+use function serialize;
+use function substr;
 use function ucwords;
 
 use const SORT_REGULAR;
@@ -90,6 +96,8 @@ final class FilterFactory
         $fields = $this->addFields($targetEntity, $allowedFilters);
         /** @psalm-suppress MixedArgumentTypeCoercion */
         $fields = array_merge($fields, $this->addAssociations($targetEntity, $allowedFilters));
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        $fields = array_merge($fields, $this->addComputedFields($targetEntity, $allowedFilters));
 
         $inputObject = (new ReflectionClass(GraphQLInputObjectType::class))
             ->newLazyGhost(static function (GraphQLInputObjectType $object) use ($typeName, $fields): void {
@@ -243,6 +251,124 @@ final class FilterFactory
         }
 
         return $fields;
+    }
+
+    /**
+     * Add the filters of each computed field with an expression, by which it
+     * is filtered and sorted
+     *
+     * @param Filters[] $allowedFilters
+     *
+     * @return array<string, mixed[]>
+     */
+    protected function addComputedFields(Entity $targetEntity, array $allowedFilters): array
+    {
+        $fields = [];
+
+        foreach ($targetEntity->getEntityMetadata()->computedFields as $fieldName => $computedField) {
+            if ($computedField->expression === null) {
+                continue;
+            }
+
+            $type = $this->typeContainer->get($computedField->type);
+
+            // A custom type may not be a scalar
+            if (! $type instanceof ScalarType || $type->name() === 'Blob') {
+                continue;
+            }
+
+            // The computed field's own excludeFilters, or includeFilters, limit its filters
+            $excludeFilters = Filters::fromArray($computedField->excludeFilters);
+            $filters        = $this->filterFiltersByType(
+                array_filter(
+                    $allowedFilters,
+                    static fn (Filters $filter): bool => ! in_array($filter, $excludeFilters, true),
+                ),
+                $type,
+                $computedField->type,
+            );
+
+            // An input object must have a field
+            if (! $filters) {
+                continue;
+            }
+
+            $arguments = ComputedFieldExpression::argumentNames($computedField->expression);
+
+            $fields[$fieldName] = [
+                'name' => $fieldName,
+                'type' => $arguments === []
+                    ? $this->getFieldFilterType($type, $filters)
+                    : $this->getComputedFieldFilterType($targetEntity, $fieldName, $type, $filters, $arguments),
+                'description' => $type->name() . ' Filters',
+            ];
+        }
+
+        return $fields;
+    }
+
+    /**
+     * The filter type of a computed field whose expression uses arguments:
+     * its filters and the args they are given, of the arguments the
+     * expression uses.  The args are required when an argument is.
+     *
+     * @param Filters[]    $filters
+     * @param list<string> $arguments The arguments the expression uses
+     */
+    private function getComputedFieldFilterType(
+        Entity $targetEntity,
+        string $fieldName,
+        ScalarType $type,
+        array $filters,
+        array $arguments,
+    ): GraphQLInputObjectType {
+        $filters  = array_values($filters);
+        $baseName = $targetEntity->getTypeName() . '_' . $fieldName;
+        $name     = 'Filters_' . $baseName . '_' . substr(md5(serialize($filters)), 0, 8);
+
+        if ($this->typeContainer->has($name)) {
+            $filterType = $this->typeContainer->get($name);
+            assert($filterType instanceof GraphQLInputObjectType);
+
+            return $filterType;
+        }
+
+        $args = array_intersect_key($targetEntity->getComputedFieldArgs($fieldName), array_flip($arguments));
+
+        // An argument is required when it is not null and has no default
+        $required = false;
+        foreach ($args as $arg) {
+            $required = $required || ($arg['type'] instanceof NonNull && ! isset($arg['defaultValue']));
+        }
+
+        $argsName = 'FilterArgs_' . $baseName;
+        if (! $this->typeContainer->has($argsName)) {
+            $this->typeContainer->set($argsName, new GraphQLInputObjectType([
+                'name' => $argsName,
+                'description' => 'The arguments of computed field ' . $fieldName . ' its filters use',
+                'fields' => static fn () => $args,
+            ]));
+        }
+
+        $argsType = $this->typeContainer->get($argsName);
+        assert($argsType instanceof GraphQLInputObjectType);
+
+        $fields         = Field::filterFields($this->typeContainer, $type, $filters);
+        $fields['args'] = [
+            'name' => 'args',
+            'type' => $required ? Type::nonNull($argsType) : $argsType,
+            'description' => 'The arguments of the computed field, for its filters',
+        ];
+
+        $filterType = new GraphQLInputObjectType([ // @phpstan-ignore argument.type
+            'name' => $name,
+            'description' => 'Computed field filters',
+            'fields' => static fn () => $fields,
+        ]);
+
+        $this->typeContainer->set($name, $filterType);
+
+        return $filterType;
     }
 
     /**

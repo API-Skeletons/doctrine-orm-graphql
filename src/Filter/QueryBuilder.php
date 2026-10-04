@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ApiSkeletons\Doctrine\ORM\GraphQL\Filter;
 
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Filter as FilterException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\ComputedFieldMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use DateInterval;
 use DateTime;
@@ -18,6 +19,8 @@ use Doctrine\ORM\QueryBuilder as DoctrineQueryBuilder;
 use ReflectionClass;
 
 use function array_flip;
+use function array_key_exists;
+use function assert;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -98,6 +101,9 @@ final class QueryBuilder
         Filters::NOTIN,
     ];
 
+    /** The filters which sort */
+    private const array SORTS = [Filters::SORT, Filters::SORTPRIORITY];
+
     /**
      * The names of the types DBAL provides, keyed by name.  Any other type
      * is a custom type.
@@ -124,10 +130,15 @@ final class QueryBuilder
     /** The number of parameters named */
     private int $parameterCount = 0;
 
+    /** The number of uses of computed field expressions, whose aliases are numbered by it */
+    private int $expressionCount = 0;
+
     /**
      * Add where clauses to a QueryBuilder based on the FilterType of the entity
      *
      * @param array<string, mixed|array<string, mixed>> $filterTypes
+     * @param bool                                      $sort        Whether to apply the sorts.  A count is
+     *                                                               not sorted.
      *
      * @psalm-suppress MixedAssignment, MixedArgument
      */
@@ -135,8 +146,18 @@ final class QueryBuilder
         array $filterTypes,
         DoctrineQueryBuilder $queryBuilder,
         Entity $entity,
+        bool $sort = true,
     ): void {
         foreach ($filterTypes as $fieldName => $filters) {
+            // A computed field is filtered by its expression.  Each field of the
+            // type has a unique name, so a computed field is not a field's alias.
+            $computedField = $entity->getEntityMetadata()->computedFields[$fieldName] ?? null;
+            if ($computedField instanceof ComputedFieldMetadata && $computedField->expression !== null) {
+                $this->applyComputedField($fieldName, $computedField, $filters, $queryBuilder, $sort);
+
+                continue;
+            }
+
             // Resolve aliases
             $field             = array_flip($entity->getExtractionMap())[$fieldName] ?? $fieldName;
             $queryBuilderField = 'entity.' . $field;
@@ -148,6 +169,10 @@ final class QueryBuilder
             foreach ($filters as $filter => $value) {
                 $filter = Filters::from($filter);
 
+                if (! $sort && in_array($filter, self::SORTS, true)) {
+                    continue;
+                }
+
                 if (! $this->validateFilter($filter, $value, $fieldName, $fieldType, $valueType['unsigned'])) {
                     continue;
                 }
@@ -155,7 +180,12 @@ final class QueryBuilder
                 // A value compared to the field is its database value; a LIKE
                 // pattern, a sort and isnull are not values of the field
                 if (in_array($filter, self::COMPARISONS, true)) {
-                    $value = $this->toDatabaseValue($value, $fieldType, $queryBuilder, $filter, $fieldName);
+                    $value = $this->toDatabaseValue(
+                        $value,
+                        $fieldType,
+                        $queryBuilder,
+                        "Filter '" . $filter->value . "' of field '" . $fieldName . "'",
+                    );
                 }
 
                 $this->addFilter($filter, $queryBuilderField, $value, $queryBuilder);
@@ -163,6 +193,142 @@ final class QueryBuilder
         }
 
         $this->applySort($queryBuilder);
+    }
+
+    /**
+     * Add the filters of a computed field, each comparing its expression.  A
+     * sort orders by the expression, selected as a hidden result variable, as
+     * DQL does not order by a subquery.
+     *
+     * @param array<string, mixed> $filters The filters, and the args of the field's arguments
+     *
+     * @psalm-suppress MixedAssignment, MixedArgument
+     */
+    private function applyComputedField(
+        string $fieldName,
+        ComputedFieldMetadata $computedField,
+        array $filters,
+        DoctrineQueryBuilder $queryBuilder,
+        bool $sort,
+    ): void {
+        $args = $filters['args'] ?? [];
+        $args = is_array($args) ? $args : [];
+        unset($filters['args']);
+
+        $fieldType = self::computedFieldValueType($computedField->type);
+        $sortAlias = null;
+
+        foreach ($filters as $filter => $value) {
+            $filter = Filters::from($filter);
+
+            // A sort's hidden select binds the parameters of the arguments it uses
+            if (! $sort && in_array($filter, self::SORTS, true)) {
+                continue;
+            }
+
+            if (! $this->validateFilter($filter, $value, $fieldName, $fieldType, false)) {
+                continue;
+            }
+
+            if (in_array($filter, self::SORTS, true)) {
+                if ($sortAlias === null) {
+                    // Named by the use of the expression, so unique in the query
+                    $expression = $this->expression($computedField, $args, $queryBuilder, $fieldName);
+                    $sortAlias  = 'computedSort' . $this->expressionCount;
+                    $queryBuilder->addSelect($expression . ' AS HIDDEN ' . $sortAlias);
+
+                    $this->fieldNames[$sortAlias] = $fieldName;
+                }
+
+                $this->addFilter($filter, $sortAlias, $value, $queryBuilder);
+
+                continue;
+            }
+
+            if (in_array($filter, self::COMPARISONS, true)) {
+                $value = $this->toDatabaseValue(
+                    $value,
+                    $fieldType,
+                    $queryBuilder,
+                    "Filter '" . $filter->value . "' of field '" . $fieldName . "'",
+                );
+            }
+
+            // DQL takes no subquery for BETWEEN, so it is applied as two comparisons
+            if ($filter === Filters::BETWEEN) {
+                assert(is_array($value));
+
+                $this->compare(
+                    Filters::GTE,
+                    $this->expression($computedField, $args, $queryBuilder, $fieldName),
+                    $value['from'],
+                    $queryBuilder,
+                );
+                $this->compare(
+                    Filters::LTE,
+                    $this->expression($computedField, $args, $queryBuilder, $fieldName),
+                    $value['to'],
+                    $queryBuilder,
+                );
+
+                continue;
+            }
+
+            $this->addFilter(
+                $filter,
+                $this->expression($computedField, $args, $queryBuilder, $fieldName),
+                $value,
+                $queryBuilder,
+            );
+        }
+    }
+
+    /**
+     * A computed field's expression for one use: its aliases are given names
+     * unique in the query, and each argument it uses is bound as a parameter,
+     * of its value in the args, else its default, else null
+     *
+     * @param array<array-key, mixed> $args
+     */
+    private function expression(
+        ComputedFieldMetadata $computedField,
+        array $args,
+        DoctrineQueryBuilder $queryBuilder,
+        string $fieldName,
+    ): string {
+        return ComputedFieldExpression::substitute(
+            (string) $computedField->expression,
+            $queryBuilder->getRootAliases()[0],
+            'computed' . ++$this->expressionCount . '_',
+            function (string $name) use ($computedField, $args, $queryBuilder, $fieldName): string {
+                $argument = $computedField->args[$name];
+
+                /** @psalm-suppress MixedAssignment An argument may be of any type */
+                $value = array_key_exists($name, $args) ? $args[$name] : $argument->default;
+
+                $parameter = $this->parameter($queryBuilder);
+                $queryBuilder->setParameter($parameter, $this->toDatabaseValue(
+                    $value,
+                    self::computedFieldValueType($argument->type),
+                    $queryBuilder,
+                    "Argument '" . $name . "' of the filter of field '" . $fieldName . "'",
+                ));
+
+                return ':' . $parameter;
+            },
+        );
+    }
+
+    /**
+     * The Doctrine type of a computed field's values, or of an argument's: its
+     * registered type, whose name is a Doctrine type's, but for int, which is
+     * integer.  A type which is not a Doctrine type is bound as it is.
+     */
+    private static function computedFieldValueType(string $type): string|null
+    {
+        $type = $type === 'int' ? Types::INTEGER : $type;
+
+        return Type::hasType($type) ? $type : null;
     }
 
     /**
@@ -498,20 +664,21 @@ final class QueryBuilder
      * entity it refers to.  The value of a type DBAL provides is bound as it
      * is.
      *
+     * @param string $subject The filter or argument given the value, for an error
+     *
      * @throws FilterException When a custom type cannot convert the value.
      */
     private function toDatabaseValue(
         mixed $value,
         string|null $fieldType,
         DoctrineQueryBuilder $queryBuilder,
-        Filters $filter,
-        string $fieldName,
+        string $subject,
     ): mixed {
         if (is_array($value)) {
             // Filter values are GraphQL input, so their elements are mixed
             /** @psalm-suppress MixedAssignment */
             foreach ($value as $key => $item) {
-                $value[$key] = $this->toDatabaseValue($item, $fieldType, $queryBuilder, $filter, $fieldName);
+                $value[$key] = $this->toDatabaseValue($item, $fieldType, $queryBuilder, $subject);
             }
 
             return $value;
@@ -541,9 +708,7 @@ final class QueryBuilder
         try {
             return Type::getType($fieldType)->convertToDatabaseValue($value, $platform);
         } catch (ConversionException) {
-            throw new FilterException(
-                "Filter '" . $filter->value . "' of field '" . $fieldName . "' is given a value which is not valid.",
-            );
+            throw new FilterException($subject . ' is given a value which is not valid.');
         }
     }
 

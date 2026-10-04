@@ -25,7 +25,24 @@ class Field extends InputObjectType
         readonly ScalarType $type,
         readonly array $allowedFilters,
     ) {
-        /** @var array<string, array<string, mixed>> $fields */
+        $fields = self::filterFields($typeContainer, $type, $allowedFilters);
+
+        parent::__construct([ // @phpstan-ignore argument.type
+            'name' => self::nameFor($type, $allowedFilters),
+            'description' => 'Field filters',
+            'fields' => static fn () => $fields,
+        ]);
+    }
+
+    /**
+     * The fields of an input object of filters: one for each filter
+     *
+     * @param Filters[] $allowedFilters
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function filterFields(TypeContainer $typeContainer, ScalarType $type, array $allowedFilters): array
+    {
         $fields = [];
 
         foreach ($allowedFilters as $filter) {
@@ -36,11 +53,7 @@ class Field extends InputObjectType
             ];
         }
 
-        parent::__construct([ // @phpstan-ignore argument.type
-            'name' => self::nameFor($type, $allowedFilters),
-            'description' => 'Field filters',
-            'fields' => static fn () => $fields,
-        ]);
+        return $fields;
     }
 
     /**

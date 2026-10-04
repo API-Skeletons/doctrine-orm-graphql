@@ -72,6 +72,11 @@ The ``#[ComputedField]`` attribute accepts these parameters:
 * ``name`` - Optional. Override the field name in the GraphQL schema.  If not provided,
   the name is derived from the method name.
 * ``group`` - Optional. The attribute group (default: ``'default'``).
+* ``expression`` - Optional. The DQL expression of the field's value, by which it is
+  filtered and sorted; see `Filters and Sorting`_.
+* ``excludeFilters`` - Optional. Filters to exclude for a field with an ``expression``.
+* ``includeFilters`` - Optional. The only filters to allow for a field with an
+  ``expression``.  It is mutually exclusive with ``excludeFilters``.
 
 Custom Field Names
 ------------------
@@ -146,8 +151,9 @@ Computed fields are:
   with the regular fields, except those of fields with arguments, which have no one value
 * **Cached** - If you enable ``useHydratorCache``, a computed value is cached with the
   entity's other values for as long as the entity exists
-* **Not filterable** - Computed fields cannot be used in database filters since they're
-  calculated in PHP, not at the database level
+* **Filtered by an expression** - A computed field's value is calculated in PHP, so it is
+  filtered and sorted only when it has an ``expression``, its value in DQL; see
+  `Filters and Sorting`_
 
 Arguments
 ---------
@@ -259,12 +265,142 @@ pagination, filters or ``totalCount``, and it holds what the method returns.
 For a large collection, expose the association instead, whose rows the
 database filters and pages.
 
-Filtering Limitations
----------------------
+Filters and Sorting
+-------------------
 
-Computed fields do not appear in filter InputObjects because they cannot be filtered
-at the database level.  If you need to filter on computed values, consider storing
-them in the database or using the `QueryBuilder Event <events.html>`_ to add custom filters.
+A computed field's value is calculated in PHP, after the rows are fetched, but
+a filter must be applied by the database: the rows of a page, and its
+``totalCount``, are counted and limited there.  So a computed field is filtered
+and sorted only when it has an ``expression``: the DQL expression of its value.
+The field's filters, ``sort`` and ``sortPriority`` among them, then apply to the
+expression as a field's apply to its column.
+
+.. code-block:: php
+
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+
+  #[GraphQL\Entity]
+  class Artist
+  {
+      #[GraphQL\ComputedField(
+          type: 'int',
+          expression: '(SELECT COUNT({p}.id) FROM App\ORM\Entity\Performance {p} WHERE {p}.artist = {entity})',
+      )]
+      public function getPerformanceCount(): int
+      {
+          return $this->performances->count();
+      }
+  }
+
+.. code-block:: graphql
+
+  {
+    artists (filter: { performanceCount: { gt: 0, sort: DESC } }) {
+      edges { node { name performanceCount } }
+    }
+  }
+
+The method still computes the value a query returns; the expression is used
+only to filter and sort.  They must compute the same value, or a filter will
+disagree with the value shown, and a sorted list will appear out of order.
+
+Placeholders
+~~~~~~~~~~~~
+
+.. important::
+
+  **Every alias in an expression must be a placeholder**, written in braces:
+  ``{entity}`` for the field's own entity, and any other name, such as
+  ``{p}``, for an alias of the expression's own.
+
+DQL aliases must be unique across a query, subqueries included, and an
+expression may be used more than once in one query: by two filters, such as
+``{ gt: 0, lt: 5 }``, or by a filter and a sort.  Each placeholder is given a
+name unique in the query each time the expression is used, so its aliases
+never collide with each other's, or with those of a QueryBuilder listener.  An
+alias written plainly, such as ``p``, works until the expression is used twice;
+the check described below finds it.
+
+A placeholder is any ``{name}`` in the expression, including one within a
+string literal.
+
+Arguments
+~~~~~~~~~
+
+``{:name}`` in an expression is the field's `argument <#arguments>`_
+``name``, bound as a parameter.  A filter is applied before any field is
+resolved, so its arguments cannot be those the field is given where it is
+selected.  The field's filters take them instead, in ``args``, of the
+arguments the expression uses:
+
+.. code-block:: php
+
+  #[GraphQL\ComputedField(
+      type: 'int',
+      expression: '(SELECT COUNT({r}.id) FROM App\ORM\Entity\Recording {r} '
+          . 'WHERE {r}.artist = {entity} AND {r}.year >= {:year})',
+  )]
+  public function getRecordingCountSince(int $year): int
+
+.. code-block:: graphql
+
+  {
+    artists (filter: { recordingCountSince: { args: { year: 2003 }, gt: 0 } }) {
+      edges { node { name recordingCountSince(year: 2003) } }
+    }
+  }
+
+An argument not given in ``args`` is its default value, or null when it has
+none.  ``args`` is required when an argument the expression uses is.  The
+filter's ``args`` and the field's own arguments are independent: a filter may
+use 2003 while the field shows 2004.
+
+Which Filters Apply
+~~~~~~~~~~~~~~~~~~~
+
+The filters of a computed field are those of its ``type``, less those
+excluded by the configuration, by its entity, by the association whose
+filters they are, and by its own ``excludeFilters`` or ``includeFilters``.
+
+DQL compares any expression, but takes a subquery, or an arithmetic
+expression, for none of ``IN``, ``IS NULL`` and ``LIKE``.  So the ``in``,
+``notin``, ``isnull``, ``contains``, ``startswith`` and ``endswith`` filters
+are each excluded for an expression DQL does not take them for, and added to
+the field's ``excludeFilters`` in the metadata.  ``between`` is applied as two
+comparisons, so it applies to every expression.  A function, such as
+``UPPER({entity}.name)`` or ``SIZE({entity}.performances)``, takes every
+filter.
+
+A sort orders by the expression selected as a hidden result variable, as DQL
+does not order by a subquery.  A `QueryBuilder listener <events.html>`_ must
+not replace the query's select, as ``->select()`` does, which would remove it.
+
+Checks
+~~~~~~
+
+Each expression is checked when the metadata is built, after the
+``metadata.build`` event, and throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when:
+
+* it is not valid DQL, such as for a syntax error, an unknown field or class,
+  or an alias written without a placeholder.  Doctrine's ``QueryException`` is
+  the previous exception.  The expression is parsed, not run, so no database
+  is needed.
+* it uses ``{:name}`` for a name which is not a parameter of the method.
+* its field is a ``list``, or of an entity type, neither of which has a single
+  value to filter or sort by.
+* a field without an ``expression`` has ``excludeFilters`` or
+  ``includeFilters``.
+
+Metadata read from a cache is not checked again.
+
+Costs
+~~~~~
+
+* A subquery is evaluated for each row the filters consider, and a sort by one
+  orders every row before the page is taken, without an index.  For a large
+  table, store the value in a column instead.
+* Databases order nulls differently, as they do for a field.
 
 Hydrator Strategies
 -------------------
