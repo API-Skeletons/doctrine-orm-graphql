@@ -276,6 +276,12 @@ is built.
 * ``name`` - An override for the field name in GraphQL. If not provided,
   the name is derived from the method name (``getFullName`` becomes ``fullName``).
 * ``group`` - You can have multiple GraphQL configurations organized by ``group``.
+* ``expression`` - The DQL expression of the field's value, by which it is
+  filtered and sorted.  Every alias in it is a placeholder, such as
+  ``{entity}``; see `computed fields <computed-fields.html#filters-and-sorting>`_.
+* ``excludeFilters`` - Filters to exclude for a field with an ``expression``.
+* ``includeFilters`` - The only filters to allow for a field with an
+  ``expression``.  Mutually exclusive with ``excludeFilters``.
 
 Example:
 
@@ -300,9 +306,8 @@ Example:
       }
   }
 
-**Important**: Computed fields cannot be filtered at the database level
-and will not appear in filter InputObjects.  They are calculated in PHP
-after data is retrieved from the database.
+**Important**: A computed field is calculated in PHP after the rows are
+fetched, so it is filtered and sorted only when it has an ``expression``.
 
 For more information, see `computed-fields <computed-fields.html>`_.
 

@@ -105,6 +105,11 @@ all resolve parameters:
     adds is fetched with Doctrine's ``Paginator``, which limits the entities
     rather than the rows.
 
+    A listener may add to the select, as ``->addSelect('p')`` does, but must
+    not replace it, as ``->select()`` does.  A sort by a `computed field
+    <computed-fields.html#filters-and-sorting>`_ orders by a hidden result
+    variable in the select, which replacing it removes.
+
 Association QueryBuilder Event
 ==============================
 

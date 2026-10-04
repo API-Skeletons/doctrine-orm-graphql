@@ -13,7 +13,13 @@ use function array_map;
  */
 final readonly class ComputedFieldMetadata
 {
-    /** @param array<string, ComputedFieldArgumentMetadata> $args The arguments, by name: the method's parameters */
+    /**
+     * @param array<string, ComputedFieldArgumentMetadata> $args           The arguments, by name: the method's
+     *                                                                     parameters
+     * @param string|null                                  $expression     The DQL expression of the value, by
+     *                                                                     which the field is filtered and sorted
+     * @param list<string>                                 $excludeFilters The filters excluded for the field
+     */
     public function __construct(
         public string $method,
         public string $type,
@@ -21,6 +27,8 @@ final readonly class ComputedFieldMetadata
         public string|null $description,
         public bool $list,
         public array $args,
+        public string|null $expression = null,
+        public array $excludeFilters = [],
     ) {
     }
 
@@ -45,13 +53,20 @@ final readonly class ComputedFieldMetadata
             $reader->nullableString('description'),
             $reader->bool('list'),
             $args,
+            $reader->has('expression') ? $reader->string('expression') : null,
+            $reader->has('excludeFilters') ? $reader->stringList('excludeFilters') : [],
         );
     }
 
-    /** @return array{method: string, type: string, name: string, description: string|null, list: bool, args: array<string, array{type: string, nullable: bool, default?: int|float|string|bool}>} */
+    /**
+     * The expression and the excluded filters are exported only when the
+     * field has them
+     *
+     * @return array{method: string, type: string, name: string, description: string|null, list: bool, args: array<string, array{type: string, nullable: bool, default?: int|float|string|bool}>, expression?: string, excludeFilters?: list<string>}
+     */
     public function toArray(): array
     {
-        return [
+        $array = [
             'method' => $this->method,
             'type' => $this->type,
             'name' => $this->name,
@@ -62,5 +77,15 @@ final readonly class ComputedFieldMetadata
                 $this->args,
             ),
         ];
+
+        if ($this->expression !== null) {
+            $array['expression'] = $this->expression;
+        }
+
+        if ($this->excludeFilters !== []) {
+            $array['excludeFilters'] = $this->excludeFilters;
+        }
+
+        return $array;
     }
 }

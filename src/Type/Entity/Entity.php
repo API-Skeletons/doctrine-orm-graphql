@@ -486,7 +486,7 @@ final class Entity
      * The args of a computed field, as a field's config gives them, or no key
      * for a computed field without arguments
      *
-     * @return array{args?: array<string, array{type: Type, defaultValue?: int|float|string|bool}>}
+     * @return array{args?: array<string, array{type: Type&InputType, defaultValue?: int|float|string|bool}>}
      *
      * @throws MetadataException
      */
@@ -495,6 +495,21 @@ final class Entity
         if ($computedFieldMetadata->args === []) {
             return [];
         }
+
+        return ['args' => $this->getComputedFieldArgs($fieldName)];
+    }
+
+    /**
+     * The arguments of a computed field, as a field's config gives them.  The
+     * filter of a computed field with an expression takes them too.
+     *
+     * @return array<string, array{type: Type&InputType, defaultValue?: int|float|string|bool}>
+     *
+     * @throws MetadataException
+     */
+    public function getComputedFieldArgs(string $fieldName): array
+    {
+        $computedFieldMetadata = $this->entityMetadata->computedFields[$fieldName];
 
         $args = [];
         foreach ($computedFieldMetadata->args as $name => $argument) {
@@ -507,7 +522,9 @@ final class Entity
                 );
             }
 
-            $args[$name] = ['type' => $argument->nullable ? $type : self::nonNull($type)];
+            $args[$name] = [
+                'type' => ! $argument->nullable && $type instanceof NullableType ? Type::nonNull($type) : $type,
+            ];
 
             if ($argument->default === null) {
                 continue;
@@ -527,7 +544,7 @@ final class Entity
             $args[$name]['defaultValue'] = $argument->default;
         }
 
-        return ['args' => $args];
+        return $args;
     }
 
     /**
