@@ -73,6 +73,18 @@ final class Config
     protected readonly int $limit;
 
     /**
+     * @var int|null How deeply a filter's _or may nest: a top-level _or is at
+     *               depth 1.  0 or null is unlimited.
+     */
+    protected readonly int|null $filterDepth;
+
+    /**
+     * @var int|null The most conditions a filter may have inside its _or
+     *               branches.  0 or null is unlimited.
+     */
+    protected readonly int|null $filterConditions;
+
+    /**
      * @var bool|null When set to true, all entities will be extracted by value
      *                across all hydrators in the driver.  When set to false,
      *                all hydrators will extract by reference.  This overrides
@@ -125,6 +137,8 @@ final class Config
         'batchAssociations' => ['bool'],
         'batchLimit' => ['int'],
         'limit' => ['int'],
+        'filterDepth' => ['int', 'null'],
+        'filterConditions' => ['int', 'null'],
         'extractByValue' => ['bool', 'null'],
         'entityPrefix' => ['string', 'null'],
         'sortFields' => ['bool'],
@@ -144,6 +158,8 @@ final class Config
             'batchAssociations' => true,
             'batchLimit' => 1000,
             'limit' => 1000,
+            'filterDepth' => 3,
+            'filterConditions' => 100,
             'extractByValue' => null,
             'entityPrefix' => null,
             'sortFields' => false,
@@ -173,6 +189,8 @@ final class Config
         $this->batchAssociations   = $mergedConfig['batchAssociations'];
         $this->batchLimit          = $mergedConfig['batchLimit'];
         $this->limit               = $mergedConfig['limit'];
+        $this->filterDepth         = $mergedConfig['filterDepth'];
+        $this->filterConditions    = $mergedConfig['filterConditions'];
         $this->extractByValue      = $mergedConfig['extractByValue'];
         $this->entityPrefix        = $mergedConfig['entityPrefix'];
         $this->sortFields          = $mergedConfig['sortFields'];
@@ -187,7 +205,7 @@ final class Config
      *
      * @param array<array-key, mixed> $config
      *
-     * @return array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool}
+     * @return array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, filterDepth: int|null, filterConditions: int|null, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool}
      *
      * @throws ConfigurationException
      */
@@ -222,6 +240,17 @@ final class Config
             );
         }
 
+        foreach (['filterDepth', 'filterConditions'] as $field) {
+            $value = $config[$field];
+            assert(is_int($value) || $value === null);
+
+            if ($value !== null && $value < 0) {
+                throw new ConfigurationException(
+                    'Invalid configuration value for ' . $field . ': it must be at least 0, got ' . $value . '.',
+                );
+            }
+        }
+
         $excludeFilters = [];
         /** @psalm-suppress MixedAssignment Each filter is checked */
         foreach ($config['excludeFilters'] as $filter) {
@@ -247,7 +276,7 @@ final class Config
             );
         }
 
-        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool} $validated */
+        /** @var array{group: string, groupSuffix: string|null, useHydratorCache: bool, useQueryResultCache: bool, batchAssociations: bool, batchLimit: int, limit: int, filterDepth: int|null, filterConditions: int|null, extractByValue: bool|null, entityPrefix: string|null, sortFields: bool, excludeFilters: Filters[], formatJsonAs: JsonFormat, useNonNullTypes: bool} $validated */
         $validated = $config;
 
         return $validated;
@@ -286,6 +315,23 @@ final class Config
     public function getLimit(): int
     {
         return $this->limit;
+    }
+
+    /**
+     * How deeply a filter's _or may nest, or null when it is unlimited
+     */
+    public function getFilterDepth(): int|null
+    {
+        return $this->filterDepth === 0 ? null : $this->filterDepth;
+    }
+
+    /**
+     * The most conditions a filter may have inside its _or branches, or null
+     * when it is unlimited
+     */
+    public function getFilterConditions(): int|null
+    {
+        return $this->filterConditions === 0 ? null : $this->filterConditions;
     }
 
     public function getExtractByValue(): bool|null

@@ -40,7 +40,10 @@ final class ResolveEntityFactory
     {
         return function (mixed $objectValue, array $args, mixed $context, ResolveInfo $info) use ($entity, $eventName) {
             $entityClass        = $entity->getEntityClass();
-            $queryBuilderFilter = new QueryBuilderFilter();
+            $queryBuilderFilter = new QueryBuilderFilter(
+                $this->config->getFilterDepth(),
+                $this->config->getFilterConditions(),
+            );
 
             $queryBuilder = $this->entityManager->createQueryBuilder();
             $queryBuilder->select('entity')

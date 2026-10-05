@@ -21,6 +21,7 @@ use ReflectionClass;
 use function array_flip;
 use function array_key_exists;
 use function assert;
+use function count;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -101,6 +102,9 @@ final class QueryBuilder
         Filters::NOTIN,
     ];
 
+    /** The filter of a filter's branches, any of which a row matches */
+    public const string OR = '_or';
+
     /** The filters which sort */
     private const array SORTS = [Filters::SORT, Filters::SORTPRIORITY];
 
@@ -134,13 +138,23 @@ final class QueryBuilder
     private int $expressionCount = 0;
 
     /**
+     * @param int|null $filterDepth      How deeply _or may nest, or null when it is unlimited
+     * @param int|null $filterConditions The most conditions inside _or branches, or null when it is unlimited
+     */
+    public function __construct(
+        private readonly int|null $filterDepth = null,
+        private readonly int|null $filterConditions = null,
+    ) {
+    }
+
+    /**
      * Add where clauses to a QueryBuilder based on the FilterType of the entity
      *
      * @param array<string, mixed|array<string, mixed>> $filterTypes
      * @param bool                                      $sort        Whether to apply the sorts.  A count is
      *                                                               not sorted.
      *
-     * @psalm-suppress MixedAssignment, MixedArgument
+     * @throws FilterException When a filter cannot be applied, or _or is beyond the limits.
      */
     public function apply(
         array $filterTypes,
@@ -148,12 +162,56 @@ final class QueryBuilder
         Entity $entity,
         bool $sort = true,
     ): void {
+        $this->assertWithinLimits($filterTypes);
+
+        foreach ($this->conditions($filterTypes, $queryBuilder, $entity, $sort) as $condition) {
+            $queryBuilder->andWhere($condition);
+        }
+
+        $this->applySort($queryBuilder);
+    }
+
+    /**
+     * The conditions of a filter, each of which a row must match: one for
+     * each field filter given a value, and one for its _or
+     *
+     * @param array<string, mixed|array<string, mixed>> $filterTypes
+     *
+     * @return list<string>
+     *
+     * @psalm-suppress MixedAssignment, MixedArgument
+     */
+    private function conditions(
+        array $filterTypes,
+        DoctrineQueryBuilder $queryBuilder,
+        Entity $entity,
+        bool $sort,
+    ): array {
+        $conditions = [];
+
         foreach ($filterTypes as $fieldName => $filters) {
+            if ($fieldName === self::OR) {
+                if ($filters !== null) {
+                    assert(is_array($filters));
+                    $conditions[] = $this->orCondition($filters, $queryBuilder, $entity);
+                }
+
+                continue;
+            }
+
+            // A field given null is not applied, as a filter given null is not
+            if ($filters === null) {
+                continue;
+            }
+
             // A computed field is filtered by its expression.  Each field of the
             // type has a unique name, so a computed field is not a field's alias.
             $computedField = $entity->getEntityMetadata()->computedFields[$fieldName] ?? null;
             if ($computedField instanceof ComputedFieldMetadata && $computedField->expression !== null) {
-                $this->applyComputedField($fieldName, $computedField, $filters, $queryBuilder, $sort);
+                $conditions = [
+                    ...$conditions,
+                    ...$this->computedFieldConditions($fieldName, $computedField, $filters, $queryBuilder, $sort),
+                ];
 
                 continue;
             }
@@ -188,35 +246,150 @@ final class QueryBuilder
                     );
                 }
 
-                $this->addFilter($filter, $queryBuilderField, $value, $queryBuilder);
+                $condition = $this->condition($filter, $queryBuilderField, $value, $queryBuilder);
+                if ($condition === null) {
+                    continue;
+                }
+
+                $conditions[] = $condition;
             }
         }
 
-        $this->applySort($queryBuilder);
+        return $conditions;
     }
 
     /**
-     * Add the filters of a computed field, each comparing its expression.  A
-     * sort orders by the expression, selected as a hidden result variable, as
-     * DQL does not order by a subquery.
+     * The condition of an _or: a row matches one of its branches, each of
+     * which is a filter without sorts.  A branch which has no conditions
+     * matches every row, and an _or of no branches matches none.  Each branch
+     * binds its own parameters, so a branch is given a condition even when it
+     * matches every row.
+     *
+     * @param array<array-key, mixed> $branches
+     */
+    private function orCondition(array $branches, DoctrineQueryBuilder $queryBuilder, Entity $entity): string
+    {
+        if ($branches === []) {
+            return '1 = 0';
+        }
+
+        $expr  = $queryBuilder->expr();
+        $parts = [];
+
+        /** @psalm-suppress MixedAssignment Each branch is an input object */
+        foreach ($branches as $branch) {
+            assert(is_array($branch));
+
+            /** @psalm-suppress MixedArgumentTypeCoercion A branch is a filter */
+            $conditions = $this->conditions($branch, $queryBuilder, $entity, false);
+
+            $parts[] = match (count($conditions)) {
+                0 => '1 = 1',
+                1 => $conditions[0],
+                default => (string) $expr->andX(...$conditions),
+            };
+        }
+
+        return count($parts) === 1 ? $parts[0] : (string) $expr->orX(...$parts);
+    }
+
+    /**
+     * _or may nest at most filterDepth deep, a top-level _or being at depth
+     * 1, and its branches may have at most filterConditions conditions in
+     * all.  Only conditions inside _or are counted, so a filter without one is
+     * never limited.  They are checked before any condition is built.
+     *
+     * @param array<string, mixed|array<string, mixed>> $filterTypes
+     *
+     * @throws FilterException
+     */
+    private function assertWithinLimits(array $filterTypes): void
+    {
+        $conditions = 0;
+        $this->countBranches($filterTypes[self::OR] ?? null, 1, $conditions);
+
+        if ($this->filterConditions !== null && $conditions > $this->filterConditions) {
+            throw new FilterException(
+                'A filter may have at most ' . $this->filterConditions . " conditions in '" . self::OR . "'.",
+            );
+        }
+    }
+
+    /**
+     * Count the conditions of _or branches, the filters given a value,
+     * checking the depth of each _or
+     *
+     * @throws FilterException
+     */
+    private function countBranches(mixed $branches, int $depth, int &$conditions): void
+    {
+        if ($branches === null) {
+            return;
+        }
+
+        if ($this->filterDepth !== null && $depth > $this->filterDepth) {
+            throw new FilterException(
+                "A filter may nest '" . self::OR . "' at most " . $this->filterDepth . ' deep.',
+            );
+        }
+
+        assert(is_array($branches));
+
+        /** @psalm-suppress MixedAssignment Each branch is an input object */
+        foreach ($branches as $branch) {
+            assert(is_array($branch));
+
+            /** @psalm-suppress MixedAssignment Each field's filters are an input object */
+            foreach ($branch as $fieldName => $filters) {
+                if ($fieldName === self::OR) {
+                    $this->countBranches($filters, $depth + 1, $conditions);
+
+                    continue;
+                }
+
+                if ($filters === null) {
+                    continue;
+                }
+
+                assert(is_array($filters));
+
+                /** @psalm-suppress MixedAssignment A filter's value may be of any type */
+                foreach ($filters as $filter => $value) {
+                    if ($filter === 'args' || $value === null) {
+                        continue;
+                    }
+
+                    $conditions++;
+                }
+            }
+        }
+    }
+
+    /**
+     * The conditions of a computed field's filters, each comparing its
+     * expression.  A sort orders by the expression, selected as a hidden
+     * result variable, as DQL does not order by a subquery.
      *
      * @param array<string, mixed> $filters The filters, and the args of the field's arguments
      *
+     * @return list<string>
+     *
      * @psalm-suppress MixedAssignment, MixedArgument
      */
-    private function applyComputedField(
+    private function computedFieldConditions(
         string $fieldName,
         ComputedFieldMetadata $computedField,
         array $filters,
         DoctrineQueryBuilder $queryBuilder,
         bool $sort,
-    ): void {
+    ): array {
         $args = $filters['args'] ?? [];
         $args = is_array($args) ? $args : [];
         unset($filters['args']);
 
-        $fieldType = self::computedFieldValueType($computedField->type);
-        $sortAlias = null;
+        $fieldType  = self::computedFieldValueType($computedField->type);
+        $sortAlias  = null;
+        $conditions = [];
 
         foreach ($filters as $filter => $value) {
             $filter = Filters::from($filter);
@@ -240,7 +413,7 @@ final class QueryBuilder
                     $this->fieldNames[$sortAlias] = $fieldName;
                 }
 
-                $this->addFilter($filter, $sortAlias, $value, $queryBuilder);
+                $this->condition($filter, $sortAlias, $value, $queryBuilder);
 
                 continue;
             }
@@ -258,13 +431,13 @@ final class QueryBuilder
             if ($filter === Filters::BETWEEN) {
                 assert(is_array($value));
 
-                $this->compare(
+                $conditions[] = $this->compare(
                     Filters::GTE,
                     $this->expression($computedField, $args, $queryBuilder, $fieldName),
                     $value['from'],
                     $queryBuilder,
                 );
-                $this->compare(
+                $conditions[] = $this->compare(
                     Filters::LTE,
                     $this->expression($computedField, $args, $queryBuilder, $fieldName),
                     $value['to'],
@@ -274,13 +447,18 @@ final class QueryBuilder
                 continue;
             }
 
-            $this->addFilter(
+            $condition = $this->condition(
                 $filter,
                 $this->expression($computedField, $args, $queryBuilder, $fieldName),
                 $value,
                 $queryBuilder,
             );
+            assert($condition !== null);
+
+            $conditions[] = $condition;
         }
+
+        return $conditions;
     }
 
     /**
@@ -401,13 +579,30 @@ final class QueryBuilder
     }
 
     /**
-     * Add a filter to the QueryBuilder
+     * The condition of a filter, binding its parameters, or null for a sort,
+     * which is recorded to order the query by
      *
      * @psalm-suppress MixedArgument The value is of the filter's GraphQL type
      */
-    private function addFilter(Filters $filter, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
-    {
-        match ($filter) {
+    private function condition(
+        Filters $filter,
+        string $field,
+        mixed $value,
+        DoctrineQueryBuilder $queryBuilder,
+    ): string|null {
+        if ($filter === Filters::SORT) {
+            $this->sort($field, $value);
+
+            return null;
+        }
+
+        if ($filter === Filters::SORTPRIORITY) {
+            $this->sortPriority($field, $value);
+
+            return null;
+        }
+
+        return match ($filter) {
             Filters::EQ,
             Filters::NEQ,
             Filters::LT,
@@ -421,76 +616,69 @@ final class QueryBuilder
             Filters::STARTSWITH => $this->startsWith($field, $value, $queryBuilder),
             Filters::ENDSWITH => $this->endsWith($field, $value, $queryBuilder),
             Filters::ISNULL => $this->isnull($field, $value, $queryBuilder),
-            Filters::SORT => $this->sort($field, $value, $queryBuilder),
-            Filters::SORTPRIORITY => $this->sortPriority($field, $value, $queryBuilder),
         };
     }
 
     /**
      * Compare the field with the value
      */
-    private function compare(Filters $filter, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): void
+    private function compare(Filters $filter, string $field, mixed $value, DoctrineQueryBuilder $queryBuilder): string
     {
         $parameter   = $this->parameter($queryBuilder);
         $placeholder = ':' . $parameter;
         $expr        = $queryBuilder->expr();
 
-        $queryBuilder
-            ->andWhere(match ($filter) {
-                Filters::NEQ => $expr->neq($field, $placeholder),
-                Filters::LT => $expr->lt($field, $placeholder),
-                Filters::LTE => $expr->lte($field, $placeholder),
-                Filters::GT => $expr->gt($field, $placeholder),
-                Filters::GTE => $expr->gte($field, $placeholder),
-                Filters::IN => $expr->in($field, $placeholder),
-                Filters::NOTIN => $expr->notIn($field, $placeholder),
-                default => $expr->eq($field, $placeholder),
-            })
-            ->setParameter($parameter, $value);
+        $queryBuilder->setParameter($parameter, $value);
+
+        return (string) match ($filter) {
+            Filters::NEQ => $expr->neq($field, $placeholder),
+            Filters::LT => $expr->lt($field, $placeholder),
+            Filters::LTE => $expr->lte($field, $placeholder),
+            Filters::GT => $expr->gt($field, $placeholder),
+            Filters::GTE => $expr->gte($field, $placeholder),
+            Filters::IN => $expr->in($field, $placeholder),
+            Filters::NOTIN => $expr->notIn($field, $placeholder),
+            default => $expr->eq($field, $placeholder),
+        };
     }
 
     /** @param array<string, mixed> $value */
-    private function between(string $field, array $value, DoctrineQueryBuilder $queryBuilder): void
+    private function between(string $field, array $value, DoctrineQueryBuilder $queryBuilder): string
     {
         $from = $this->parameter($queryBuilder);
         $to   = $this->parameter($queryBuilder);
         $queryBuilder
-            ->andWhere(
-                $queryBuilder->expr()->between(
-                    $field,
-                    ':' . $from,
-                    ':' . $to,
-                ),
-            )
             ->setParameter($from, $value['from'])
             ->setParameter($to, $value['to']);
+
+        return $queryBuilder->expr()->between($field, ':' . $from, ':' . $to);
     }
 
-    private function contains(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
+    private function contains(string $field, string $value, DoctrineQueryBuilder $queryBuilder): string
     {
-        $this->like($field, '%' . $this->escapeLike($value) . '%', $queryBuilder);
+        return $this->like($field, '%' . $this->escapeLike($value) . '%', $queryBuilder);
     }
 
-    private function startsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
+    private function startsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): string
     {
-        $this->like($field, $this->escapeLike($value) . '%', $queryBuilder);
+        return $this->like($field, $this->escapeLike($value) . '%', $queryBuilder);
     }
 
-    private function endsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): void
+    private function endsWith(string $field, string $value, DoctrineQueryBuilder $queryBuilder): string
     {
-        $this->like($field, '%' . $this->escapeLike($value), $queryBuilder);
+        return $this->like($field, '%' . $this->escapeLike($value), $queryBuilder);
     }
 
     /**
      * Match a LIKE pattern.  Wildcards in the value are escaped, so it matches
      * only itself.
      */
-    private function like(string $field, string $pattern, DoctrineQueryBuilder $queryBuilder): void
+    private function like(string $field, string $pattern, DoctrineQueryBuilder $queryBuilder): string
     {
         $parameter = $this->parameter($queryBuilder);
-        $queryBuilder
-            ->andWhere($field . ' LIKE :' . $parameter . " ESCAPE '" . self::LIKE_ESCAPE . "'")
-            ->setParameter($parameter, $pattern);
+        $queryBuilder->setParameter($parameter, $pattern);
+
+        return $field . ' LIKE :' . $parameter . " ESCAPE '" . self::LIKE_ESCAPE . "'";
     }
 
     /**
@@ -601,17 +789,11 @@ final class QueryBuilder
         ]);
     }
 
-    private function isnull(string $field, bool $value, DoctrineQueryBuilder $queryBuilder): void
+    private function isnull(string $field, bool $value, DoctrineQueryBuilder $queryBuilder): string
     {
-        if ($value === true) {
-            $queryBuilder->andWhere(
-                $queryBuilder->expr()->isNull($field),
-            );
-        } else {
-            $queryBuilder->andWhere(
-                $queryBuilder->expr()->isNotNull($field),
-            );
-        }
+        return $value
+            ? $queryBuilder->expr()->isNull($field)
+            : $queryBuilder->expr()->isNotNull($field);
     }
 
     /**
@@ -730,7 +912,7 @@ final class QueryBuilder
         return isset(self::$dbalTypes[$type]);
     }
 
-    private function sort(string $field, string $direction, DoctrineQueryBuilder $queryBuilder): void
+    private function sort(string $field, string $direction): void
     {
         if (! isset($this->sortFields[$field])) {
             $this->sortFields[$field] = [];
@@ -742,7 +924,7 @@ final class QueryBuilder
         $this->sortFields[$field]['direction'] = $direction;
     }
 
-    private function sortPriority(string $field, int $priority, DoctrineQueryBuilder $queryBuilder): void
+    private function sortPriority(string $field, int $priority): void
     {
         if (! isset($this->sortFields[$field])) {
             $this->sortFields[$field] = [];

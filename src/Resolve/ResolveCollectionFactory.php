@@ -734,7 +734,8 @@ final class ResolveCollectionFactory
         }
 
         /** @psalm-suppress MixedArgument */
-        (new QueryBuilderFilter())->apply($args['filter'], $queryBuilder, $entity, $sort);
+        (new QueryBuilderFilter($this->config->getFilterDepth(), $this->config->getFilterConditions()))
+            ->apply($args['filter'], $queryBuilder, $entity, $sort);
     }
 
     /**

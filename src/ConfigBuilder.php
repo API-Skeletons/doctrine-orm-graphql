@@ -22,16 +22,18 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Type\JsonFormat;
  */
 final class ConfigBuilder
 {
-    private string $group             = 'default';
-    private string|null $groupSuffix  = null;
-    private bool $useHydratorCache    = false;
-    private bool $useQueryResultCache = false;
-    private bool $batchAssociations   = true;
-    private int $batchLimit           = 1000;
-    private int $limit                = 1000;
-    private bool|null $extractByValue = null;
-    private string|null $entityPrefix = null;
-    private bool $sortFields          = false;
+    private string $group              = 'default';
+    private string|null $groupSuffix   = null;
+    private bool $useHydratorCache     = false;
+    private bool $useQueryResultCache  = false;
+    private bool $batchAssociations    = true;
+    private int $batchLimit            = 1000;
+    private int $limit                 = 1000;
+    private int|null $filterDepth      = 3;
+    private int|null $filterConditions = 100;
+    private bool|null $extractByValue  = null;
+    private string|null $entityPrefix  = null;
+    private bool $sortFields           = false;
     /** @var Filters[] */
     private array $excludeFilters = [];
 
@@ -147,6 +149,28 @@ final class ConfigBuilder
     }
 
     /**
+     * Set how deeply a filter's _or may nest: a top-level _or is at depth 1.
+     * 0 or null is unlimited.
+     */
+    public function withFilterDepth(int|null $filterDepth): self
+    {
+        $this->filterDepth = $filterDepth;
+
+        return $this;
+    }
+
+    /**
+     * Set the most conditions a filter may have inside its _or branches.  0
+     * or null is unlimited.
+     */
+    public function withFilterConditions(int|null $filterConditions): self
+    {
+        $this->filterConditions = $filterConditions;
+
+        return $this;
+    }
+
+    /**
      * Set global extraction strategy
      *
      * When set to true, all entities will be extracted by value
@@ -253,6 +277,8 @@ final class ConfigBuilder
             'batchAssociations' => $this->batchAssociations,
             'batchLimit' => $this->batchLimit,
             'limit' => $this->limit,
+            'filterDepth' => $this->filterDepth,
+            'filterConditions' => $this->filterConditions,
             'extractByValue' => $this->extractByValue,
             'entityPrefix' => $this->entityPrefix,
             'sortFields' => $this->sortFields,

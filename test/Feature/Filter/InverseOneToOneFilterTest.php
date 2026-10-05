@@ -38,10 +38,10 @@ class InverseOneToOneFilterTest extends TestCase
         $driver = $this->driver();
 
         $this->assertSame(
-            ['id', 'name', 'nickname', 'requiredArtist', 'optionalArtist', 'defaultArtist'],
+            ['id', 'name', 'nickname', 'requiredArtist', 'optionalArtist', 'defaultArtist', '_or'],
             array_keys($driver->filter(TestNonNullTypes::class)->getFields()),
         );
-        $this->assertSame(['id', 'owner'], array_keys($driver->filter(TestNonNullTypesDetail::class)->getFields()));
+        $this->assertSame(['id', 'owner', '_or'], array_keys($driver->filter(TestNonNullTypesDetail::class)->getFields()));
     }
 
     public function testOwningSideIsFiltered(): void

@@ -120,6 +120,7 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - Date and time filter values are bound as the field's Doctrine type
 - Filters are context-aware based on field type
 - Can be excluded globally via Config or per-entity/field via attributes
+- A filter's `_or` is a list of branches, any of which a row matches; a branch is of a `FilterBranch_<Type>` type, the same filters less `sort` and `sortPriority`, whose own `_or` is a list of itself. `Filter\QueryBuilder` builds each filter's condition as a string (binding its parameters) and the caller ANDs them, or ORs the branches; a branch with no conditions is `1 = 1` and `_or: []` is `1 = 0`. `filterDepth` and `filterConditions` limit `_or` before any DQL is built; only conditions inside `_or` are counted. No field may be named or aliased `_or`
 
 ### Resolution and Hydration
 
@@ -150,6 +151,8 @@ Filters are auto-generated for all exposed fields and associations (src/Filter/)
 - `useHydratorCache` - Cache hydrator results for as long as the entity exists
 - `useQueryResultCache` - Cache query results for identical SQL and parameters until the entity manager is cleared or flushed (`Cache\QueryResultCacheListener`)
 - `limit` - Default limit on the rows of a connection (default: 1000); an entity's `limit`, then an association's, replaces it, even when larger
+- `filterDepth` - How deeply a filter's `_or` may nest (default 3); 0 or null is unlimited
+- `filterConditions` - The most conditions inside a filter's `_or` branches (default 100); 0 or null is unlimited
 - `extractByValue` - Extract by value vs reference for every entity, overriding the `extractByValue` argument of the `#[Entity]` attribute
 - `entityPrefix` - Remove prefix from type names
 - `sortFields` - Sort fields alphabetically
