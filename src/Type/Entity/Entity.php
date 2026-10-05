@@ -9,6 +9,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Event\EntityDefinition;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\FilterFactory;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\QueryBuilder as QueryBuilderFilter;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\ComputedFieldMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\EntityMetadata;
@@ -130,7 +131,8 @@ final class Entity
      * Every field of the type, whether a field, an association or a computed
      * field, named by its alias if it has one, must have a unique name.
      * Otherwise one would silently replace another in the type and in the
-     * hydrator's extraction.
+     * hydrator's extraction.  No field may be named _or, the name of the
+     * filters' branches.
      *
      * @return array<string, string>
      *
@@ -158,6 +160,15 @@ final class Entity
             foreach ($kindFields as $fieldName => $fieldMetadata) {
                 $alias = $fieldMetadata instanceof ComputedFieldMetadata ? null : $fieldMetadata->alias;
                 $name  = $alias ?? $fieldName;
+
+                // The filters of a type have an _or of their own
+                if ($name === QueryBuilderFilter::OR) {
+                    throw new MetadataException(
+                        'The ' . $kind . ' ' . $fieldName . ($alias !== null ? ' aliased as "' . $alias . '"' : '')
+                        . ' of entity ' . $this->getEntityClass() . ' is named "' . $name . '", which is the name of '
+                        . 'the filter of branches any of which a row matches.  Give it another name.',
+                    );
+                }
 
                 if (isset($names[$name])) {
                     throw new MetadataException(

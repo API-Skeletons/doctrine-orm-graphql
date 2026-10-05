@@ -11,6 +11,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\InputObjectType\Field;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\AssociationMetadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\Entity;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\TypeContainer;
+use Closure;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use GraphQL\Type\Definition\InputObjectType as GraphQLInputObjectType;
@@ -52,6 +53,10 @@ final class FilterFactory
      * Return an InputObjectType of filters for the target entity.  For a
      * collection, the owning entity, association name and the association's
      * metadata are given.
+     *
+     * Its _or is a list of branches, any of which a row matches.  A branch is
+     * of a type of the same filters but the sorts, which mean nothing in a
+     * branch, and has an _or of its own.
      */
     public function get(
         Entity $targetEntity,
@@ -59,9 +64,10 @@ final class FilterFactory
         string|null $associationName = null,
         AssociationMetadata|null $associationMetadata = null,
     ): GraphQLInputObjectType {
-        $typeName = $owningEntity ?
-            'Filter_' . $owningEntity->getTypeName() . '_' . ucwords((string) $associationName)
-            : 'Filter_' . $targetEntity->getTypeName();
+        $baseName = $owningEntity
+            ? $owningEntity->getTypeName() . '_' . ucwords((string) $associationName)
+            : $targetEntity->getTypeName();
+        $typeName = 'Filter_' . $baseName;
 
         if ($this->typeContainer->has($typeName)) {
             $filter = $this->typeContainer->get($typeName);
@@ -93,25 +99,72 @@ final class FilterFactory
         }
 
         /** @psalm-suppress MixedArgumentTypeCoercion */
-        $fields = $this->addFields($targetEntity, $allowedFilters);
-        /** @psalm-suppress MixedArgumentTypeCoercion */
-        $fields = array_merge($fields, $this->addAssociations($targetEntity, $allowedFilters));
-        /** @psalm-suppress MixedArgumentTypeCoercion */
-        $fields = array_merge($fields, $this->addComputedFields($targetEntity, $allowedFilters));
+        $branchFilters = array_values(array_filter(
+            $allowedFilters,
+            static fn (Filters $filter): bool => ! in_array($filter, [Filters::SORT, Filters::SORTPRIORITY], true),
+        ));
 
-        $inputObject = (new ReflectionClass(GraphQLInputObjectType::class))
-            ->newLazyGhost(static function (GraphQLInputObjectType $object) use ($typeName, $fields): void {
-                /** @psalm-suppress PossiblyInvalidArgument */
-                /** @psalm-suppress DirectConstructorCall */
-                $object->__construct([ // @phpstan-ignore argument.type
-                    'name' => $typeName,
-                    'fields' => static fn () => $fields,
-                ]);
-            });
+        // The branch type's _or is a list of the branch type itself
+        /** @psalm-suppress MixedArgumentTypeCoercion The allowed filters are Filters */
+        $branch = $this->filterType(
+            'FilterBranch_' . $baseName,
+            $this->filterFields($targetEntity, $branchFilters),
+            static fn (GraphQLInputObjectType $branch): GraphQLInputObjectType => $branch,
+        );
+
+        /** @psalm-suppress MixedArgumentTypeCoercion The allowed filters are Filters */
+        $inputObject = $this->filterType(
+            $typeName,
+            $this->filterFields($targetEntity, $allowedFilters),
+            static fn (): GraphQLInputObjectType => $branch,
+        );
 
         $this->typeContainer->set($typeName, $inputObject);
 
         return $inputObject;
+    }
+
+    /**
+     * The fields of a filter type of the allowed filters, without its _or
+     *
+     * @param Filters[] $allowedFilters
+     *
+     * @return array<string, mixed[]>
+     */
+    private function filterFields(Entity $targetEntity, array $allowedFilters): array
+    {
+        return array_merge(
+            $this->addFields($targetEntity, $allowedFilters),
+            $this->addAssociations($targetEntity, $allowedFilters),
+            $this->addComputedFields($targetEntity, $allowedFilters),
+        );
+    }
+
+    /**
+     * A filter type of the fields and an _or, a list of the type the function
+     * gives.  The function is given the filter type itself, as a branch type's
+     * _or is a list of itself.
+     *
+     * @param array<string, mixed[]>                                  $fields
+     * @param Closure(GraphQLInputObjectType): GraphQLInputObjectType $branch
+     */
+    private function filterType(string $name, array $fields, Closure $branch): GraphQLInputObjectType
+    {
+        return (new ReflectionClass(GraphQLInputObjectType::class))
+            ->newLazyGhost(static function (GraphQLInputObjectType $object) use ($name, $fields, $branch): void {
+                $fields[QueryBuilder::OR] = [
+                    'name' => QueryBuilder::OR,
+                    'type' => static fn (): Type => Type::listOf(Type::nonNull($branch($object))),
+                    'description' => 'Filters any of which a row matches; the filters of each are all matched',
+                ];
+
+                /** @psalm-suppress PossiblyInvalidArgument */
+                /** @psalm-suppress DirectConstructorCall */
+                $object->__construct([ // @phpstan-ignore argument.type
+                    'name' => $name,
+                    'fields' => static fn () => $fields,
+                ]);
+            });
     }
 
     /**

@@ -86,7 +86,7 @@ class EmbeddedTest extends TestCase
         $this->assertInstanceOf(ObjectType::class, $objectType);
         $this->assertSame(['id', 'name', 'city'], array_keys($objectType->getFields()));
 
-        $this->assertSame(['id', 'name'], array_keys($driver->filter(TestEntityWithEmbedded::class)->getFields()));
+        $this->assertSame(['id', 'name', '_or'], array_keys($driver->filter(TestEntityWithEmbedded::class)->getFields()));
         $this->assertSame(['name'], array_keys($driver->input(TestEntityWithEmbedded::class)->getFields()));
     }
 

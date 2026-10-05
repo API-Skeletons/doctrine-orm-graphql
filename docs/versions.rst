@@ -61,6 +61,8 @@ ORM versions do not support ``doctrine/persistence`` 4.
   each parameter of its method
 - 14.1: a computed field with an ``expression``, its value in DQL, is filtered and sorted
   by it; see `computed fields <computed-fields.html#filters-and-sorting>`_
+- 14.1: a filter's ``_or`` matches any of its branches, limited by the ``filterDepth``
+  and ``filterConditions`` config; see `or <queries.html#or>`_
 - Metadata is read as typed value objects, and cached metadata carries its format version
   and the config it was built with
 - Configuration mistakes, such as a misplaced attribute, an invalid name or a field

@@ -31,7 +31,7 @@ class ToOneAssociationFiltersTest extends TestCase
         $filter = $this->driver()->filter(TestToOneFilters::class);
 
         // An association left with no filter has no filter field
-        $this->assertSame(['id', 'excluded', 'included', 'every'], array_keys($filter->getFields()));
+        $this->assertSame(['id', 'excluded', 'included', 'every', '_or'], array_keys($filter->getFields()));
 
         $filters = static function (string $fieldName) use ($filter): array {
             $type = $filter->getField($fieldName)->getType();

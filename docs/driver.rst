@@ -29,6 +29,8 @@ Creating a Driver with all config options
       'useNonNullTypes' => true,
       'useQueryResultCache' => true,
       'excludeFilters' => [Filters::CONTAINS],
+      'filterConditions' => 100,
+      'filterDepth' => 3,
       'formatJsonAs' => JsonFormat::Object,
   ]);
 
@@ -102,6 +104,29 @@ This overrides the ``extractByValue`` entity attribute globally.  When set to tr
 all hydrators will extract by value.  When set to false all hydrators will
 extract by reference.  When not set the individual entity attribute value
 is used and that is, by default, extract by value.
+
+
+filterConditions
+----------------
+
+The most filters the branches of a filter's `_or <queries.html#or>`_ may have
+in all, including those of nested ``_or``.  A filter given ``null`` is not
+counted, nor are a computed field's ``args``; neither are the filters outside
+``_or``, so a filter without one is never limited.  An ``in`` list is one
+filter whatever its length.  Beyond it, the query is a client error.  It must
+be at least 0; 0 or ``null`` is unlimited.  Default is 100.
+
+
+filterDepth
+-----------
+
+How deeply a filter's `_or <queries.html#or>`_ may nest: an ``_or`` of the
+filter is at depth 1, and an ``_or`` of one of its branches at depth 2.
+Beyond it, the query is a client error.  It must be at least 0; 0 or ``null``
+is unlimited.  Default is 3.
+
+GraphQL's query depth and complexity rules count the fields a query selects,
+not its arguments, so they do not limit a filter.
 
 
 formatJsonAs

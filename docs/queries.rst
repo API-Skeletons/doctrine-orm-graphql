@@ -170,8 +170,40 @@ To select a list of years
     }
 
 
-All filters are **AND** filters.  For **OR** support use multiple
-queries and aggregate them.
+Or
+--
+
+The filters of a ``filter`` are all matched: they are **AND** filters.  Its
+``_or`` is a list of filters, any of which a row matches:
+
+.. code-block:: js
+
+    filter: {
+      id: { gt: 1 }
+      _or: [
+        { name: { startswith: "G" } }
+        { name: { eq: "Phish" }, year: { lt: 1990 } }
+      ]
+    }
+
+This matches rows whose ``id`` is greater than 1 and which either have a name
+beginning with G, or are named Phish with a year before 1990.  Each branch is a
+filter whose own filters are all matched, and which may have an ``_or`` of
+its own.  A branch has no ``sort`` or ``sortPriority``, which mean nothing in
+it; its type is named ``FilterBranch_`` followed by the entity's type name, as
+the filter's is named ``Filter_``.
+
+A branch with no filters, or whose filters are all given ``null``, matches
+every row, so the whole ``_or`` does.  An ``_or`` of no branches, ``_or: []``,
+matches no row, as ``in: []`` does; ``_or: null`` is not applied.
+
+How deeply ``_or`` may nest, and how many filters its branches may have in
+all, are limited by the `filterDepth and filterConditions
+<driver.html#filterdepth>`_ config; beyond either is an error.
+
+A field may not be named ``_or``, nor aliased as it: one which is throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when its type is
+built.
 
 
 Pagination
@@ -396,7 +428,10 @@ Filters have a cost too, which these rules do not count.  ``contains``,
 ``endswith`` begin with a wildcard, so no ordinary index serves them and each
 reads every row; whether an index serves ``startswith`` depends on the
 database.  A ``sort`` on a column without an index sorts every matching row
-before the page is taken.  An ``in`` or ``notin`` list binds a parameter for
+before the page is taken.  An ``_or`` of filters on different columns often
+stops the database using a single index; PostgreSQL's bitmap OR and MySQL's
+``index_merge`` can combine indexes, but neither is certain.  The
+``filterDepth`` and ``filterConditions`` config limit the size of an ``_or``.  An ``in`` or ``notin`` list binds a parameter for
 each of its values, and databases limit them: Oracle allows 1000 values in a
 list and SQL Server 2100 parameters in a query.  Index the columns clients
 filter and sort on, and leave out the filters a large table should not offer
