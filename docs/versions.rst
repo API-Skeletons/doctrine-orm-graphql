@@ -63,6 +63,9 @@ ORM versions do not support ``doctrine/persistence`` 4.
   by it; see `computed fields <computed-fields.html#filters-and-sorting>`_
 - 14.1: a filter's ``_or`` matches any of its branches, limited by the ``filterDepth``
   and ``filterConditions`` config; see `or <queries.html#or>`_
+- 14.1: a computed field may be a method of the entity's repository, and one given a
+  ``Collection`` of entities computes all their values with one query; see
+  `repositories <computed-fields.html#repositories>`_
 - Metadata is read as typed value objects, and cached metadata carries its format version
   and the config it was built with
 - Configuration mistakes, such as a misplaced attribute, an invalid name or a field

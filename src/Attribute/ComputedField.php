@@ -19,6 +19,12 @@ use Attribute;
  * given a unique name each time the expression is used.  {:name} is the
  * method parameter $name, whose value is given by the filter's args.
  *
+ * A computed field may be on a method of the entity's repository, whose first
+ * parameter is the entity.  With batch, the first parameter is a Collection of
+ * entities, keyed by the database value of their identifier, and the method
+ * returns the values keyed the same way, so one query gives the values of
+ * every entity being resolved.
+ *
  * @example
  * ```php
  * #[ComputedField(
@@ -51,6 +57,8 @@ final class ComputedField
      *                                              expression
      * @param array<Filters|string> $includeFilters Filters cases or their values, for a field with an
      *                                              expression
+     * @param bool                  $batch          Whether a method of a repository is given a Collection
+     *                                              of entities and returns their values, keyed by identifier
      */
     public function __construct(
         private readonly string $type,
@@ -62,6 +70,7 @@ final class ComputedField
         private readonly string|null $expression = null,
         private readonly array $excludeFilters = [],
         private readonly array $includeFilters = [],
+        private readonly bool $batch = false,
     ) {
     }
 
@@ -99,5 +108,10 @@ final class ComputedField
     public function getExpression(): string|null
     {
         return $this->expression;
+    }
+
+    public function getBatch(): bool
+    {
+        return $this->batch;
     }
 }

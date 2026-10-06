@@ -99,6 +99,7 @@ trait Services
                             $self->service(Config::class),
                             $self->service(Type\Entity\EntityTypeContainer::class),
                             $self->service(Resolve\ToOneLoader::class),
+                            $self->service(Resolve\ComputedFieldBatchLoader::class),
                         );
                     }),
             )
@@ -108,6 +109,14 @@ trait Services
                     $entityManager = $container->service(EntityManager::class);
 
                     return new Resolve\ToOneLoader($entityManager);
+                },
+            )
+            ->set(
+                Resolve\ComputedFieldBatchLoader::class,
+                static function (Container $container) {
+                    $entityManager = $container->service(EntityManager::class);
+
+                    return new Resolve\ComputedFieldBatchLoader($entityManager);
                 },
             )
             ->set(
@@ -170,6 +179,7 @@ trait Services
                         $object->__construct(
                             $self->service(EntityManager::class),
                             $self->service(Type\Entity\EntityTypeContainer::class),
+                            $self->service(Resolve\ComputedFieldBatchLoader::class),
                         );
                     }),
             )

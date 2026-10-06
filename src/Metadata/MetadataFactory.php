@@ -13,6 +13,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Filter\Filters;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\FindPropertyInHierarchy;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\QueryException;
@@ -22,14 +23,18 @@ use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionProperty;
+use ReflectionUnionType;
 
 use function array_key_exists;
 use function array_keys;
+use function array_shift;
 use function array_unique;
 use function array_values;
 use function assert;
+use function count;
 use function ctype_upper;
 use function in_array;
+use function is_a;
 use function is_array;
 use function is_scalar;
 use function lcfirst;
@@ -101,7 +106,8 @@ final class MetadataFactory
             $this->assertPropertyAttributesAreMapped($entityClassMetadata, $reflectionClass);
             $this->buildMetadataForFields($entityClassMetadata, $reflectionClass);
             $this->buildMetadataForAssociations($reflectionClass);
-            $this->buildMetadataForComputedFields($reflectionClass);
+            $this->buildMetadataForComputedFields($reflectionClass, $reflectionClass->getName());
+            $this->buildMetadataForRepositoryComputedFields($entityClassMetadata, $reflectionClass->getName());
         }
 
         // Fire the metadata.build event
@@ -111,6 +117,7 @@ final class MetadataFactory
 
         // After the event, as a listener may add or remove entities
         $this->assertReferencedEntitiesAreExposed($entityClasses);
+        $this->assertSubclassesHaveRepositoryFields($entityClasses);
         $this->assertComputedFieldExpressionsAreValid($entityClasses);
 
         return $this->metadata;
@@ -291,19 +298,31 @@ final class MetadataFactory
     }
 
     /**
-     * Build the metadata for computed fields in an entity based on ComputedField attributes
+     * Build the metadata for computed fields in an entity based on ComputedField
+     * attributes on the methods of a class: the entity, or its repository
      *
-     * @param ReflectionClass<object> $reflectionClass
+     * @param ReflectionClass<T>    $reflectionClass The entity, or its repository
+     * @param class-string          $entityClass
+     * @param ClassMetadata<object> $classMetadata   The entity's class metadata, for a repository
+     *
+     * @template T of object
      */
-    private function buildMetadataForComputedFields(ReflectionClass $reflectionClass): void
-    {
+    private function buildMetadataForComputedFields(
+        ReflectionClass $reflectionClass,
+        string $entityClass,
+        ClassMetadata|null $classMetadata = null,
+    ): void {
+        $owner = $classMetadata === null
+            ? 'entity ' . $entityClass
+            : 'repository ' . $reflectionClass->getName() . ' of entity ' . $entityClass;
+
         foreach ($reflectionClass->getMethods() as $reflectionMethod) {
             // A computed field is computed by calling a public, non-static method
             if (! $reflectionMethod->isPublic() || $reflectionMethod->isStatic() || $reflectionMethod->isConstructor()) {
                 foreach ($reflectionMethod->getAttributes(Attribute\ComputedField::class) as $attribute) {
                     if ($attribute->newInstance()->getGroup() === $this->config->getGroup()) {
                         throw new MetadataException(
-                            'Method ' . $reflectionMethod->getName() . ' of entity ' . $reflectionClass->getName()
+                            'Method ' . $reflectionMethod->getName() . ' of ' . $owner
                             . ' has a ComputedField attribute but is not a public, non-static method.',
                         );
                     }
@@ -336,17 +355,41 @@ final class MetadataFactory
                 $fieldName = $instance->getName() ?? $this->deriveFieldNameFromMethod($reflectionMethod->getName());
 
                 // Validate no collision with existing fields
-                if (isset($this->metadata[$reflectionClass->getName()]['fields'][$fieldName])) {
+                if (isset($this->metadata[$entityClass]['fields'][$fieldName])) {
                     throw new MetadataException(
                         'Computed field "' . $fieldName . '" collides with existing field in entity '
-                        . $reflectionClass->getName(),
+                        . $entityClass,
+                    );
+                }
+
+                // Nor with another computed field, of the entity or its repository
+                if (isset($this->metadata[$entityClass]['computedFields'][$fieldName])) {
+                    throw new MetadataException(
+                        'Computed field "' . $fieldName . '" of method ' . $reflectionMethod->getName() . ' of '
+                        . $owner . ' collides with another computed field of the same name.',
+                    );
+                }
+
+                if ($classMetadata === null && $instance->getBatch()) {
+                    throw new MetadataException(
+                        'Computed field "' . $fieldName . '" of ' . $owner . ' is batched, but only a method of '
+                        . 'a repository is given a Collection of entities.',
+                    );
+                }
+
+                if ($classMetadata !== null) {
+                    $this->assertRepositoryMethodIsValid(
+                        $reflectionMethod,
+                        $instance->getBatch(),
+                        $classMetadata,
+                        'Computed field "' . $fieldName . '" of ' . $owner,
                     );
                 }
 
                 // Initialize computedFields array if not exists
-                if (! isset($this->metadata[$reflectionClass->getName()]['computedFields'])) {
+                if (! isset($this->metadata[$entityClass]['computedFields'])) {
                     /** @psalm-suppress MixedArrayAssignment */
-                    $this->metadata[$reflectionClass->getName()]['computedFields'] = [];
+                    $this->metadata[$entityClass]['computedFields'] = [];
                 }
 
                 $computedFieldMetadata = [
@@ -355,10 +398,23 @@ final class MetadataFactory
                     'name' => $fieldName,
                     'description' => $instance->getDescription(),
                     'list' => $instance->getList(),
-                    'args' => $this->buildComputedFieldArguments($reflectionMethod, $instance, $reflectionClass->getName()),
+                    'args' => $this->buildComputedFieldArguments(
+                        $reflectionMethod,
+                        $instance,
+                        $owner,
+                        $classMetadata !== null,
+                    ),
                 ];
 
                 // Left out when unset, so the metadata of a field without them is unchanged
+                if ($classMetadata !== null) {
+                    $computedFieldMetadata['repository'] = true;
+                }
+
+                if ($instance->getBatch()) {
+                    $computedFieldMetadata['batch'] = true;
+                }
+
                 if ($instance->getExpression() !== null) {
                     $computedFieldMetadata['expression'] = $instance->getExpression();
                 }
@@ -369,9 +425,101 @@ final class MetadataFactory
                 }
 
                 /** @psalm-suppress MixedArrayAssignment */
-                $this->metadata[$reflectionClass->getName()]['computedFields'][$fieldName] = $computedFieldMetadata;
+                $this->metadata[$entityClass]['computedFields'][$fieldName] = $computedFieldMetadata;
             }
         }
+    }
+
+    /**
+     * Build the metadata for computed fields on the methods of an entity's
+     * repository.  An entity without a repository of its own class has none.
+     *
+     * @param ClassMetadata<object> $classMetadata
+     * @param class-string          $entityClass
+     */
+    private function buildMetadataForRepositoryComputedFields(ClassMetadata $classMetadata, string $entityClass): void
+    {
+        $repositoryClass = $classMetadata->customRepositoryClassName;
+
+        if ($repositoryClass === null) {
+            return;
+        }
+
+        $this->buildMetadataForComputedFields(new ReflectionClass($repositoryClass), $entityClass, $classMetadata);
+    }
+
+    /**
+     * A repository's method is given the entity first, or with batch, a
+     * Collection of entities, keyed by the database value of their identifier.
+     * A batched entity must have a single identifier which is not an
+     * association, to key it by.
+     *
+     * @param ClassMetadata<object> $classMetadata
+     *
+     * @throws MetadataException
+     */
+    private function assertRepositoryMethodIsValid(
+        ReflectionMethod $method,
+        bool $batch,
+        ClassMetadata $classMetadata,
+        string $prefix,
+    ): void {
+        $parameter = $method->getParameters()[0] ?? null;
+        $given     = $batch ? Collection::class : $classMetadata->getName();
+
+        if ($parameter === null || ! self::parameterAccepts($parameter, $given)) {
+            throw new MetadataException(
+                $prefix . ' is of method ' . $method->getName() . ', whose first parameter must accept '
+                . ($batch ? 'any ' . Collection::class . ' of entities' : 'the entity') . '.',
+            );
+        }
+
+        if (! $batch) {
+            return;
+        }
+
+        $identifiers = $classMetadata->getIdentifierFieldNames();
+
+        if (count($identifiers) !== 1 || $classMetadata->hasAssociation($identifiers[0])) {
+            throw new MetadataException(
+                $prefix . ' is batched, but the entity\'s identifier is composite or an association, which cannot '
+                . 'key its entities.',
+            );
+        }
+    }
+
+    /**
+     * Whether a parameter accepts any value of a class or interface: it has
+     * no type, or a type which the class is, or mixed or object, or for a
+     * Collection, iterable.  Any type of a union may accept it.
+     *
+     * @param class-string $class
+     */
+    private static function parameterAccepts(ReflectionParameter $parameter, string $class): bool
+    {
+        $type = $parameter->getType();
+
+        if ($type === null) {
+            return true;
+        }
+
+        $types = $type instanceof ReflectionUnionType ? $type->getTypes() : [$type];
+
+        foreach ($types as $member) {
+            if (! $member instanceof ReflectionNamedType) {
+                continue;
+            }
+
+            $accepts = $member->isBuiltin()
+                ? in_array($member->getName(), ['mixed', 'object', ...($class === Collection::class ? ['iterable'] : [])], true)
+                : is_a($class, $member->getName(), true);
+
+            if ($accepts) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -379,7 +527,8 @@ final class MetadataFactory
      * method, in order.  An int, float, string or bool parameter is an Int,
      * Float, String or Boolean argument; any other is of the type the
      * attribute's args give it.  A parameter which does not allow null is a
-     * non-null argument, and its default value is the argument's.
+     * non-null argument, and its default value is the argument's.  The first
+     * parameter of a repository's method is the entity, not an argument.
      *
      * @return array<string, array{type: string, nullable: bool, default?: int|float|string|bool}>
      *
@@ -388,13 +537,19 @@ final class MetadataFactory
     private function buildComputedFieldArguments(
         ReflectionMethod $method,
         Attribute\ComputedField $attribute,
-        string $entityClass,
+        string $owner,
+        bool $isRepository,
     ): array {
         $types   = $attribute->getArgs();
-        $context = ' of computed field method ' . $method->getName() . ' of entity ' . $entityClass;
+        $context = ' of computed field method ' . $method->getName() . ' of ' . $owner;
+
+        $parameters = $method->getParameters();
+        if ($isRepository) {
+            array_shift($parameters);
+        }
 
         $arguments = [];
-        foreach ($method->getParameters() as $parameter) {
+        foreach ($parameters as $parameter) {
             $name   = $parameter->getName();
             $prefix = 'Parameter $' . $name . $context;
 
@@ -516,6 +671,52 @@ final class MetadataFactory
                 throw new MetadataException(
                     'Computed field ' . $fieldName . ' of entity ' . $entityClass . ' is of type ' . $type . $suffix,
                 );
+            }
+        }
+    }
+
+    /**
+     * Doctrine gives an entity the repository of a parent entity only when
+     * the parent is a mapped superclass, so a subclass reads only its own
+     * repository's computed fields.  A row of an exposed subclass is resolved
+     * by the subclass's fields, even where its parent's type is queried, so
+     * a subclass without a computed field of its exposed parent's repository
+     * would silently give null for it.
+     *
+     * @param list<string> $entityClasses Every entity class of the entity manager
+     *
+     * @throws MetadataException
+     */
+    private function assertSubclassesHaveRepositoryFields(array $entityClasses): void
+    {
+        /** @psalm-suppress MixedAssignment The metadata built above, as a listener may have changed it */
+        foreach ($this->metadata as $entityClass => $entityMetadata) {
+            if (! is_array($entityMetadata) || ! in_array($entityClass, $entityClasses, true)) {
+                continue;
+            }
+
+            $computed = $entityMetadata['computedFields'] ?? [];
+            assert(is_array($computed));
+
+            foreach ($this->entityManager->getClassMetadata($entityClass)->parentClasses as $parent) {
+                /** @psalm-suppress MixedAssignment The metadata built above */
+                $parentMetadata = $this->metadata[$parent] ?? null;
+                $parentComputed = is_array($parentMetadata) ? $parentMetadata['computedFields'] ?? [] : [];
+                assert(is_array($parentComputed));
+
+                /** @psalm-suppress MixedAssignment The metadata built above */
+                foreach ($parentComputed as $fieldName => $computedField) {
+                    if (! is_array($computedField) || ($computedField['repository'] ?? false) !== true || isset($computed[$fieldName])) {
+                        continue;
+                    }
+
+                    throw new MetadataException(
+                        'Entity ' . $entityClass . ' extends ' . $parent . ', whose repository gives computed field '
+                        . $fieldName . ', but the repository of ' . $entityClass . ' does not.  Doctrine does not '
+                        . 'give an entity its parent entity\'s repository: give ' . $entityClass . ' a repository '
+                        . 'which extends its parent\'s.',
+                    );
+                }
             }
         }
     }

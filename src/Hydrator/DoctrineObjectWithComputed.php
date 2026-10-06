@@ -7,6 +7,8 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\Strategy;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Trait\FindPropertyInHierarchy;
+use Closure;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Laminas\Hydrator\DoctrineObject;
 use Laminas\Hydrator\Filter\FilterProviderInterface;
 use LogicException;
@@ -44,16 +46,33 @@ final class DoctrineObjectWithComputed extends DoctrineObject
     private array $computedFieldsWithArguments = [];
 
     /**
-     * Register a computed field for extraction
+     * The batch extractors of the batched computed fields, by name
      *
-     * @param string                                           $fieldName    The GraphQL field name
-     * @param callable(object, array<array-key, mixed>): mixed $extractor    Callable that accepts the entity and the
-     *                                                                       field's arguments and returns its value
-     * @param bool                                             $hasArguments Whether the field has arguments
+     * @var array<string, Closure(Collection<int|string, object>, array<array-key, mixed>): mixed>
      */
-    public function addComputedField(string $fieldName, callable $extractor, bool $hasArguments = false): void
-    {
+    private array $batchExtractors = [];
+
+    /**
+     * Register a computed field for extraction: the GraphQL field name, a
+     * callable that accepts the entity and the field's arguments and returns
+     * its value, and whether the field has arguments.  A batched field also
+     * has a batch extractor, a Closure that accepts a Collection of entities
+     * and the field's arguments and returns their values, keyed by identifier.
+     *
+     * @param callable(object, array<array-key, mixed>): mixed                               $extractor
+     * @param (Closure(Collection<int|string, object>, array<array-key, mixed>): mixed)|null $batchExtractor
+     */
+    public function addComputedField(
+        string $fieldName,
+        callable $extractor,
+        bool $hasArguments = false,
+        Closure|null $batchExtractor = null,
+    ): void {
         $this->computedFields[$fieldName] = $extractor;
+
+        if ($batchExtractor !== null) {
+            $this->batchExtractors[$fieldName] = $batchExtractor;
+        }
 
         if (! $hasArguments) {
             return;
@@ -76,6 +95,17 @@ final class DoctrineObjectWithComputed extends DoctrineObject
     public function hasComputedFieldArguments(string $fieldName): bool
     {
         return isset($this->computedFieldsWithArguments[$fieldName]);
+    }
+
+    /**
+     * The batch extractor of a batched computed field, which is given a
+     * Collection of entities, or null for a field which is not batched
+     *
+     * @return (Closure(Collection<int|string, object>, array<array-key, mixed>): mixed)|null
+     */
+    public function getBatchExtractor(string $fieldName): Closure|null
+    {
+        return $this->batchExtractors[$fieldName] ?? null;
     }
 
     /**
@@ -204,7 +234,8 @@ final class DoctrineObjectWithComputed extends DoctrineObject
      * This method extracts the regular Doctrine fields, then adds computed
      * field values by calling registered extractors.  A computed field with
      * arguments has a value for each set of them, not one value, so it is
-     * left out.
+     * left out.  A batched computed field would be a query for each entity
+     * extracted, so it is left out too.
      *
      * @return array<array-key, mixed>
      */
@@ -214,7 +245,7 @@ final class DoctrineObjectWithComputed extends DoctrineObject
         $data = $this->extractFields($object);
 
         foreach ($this->getComputedFieldNames() as $fieldName) {
-            if ($this->hasComputedFieldArguments($fieldName)) {
+            if ($this->hasComputedFieldArguments($fieldName) || isset($this->batchExtractors[$fieldName])) {
                 continue;
             }
 

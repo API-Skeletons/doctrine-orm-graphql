@@ -19,6 +19,10 @@ final readonly class ComputedFieldMetadata
      * @param string|null                                  $expression     The DQL expression of the value, by
      *                                                                     which the field is filtered and sorted
      * @param list<string>                                 $excludeFilters The filters excluded for the field
+     * @param bool                                         $repository     Whether the method is of the entity's
+     *                                                                     repository, given the entity first
+     * @param bool                                         $batch          Whether the repository's method is given
+     *                                                                     a Collection of entities
      */
     public function __construct(
         public string $method,
@@ -29,6 +33,8 @@ final readonly class ComputedFieldMetadata
         public array $args,
         public string|null $expression = null,
         public array $excludeFilters = [],
+        public bool $repository = false,
+        public bool $batch = false,
     ) {
     }
 
@@ -46,6 +52,16 @@ final readonly class ComputedFieldMetadata
             $args[$name] = ComputedFieldArgumentMetadata::fromArray($argArray, $context . ' argument ' . $name);
         }
 
+        $repository = $reader->has('repository') && $reader->bool('repository');
+        $batch      = $reader->has('batch') && $reader->bool('batch');
+
+        if ($batch && ! $repository) {
+            throw new MetadataException(
+                'Metadata for ' . $context . ' is batched but not of a repository.  Only a method of a repository '
+                . 'is batched.',
+            );
+        }
+
         return new self(
             $reader->string('method'),
             $reader->string('type'),
@@ -55,14 +71,16 @@ final readonly class ComputedFieldMetadata
             $args,
             $reader->has('expression') ? $reader->string('expression') : null,
             $reader->has('excludeFilters') ? $reader->stringList('excludeFilters') : [],
+            $repository,
+            $batch,
         );
     }
 
     /**
-     * The expression and the excluded filters are exported only when the
-     * field has them
+     * Whether the field is of a repository and batched, the expression and
+     * the excluded filters are exported only when the field has them
      *
-     * @return array{method: string, type: string, name: string, description: string|null, list: bool, args: array<string, array{type: string, nullable: bool, default?: int|float|string|bool}>, expression?: string, excludeFilters?: list<string>}
+     * @return array{method: string, type: string, name: string, description: string|null, list: bool, args: array<string, array{type: string, nullable: bool, default?: int|float|string|bool}>, repository?: true, batch?: true, expression?: string, excludeFilters?: list<string>}
      */
     public function toArray(): array
     {
@@ -77,6 +95,14 @@ final readonly class ComputedFieldMetadata
                 $this->args,
             ),
         ];
+
+        if ($this->repository) {
+            $array['repository'] = true;
+        }
+
+        if ($this->batch) {
+            $array['batch'] = true;
+        }
 
         if ($this->expression !== null) {
             $array['expression'] = $this->expression;

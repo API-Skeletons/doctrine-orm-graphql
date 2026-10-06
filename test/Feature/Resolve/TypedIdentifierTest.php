@@ -11,6 +11,7 @@ use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypedIdAuthor;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypedIdBook;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TypedIdTag;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\QueryCountingTestCase;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Repository\TypedIdAuthorRepository;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Schema;
@@ -238,6 +239,31 @@ class TypedIdentifierTest extends QueryCountingTestCase
         $this->assertSame(
             "Filter 'eq' of field 'author' is given a value which is not valid.",
             $result['errors'][0]['message'],
+        );
+    }
+
+    public function testBatchedComputedFieldIsKeyedByTheDatabaseValue(): void
+    {
+        $this->getEntityManager()->clear();
+
+        $driver = new Driver($this->getEntityManager(), new Config(['group' => 'TypedIdRepository']));
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => ['authors' => $driver->completeConnection(TypedIdAuthor::class)],
+            ]),
+        ]);
+
+        $result = GraphQL::executeQuery($schema, '{ authors { edges { node { name bookCount } } } }')->toArray();
+
+        $this->assertSame(['code:a', 'code:b', 'code:c'], TypedIdAuthorRepository::$keys);
+        $this->assertSame(
+            [
+                ['name' => 'Ann', 'bookCount' => 2],
+                ['name' => 'Bob', 'bookCount' => 1],
+                ['name' => 'Cy', 'bookCount' => null],
+            ],
+            array_column($result['data']['authors']['edges'], 'node'),
         );
     }
 }
