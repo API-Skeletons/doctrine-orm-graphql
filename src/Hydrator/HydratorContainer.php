@@ -7,6 +7,7 @@ namespace ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Container;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Hydrator as HydratorException;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\ComputedFieldMetadata;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Resolve\ComputedFieldBatchLoader;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Closure;
 use Doctrine\Laminas\Hydrator\Strategy\CollectionStrategyInterface;
@@ -31,6 +32,7 @@ final class HydratorContainer extends Container
     public function __construct(
         protected readonly EntityManager $entityManager,
         protected readonly EntityTypeContainer $entityTypeContainer,
+        protected readonly ComputedFieldBatchLoader $computedFieldBatchLoader,
     ) {
         // Register default strategies
         $this
@@ -89,10 +91,32 @@ final class HydratorContainer extends Container
 
                 // Register computed fields
                 foreach ($entityMetadata->computedFields as $fieldName => $computedFieldMetadata) {
+                    $extractor = self::computedFieldExtractor(
+                        $computedFieldMetadata,
+                        $computedFieldMetadata->repository ? $entityManager : null,
+                        $entityMetadata->entityClass,
+                    );
+
+                    $batchExtractor = null;
+                    if ($computedFieldMetadata->batch) {
+                        // The method is given a Collection of entities; alone, one
+                        $batchExtractor = $extractor;
+                        $loader         = $self->computedFieldBatchLoader;
+                        $entityClass    = $entityMetadata->entityClass;
+                        $extractor      = static fn (object $entity, array $args): mixed => $loader->loadOne(
+                            $entity,
+                            $entityClass,
+                            $fieldName,
+                            $batchExtractor,
+                            $args,
+                        );
+                    }
+
                     $object->addComputedField(
                         $fieldName,
-                        self::computedFieldExtractor($computedFieldMetadata),
+                        $extractor,
                         $computedFieldMetadata->args !== [],
+                        $batchExtractor,
                     );
                 }
 
@@ -116,14 +140,24 @@ final class HydratorContainer extends Container
      * arguments, by name.  An argument which is not given is left to the
      * method's default value, or is null when the method has none.
      *
+     * The method of an entity is called on the entity.  The method of a
+     * repository is called on the repository the entity manager gives, so
+     * a custom repository factory is honoured, with the entity, or for a
+     * batched field, a Collection of entities, first.
+     *
+     * @param class-string $entityClass
+     *
      * @return Closure(object, array<array-key, mixed>): mixed
      */
-    private static function computedFieldExtractor(ComputedFieldMetadata $computedFieldMetadata): Closure
-    {
+    private static function computedFieldExtractor(
+        ComputedFieldMetadata $computedFieldMetadata,
+        EntityManager|null $entityManager,
+        string $entityClass,
+    ): Closure {
         $methodName = $computedFieldMetadata->method;
         $arguments  = $computedFieldMetadata->args;
 
-        return static function (object $entity, array $args) use ($methodName, $arguments): mixed {
+        return static function (object $entity, array $args) use ($methodName, $arguments, $entityManager, $entityClass): mixed {
             $named = [];
             foreach ($arguments as $name => $argument) {
                 if (array_key_exists($name, $args)) {
@@ -132,6 +166,11 @@ final class HydratorContainer extends Container
                 } elseif ($argument->default === null) {
                     $named[$name] = null;
                 }
+            }
+
+            if ($entityManager !== null) {
+                /** @psalm-suppress MixedMethodCall */
+                return $entityManager->getRepository($entityClass)->$methodName($entity, ...$named);
             }
 
             /** @psalm-suppress MixedMethodCall */

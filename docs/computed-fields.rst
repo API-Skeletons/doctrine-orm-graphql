@@ -77,6 +77,9 @@ The ``#[ComputedField]`` attribute accepts these parameters:
 * ``excludeFilters`` - Optional. Filters to exclude for a field with an ``expression``.
 * ``includeFilters`` - Optional. The only filters to allow for a field with an
   ``expression``.  It is mutually exclusive with ``excludeFilters``.
+* ``batch`` - Optional. ``true`` when a method of the entity's repository is given a
+  ``Collection`` of entities and returns their values; see `Batching`_.  The default
+  is ``false``.
 
 Custom Field Names
 ------------------
@@ -102,7 +105,10 @@ You can override this with the ``name`` parameter:
       return 'Artist: ' . $this->name;
   }
 
-This creates a ``displayName`` field instead of ``fullDisplayName``.
+This creates a ``displayName`` field instead of ``fullDisplayName``.  Two
+computed fields may not have the same name, nor a field's, which throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the metadata
+is built.
 
 Multiple Computed Fields
 -------------------------
@@ -213,7 +219,8 @@ arguments has no one value, so the hydrator's ``extract()`` leaves it out.
 
 The method is called for each entity a query returns.  A method which
 queries the database, rather than reading the entity, runs a query for each
-of them.
+of them.  A method of the entity's `repository <#repositories>`_ may be
+batched instead, to run one query for all of them.
 
 Entity Types
 ------------
@@ -401,6 +408,146 @@ Costs
   orders every row before the page is taken, without an index.  For a large
   table, store the value in a column instead.
 * Databases order nulls differently, as they do for a field.
+
+Repositories
+------------
+
+An entity has no entity manager, so a value which needs a query, such as a
+count of related rows, is better computed by the entity's repository.  The
+methods of an entity's repository, its ``repositoryClass``, are read for
+``#[ComputedField]`` attributes as the entity's own are.  The method is given
+the entity first:
+
+.. code-block:: php
+
+  use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
+  use Doctrine\ORM\EntityRepository;
+  use Doctrine\ORM\Mapping as ORM;
+
+  #[GraphQL\Entity]
+  #[ORM\Entity(repositoryClass: ArtistRepository::class)]
+  class Artist
+  {
+  }
+
+  class ArtistRepository extends EntityRepository
+  {
+      #[GraphQL\ComputedField(type: 'string')]
+      public function getLatestVenue(Artist $artist, int|null $year = null): string|null
+      {
+          // A query using $this->getEntityManager()
+      }
+  }
+
+Its further parameters are the field's `arguments <#arguments>`_, and every
+other parameter of the attribute applies as it does on an entity, an
+``expression`` among them.  A computed field of the repository may not have the
+name of a field, or of a computed field, of the entity.
+
+The repository is the one the entity manager's ``getRepository()`` gives, so a
+custom repository factory, such as Symfony's service repositories, is honoured.
+
+When the metadata is built, the method's first parameter must accept the
+entity, or it throws ``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata``.
+
+Batching
+~~~~~~~~
+
+A repository's method called for each entity still runs a query for each of
+them.  With ``batch: true``, it is given every entity being resolved, in a
+Doctrine ``Collection``, and returns their values, so one query gives them all:
+
+.. code-block:: php
+
+  /**
+   * @param Collection<int|string, Artist> $artists
+   *
+   * @return array<int|string, int>
+   */
+  #[GraphQL\ComputedField(type: 'int', batch: true)]
+  public function getPerformanceCount(Collection $artists, int|null $year = null): array
+  {
+      $queryBuilder = $this->getEntityManager()->createQueryBuilder()
+          ->select('IDENTITY(p.artist) AS id', 'COUNT(p.id) AS total')
+          ->from(Performance::class, 'p')
+          ->where('p.artist IN (:artists)')
+          ->groupBy('p.artist')
+          ->setParameter('artists', $artists->getKeys());
+
+      // Filter by $year
+
+      return array_column($queryBuilder->getQuery()->getScalarResult(), 'total', 'id');
+  }
+
+* The ``Collection`` is keyed by the database value of each entity's
+  identifier, which is what a scalar query, such as one selecting
+  ``IDENTITY()`` of an association, returns.  For an integer identifier, that
+  is the integer.  Bind the keys, as above, rather than the entities: Doctrine
+  does not convert an entity's identifier in an ``IN`` list, which matters for
+  an identifier such as a binary UUID.
+* The method returns the values keyed the same way, as an array or a
+  ``Collection``.  Anything else is an error of every entity's field.  An
+  entity it gives no value for is null; for a non-null type, that is an error,
+  which a client sees as "Internal server error".
+* The parameter must accept any ``Collection``: type it ``Collection``, or
+  wider, such as ``iterable``.  The library passes an ``ArrayCollection``, but
+  promises only a ``Collection``, so ``ArrayCollection`` and ``array`` are
+  rejected when the metadata is built.
+* The entities waiting for the field with the same arguments, at any depth of
+  the query, are given to one call, up to 1,000 entities a call.  Aliases with
+  different arguments are separate calls.
+* An entity whose identifier is composite, or an association, has no single
+  key, so ``batch: true`` throws when the metadata is built.  So does
+  ``batch: true`` on a method of the entity.
+* With the ``batchAssociations`` config off, the method is given each entity
+  alone.
+* The hydrator's ``extract()`` leaves a batched field out, as it would be a
+  query for each entity extracted.
+
+A batched field may be of an `entity type <#entity-types>`_, and a ``list``.
+The method returns, keyed by the identifier of the entity it is given, an
+entity of the type, or for a list, an array or ``Collection`` of them.  Select
+each related entity with the identifier it belongs to, then group them:
+
+.. code-block:: php
+
+  #[GraphQL\ComputedField(type: Recording::class, list: true, batch: true)]
+  public function getLiveRecordings(Collection $artists): array
+  {
+      $rows = $this->getEntityManager()->createQuery(
+          'SELECT r, IDENTITY(r.artist) AS artistId FROM ' . Recording::class . ' r'
+          . ' WHERE r.artist IN (:artists) AND r.live = true',
+      )->setParameter('artists', $artists->getKeys())->getResult();
+
+      $recordings = [];
+      foreach ($rows as $row) {
+          $recordings[$row['artistId']][] = $row[0];
+      }
+
+      return $recordings;
+  }
+
+A list is not a connection: it has no pagination, filters or limit, so the
+method must bound it.
+
+An ``expression`` and a batched method do not run together.  The expression
+only filters and sorts: it is written for one entity and evaluated by the
+database for each row of the connection's own query.  The method gives the
+values, once the page is fetched.  So the value is written twice, in two
+shapes, which must agree.
+
+Inheritance
+~~~~~~~~~~~
+
+Each entity class's own repository is read.  Doctrine gives an entity the
+repository of a parent only when the parent is a mapped superclass, not when
+it is an entity.  A row of an exposed subclass is resolved by the subclass's
+fields, even where its parent's type is queried, so an exposed subclass whose
+repository lacks a computed field of its exposed parent's repository throws
+``ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata`` when the metadata
+is built.  Give the subclass a repository which extends its parent's.  A row of
+a subclass which is not exposed is resolved as its exposed parent, by the
+parent's repository.
 
 Hydrator Strategies
 -------------------

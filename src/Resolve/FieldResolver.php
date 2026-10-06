@@ -8,6 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\DoctrineObjectWithComputed;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Type\Entity\EntityTypeContainer;
 use Doctrine\Persistence\Proxy;
+use GraphQL\Deferred;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -40,6 +41,7 @@ final class FieldResolver
         protected readonly Config $config,
         protected readonly EntityTypeContainer $entityTypeContainer,
         protected readonly ToOneLoader $toOneLoader,
+        protected readonly ComputedFieldBatchLoader $computedFieldBatchLoader,
     ) {
         $this->extractValues = self::newExtractCache();
     }
@@ -92,8 +94,21 @@ final class FieldResolver
                 }
 
                 if (! array_key_exists($key, $values)) {
+                    // A batched field is loaded with the other entities waiting for it
+                    $batchExtractor = $this->config->getBatchAssociations()
+                        ? $hydrator->getBatchExtractor($info->fieldName)
+                        : null;
+
                     /** @psalm-suppress MixedAssignment */
-                    $values[$key]                 = $hydrator->extractComputedField($source, $info->fieldName, $args);
+                    $values[$key]                 = $batchExtractor !== null
+                        ? $this->computedFieldBatchLoader->defer(
+                            $source,
+                            $this->entityTypeContainer->getExposedClass($source),
+                            $info->fieldName,
+                            $batchExtractor,
+                            $args,
+                        )
+                        : $hydrator->extractComputedField($source, $info->fieldName, $args);
                     $this->extractValues[$source] = $values;
                 }
             }
@@ -107,6 +122,19 @@ final class FieldResolver
             return $value;
         }
 
+        // The value of a batched computed field, once loaded
+        if ($value instanceof Deferred) {
+            return $value->then(fn (mixed $loaded): mixed => $this->deferEntities($loaded, $info));
+        }
+
+        return $this->deferEntities($value, $info);
+    }
+
+    /**
+     * The entities of a value, loaded in a batch with the others
+     */
+    private function deferEntities(mixed $value, ResolveInfo $info): mixed
+    {
         // The entities of a list, such as a computed field may return, are
         // loaded in a batch with the others
         if (is_iterable($value) && Type::getNullableType($info->returnType) instanceof ListOfType) {

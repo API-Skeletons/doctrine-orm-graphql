@@ -8,6 +8,7 @@ use ApiSkeletons\Doctrine\ORM\GraphQL\Attribute as GraphQL;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\Strategy\ToString;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\DbalType\Code;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\DbalType\CodeType;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Repository\TypedIdAuthorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,7 +18,8 @@ use Doctrine\ORM\Mapping as ORM;
  * as a binary UUID is
  */
 #[GraphQL\Entity(group: 'TypedId')]
-#[ORM\Entity]
+#[GraphQL\Entity(group: 'TypedIdRepository')]
+#[ORM\Entity(repositoryClass: TypedIdAuthorRepository::class)]
 class TypedIdAuthor
 {
     /** @var Collection<int, TypedIdBook> */
@@ -31,6 +33,7 @@ class TypedIdAuthor
         #[ORM\Column(type: CodeType::NAME)]
         private Code $id,
         #[GraphQL\Field(group: 'TypedId')]
+        #[GraphQL\Field(group: 'TypedIdRepository')]
         #[ORM\Column(type: 'string')]
         private string $name,
     ) {
