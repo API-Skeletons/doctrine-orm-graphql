@@ -235,7 +235,8 @@ final class DoctrineObjectWithComputed extends DoctrineObject
      * field values by calling registered extractors.  A computed field with
      * arguments has a value for each set of them, not one value, so it is
      * left out.  A batched computed field would be a query for each entity
-     * extracted, so it is left out too.
+     * extracted, so it is left out too, as is a mapped property of the
+     * same name which is not exposed.
      *
      * @return array<array-key, mixed>
      */
@@ -245,7 +246,11 @@ final class DoctrineObjectWithComputed extends DoctrineObject
         $data = $this->extractFields($object);
 
         foreach ($this->getComputedFieldNames() as $fieldName) {
+            // A mapped property of the same name which is not exposed is not
+            // the computed field's value
             if ($this->hasComputedFieldArguments($fieldName) || isset($this->batchExtractors[$fieldName])) {
+                unset($data[$fieldName]);
+
                 continue;
             }
 
