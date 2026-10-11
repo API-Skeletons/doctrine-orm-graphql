@@ -7,12 +7,17 @@ namespace ApiSkeletonsTest\Doctrine\ORM\GraphQL\Feature\ComputedField;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Config;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Driver;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Exception\Metadata as MetadataException;
+use ApiSkeletons\Doctrine\ORM\GraphQL\Hydrator\HydratorContainer;
 use ApiSkeletons\Doctrine\ORM\GraphQL\Metadata\MetadataFactory;
+use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestComputedShadowsProperty;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithCollision;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithGetMethod;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithIsMethod;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\Entity\TestEntityWithPlainMethod;
 use ApiSkeletonsTest\Doctrine\ORM\GraphQL\TestCase;
+use GraphQL\GraphQL;
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use ReflectionMethod;
@@ -91,5 +96,55 @@ class ComputedFieldEdgeCasesTest extends TestCase
         $factory = (new ReflectionClass(MetadataFactory::class))->newInstanceWithoutConstructor();
 
         $this->assertSame($fieldName, (new ReflectionMethod($factory, 'deriveFieldNameFromMethod'))->invoke($factory, $methodName));
+    }
+
+    /**
+     * A computed field named as a mapped property which is not exposed is
+     * resolved by its method, not by the property's getter
+     *
+     * @return array<string, array{bool}>
+     */
+    public static function extractByValueProvider(): array
+    {
+        return [
+            'by value' => [true],
+            'by reference' => [false],
+        ];
+    }
+
+    #[DataProvider('extractByValueProvider')]
+    public function testComputedFieldWinsOverAnUnexposedProperty(bool $extractByValue): void
+    {
+        $entityManager = $this->getEntityManager();
+        $entityManager->persist(new TestComputedShadowsProperty());
+        $entityManager->flush();
+        $entityManager->clear();
+
+        $driver = new Driver($entityManager, new Config([
+            'group' => 'computedShadowTest',
+            'extractByValue' => $extractByValue,
+        ]));
+
+        $schema = new Schema([
+            'query' => new ObjectType([
+                'name' => 'query',
+                'fields' => [
+                    'entities' => $driver->completeConnection(TestComputedShadowsProperty::class),
+                ],
+            ]),
+        ]);
+
+        $result = GraphQL::executeQuery($schema, '{ entities { edges { node { id test label(prefix: "a ") } } } }');
+        $output = $result->toArray();
+
+        $this->assertEmpty($output['errors'] ?? []);
+        $this->assertSame('computed', $output['data']['entities']['edges'][0]['node']['test']);
+        $this->assertSame('a computed', $output['data']['entities']['edges'][0]['node']['label']);
+
+        // extract() leaves out a computed field with arguments, and the property
+        $entity    = $entityManager->getRepository(TestComputedShadowsProperty::class)->findAll()[0];
+        $extracted = $driver->get(HydratorContainer::class)->get(TestComputedShadowsProperty::class)->extract($entity);
+        $this->assertSame('computed', $extracted['test']);
+        $this->assertArrayNotHasKey('label', $extracted);
     }
 }

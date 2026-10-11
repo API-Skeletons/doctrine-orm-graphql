@@ -61,7 +61,8 @@ final class FieldResolver
 
         // A hit is decided by the entity, not the field, so a null field is
         // served from the extract rather than extracting again
-        $values = $this->extractValues[$source] ?? null;
+        $values   = $this->extractValues[$source] ?? null;
+        $hydrator = $this->getHydrator($source);
 
         if ($values === null) {
             /**
@@ -73,7 +74,6 @@ final class FieldResolver
             }
 
             // Computed fields are not extracted here; each is computed when queried
-            $hydrator                     = $this->getHydrator($source);
             $values                       = $hydrator instanceof DoctrineObjectWithComputed
                 ? $hydrator->extractFields($source)
                 : $hydrator->extract($source);
@@ -82,35 +82,31 @@ final class FieldResolver
 
         $key = $info->fieldName;
 
-        if (! array_key_exists($key, $values)) {
-            $hydrator = $this->getHydrator($source);
+        // A computed field wins over a mapped property of the same name which
+        // is not exposed, so its value is kept under a key no property has
+        if ($hydrator instanceof DoctrineObjectWithComputed && $hydrator->hasComputedField($info->fieldName)) {
+            // A computed field with arguments has a value for each set of
+            // them, as aliases of the field may give different arguments
+            $args = is_array($args) ? $args : [];
+            $key .= '(' . ($hydrator->hasComputedFieldArguments($info->fieldName) ? serialize($args) : '') . ')';
 
-            if ($hydrator instanceof DoctrineObjectWithComputed && $hydrator->hasComputedField($info->fieldName)) {
-                // A computed field with arguments has a value for each set of
-                // them, as aliases of the field may give different arguments
-                $args = is_array($args) ? $args : [];
-                if ($hydrator->hasComputedFieldArguments($info->fieldName)) {
-                    $key .= '(' . serialize($args) . ')';
-                }
+            if (! array_key_exists($key, $values)) {
+                // A batched field is loaded with the other entities waiting for it
+                $batchExtractor = $this->config->getBatchAssociations()
+                    ? $hydrator->getBatchExtractor($info->fieldName)
+                    : null;
 
-                if (! array_key_exists($key, $values)) {
-                    // A batched field is loaded with the other entities waiting for it
-                    $batchExtractor = $this->config->getBatchAssociations()
-                        ? $hydrator->getBatchExtractor($info->fieldName)
-                        : null;
-
-                    /** @psalm-suppress MixedAssignment */
-                    $values[$key]                 = $batchExtractor !== null
-                        ? $this->computedFieldBatchLoader->defer(
-                            $source,
-                            $this->entityTypeContainer->getExposedClass($source),
-                            $info->fieldName,
-                            $batchExtractor,
-                            $args,
-                        )
-                        : $hydrator->extractComputedField($source, $info->fieldName, $args);
-                    $this->extractValues[$source] = $values;
-                }
+                /** @psalm-suppress MixedAssignment */
+                $values[$key]                 = $batchExtractor !== null
+                    ? $this->computedFieldBatchLoader->defer(
+                        $source,
+                        $this->entityTypeContainer->getExposedClass($source),
+                        $info->fieldName,
+                        $batchExtractor,
+                        $args,
+                    )
+                    : $hydrator->extractComputedField($source, $info->fieldName, $args);
+                $this->extractValues[$source] = $values;
             }
         }
 
