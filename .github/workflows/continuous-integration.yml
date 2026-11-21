@@ -21,6 +21,7 @@ jobs:
         php-version:
           - "8.4"
           - "8.5"
+          - "8.6"
         dependencies:
           - "highest"
           - "lowest"
@@ -31,10 +32,14 @@ jobs:
         exclude:
           # doctrine-laminas-hydrator supports PHP 8.5 only from 3.7.0, which
           # requires doctrine/persistence ^4; ORM 2.20.9 and 3.0.0 do not
-          # allow persistence ^4, so they cannot be installed on PHP 8.5
+          # allow persistence ^4, so they cannot be installed on PHP 8.5+
           - php-version: "8.5"
             orm-version: "2.20.9"
           - php-version: "8.5"
+            orm-version: "3.0.0"
+          - php-version: "8.6"
+            orm-version: "2.20.9"
+          - php-version: "8.6"
             orm-version: "3.0.0"
 
     steps:
